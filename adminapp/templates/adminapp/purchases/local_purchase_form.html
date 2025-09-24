@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 class="fw-bold mb-3">Purchase Management</h3>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Purchase Management</h3>
       <ul class="breadcrumbs mb-3">
         <li class="nav-home">
           <a href="#">
@@ -31,20 +31,16 @@ document.addEventListener("DOMContentLoaded", function() {
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="#">Purchases</a>
+          <a href="{% url 'adminapp:local_purchase_list' %}">Purchases List</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="{% url 'adminapp:local_purchase_list' %}">Purchase List</a>
+          <a href="">Create</a>
         </li>
-        <li class="separator">
-          <i class="icon-arrow-right"></i>
-        </li>
-        <li class="nav-item">
-          <span class="text-muted">Add Purchase</span>
-        </li>
+
+
       </ul>
     </div>
 
@@ -161,6 +157,12 @@ document.addEventListener("DOMContentLoaded", function() {
                             <div class="header-content justify-content-center">
                               <i class="fas fa-tools header-icon"></i>
                               <span class="header-text">Action</span>
+                            </div>
+                          </th>
+                          <th class="text-center">
+                            <div class="header-content justify-content-center">
+                              <i class="fas fa-trash-alt header-icon"></i>
+                              <span class="header-text">DELETE</span>
                             </div>
                           </th>
                         </tr>
@@ -367,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   .section-title {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
     color: #2c3e50;
     display: flex;
     align-items: center;
@@ -386,12 +388,14 @@ document.addEventListener("DOMContentLoaded", function() {
     flex-direction: column;
   }
 
-  .form-label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
   .form-group input,
   .form-group select,
@@ -583,7 +587,7 @@ document.addEventListener("DOMContentLoaded", function() {
     font-size: 24px;
     font-weight: 700;
     color: #2c3e50;
-    font-family: 'Monaco', 'Consolas', monospace;
+    /* font-family: 'Monaco', 'Consolas', monospace; */
   }
 
   .amount-value {
