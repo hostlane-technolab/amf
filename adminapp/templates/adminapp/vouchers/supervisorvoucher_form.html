@@ -1,0 +1,13 @@
+{% extends 'admin_base.html' %}
+{% block title %}spot supervisor voucher - Admin panel{% endblock %}
+
+{% block content %}
+  <h2>Create Spot Agent Voucher</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="btn btn-secondary">Back</a>
+  </form>
+
+{% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'admin_base.html' %}
-{% block title %} Peeling Shed Supply List {% endblock %}
+{% block title %} Peeling Shed Supply Update {% endblock %}
 {% block content %}
 
 <style>
@@ -101,6 +101,52 @@
         box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
     }
 
+    input[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        border-color: #dee2e6;
+        cursor: not-allowed;
+    }
+
+    /* Red styling for balance field and label */
+    .balance-label {
+        color: #dc2626 !important;
+        font-weight: 600 !important;
+    }
+
+    #id_SpotPurchase_balance_boxes {
+        border-color: #dc2626 !important;
+        color: #dc2626 !important;
+        font-weight: 600 !important;
+        background: linear-gradient(135deg, rgba(254, 226, 226, 0.3), rgba(252, 165, 165, 0.2)) !important;
+    }
+
+    #id_SpotPurchase_balance_boxes:focus {
+        border-color: #dc2626 !important;
+        outline: 2px solid #dc2626 !important;
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25) !important;
+    }
+
+    /* Animation for balance updates */
+    #id_SpotPurchase_balance_boxes.updated {
+        animation: balanceUpdate 0.6s ease-out;
+    }
+
+    @keyframes balanceUpdate {
+        0% {
+            transform: scale(1);
+            background: rgba(220, 38, 38, 0.2);
+        }
+        50% {
+            transform: scale(1.02);
+            background: rgba(220, 38, 38, 0.3);
+        }
+        100% {
+            transform: scale(1);
+            background: linear-gradient(135deg, rgba(254, 226, 226, 0.3), rgba(252, 165, 165, 0.2));
+        }
+    }
+
     select {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -176,6 +222,32 @@
         border-color: #dee2e6;
     }
 
+    /* Loading state */
+    .loading {
+        position: relative;
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border: 2px solid #e5e7eb;
+        border-top: 2px solid #007bff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     @media (max-width: 768px) {
         .input-grid {
             grid-template-columns: 1fr;
@@ -198,6 +270,9 @@
     </div>
 
     <h2 class="primary-title">Update Peeling Shed Supply</h2>
+    
+    <!-- Hidden field to store supply ID for JavaScript -->
+    <input type="hidden" id="current-supply-id" value="{{ supply.id }}">
 
     <form method="post">
         {% csrf_token %}
@@ -241,7 +316,7 @@
                                 {{ form.spot_purchase.instance }}
                             </option>
                         {% else %}
-                            <option value="">---------</option>
+                            <option value="">Select Spot Purchase...</option>
                         {% endif %}
                     </select>
                 </div>
@@ -253,7 +328,7 @@
                                 {{ form.spot_purchase_item.instance }}
                             </option>
                         {% else %}
-                            <option value="">---------</option>
+                            <option value="">Select Purchase Item...</option>
                         {% endif %}
                     </select>
                 </div>
@@ -265,16 +340,19 @@
             <h3 class="category-header">Purchase Information</h3>
             <div class="input-grid">
                 <div class="input-container">
-                    <label class="input-title">{{ form.SpotPurchase_total_boxes.label }}</label>
-                    {{ form.SpotPurchase_total_boxes }}
+                    <label class="input-title">Total Boxes</label>
+                    <input type="text" id="id_SpotPurchase_total_boxes" name="SpotPurchase_total_boxes" 
+                           value="{{ form.initial.SpotPurchase_total_boxes|default:form.SpotPurchase_total_boxes.value|default:'' }}" readonly>
                 </div>
                 <div class="input-container">
-                    <label class="input-title">{{ form.SpotPurchase_quantity.label }}</label>
-                    {{ form.SpotPurchase_quantity }}
+                    <label class="input-title">Total Quantity</label>
+                    <input type="text" id="id_SpotPurchase_quantity" name="SpotPurchase_quantity" 
+                           value="{{ form.initial.SpotPurchase_quantity|default:form.SpotPurchase_quantity.value|default:'' }}" readonly>
                 </div>
                 <div class="input-container">
-                    <label class="input-title">{{ form.SpotPurchase_average_box_weight.label }}</label>
-                    {{ form.SpotPurchase_average_box_weight }}
+                    <label class="input-title">Average Box Weight</label>
+                    <input type="text" id="id_SpotPurchase_average_box_weight" name="SpotPurchase_average_box_weight" 
+                           value="{{ form.initial.SpotPurchase_average_box_weight|default:form.SpotPurchase_average_box_weight.value|default:'' }}" readonly>
                 </div>
             </div>
         </div>
@@ -285,11 +363,18 @@
             <div class="input-grid">
                 <div class="input-container">
                     <label class="input-title">Boxes Received Shed</label>
-                    {{ form.boxes_received_shed }}
+                    <input type="text" name="boxes_received_shed" id="id_boxes_received_shed" 
+                           value="{{ form.boxes_received_shed.value|default:'' }}">
                 </div>
                 <div class="input-container">
                     <label class="input-title">Quantity Received Shed</label>
-                    {{ form.quantity_received_shed }}
+                    <input type="text" name="quantity_received_shed" id="id_quantity_received_shed" 
+                           value="{{ form.initial.quantity_received_shed|default:form.quantity_received_shed.value|default:'' }}" readonly>
+                </div>
+                <div class="input-container">
+                    <label class="input-title balance-label">Box Balance</label>
+                    <input type="text" name="SpotPurchase_balance_boxes" id="id_SpotPurchase_balance_boxes" 
+                           value="{{ form.initial.SpotPurchase_balance_boxes|default:form.SpotPurchase_balance_boxes.value|default:'' }}" readonly>
                 </div>
             </div>
         </div>
@@ -329,56 +414,184 @@
     </form>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+    let availableBoxes = 0; // Global variable to track available boxes
+    let currentSupplyId = null;
+    
+    // Add loading animation helper
+    function showLoading(element) {
+        $(element).addClass('loading');
+    }
+    
+    function hideLoading(element) {
+        $(element).removeClass('loading');
+    }
+
+    // Updated balance calculation to show available boxes remaining
+    function calculateBalanceBoxes() {
+        let boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        
+        // Validate against available boxes
+        if (boxesReceived > availableBoxes) {
+            alert(`Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available from this purchase.`);
+            $("#id_boxes_received_shed").val(availableBoxes);
+            boxesReceived = availableBoxes;
+        }
+        
+        // Balance = Available boxes - boxes being received now
+        let balance = availableBoxes - boxesReceived;
+        balance = Math.max(0, balance);
+        
+        const balanceField = $("#id_SpotPurchase_balance_boxes");
+        balanceField.val(balance);
+        
+        // Add animation effect to highlight the change
+        balanceField.addClass('updated');
+        setTimeout(() => {
+            balanceField.removeClass('updated');
+        }, 600);
+    }
+
+    // Updated quantity calculation function with validation
+    function calculateQuantityReceivedShed() {
+        let boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        let avgWeight = parseFloat($("#id_SpotPurchase_average_box_weight").val()) || 0;
+        
+        // Validate against available boxes
+        if (boxesReceived > availableBoxes) {
+            alert(`Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available.`);
+            $("#id_boxes_received_shed").val(availableBoxes);
+            boxesReceived = availableBoxes;
+        }
+        
+        let quantity = boxesReceived * avgWeight;
+        $("#id_quantity_received_shed").val(quantity.toFixed(2));
+        
+        // Also calculate balance boxes (available remaining)
+        calculateBalanceBoxes();
+    }
+
+    // Show available boxes information
+    function showAvailableBoxesInfo(data) {
+        const infoHtml = `
+            <div class="balance-info" style="background: ${data.is_fully_used ? '#fee2e2' : '#f0f9ff'}; 
+                 border: 2px solid ${data.is_fully_used ? '#dc2626' : '#3b82f6'}; 
+                 padding: 10px; border-radius: 6px; margin-top: 10px;">
+                <strong>Box Balance Information:</strong><br>
+                Total Boxes: ${data.total_boxes}<br>
+                Used Boxes: ${data.used_boxes}<br>
+                <span style="color: ${data.is_fully_used ? '#dc2626' : '#059669'}; font-weight: bold;">
+                    Available Boxes: ${data.available_boxes}
+                </span>
+                ${data.is_fully_used ? '<br><span style="color: #dc2626;">⚠️ This item is fully used!</span>' : ''}
+            </div>
+        `;
+        
+        // Remove existing info and add new one
+        $('.balance-info').remove();
+        $('#id_spot_purchase_item').parent().append(infoHtml);
+    }
+
     // Spot Purchase Date -> Spot Purchases
     $('#id_spot_purchase_date').on('change', function () {
+        showLoading('#id_spot_purchase');
+        
         $.get("{% url 'adminapp:get_spot_purchases_by_date' %}", {
             'date': $(this).val()
         }, function (data) {
             const select = $('#id_spot_purchase');
-            select.empty().append('<option value="">---------</option>');
+            select.empty().append('<option value="">Select Spot Purchase...</option>');
             data.forEach(p => select.append(`<option value="${p.id}">${p.name}</option>`));
-            $('#id_spot_purchase_item').empty().append('<option value="">---------</option>');
+            $('#id_spot_purchase_item').empty().append('<option value="">Select Purchase Item...</option>');
+            hideLoading('#id_spot_purchase');
+            
+            // Clear previous balance info and reset available boxes
+            $('.balance-info').remove();
+            availableBoxes = 0;
+            $("#id_SpotPurchase_balance_boxes").val('');
+        }).fail(function() {
+            hideLoading('#id_spot_purchase');
+            alert('Error loading spot purchases. Please try again.');
         });
     });
 
     // Spot Purchase -> Items
     $('#id_spot_purchase').on('change', function () {
+        showLoading('#id_spot_purchase_item');
+        
         $.get("{% url 'adminapp:get_spot_purchase_items' %}", {
             'spot_purchase_id': $(this).val()
         }, function (data) {
-            const select = $('#id_spot_purchase_item').empty().append('<option value="">---------</option>');
-            data.forEach(i => select.append(`<option value="${i.id}">${i.name}</option>`));
+            const select = $('#id_spot_purchase_item').empty().append('<option value="">Select Purchase Item...</option>');
+            
+            data.forEach(item => {
+                select.append(`<option value="${item.id}">${item.name}</option>`);
+            });
+            
+            hideLoading('#id_spot_purchase_item');
+            
+            // Reset available boxes when changing purchase
+            availableBoxes = 0;
+            $("#id_SpotPurchase_balance_boxes").val('');
+        }).fail(function() {
+            hideLoading('#id_spot_purchase_item');
+            alert('Error loading purchase items. Please try again.');
         });
     });
 
-    // Item -> Auto-fill details
+    // Item -> Auto-fill details with balance check (for UPDATE)
     $('#id_spot_purchase_item').on('change', function () {
-        $.get("{% url 'adminapp:get_spot_purchase_item_details' %}", {
-            'item_id': $(this).val()
+        const fields = ['#id_SpotPurchase_total_boxes', '#id_SpotPurchase_quantity', '#id_SpotPurchase_average_box_weight'];
+        fields.forEach(field => showLoading(field));
+        
+        $.get("{% url 'adminapp:get_spot_purchase_item_details_for_update' %}", {
+            'item_id': $(this).val(),
+            'supply_id': currentSupplyId
         }, function (data) {
             $('#id_SpotPurchase_total_boxes').val(data.total_boxes);
             $('#id_SpotPurchase_quantity').val(data.quantity);
             $('#id_SpotPurchase_average_box_weight').val(data.average_weight);
+            
+            // Update global available boxes (excluding current supply)
+            availableBoxes = data.available_boxes;
+            
+            // Set balance field to show available boxes initially
+            $("#id_SpotPurchase_balance_boxes").val(data.available_boxes);
+            
+            // Show balance information
+            showAvailableBoxesInfo(data);
+            
+            // Set max attribute for boxes received input
+            $("#id_boxes_received_shed").attr('max', data.available_boxes);
+            
+            // Clear boxes received if it exceeds available
+            const currentReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+            if (currentReceived > data.available_boxes) {
+                // Don't auto-clear in update mode, just warn
+                showWarning(`Current value (${currentReceived}) exceeds available boxes (${data.available_boxes})`);
+            }
+            
+            // Disable form if no balance available
+            if (data.is_fully_used) {
+                $("#id_boxes_received_shed").prop('disabled', true).attr('placeholder', 'No boxes available');
+                $("#id_SpotPurchase_balance_boxes").val(0);
+            } else {
+                $("#id_boxes_received_shed").prop('disabled', false).attr('placeholder', `Max: ${data.available_boxes} boxes`);
+            }
+            
+            fields.forEach(field => hideLoading(field));
+        }).fail(function() {
+            fields.forEach(field => hideLoading(field));
+            alert('Error loading item details. Please try again.');
         });
     });
 
-    // Shed box Received quantity calculation
-    function calculateQuantityReceivedShed() {
-        let boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
-        let avgWeight = parseFloat($("#id_SpotPurchase_average_box_weight").val()) || 0;
-        let quantity = boxesReceived * avgWeight;
-        $("#id_quantity_received_shed").val(quantity.toFixed(2));
+    // Show warning helper
+    function showWarning(message) {
+        $('.warning-msg').remove();
+        $("#id_boxes_received_shed").parent().append(`<small class="warning-msg" style="color: #f59e0b; font-weight: 500;">${message}</small>`);
     }
-
-    $(document).ready(function () {
-        $("#id_boxes_received_shed").on('input', function () {
-            calculateQuantityReceivedShed();
-        });
-        $("#id_SpotPurchase_average_box_weight").on('input', function () {
-            calculateQuantityReceivedShed();
-        });
-    });
 
     // Load Peeling charges dynamically
     function updatePeelingCharges(peelingTypes) {
@@ -386,7 +599,8 @@
         const totalForms = $('#id_form-TOTAL_FORMS');
         let newCount = 0;
 
-        container.find('.dynamic-item:gt(0)').remove();
+        // Clear existing forms except management form
+        container.find('.dynamic-item').remove();
 
         peelingTypes.forEach((pt, i) => {
             const newForm = $(`
@@ -405,8 +619,7 @@
                         </select>
                     </div>
                     <div class="dynamic-input">
-                        <label for="id_form-${i}-amount">Amount:</label>
-                        <input type="text" name="form-${i}-amount" id="id_form-${i}-amount" value="${pt.amount}">
+<input type="text" name="form-${i}-amount" id="id_form-${i}-amount" value="${pt.amount}">
                     </div>
                     <div class="dynamic-input">
                         <label for="id_form-${i}-unit">Unit:</label>
@@ -421,20 +634,184 @@
         totalForms.val(newCount);
     }
 
+    // Form submission validation
+    function validateFormSubmission() {
+        const boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        
+        if (boxesReceived > availableBoxes) {
+            alert(`Cannot submit: ${boxesReceived} boxes exceeds available balance of ${availableBoxes} boxes.`);
+            return false;
+        }
+        
+        if (boxesReceived <= 0) {
+            alert('Please enter the number of boxes received.');
+            return false;
+        }
+        
+        return true;
+    }
+
     $(document).ready(function () {
+        // Get current supply ID from template
+        currentSupplyId = $("#current-supply-id").val();
+        
+        // Make balance field readonly
+        $("#id_SpotPurchase_balance_boxes").prop('readonly', true);
+
+        // Trigger quantity and balance calculation on boxes received change with validation
+        $("#id_boxes_received_shed").on('input change', function () {
+            calculateQuantityReceivedShed();
+        });
+
+        // Add real-time validation for boxes received input
+        $("#id_boxes_received_shed").on('input', function() {
+            const value = parseFloat($(this).val()) || 0;
+            if (value > availableBoxes && availableBoxes > 0) {
+                $(this).css('border-color', '#dc2626');
+                $(this).next('.error-msg').remove();
+                $(this).after(`<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>`);
+            } else {
+                $(this).css('border-color', '');
+                $(this).next('.error-msg').remove();
+            }
+        });
+
+        // Recalculate if average box weight is changed
+        $("#id_SpotPurchase_average_box_weight").on('input change', function () {
+            calculateQuantityReceivedShed();
+        });
+
+        // Shed selection for peeling charges
         $('#id_shed').change(function () {
             const shedId = $(this).val();
             if (shedId) {
                 $.ajax({
                     url: "{% url 'adminapp:get_peeling_charge_by_shed' %}",
                     data: { 'shed_id': shedId },
+                    dataType: 'json',
                     success: function (response) {
                         updatePeelingCharges(response.peeling_types);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading peeling charges:', error);
+                        alert('Error loading peeling charges. Please try again.');
                     }
                 });
             }
         });
+
+        // Form submission validation
+        $('form').on('submit', function(e) {
+            if (!validateFormSubmission()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Initialize calculations on page load if fields have values
+        if ($("#id_boxes_received_shed").val() || $("#id_SpotPurchase_average_box_weight").val()) {
+            calculateQuantityReceivedShed();
+        }
+        
+        // If spot purchase item is already selected on page load, get updated balance info
+        const currentItemId = $("#id_spot_purchase_item").val();
+        if (currentItemId) {
+            // Trigger change to load balance information with current supply excluded
+            $("#id_spot_purchase_item").trigger('change');
+        }
     });
 </script>
 
-{%endblock%}
+
+<script>
+    $(document).ready(function () {
+        // Get current supply ID from template
+        currentSupplyId = $("#current-supply-id").val();
+        
+        // Make balance field readonly
+        $("#id_SpotPurchase_balance_boxes").prop('readonly', true);
+
+        // Initialize available boxes from current form data
+        const currentTotalBoxes = parseFloat($("#id_SpotPurchase_total_boxes").val()) || 0;
+        const currentBoxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        const currentBalance = parseFloat($("#id_SpotPurchase_balance_boxes").val()) || 0;
+        
+        // Calculate initial available boxes (current balance + current boxes received)
+        availableBoxes = currentBalance + currentBoxesReceived;
+        
+        // Show initial balance info if data exists
+        if (currentTotalBoxes > 0) {
+            const usedBoxes = currentTotalBoxes - availableBoxes;
+            showAvailableBoxesInfo({
+                total_boxes: currentTotalBoxes,
+                used_boxes: usedBoxes,
+                available_boxes: availableBoxes,
+                is_fully_used: availableBoxes <= 0
+            });
+        }
+
+        // Trigger quantity and balance calculation on boxes received change with validation
+        $("#id_boxes_received_shed").on('input change', function () {
+            calculateQuantityReceivedShed();
+        });
+
+        // Add real-time validation for boxes received input
+        $("#id_boxes_received_shed").on('input', function() {
+            const value = parseFloat($(this).val()) || 0;
+            if (value > availableBoxes && availableBoxes > 0) {
+                $(this).css('border-color', '#dc2626');
+                $(this).next('.error-msg').remove();
+                $(this).after(`<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>`);
+            } else {
+                $(this).css('border-color', '');
+                $(this).next('.error-msg').remove();
+            }
+        });
+
+        // Recalculate if average box weight is changed
+        $("#id_SpotPurchase_average_box_weight").on('input change', function () {
+            calculateQuantityReceivedShed();
+        });
+
+        // Shed selection for peeling charges
+        $('#id_shed').change(function () {
+            const shedId = $(this).val();
+            if (shedId) {
+                $.ajax({
+                    url: "{% url 'adminapp:get_peeling_charge_by_shed' %}",
+                    data: { 'shed_id': shedId },
+                    dataType: 'json',
+                    success: function (response) {
+                        updatePeelingCharges(response.peeling_types);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading peeling charges:', error);
+                        alert('Error loading peeling charges. Please try again.');
+                    }
+                });
+            }
+        });
+
+        // Form submission validation
+        $('form').on('submit', function(e) {
+            if (!validateFormSubmission()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Initialize calculations on page load if fields have values
+        if ($("#id_boxes_received_shed").val() || $("#id_SpotPurchase_average_box_weight").val()) {
+            calculateQuantityReceivedShed();
+        }
+        
+        // If spot purchase item is already selected on page load, maintain current state
+        const currentItemId = $("#id_spot_purchase_item").val();
+        if (currentItemId && availableBoxes === 0) {
+            // Only trigger change if we don't have pre-populated data
+            $("#id_spot_purchase_item").trigger('change');
+        }
+    });
+</script>
+
+{% endblock %}

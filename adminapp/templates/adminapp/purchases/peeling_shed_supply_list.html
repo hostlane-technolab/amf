@@ -135,7 +135,7 @@
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
-                        <span class="header-text">Total Amount</span>
+                        <span class="header-text">Balance Box</span>
                       </div>
                     </th>
                     <th class="table-header text-center">
@@ -195,9 +195,8 @@
                     </td>
                     
                     <td class="table-cell">
-                      <div class="amount-display">
-                        <span class="currency-symbol">₹</span>
-                        <span class="amount-value">{{ supply.total_amount|floatformat:2 }}</span>
+                      <div class="balance-display">
+                        <span class="amount-value">{{ supply.SpotPurchase_balance_boxes|floatformat:2 }}</span>
                       </div>
                     </td>
                     
@@ -547,6 +546,13 @@
     font-weight: 700;
     font-size: 16px;
     color: #28a745;
+  }
+
+  .balance-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #cd0000;
   }
 
   .currency-symbol {

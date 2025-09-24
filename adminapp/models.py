@@ -49,9 +49,104 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
+    # Add permission groups for easier management
+    PERMISSION_GROUPS = [
+        ('master_data', 'Master Data Management'),
+        ('purchasing', 'Purchasing Operations'),
+        ('processing', 'Processing Operations'),
+        ('reports', 'Reports & Analytics'),
+        ('billing', 'Billing & Finance'),
+        ('freezing', 'Freezing Operations'),
+        ('Voucher', 'Voucher Operations'),
+        ('shipping', 'Shipping Operations'),
+        ('user_management', 'User Management'),
+    ]
+    
+    def has_module_permission(self, module_name):
+        """Check if user has permission for a specific module"""
+        return self.user_permissions.filter(codename__startswith=module_name).exists()
+
     def __str__(self):
         return self.email
     
+from django.apps import AppConfig
+class AdminAppConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'adminapp'
+    
+    def ready(self):
+        # Create custom permissions
+        self.create_custom_permissions()
+    
+    def create_custom_permissions(self):
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+        
+        # Get content type for your app
+        content_type = ContentType.objects.get_for_model(CustomUser)
+        
+        # Define custom permissions
+        custom_permissions = [
+            # Master Data Permissions
+            ('master_data_view', 'Can view master data'),
+            ('master_data_add', 'Can add master data'),
+            ('master_data_edit', 'Can edit master data'),
+            ('master_data_delete', 'Can delete master data'),
+            
+            # Purchasing Permissions
+            ('purchasing_view', 'Can view purchases'),
+            ('purchasing_add', 'Can add purchases'),
+            ('purchasing_edit', 'Can edit purchases'),
+            ('purchasing_delete', 'Can delete purchases'),
+            
+            # Processing Permissions
+            ('processing_view', 'Can view processing'),
+            ('processing_add', 'Can add processing'),
+            ('processing_edit', 'Can edit processing'),
+            ('processing_delete', 'Can delete processing'),
+            
+            # Shipping Permissions
+            ('shipping_view', 'Can view shipping'),
+            ('shipping_add', 'Can add shipping'),
+            ('shipping_edit', 'Can edit shipping'),
+            ('shipping_delete', 'Can delete shipping'),
+
+            # Freezing Permissions
+            ('freezing_view', 'Can view freezing'),
+            ('freezing_add', 'Can add freezing'),
+            ('freezing_edit', 'Can edit freezing'),
+            ('freezing_delete', 'Can delete freezing'),
+
+            # Voucher Permissions
+            ('voucher_view', 'Can view voucher'),
+            ('voucher_add', 'Can add voucher'),
+            ('voucher_edit', 'Can edit voucher'),
+            ('voucher_delete', 'Can delete voucher'),
+            
+            # Reports Permissions
+            ('reports_view', 'Can view reports'),
+            ('reports_export', 'Can export reports'),
+            
+            # Billing Permissions
+            ('billing_view', 'Can view billing'),
+            ('billing_add', 'Can add billing'),
+            ('billing_edit', 'Can edit billing'),
+            ('billing_delete', 'Can delete billing'),
+            
+            # User Management Permissions
+            ('user_management_view', 'Can view users'),
+            ('user_management_add', 'Can add users'),
+            ('user_management_edit', 'Can edit users'),
+            ('user_management_delete', 'Can delete users'),
+        ]
+        
+        for codename, name in custom_permissions:
+            Permission.objects.get_or_create(
+                codename=codename,
+                name=name,
+                content_type=content_type
+            )
+       
 import uuid
 from django.db import models
 
@@ -108,7 +203,17 @@ class PurchasingSpot(BaseModel):
     def __str__(self):
         return f"{self.location_name} - {self.code}"
     
-#  Personnel Masters
+class LocalParty(BaseModel):
+    party = models.CharField(max_length=150, unique=True)
+    district = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    code = models.CharField(null=True,blank=True,unique=True,max_length=100)
+
+    def __str__(self):
+        return f"{self.party}"
+    
+
+
 
 class PurchasingSupervisor(BaseModel):
     name = models.CharField(max_length=150)
@@ -127,7 +232,7 @@ class PurchasingAgent(BaseModel):
     code = models.CharField(null=True,blank=True,unique=True,max_length=100)
 
     def __str__(self):
-        return f"{self.name} - {self.code}"
+        return f"{self.name}"
 
 # Item & Product Masters
 
@@ -159,7 +264,7 @@ class ItemQuality(BaseModel):
 
 class Species(BaseModel):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100,  unique=True)
+    name = models.CharField(max_length=100)
     code = models.CharField(null=True, blank=True, unique=True,max_length=100)
 
     def __str__(self):
@@ -316,6 +421,7 @@ class SpotPurchase(BaseModel):
     total_quantity = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     total_items = models.IntegerField(null=True, blank=True)
     total_purchase_amount = models.DecimalField(max_digits=100, decimal_places=2, default=0)
+    total_purchase_amount_per_kg = models.DecimalField(max_digits=100, decimal_places=20, default=0)
 
     def calculate_totals(self):
         """Calculate and save all purchase totals"""
@@ -333,19 +439,29 @@ class SpotPurchase(BaseModel):
             
         self.total_purchase_amount = self.total_amount + expense_total
         
-        # Save only the calculated fields to avoid recursion
+        # Fix division by zero issue and calculate per kg amount
+        if self.total_quantity > 0:
+            self.total_purchase_amount_per_kg = self.total_purchase_amount / self.total_quantity
+        else:
+            self.total_purchase_amount_per_kg = 0
+        
+        # Save ALL the calculated fields including total_purchase_amount_per_kg
         super().save(update_fields=[
             'total_quantity', 
             'total_amount', 
             'total_items', 
-            'total_purchase_amount'
+            'total_purchase_amount',
+            'total_purchase_amount_per_kg'  # This was missing!
         ])
         
         # Debug print to check values
-        print(f"Debug - total_amount: {self.total_amount}, expense_total: {expense_total}, total_purchase_amount: {self.total_purchase_amount}")
-
-    def __str__(self):
-        return f"Voucher {self.voucher_number} on {self.date} at {self.spot.location_name}"
+        print(f"Debug - total_amount: {self.total_amount}, expense_total: {expense_total}")
+        print(f"Debug - total_purchase_amount: {self.total_purchase_amount}")
+        print(f"Debug - total_quantity: {self.total_quantity}")
+        print(f"Debug - total_purchase_amount_per_kg: {self.total_purchase_amount_per_kg}")
+        
+        def __str__(self):
+            return f"Voucher {self.voucher_number} on {self.date} at {self.spot.location_name}"
 
 class SpotPurchaseItem(BaseModel):
     purchase = models.ForeignKey(SpotPurchase, on_delete=models.CASCADE, related_name='items')
@@ -398,13 +514,13 @@ class SpotPurchaseExpense(BaseModel):
 class LocalPurchase(BaseModel):
     date = models.DateField()
     voucher_number = models.CharField(max_length=20, unique=True)
-    party_name = models.CharField(max_length=150)
+    party_name = models.ForeignKey('LocalParty', on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     total_quantity = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     total_items = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return f"Voucher {self.voucher_number} on {self.date} from {self.party_name}"
+        return f"{self.party_name} - {self.voucher_number}"
     
 class LocalPurchaseItem(BaseModel):
     purchase = models.ForeignKey(LocalPurchase, on_delete=models.CASCADE, related_name='items')
@@ -435,6 +551,7 @@ class PeelingShedSupply(models.Model):
     SpotPurchase_quantity = models.DecimalField(max_digits=100, decimal_places=2)
     SpotPurchase_average_box_weight = models.DecimalField(max_digits=100, decimal_places=50, default=0)
     boxes_received_shed = models.PositiveIntegerField(default=0)
+    SpotPurchase_balance_boxes = models.PositiveIntegerField(default=0)
     quantity_received_shed = models.DecimalField(max_digits=100, decimal_places=10, default=0)
 
 
@@ -932,6 +1049,91 @@ class StoreTransferItem(models.Model):
 
     cs_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     kg_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+
+
+
+
+
+
+
+from django.db import models
+from django.utils import timezone
+
+# --- Spot Agent Voucher --- fix
+class SpotAgentVoucher(models.Model):
+    voucher_no = models.CharField(max_length=50, unique=True)
+    agent = models.ForeignKey('PurchasingAgent', on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+    description = models.TextField(blank=True, null=True)
+    remain_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    receipt = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"Spot Agent Voucher {self.voucher_no} - {self.agent.name}"
+
+
+# --- Supervisor Voucher ---
+class SupervisorVoucher(models.Model):
+    voucher_no = models.CharField(max_length=50, unique=True)
+    supervisor = models.ForeignKey('PurchasingSupervisor', on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+    description = models.TextField(blank=True, null=True)
+    remain_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    receipt = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    def __str__(self):
+
+        return f"Supervisor Voucher {self.voucher_no} - {self.supervisor.name}"
+
+
+# --- Local Purchase Voucher ---
+class LocalPurchaseVoucher(models.Model):
+    voucher_no = models.CharField(max_length=50, unique=True)
+    party = models.ForeignKey('LocalPurchase', on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+    description = models.TextField(blank=True, null=True)
+    remain_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    receipt = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    def __str__(self):
+
+        return f"Local Purchase Voucher {self.voucher_no} - {self.party}"
+
+
+# --- Peeling Shed Voucher ---
+class PeelingShedVoucher(models.Model):
+    voucher_no = models.CharField(max_length=50, unique=True)
+    shed = models.ForeignKey('Shed', on_delete=models.CASCADE)
+    date = models.DateField(default=timezone.now)
+    description = models.TextField(blank=True, null=True)
+    remain_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    receipt = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    def __str__(self):
+
+        return f"Peeling Shed Voucher {self.voucher_no} - {self.shed.name}"
+
+
+# --- Tenant Voucher ---
+class TenantVoucher(models.Model):
+    voucher_no = models.CharField(max_length=50, unique=True)
+    tenant = models.ForeignKey("Tenant", on_delete=models.CASCADE)  # assuming you already have a Tenant model
+    date = models.DateField(default=timezone.now)
+    description = models.TextField(blank=True, null=True)
+    remain_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    receipt = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"Tenant Voucher {self.voucher_no} - {self.tenant.name}"
+
 
 
 

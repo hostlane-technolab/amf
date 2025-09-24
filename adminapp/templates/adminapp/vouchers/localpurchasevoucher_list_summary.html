@@ -1,0 +1,366 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Local Purchase Voucher Summary{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>₹{{ summary.total_receipts|floatformat:2 }}</h4>
+                            <small>Total Receipts</small>
+                        </div>
+                        <i class="fas fa-arrow-down fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>₹{{ summary.total_payments|floatformat:2 }}</h4>
+                            <small>Total Payments</small>
+                        </div>
+                        <i class="fas fa-arrow-up fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-primary text-white summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>₹{{ summary.net_amount|floatformat:2 }}</h4>
+                            <small>Net Amount</small>
+                        </div>
+                        <i class="fas fa-balance-scale fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white summary-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ summary.total_vouchers }}</h4>
+                            <small>Total Vouchers</small>
+                        </div>
+                        <i class="fas fa-receipt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-shopping-cart"></i> Local Purchase Vouchers - {{ period_name }}
+                            <small class="ms-2">({{ total_count }} total)</small>
+                        </h3>
+                        <div class="btn-group">
+                            <a href="{% url 'adminapp:localpurchasevoucher_create' %}" class="btn btn-light btn-sm">
+                                <i class="fas fa-plus"></i> New Voucher
+                            </a>
+                            <a href="{% url 'adminapp:localpurchase_voucher_summary_pdf' %}?{{ request.GET.urlencode }}" 
+                               class="btn btn-outline-light btn-sm" target="_blank">
+                                <i class="fas fa-file-pdf"></i> PDF Summary
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Filters -->
+                    <form method="GET" class="mb-4">
+                        <div class="row">
+                            <!-- Date Filter -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Date Filter</label>
+                                <select name="date_filter" class="form-control" id="dateFilter">
+                                    <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                                    <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                    <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                    <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                                    <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                                    <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                                </select>
+                            </div>
+
+                            <!-- Custom Date Range -->
+                            <div class="col-md-2 mb-3" id="startDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
+                                <label class="form-label fw-bold">Start Date</label>
+                                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                            </div>
+                            <div class="col-md-2 mb-3" id="endDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
+                                <label class="form-label fw-bold">End Date</label>
+                                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                            </div>
+
+                            <!-- Party Filter -->
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Party</label>
+                                <select name="party" class="form-control">
+                                    <option value="">All Parties</option>
+                                    {% for party_id, party_name in all_parties %}
+                                        <option value="{{ party_id }}" {% if party_filter == party_id|stringformat:"s" %}selected{% endif %}>
+                                            {{ party_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Search -->
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label fw-bold">Search</label>
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" 
+                                           placeholder="Search..." value="{{ search_query }}">
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-danger me-2">
+                                    <i class="fas fa-filter"></i> Apply Filters
+                                </button>
+                                <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Vouchers Table -->
+                    {% if vouchers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-danger">
+                                <tr>
+                                    <th>Voucher No.</th>
+                                    <th>Party</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Receipt (+)</th>
+                                    <th class="text-end">Payment (-)</th>
+                                    <th class="text-end">Remaining</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for voucher in vouchers %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ voucher.voucher_no }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>{{ voucher.party.party_name.party }}</strong>
+                                        {% if voucher.party.party_name.district %}
+                                        <br><small class="text-muted">
+                                            {{ voucher.party.party_name.district|truncatechars:15 }}
+                                            {% if voucher.party.party_name.state %}, {{ voucher.party.party_name.state|truncatechars:10 }}{% endif %}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">{{ voucher.date|date:"M d, Y" }}</span>
+                                    </td>
+                                    <td>
+                                        <small>{{ voucher.description|default:"-"|truncatechars:30 }}</small>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if voucher.receipt > 0 %}
+                                            <span class="text-success fw-bold">+₹{{ voucher.receipt|floatformat:2 }}</span>
+                                        {% else %}
+                                            <span class="text-muted">₹0.00</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if voucher.payment > 0 %}
+                                            <span class="text-danger fw-bold">-₹{{ voucher.payment|floatformat:2 }}</span>
+                                        {% else %}
+                                            <span class="text-muted">₹0.00</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <strong class="{% if voucher.remain_amount > 0 %}text-warning{% elif voucher.remain_amount < 0 %}text-info{% else %}text-muted{% endif %}">
+                                            ₹{{ voucher.remain_amount|floatformat:2 }}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="#" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-outline-danger" title="Delete"
+                                               onclick="return confirm('Are you sure you want to delete this voucher?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if vouchers.has_other_pages %}
+                    <nav aria-label="Vouchers pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if vouchers.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ vouchers.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">Page {{ vouchers.number }} of {{ vouchers.paginator.num_pages }}</span>
+                            </li>
+
+                            {% if vouchers.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ vouchers.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ vouchers.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+
+                    {% else %}
+                    <!-- No Vouchers Found -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h5>No vouchers found for selected criteria</h5>
+                        <p class="text-muted">Try adjusting your filters or search terms.</p>
+                        <a href="{% url 'adminapp:localpurchasevoucher_create' %}" class="btn btn-danger">
+                            <i class="fas fa-plus"></i> Create First Voucher
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Party-wise Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Party-wise Summary</h5>
+                </div>
+                <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                    {% for party in party_summary %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                        <div>
+                            <strong>{{ party.party__party_name__party|truncatechars:20 }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {{ party.voucher_count }} voucher{{ party.voucher_count|pluralize }}
+                                {% if party.party__party_name__district %}
+                                    <br>{{ party.party__party_name__district|truncatechars:15 }}
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-success small">+₹{{ party.total_receipts|floatformat:2 }}</div>
+                            <div class="text-danger small">-₹{{ party.total_payments|floatformat:2 }}</div>
+                            <div class="fw-bold {% if party.net_amount > 0 %}text-success{% elif party.net_amount < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                ₹{{ party.net_amount|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted text-center">No party data available</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFilter = document.getElementById('dateFilter');
+    const startDateDiv = document.getElementById('startDateDiv');
+    const endDateDiv = document.getElementById('endDateDiv');
+
+    dateFilter.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            startDateDiv.style.display = 'block';
+            endDateDiv.style.display = 'block';
+        } else {
+            startDateDiv.style.display = 'none';
+            endDateDiv.style.display = 'none';
+            // Auto-submit form for non-custom filters
+            this.form.submit();
+        }
+    });
+});
+</script>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.table-danger {
+    --bs-table-bg: #f8d7da;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.pagination .page-link {
+    color: #dc3545;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.summary-card {
+    transition: transform 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}

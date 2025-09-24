@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-c4ih=!n@-f&&freko$$+(a2guj_j+80&5@s!kafx15c7p+mov0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["3.110.220.103"]
 
 
 # Application definition
@@ -64,6 +64,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'adminapp.context_processors.permission_processor', 
             ],
         },
     },
@@ -79,6 +80,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'USER': 'admin',
+        'PASSWORD': 'Hostlane#92!',   
+        'HOST': 'amf.cts6c80s8w14.eu-north-1.rds.amazonaws.com',
+        'PORT': '3306',
     }
 }
 

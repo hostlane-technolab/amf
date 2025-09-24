@@ -483,11 +483,11 @@
             <tr>
                 <td class="date-cell">{{ row.purchase__date|date:"d/m/Y" }}</td>
                 <td class="voucher-cell">{{ row.purchase__voucher_number }}</td>
-                <td class="party-cell">{{ row.purchase__party_name }}</td>
+                <td class="party-cell">{{ row.purchase__party_name__party }}</td>
                 <td class="item-cell">{{ row.item__name }}</td>
                 <td>
-                    {% if row.item__species__name %}
-                        <span class="species-cell">{{ row.item__species__name }}</span>
+                    {% if row.species__name %}
+                        <span class="species-cell">{{ row.species__name }}</span>
                     {% else %}
                         N/A
                     {% endif %}

@@ -7,6 +7,8 @@
   <title>{%block title%} {%endblock%}</title>
   <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
   <link rel="icon" href="{% static 'img/kaiadmin/favicon.ico' %}" type="image/x-icon" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
 
   <style>
     /* Desktop only hover sidebar (min-width: 992px for better desktop targeting) */
@@ -102,6 +104,7 @@
       }
     }
   </style>
+
   <!-- Fonts and icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     integrity="sha512-dymN7x4vS+U/n2Pb5L3PvGj3g3xFhPtX2+oCFYoMumOqUg6G4z5fdbUu9Qafj0pychj1zLkUp1tb6dXHjdXpwA=="
@@ -280,64 +283,22 @@
 
                   <!-- Spot Purchase Workout -->
                   <li>
-                    <a data-bs-toggle="collapse" href="#spot-purchase-workout">
+                    <a  href="{% url 'adminapp:spot_purchase_workout_summary' %}">
                       <span class="sub-item">
                         <i class="fas fa-dumbbell"></i>
                         Spot Workout
-                        <span class="caret"></span>
                       </span>
                     </a>
-                    <div class="collapse" id="spot-purchase-workout">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:spot_purchase_workout_summary' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:spot_purchase_workout_summary' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
                   </li>
 
                   <!-- Local Purchase Workout -->
                   <li>
-                    <a data-bs-toggle="collapse" href="#local-purchase-workout">
+                    <a  href="{% url 'adminapp:local_purchase_workout_summary' %}">
                       <span class="sub-item">
                         <i class="fas fa-running"></i>
                         Local Workout
-                        <span class="caret"></span>
                       </span>
                     </a>
-                    <div class="collapse" id="local-purchase-workout">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:local_purchase_workout_summary' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:local_purchase_workout_summary' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
                   </li>
 
                 </ul>
@@ -522,33 +483,12 @@
 
                   <!-- Peeling Overheads with sub-menu -->
                   <li>
-                    <a data-bs-toggle="collapse" href="#peeling-overheads">
+                    <a href="{% url 'adminapp:freezing_workout' %}">
                       <span class="sub-item">
                         <i class="fas fa-warehouse"></i>
                         Freezing Workout
-                        <span class="caret"></span>
                       </span>
                     </a>
-                    <div class="collapse" id="peeling-overheads">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:freezing_workout' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:freezing_workout' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
                   </li>
 
                 </ul>
@@ -760,7 +700,7 @@
               </div>
             </li>
 
-            <!-- Profile & Settings -->
+            <!-- report -->
             <li class="nav-item">
               <a data-bs-toggle="collapse" href="#report">
                 <i class="fas fa-chart-line"></i> <!-- General reports icon -->
@@ -785,14 +725,14 @@
                       </span>
                     </a>
                   </li>
-                  <li>
+                  <!-- <li>
                     <a href="{%url 'adminapp:peeling_shed_supply_report'%}">
                       <span class="sub-item">
                         <i class="fas fa-receipt"></i>
                         Peeling Shed Report
                       </span>
                     </a>
-                  </li>
+                  </li> -->
                   <li>
                     <a href="{%url 'adminapp:freezing_report'%}">
                       <span class="sub-item">
@@ -802,7 +742,7 @@
                     </a>
                   </li>
                   <li>
-                    <a href="{%url 'adminapp:list'%}">
+                    <a href="{%url 'adminapp:report_list'%}">
                       <span class="sub-item">
                         <i class="fa-solid fa-snowflake"></i>
                         Stock Report
@@ -839,6 +779,62 @@
                       </ul>
                     </div>
                   </li>
+                </ul>
+              </div>
+            </li>
+
+
+            <!-- voucher -->
+            <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#voucher">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <p>Voucher</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="voucher">
+                <ul class="nav nav-collapse">
+
+                  <li>
+                    <a href="{%url 'adminapp:spotagentvoucher_create'%}">
+                      <span class="sub-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        Spot agent voucher
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{%url 'adminapp:supervisorvoucher_create'%}">
+                      <span class="sub-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        Spot supervisor voucher
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{%url 'adminapp:localpurchasevoucher_create'%}">
+                      <span class="sub-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        local purchase voucher
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{%url 'adminapp:create_peeling_shed_voucher'%}">
+                      <span class="sub-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        peeling shed voucher
+                      </span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{%url 'adminapp:tenantvoucher_create'%}">
+                      <span class="sub-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        tenant voucher
+                      </span>
+                    </a>
+                  </li>
+
                 </ul>
               </div>
             </li>

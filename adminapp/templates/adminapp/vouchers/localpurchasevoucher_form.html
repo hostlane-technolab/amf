@@ -1,0 +1,239 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Local Purchase Voucher{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-receipt"></i> Create Local Purchase Voucher
+                        </h3>
+                        <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-list"></i> View All Vouchers
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <form method="POST" id="voucherForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Voucher Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.voucher_no.id_for_label }}" class="form-label fw-bold">
+                                    Voucher Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.voucher_no }}
+                                {% if form.voucher_no.errors %}
+                                    <div class="text-danger small">{{ form.voucher_no.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Date -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">
+                                    Date <span class="text-danger">*</span>
+                                </label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Party -->
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.party.id_for_label }}" class="form-label fw-bold">
+                                    Party <span class="text-danger">*</span>
+                                </label>
+                                {{ form.party }}
+                                {% if form.party.errors %}
+                                    <div class="text-danger small">{{ form.party.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Balance Information Display -->
+                        <div class="row mb-4" id="balanceInfo" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <h5><i class="fas fa-info-circle"></i> Party Balance Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Total Purchases:</strong> ₹<span id="purchaseTotal">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Receipts:</strong> ₹<span id="totalReceipts">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Payments:</strong> ₹<span id="totalPayments">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Current Balance:</strong> ₹<span id="currentBalance" class="text-primary fw-bold">0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Description -->
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                    Description
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Remain Amount (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.remain_amount.id_for_label }}" class="form-label fw-bold">
+                                    Previous Balance
+                                </label>
+                                {{ form.remain_amount }}
+                                {% if form.remain_amount.errors %}
+                                    <div class="text-danger small">{{ form.remain_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Total Amount (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.total_amount.id_for_label }}" class="form-label fw-bold">
+                                    New Total Amount
+                                </label>
+                                {{ form.total_amount }}
+                                {% if form.total_amount.errors %}
+                                    <div class="text-danger small">{{ form.total_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Receipt -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.receipt.id_for_label }}" class="form-label fw-bold text-success">
+                                    <i class="fas fa-plus-circle"></i> Receipt (+)
+                                </label>
+                                {{ form.receipt }}
+                                {% if form.receipt.errors %}
+                                    <div class="text-danger small">{{ form.receipt.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Payment -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment.id_for_label }}" class="form-label fw-bold text-danger">
+                                    <i class="fas fa-minus-circle"></i> Payment (-)
+                                </label>
+                                {{ form.payment }}
+                                {% if form.payment.errors %}
+                                    <div class="text-danger small">{{ form.payment.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save"></i> Create Voucher
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const partySelect = document.getElementById('id_party');
+    const remainAmountInput = document.getElementById('id_remain_amount');
+    const totalAmountInput = document.getElementById('id_total_amount');
+    const receiptInput = document.getElementById('id_receipt');
+    const paymentInput = document.getElementById('id_payment');
+    const balanceInfo = document.getElementById('balanceInfo');
+
+    // Function to calculate and update amounts
+    function updateAmounts() {
+        const remainAmount = parseFloat(remainAmountInput.value) || 0;
+        const receipt = parseFloat(receiptInput.value) || 0;
+        const payment = parseFloat(paymentInput.value) || 0;
+        
+        const newTotal = remainAmount + receipt - payment;
+        totalAmountInput.value = newTotal.toFixed(2);
+    }
+
+    // Function to fetch and display party balance
+    function fetchPartyBalance(partyId) {
+        if (!partyId) {
+            balanceInfo.style.display = 'none';
+            remainAmountInput.value = '0.00';
+            updateAmounts();
+            return;
+        }
+
+        fetch(`{% url 'adminapp:get_party_balance' %}?party_id=${partyId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    balanceInfo.style.display = 'none';
+                    return;
+                }
+
+                // Display balance information
+                document.getElementById('purchaseTotal').textContent = data.purchase_total.toFixed(2);
+                document.getElementById('totalReceipts').textContent = data.total_receipt.toFixed(2);
+                document.getElementById('totalPayments').textContent = data.total_payment.toFixed(2);
+                document.getElementById('currentBalance').textContent = data.remain_amount.toFixed(2);
+                
+                // Update remain amount field
+                remainAmountInput.value = data.remain_amount.toFixed(2);
+                
+                // Show balance info
+                balanceInfo.style.display = 'block';
+                
+                // Update total amount
+                updateAmounts();
+            })
+            .catch(error => {
+                console.error('Error fetching party balance:', error);
+                balanceInfo.style.display = 'none';
+            });
+    }
+
+    // Event listeners
+    partySelect.addEventListener('change', function() {
+        fetchPartyBalance(this.value);
+    });
+
+    receiptInput.addEventListener('input', updateAmounts);
+    paymentInput.addEventListener('input', updateAmounts);
+
+    // Initialize if party is already selected
+    if (partySelect.value) {
+        fetchPartyBalance(partySelect.value);
+    }
+});
+</script>
+{% endblock %}

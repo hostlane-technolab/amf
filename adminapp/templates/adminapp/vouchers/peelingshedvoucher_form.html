@@ -1,0 +1,577 @@
+
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Local Purchase Voucher{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-receipt"></i> {% if is_update %}Update{% else %}Create{% endif %} Peeling Shed Voucher
+                        </h3>
+                        <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-list"></i> View All Vouchers
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Display Django Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="voucherForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Voucher Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.voucher_no.id_for_label }}" class="form-label fw-bold">
+                                    Voucher Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.voucher_no }}
+                                {% if form.voucher_no.errors %}
+                                    <div class="text-danger small">{{ form.voucher_no.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Date -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">
+                                    Date <span class="text-danger">*</span>
+                                </label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Shed -->
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.shed.id_for_label }}" class="form-label fw-bold">
+                                    Select Shed <span class="text-danger">*</span>
+                                </label>
+                                <select name="shed" class="form-control" id="shed-select" required>
+                                    <option value="">Select a shed...</option>
+                                    {% for shed in sheds_with_freezing %}
+                                        <option value="{{ shed.id }}" 
+                                                {% if form.shed.value == shed.id %}selected{% endif %}>
+                                            {{ shed.name }} - {{ shed.code }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.shed.errors %}
+                                    <div class="text-danger small">{{ form.shed.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Only sheds with completed freezing entries are shown
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Calculation Preview Section -->
+                        <div class="row mb-4" id="calculation-preview" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <h5><i class="fas fa-calculator"></i> Shed Balance Information</h5>
+                                    <div id="preview-content">
+                                        <!-- Preview content will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Description -->
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                    Description
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Total Amount (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.total_amount.id_for_label }}" class="form-label fw-bold">
+                                    Base Work Amount
+                                </label>
+                                {{ form.total_amount }}
+                                {% if form.total_amount.errors %}
+                                    <div class="text-danger small">{{ form.total_amount.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Calculated from completed work</small>
+                            </div>
+
+                            <!-- Remain Amount (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.remain_amount.id_for_label }}" class="form-label fw-bold">
+                                    Final Balance
+                                </label>
+                                {{ form.remain_amount }}
+                                {% if form.remain_amount.errors %}
+                                    <div class="text-danger small">{{ form.remain_amount.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">After receipts and payments</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Receipt -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.receipt.id_for_label }}" class="form-label fw-bold text-success">
+                                    <i class="fas fa-plus-circle"></i> Receipt (+)
+                                </label>
+                                {{ form.receipt }}
+                                {% if form.receipt.errors %}
+                                    <div class="text-danger small">{{ form.receipt.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-success">Money received - adds to cumulative receipts</small>
+                            </div>
+
+                            <!-- Payment -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment.id_for_label }}" class="form-label fw-bold text-warning">
+                                    <i class="fas fa-minus-circle"></i> Payment (-)
+                                </label>
+                                {{ form.payment }}
+                                {% if form.payment.errors %}
+                                    <div class="text-danger small">{{ form.payment.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-warning">Money paid out - adds to cumulative payments</small>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-save"></i> {% if is_update %}Update{% else %}Create{% endif %} Voucher
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pass Django data to JavaScript -->
+<script>
+    window.djangoData = {
+        ajaxUrl: "{% url 'adminapp:get_shed_calculation_preview' %}",
+        csrfToken: "{{ csrf_token }}",
+        isUpdate: {% if is_update %}true{% else %}false{% endif %}
+    };
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Peeling Shed Voucher Form - JavaScript Loaded");
+    
+    const shedSelect = document.getElementById('shed-select');
+    const previewDiv = document.getElementById('calculation-preview');
+    const previewContent = document.getElementById('preview-content');
+    const receiptInput = document.querySelector('input[name="receipt"]');
+    const paymentInput = document.querySelector('input[name="payment"]');
+    const totalAmountInput = document.querySelector('input[name="total_amount"]');
+    const remainAmountInput = document.querySelector('input[name="remain_amount"]');
+    
+    let calculationData = null;
+    
+    // Check if elements exist
+    if (!shedSelect || !previewDiv || !previewContent) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+    
+    console.log('All DOM elements found successfully');
+    
+    // Update the preview with current receipt/payment values
+    function updateCalculationPreview() {
+        if (!calculationData) return;
+        
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        // Recalculate totals
+        const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+        const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+        const finalRemaining = parseFloat(calculationData.base_amount) + totalReceipts - totalPayments;
+        
+        // Update form fields
+        if (totalAmountInput) {
+            totalAmountInput.value = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        if (remainAmountInput) {
+            remainAmountInput.value = finalRemaining.toFixed(2);
+        }
+        
+        // Update display elements if they exist
+        const elements = {
+            'current-receipt': `₹${currentReceipt.toFixed(2)}`,
+            'current-payment': `₹${currentPayment.toFixed(2)}`,
+            'total-receipts': `₹${totalReceipts.toFixed(2)}`,
+            'total-payments': `₹${totalPayments.toFixed(2)}`,
+            'final-remaining': `₹${finalRemaining.toFixed(2)}`
+        };
+        
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = elements[id];
+                
+                // Add color coding for final remaining
+                if (id === 'final-remaining') {
+                    element.className = finalRemaining < 0 ? 'h4 text-danger' : 
+                                       finalRemaining === 0 ? 'h4 text-success' : 
+                                       'h4 text-primary';
+                }
+            }
+        });
+
+        // Update the balance status message
+        const balanceStatusElement = document.getElementById('balance-status-message');
+        if (balanceStatusElement) {
+            let statusMessage = '';
+            let statusClass = '';
+            
+            if (finalRemaining > 0) {
+                statusMessage = `₹${finalRemaining.toFixed(2)} owed to customer`;
+                statusClass = 'text-success';
+            } else if (finalRemaining < 0) {
+                statusMessage = `Customer owes ₹${Math.abs(finalRemaining).toFixed(2)}`;
+                statusClass = 'text-danger';
+            } else {
+                statusMessage = 'Account fully settled';
+                statusClass = 'text-success';
+            }
+            
+            balanceStatusElement.textContent = statusMessage;
+            balanceStatusElement.className = `fw-bold ${statusClass}`;
+        }
+    }
+    
+    // Add event listeners to receipt and payment inputs
+    if (receiptInput) {
+        receiptInput.addEventListener('input', updateCalculationPreview);
+        console.log('Receipt input listener added');
+    }
+    if (paymentInput) {
+        paymentInput.addEventListener('input', updateCalculationPreview);
+        console.log('Payment input listener added');
+    }
+    
+    // Handle shed selection change
+    shedSelect.addEventListener('change', function() {
+        const shedId = this.value;
+        console.log(`Shed selection changed to: ${shedId}`);
+        
+        if (shedId) {
+            // Show loading state
+            previewContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Calculating cumulative amounts...</p>
+                </div>
+            `;
+            previewDiv.style.display = 'block';
+            
+            // Get current input values
+            const currentReceipt = parseFloat(receiptInput?.value) || 0;
+            const currentPayment = parseFloat(paymentInput?.value) || 0;
+            
+            // Make AJAX call to get calculation preview
+            fetch(window.djangoData.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    'shed_id': shedId,
+                    'receipt': currentReceipt.toString(),
+                    'payment': currentPayment.toString()
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Calculation data received:', data);
+                
+                if (data.error) {
+                    previewContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${data.error}
+                        </div>
+                    `;
+                    calculationData = null;
+                } else if (data.success) {
+                    calculationData = data;
+                    
+                    let html = `
+                        <h6 class="mb-3">Cumulative Calculation for: ${data.shed_name}</h6>
+                        
+                        <!-- Base Calculation Table -->
+                        <div class="table-responsive mb-4">
+                            <table class="table table-sm table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Peeling Type</th>
+                                        <th>Quantity (KG)</th>
+                                        <th>Rate per KG</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    if (data.calculation_preview && data.calculation_preview.length > 0) {
+                        data.calculation_preview.forEach(item => {
+                            const rowClass = item.error ? 'table-warning' : '';
+                            html += `
+                                <tr class="${rowClass}">
+                                    <td>${item.peeling_type}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>₹${item.rate}${item.error ? ' <i class="fas fa-exclamation-triangle text-warning" title="' + item.error + '"></i>' : ''}</td>
+                                    <td>₹${item.amount}</td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        html += `
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No calculation data available</td>
+                            </tr>
+                        `;
+                    }
+                    
+                    html += `
+                                </tbody>
+                                <tfoot class="table-dark">
+                                    <tr>
+                                        <th colspan="3">Base Amount</th>
+                                        <th>₹${data.base_amount}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <!-- Cumulative Amount Summary -->
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="border rounded p-3">
+                                    <small class="text-muted d-block">Base Amount</small>
+                                    <span class="h5 text-info">₹${data.base_amount}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="border rounded p-3">
+                                    <small class="text-muted d-block">Previous Receipts</small>
+                                    <span class="h6 text-success">₹${data.cumulative_receipts}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="border rounded p-3">
+                                    <small class="text-muted d-block">Previous Payments</small>
+                                    <span class="h6 text-warning">₹${data.cumulative_payments}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <div class="border rounded p-3 bg-light">
+                                    <small class="text-muted d-block">Outstanding Balance</small>
+                                    <span class="h5 text-primary" id="outstanding-balance">₹${data.previous_balance}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-3">
+                        
+                        <div class="row">
+                            <div class="col-md-6 text-center">
+                                <div class="border rounded p-3 bg-success text-white">
+                                    <small class="d-block">+ Current Receipt</small>
+                                    <span class="h6" id="current-receipt">₹${data.current_receipt}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-center">
+                                <div class="border rounded p-3 bg-warning text-white">
+                                    <small class="d-block">+ Current Payment</small>
+                                    <span class="h6" id="current-payment">₹${data.current_payment}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-3">
+                        
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <div class="border rounded p-3 bg-success text-white">
+                                    <small class="d-block">Total Receipts</small>
+                                    <span class="h5" id="total-receipts">₹${data.new_total_receipts}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="border rounded p-3 bg-warning text-white">
+                                    <small class="d-block">Total Payments</small>
+                                    <span class="h5" id="total-payments">₹${data.new_total_payments}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="border rounded p-3 bg-primary text-white">
+                                    <small class="d-block">Final Remaining</small>
+                                    <span class="h4" id="final-remaining">₹${data.new_balance}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    Formula: Base Amount + Total Receipts - Total Payments = Final Remaining
+                                </small>
+                            </div>
+                            <div>
+                                <strong>Balance Status: </strong>
+                                <span id="balance-status-message" class="fw-bold">${data.balance_status?.message || ''}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (data.warnings && data.warnings.length > 0) {
+                        html += `
+                            <div class="alert alert-warning mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Warnings:</strong>
+                                <ul class="mb-0 mt-2">
+                                    ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+
+                    if (data.stats) {
+                        html += `
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Statistics:</strong> 
+                                ${data.stats.total_peeling_types} peeling types, 
+                                ${data.stats.total_work_entries} work entries, 
+                                ${data.voucher_count} previous vouchers
+                                ${data.stats.missing_rates > 0 ? `, ${data.stats.missing_rates} missing rates` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    previewContent.innerHTML = html;
+                    updateCalculationPreview();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching calculation:', error);
+                previewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading calculation: ${error.message}
+                        <br><small>Please check the server configuration and try again.</small>
+                    </div>
+                `;
+                calculationData = null;
+            });
+        } else {
+            previewDiv.style.display = 'none';
+            calculationData = null;
+            
+            // Reset form fields
+            if (totalAmountInput) totalAmountInput.value = '0.00';
+            if (remainAmountInput) remainAmountInput.value = '0.00';
+        }
+    });
+
+    // Trigger calculation preview if shed is already selected (for update form)
+    if (shedSelect.value && window.djangoData.isUpdate) {
+        shedSelect.dispatchEvent(new Event('change'));
+    }
+    
+    console.log('All event listeners attached successfully');
+});
+</script>
+
+<style>
+.alert-info {
+    background-color: #cff4fc;
+    border-color: #b6effb;
+}
+
+.card-header.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+.text-success {
+    color: #198754 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.table-responsive {
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.border {
+    border: 1px solid #dee2e6 !important;
+}
+
+.rounded {
+    border-radius: 0.375rem !important;
+}
+</style>
+
+{% endblock %}

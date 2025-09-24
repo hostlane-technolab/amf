@@ -183,11 +183,17 @@
                 
                 <td class="table-cell">
                   <div class="action-buttons">
-                    <a href="" 
+                    <a href="{% url 'adminapp:edit_user' user.pk %}" 
                        class="action-btn edit-btn" 
                        title="Edit User">
                       <i class="fas fa-edit"></i>
                       <span>Edit</span>
+                    </a>
+                    <a href="{% url 'adminapp:assign_user_permissions' user.id %}"
+                       class="action-btn edit-btn" 
+                       title="Edit User">
+                      <i class="fa-solid fa-users-gear"></i>
+                      <span>Permissions</span>
                     </a>
                     <a href="{% url 'adminapp:user_delete' user.id %}" 
                        class="action-btn delete-btn" 

@@ -14,14 +14,18 @@ app_name = 'adminapp'
 urlpatterns = [
 
     path('admin_dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('user_dashboard/', views.user_dashboard, name='user_dashboard'),
+
+    path('users/<str:user_id>/permissions/', views.assign_user_permissions, name='assign_user_permissions'),
 
     path('master/', views.master, name='master'),
 
-    path('login/', views.admin_login, name='admin_login'),
+    path('login/', views.user_login, name='admin_login'),
     
     path('logout/', views.admin_logout, name='admin_logout'),
 
     path('create-user/', views.create_user_view, name='create_user'),
+    path('users/edit/<uuid:pk>/', views.CustomUserUpdateView.as_view(), name='edit_user'),
     path('users-list/', views.users_list_view, name='users_list'),
     path('user/delete/<str:pk>/', views.UserDeleteView.as_view(), name='user_delete'),
 
@@ -44,6 +48,11 @@ urlpatterns = [
     path('peeling-center/list/', views.ShedListView.as_view(), name='peeling_center_list'),
     path('shed/<str:pk>/edit/', views.update_shed, name='update_shed'),
     path('peeling-center/delete/<str:pk>/', views.ShedDeleteView.as_view(), name='peeling_center_delete'),
+
+    path('LocalParty/create/', views.LocalPartyCreateView.as_view(), name='LocalParty_create'),
+    path('LocalParty/list/', views.LocalPartyListView.as_view(), name='LocalParty_list'),
+    path('LocalParty/update/<str:pk>/', views.LocalPartyUpdateView.as_view(), name='LocalParty_update'),
+    path('LocalParty/delete/<str:pk>/', views.LocalPartyDeleteView.as_view(), name='LocalParty_delete'),
 
     path('purchasing-spot/create/', views.PurchasingSpotCreateView.as_view(), name='purchasing_spot_create'),
     path('purchasing-spot/list/', views.PurchasingSpotListView.as_view(), name='purchasing_spot_list'),
@@ -145,7 +154,7 @@ urlpatterns = [
     path('update/<str:pk>/', views.settings_update, name='settings_update'),
     path('delete/<str:pk>/', views.settings_delete, name='settings_delete'),
 
-# spot purchase urls.py
+    # spot purchase urls.py
     path('spot-purchase/add/', views.create_spot_purchase, name='spot_purchase_add'),
     path('spot-purchases/', views.spot_purchase_list, name='spot_purchase_list'),
     path('spot-purchase/<str:pk>/edit/', views.edit_spot_purchase, name='spot_purchase_edit'),
@@ -170,9 +179,12 @@ urlpatterns = [
     path("peeling-shed-supplies/<int:pk>/", views.PeelingShedSupplyDetailView.as_view(),name="peeling_shed_supply_detail"),
     path("peeling-shed-supplies/<int:pk>/update/",views.update_peeling_shed_supply, name="peeling_shed_supply_update"),
     path('ajax/get-spot-purchases/', views.get_spot_purchases_by_date, name='get_spot_purchases_by_date'),
-    path('ajax/get-spot-purchase-items/', views.get_spot_purchase_items, name='get_spot_purchase_items'),    path('ajax/get-spot-purchase-item-details/', views.get_spot_purchase_item_details, name='get_spot_purchase_item_details'),
+    path('ajax/get-spot-purchase-items/', views.get_spot_purchase_items, name='get_spot_purchase_items'),    
+    path('ajax/get-spot-purchase-item-details/', views.get_spot_purchase_item_details, name='get_spot_purchase_item_details'),
     path('ajax/get-peeling-types/', views.get_peeling_charge_by_shed, name='get_peeling_charge_by_shed'),
-
+    path('ajax/get-spot-purchase-item-details-with-balance/', views.get_spot_purchase_item_details_with_balance,name='get_spot_purchase_item_details_with_balance'),
+    path('ajax/get-spot-purchase-item-details-with-balance/update/', views.get_spot_purchase_item_details_for_update,name='get_spot_purchase_item_details_for_update'),
+    
     #  create freezing entry spot
     path('freezing-entry/create/', views.create_freezing_entry_spot, name='freezing_entry_spot_create'),
     path('freezing-entry/list/', views.freezing_entry_spot_list, name='freezing_entry_spot_list'),
@@ -293,10 +305,10 @@ urlpatterns = [
 
 
     path("bills/draft/", views.bill_list_draft, name="bill_list_draft"),
-    path("bills/finalized/", views.bill_list_finalized, name="bill_list_finalized"),
-    path("bills/sent/", views.bill_list_sent, name="bill_list_sent"),
-    path("bills/paid/", views.bill_list_paid, name="bill_list_paid"),
-    path("bills/cancelled/", views.bill_list_cancelled, name="bill_list_cancelled"),
+    # path("bills/finalized/", views.bill_list_finalized, name="bill_list_finalized"),
+    # path("bills/sent/", views.bill_list_sent, name="bill_list_sent"),
+    # path("bills/paid/", views.bill_list_paid, name="bill_list_paid"),
+    # path("bills/cancelled/", views.bill_list_cancelled, name="bill_list_cancelled"),
 
 
     path('transfers/', views.StoreTransferListView.as_view(), name='store_transfer_list'),
@@ -307,13 +319,69 @@ urlpatterns = [
     path("api/get-stock-details/", views.get_stock_details, name="get_stock_details"),
 
 
+
+
     path('stock/list/', views.StockListView.as_view(), name='list'),
     path('dashboard/', views.StockDashboardView.as_view(), name='dashboard'),
     path('detail/<int:pk>/', views.StockDetailView.as_view(), name='detail'),
+
+    path('stock/report/list/', views.stock_report, name='report_list'),
+    path('stock/report/print/', views.stock_report_print, name='stock_report_print'),
+
+    path('stock/report/amt/list/', views.stock_report_amt, name='stock_report_amt'),
+    path('stock/report/amt/print/', views.stock_report_print_amt, name='stock_report_print_amt'),
+
     path('stock/<int:pk>/delete-direct/', views.delete_stock, name='stock_delete_direct'),
     
     # API endpoints
     path('api/search/', views.stock_search_api, name='search_api'),
     path('api/quick-info/<int:pk>/', views.stock_quick_info, name='quick_info'),
+
+
+    # --- Spot Agent ---
+    path("vouchers/spot-agent/create/", views.create_spot_agent_voucher, name="spotagentvoucher_create"),
+    path("api/get-agent-balance/", views.get_agent_balance, name="get_agent_balance"),
+
+    path('vouchers/spot-agent/list/', views.spotagentvoucher_list_with_summary, name='spotagentvoucher_list'),
+    path('spotagentvouchers/summary-pdf/', views.spot_agent_voucher_summary_pdf, name='spot_agent_voucher_summary_pdf'),
+    path('spotagentvouchers/agent/<str:agent_id>/statement/', views.spot_agent_statement_pdf, name='spot_agent_statement_pdf'),
+
+    # --- Supervisor ---
+    path("vouchers/supervisor/create/", views.SupervisorVoucherCreateView.as_view(), name="supervisorvoucher_create"),
+    path("vouchers/supervisor/list/", views.SupervisorVoucherListView.as_view(), name="supervisorvoucher_list"),
+
+    # --- Local Purchase ---
+    path("vouchers/local/create/", views.create_local_purchase_voucher, name="localpurchasevoucher_create"),
+    path("api/get-party-balance/", views.get_party_balance, name="get_party_balance"),
+    path('localpurchasevoucher/', views.localpurchasevoucher_list_with_summary, name='localpurchasevoucher_list'),
+    path('localpurchasevoucher/summary/pdf/', views.localpurchase_voucher_summary_pdf, name='localpurchase_voucher_summary_pdf'),
+    path('localpurchasevoucher/party/<int:party_id>/statement/pdf/', views.localpurchase_party_statement_pdf, name='localpurchase_party_statement_pdf'),
+    
+
+
+    # --- Peeling Shed ---
+    path("vouchers/shed/create/", views.create_peeling_shed_voucher, name="create_peeling_shed_voucher"),
+    path("vouchers/shed/list/", views.peeling_shed_voucher_list_with_summary, name="peeling_shed_voucher_list"),
+    path('ajax/shed-calculation-preview/', views.get_shed_calculation_preview, name='get_shed_calculation_preview'),
+    # PDF Export URLs
+    path('vouchers/shed/summary-pdf/', views.peeling_shed_voucher_summary_pdf, name='peeling_shed_voucher_summary_pdf'),
+    path('vouchers/shed/statement/<int:shed_id>/pdf/', views.shed_statement_pdf, name='shed_statement_pdf'),
+
+
+
+    # Tenant Voucher URLs
+    path('vouchers/tenant/list/', views.tenantvoucher_list_with_summary, name='tenantvoucher_list'),
+    path('vouchers/tenant/create/', views.create_tenant_voucher, name='tenantvoucher_create'),
+    path('get-tenant-balance/', views.get_tenant_balance, name='get_tenant_balance'),
+    
+    # PDF Export URLs
+    path('vouchers/tenant/summary-pdf/', views.tenant_voucher_summary_pdf, name='tenant_voucher_summary_pdf'),
+    path('vouchers/tenant/statement/<int:tenant_id>/pdf/', views.tenant_statement_pdf, name='tenant_statement_pdf'),
+
+    # Add these to your urlpatterns
+    path('incomplete-freezing/', views.incomplete_freezing_list, name='incomplete_freezing_list'),
+
+
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

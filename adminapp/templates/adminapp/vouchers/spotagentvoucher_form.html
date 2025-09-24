@@ -1,0 +1,315 @@
+
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Local Purchase Voucher{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-user-tie"></i> Create Spot Agent Voucher
+                        </h3>
+                        <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-list"></i> View All Vouchers
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Display Django Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="voucherForm">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Voucher Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.voucher_no.id_for_label }}" class="form-label fw-bold">
+                                    Voucher Number <span class="text-danger">*</span>
+                                </label>
+                                {{ form.voucher_no }}
+                                {% if form.voucher_no.errors %}
+                                    <div class="text-danger small">{{ form.voucher_no.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Date -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">
+                                    Date <span class="text-danger">*</span>
+                                </label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="text-danger small">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Agent -->
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.agent.id_for_label }}" class="form-label fw-bold">
+                                    Select Agent <span class="text-danger">*</span>
+                                </label>
+                                {{ form.agent }}
+                                {% if form.agent.errors %}
+                                    <div class="text-danger small">{{ form.agent.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Agent Balance Information Display -->
+                        <div class="row mb-4" id="balanceInfo" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="alert alert-success">
+                                    <h5><i class="fas fa-info-circle"></i> Agent Balance Information</h5>
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <strong>Total Bills:</strong> ₹<span id="billsTotal">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Receipts:</strong> ₹<span id="totalReceipts">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Total Payments:</strong> ₹<span id="totalPayments">0.00</span>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <strong>Outstanding Balance:</strong> ₹<span id="currentBalance" class="text-success fw-bold">0.00</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user-tie"></i> Agent: <span id="agentName">-</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Description -->
+                            <div class="col-md-12 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                    Description
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Remain Amount (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.remain_amount.id_for_label }}" class="form-label fw-bold">
+                                    Previous Balance
+                                </label>
+                                {{ form.remain_amount }}
+                                {% if form.remain_amount.errors %}
+                                    <div class="text-danger small">{{ form.remain_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Total Amount (readonly) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.total_amount.id_for_label }}" class="form-label fw-bold">
+                                    New Total Amount
+                                </label>
+                                {{ form.total_amount }}
+                                {% if form.total_amount.errors %}
+                                    <div class="text-danger small">{{ form.total_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Receipt -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.receipt.id_for_label }}" class="form-label fw-bold text-success">
+                                    <i class="fas fa-plus-circle"></i> Receipt (+)
+                                </label>
+                                {{ form.receipt }}
+                                {% if form.receipt.errors %}
+                                    <div class="text-danger small">{{ form.receipt.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Amount received from agent</small>
+                            </div>
+
+                            <!-- Payment -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment.id_for_label }}" class="form-label fw-bold text-danger">
+                                    <i class="fas fa-minus-circle"></i> Payment (-)
+                                </label>
+                                {{ form.payment }}
+                                {% if form.payment.errors %}
+                                    <div class="text-danger small">{{ form.payment.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Amount paid to agent</small>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="fas fa-save"></i> Create Voucher
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const agentSelect = document.getElementById('id_agent');
+    const remainAmountInput = document.getElementById('id_remain_amount');
+    const totalAmountInput = document.getElementById('id_total_amount');
+    const receiptInput = document.getElementById('id_receipt');
+    const paymentInput = document.getElementById('id_payment');
+    const balanceInfo = document.getElementById('balanceInfo');
+
+    // Function to calculate and update amounts
+    function updateAmounts() {
+        const remainAmount = parseFloat(remainAmountInput.value) || 0;
+        const receipt = parseFloat(receiptInput.value) || 0;
+        const payment = parseFloat(paymentInput.value) || 0;
+        
+        const newTotal = remainAmount + receipt - payment;
+        totalAmountInput.value = newTotal.toFixed(2);
+    }
+
+    // Function to fetch and display agent balance
+    function fetchAgentBalance(agentId) {
+        if (!agentId) {
+            balanceInfo.style.display = 'none';
+            remainAmountInput.value = '0.00';
+            updateAmounts();
+            return;
+        }
+
+        fetch(`{% url 'adminapp:get_agent_balance' %}?agent_id=${agentId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    balanceInfo.style.display = 'none';
+                    return;
+                }
+
+                // Display balance information
+                document.getElementById('billsTotal').textContent = (data.bills_total || 0).toFixed(2);
+                document.getElementById('totalReceipts').textContent = (data.total_receipt || 0).toFixed(2);
+                document.getElementById('totalPayments').textContent = (data.total_payment || 0).toFixed(2);
+                document.getElementById('currentBalance').textContent = (data.remain_amount || 0).toFixed(2);
+                document.getElementById('agentName').textContent = data.agent_name || 'Unknown Agent';
+                
+                // Update balance color based on amount
+                const balanceElement = document.getElementById('currentBalance');
+                const remainAmount = data.remain_amount || 0;
+                if (remainAmount > 0) {
+                    balanceElement.className = 'text-danger fw-bold'; // Agent owes money
+                } else if (remainAmount < 0) {
+                    balanceElement.className = 'text-success fw-bold'; // We owe agent
+                } else {
+                    balanceElement.className = 'text-muted fw-bold'; // Balanced
+                }
+                
+                // Update remain amount field
+                remainAmountInput.value = remainAmount.toFixed(2);
+                
+                // Show balance info
+                balanceInfo.style.display = 'block';
+                
+                // Update total amount
+                updateAmounts();
+            })
+            .catch(error => {
+                console.error('Error fetching agent balance:', error);
+                balanceInfo.style.display = 'none';
+            });
+    }
+
+    // Event listeners
+    agentSelect.addEventListener('change', function() {
+        fetchAgentBalance(this.value);
+    });
+
+    receiptInput.addEventListener('input', updateAmounts);
+    paymentInput.addEventListener('input', updateAmounts);
+
+    // Initialize if agent is already selected
+    if (agentSelect.value) {
+        fetchAgentBalance(agentSelect.value);
+    }
+});
+</script>
+
+<style>
+.alert-success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+
+.card-header.bg-success {
+    background-color: #198754 !important;
+}
+
+.text-success {
+    color: #198754 !important;
+}
+
+.btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.btn-success:hover {
+    background-color: #157347;
+    border-color: #146c43;
+}
+
+.form-control {
+    border-radius: 0.375rem;
+    border: 1px solid #ced4da;
+}
+
+.form-control:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.card {
+    border-radius: 0.5rem;
+}
+
+.shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+}
+</style>
+
+{% endblock %}

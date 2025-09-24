@@ -219,6 +219,37 @@
           </ul>
         </div>
       </li>
+      <!-- LocalParty Spots with sub-menu -->
+      <li>
+        <a data-bs-toggle="collapse" href="#purchasing-spots">
+          <span class="sub-item">
+            <i class="fas fa-map-marker-alt"></i>
+            LocalParty create
+            <span class="caret"></span>
+          </span>
+        </a>
+        <div class="collapse" id="purchasing-spots">
+          <ul class="nav nav-collapse subnav">
+            <li>
+              <a href="{% url 'adminapp:LocalParty_list' %}">
+                <span class="sub-item">
+                  <i class="fas fa-list"></i>
+                  List
+                </span>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'adminapp:LocalParty_create' %}">
+                <span class="sub-item">
+                  <i class="fas fa-plus"></i>
+                  Add
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </li>
+
     </ul>
   </div>
 </li>

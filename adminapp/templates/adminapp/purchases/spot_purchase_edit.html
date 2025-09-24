@@ -450,6 +450,7 @@
                         <th class="summary-table-header">Total Items</th>
                         <th class="summary-table-header">Total Expense</th>
                         <th class="summary-table-header">Total Purchase Amount</th>
+                        <th class="summary-table-header">Total Purchase Amount per kg</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -459,6 +460,7 @@
                         <td class="summary-table-cell"><span id="items-total" class="summary-value">0</span></td>
                         <td class="summary-table-cell"><span id="expense-total" class="summary-value">0.00</span></td>
                         <td class="summary-table-cell"><span id="total-purchase-amount" class="summary-value" style="color: #dc3545; font-weight: bold;">0.00</span></td>
+                        <td class="summary-table-cell"><span id="total-purchase-amount-per-kg" class="summary-value" style="color: #dc3545; font-weight: bold;">0.00</span></td>
                     </tr>
                 </tbody>
             </table>
@@ -625,11 +627,25 @@
     function calculateTotalPurchaseAmount() {
         const totalAmount = parseFloat(document.getElementById('amount-total').textContent) || 0;
         const totalExpense = parseFloat(document.getElementById('expense-total').textContent) || 0;
+        const totalQuantity = parseFloat(document.getElementById('quantity-total').textContent) || 0;
+        
         const totalPurchaseAmount = totalAmount + totalExpense;
         
+        // Update total purchase amount display
         const totalPurchaseElement = document.getElementById('total-purchase-amount');
         if (totalPurchaseElement) {
             totalPurchaseElement.textContent = totalPurchaseAmount.toFixed(2);
+        }
+        
+        // Calculate and update total purchase amount per kg
+        const totalPurchaseAmountPerKgElement = document.getElementById('total-purchase-amount-per-kg');
+        if (totalPurchaseAmountPerKgElement) {
+            if (totalQuantity > 0) {
+                const totalPurchaseAmountPerKg = totalPurchaseAmount / totalQuantity;
+                totalPurchaseAmountPerKgElement.textContent = totalPurchaseAmountPerKg.toFixed(2);
+            } else {
+                totalPurchaseAmountPerKgElement.textContent = '0';
+            }
         }
     }
     

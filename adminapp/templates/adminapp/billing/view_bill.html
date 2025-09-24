@@ -635,25 +635,9 @@
     </div>
 
     <!-- Action Controls -->
-    <div class="action-controls no-print">
+    <div class="action-controls no-print">        
         <div class="control-group">
-            <span class="control-label">Update Status:</span>
-            <form method="post" action="{% url 'adminapp:update_bill_status' bill.id %}" style="display: inline;">
-                {% csrf_token %}
-                <select name="status" onchange="this.form.submit()" class="status-select">
-                    {% for status_key, status_label in bill.BILL_STATUS_CHOICES %}
-                        <option value="{{ status_key }}" {% if bill.status == status_key %}selected{% endif %}>
-                            {{ status_label }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
-        
-        <div class="control-group">
-            <button onclick="window.print()" class="action-btn btn-secondary-custom">
-                <i class="fas fa-print"></i> Print
-            </button>
+
             
             <a href="{% url 'adminapp:bill_pdf' bill.id %}" class="action-btn btn-success-custom" target="_blank">
                 <i class="fas fa-file-pdf"></i> Download PDF
