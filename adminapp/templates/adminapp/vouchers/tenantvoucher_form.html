@@ -4,279 +4,800 @@
 {% block title %}Create Tenant Voucher{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-lg">
-                <div class="card-header bg-success text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h3 class="mb-0">
-                            <i class="fas fa-building"></i> Create Tenant Voucher
-                        </h3>
-                        <a href="{% url 'adminapp:tenantvoucher_list' %}" class="btn btn-light btn-sm">
-                            <i class="fas fa-list"></i> View All Vouchers
-                        </a>
+
+<div class="container">
+    <div class="page-inner">
+        <div class="page-header">
+            <h3 style="font-size: 2rem;" class="fw-bold mb-4">Create Tenant Voucher</h3>
+            <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                    <a href="#">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Tenant Vouchers</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Create Voucher</a>
+                </li>
+            </ul>
+        </div>
+
+        <form method="POST" id="voucherForm" class="voucher-form">
+            {% csrf_token %}
+
+            <!-- Voucher Details Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title mb-0">Voucher Details</h3>
+                            <p class="text-muted mb-0">Enter basic voucher information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-card" style="padding: 20px;">
+                    <div class="row g-4">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label class="form-label">{{ form.voucher_no.label }}</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-hashtag input-icon"></i>
+                                    {{ form.voucher_no }}
+                                </div>
+                                {% if form.voucher_no.errors %}
+                                <div class="validation-error">{{ form.voucher_no.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label class="form-label">{{ form.date.label }}</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-calendar-alt input-icon"></i>
+                                    {{ form.date }}
+                                </div>
+                                {% if form.date.errors %}
+                                <div class="validation-error">{{ form.date.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-group">
+                                <label class="form-label">{{ form.tenant.label }}</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user-tie input-icon"></i>
+                                    {{ form.tenant }}
+                                </div>
+                                {% if form.tenant.errors %}
+                                <div class="validation-error">{{ form.tenant.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 ">
+                            <div class="form-group">
+                                <label class="form-label">{{ form.description.label }}</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-align-left input-icon"></i>
+                                    {{ form.description }}
+                                </div>
+                                {% if form.description.errors %}
+                                <div class="validation-error">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <style>
+                .card-header .tenant-name {
+                    margin-left: auto;
+                    /* push to right */
+                    display: inline-flex;
+                    /* keep icon + text inline */
+                    align-items: center;
+                    gap: 6px;
+                    /* space between icon and text */
+
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    /* dark neutral text */
+
+                    background-color: #f8f9fa;
+                    /* light gray badge */
+                    padding: 6px 12px;
+                    /* inner padding */
+                    border: 1px solid #dee2e6;
+                    /* subtle border */
+                    border-radius: 6px;
+                    /* slightly rounded corners */
+
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                    /* tiny shadow for depth */
+                    transition: background-color 0.3s ease, color 0.3s ease;
+                }
+
+                .card-header .tenant-name:hover {
+                    background-color: #e9ecef;
+                    /* subtle hover effect */
+                    color: #1a1a1a;
+                }
+
+                .card-header .tenant-name .fa-user {
+                    color: #0d6efd;
+                    /* accent color for the icon */
+                    font-size: 16px;
+                }
+            </style>
+
+            <!-- Balance Information Display -->
+            <div class="form-card mb-4" id="balanceInfo" style="display: none;">
+                <div class="card-header d-flex align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title mb-0">Tenant Balance Information</h4>
+                            <p class="text-muted mb-0">Current balance overview for selected tenant</p>
+                        </div>
+                    </div>
+
+                    <!-- tenant name on the right -->
+                    <small class="tenant-name">
+                        <i class="fas fa-building me-1"></i> Tenant: <span id="tenantName" class="fw-bold">-</span>
+                    </small>
+                </div>
+
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Total Bills</th>
+                                    <th class="table-header">Total Receipts</th>
+                                    <th class="table-header">Total Payments</th>
+                                    <th class="table-header">Outstanding Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="summary-row">
+                                    <td class="table-cell">
+                                        <div class="summary-value">
+                                            <span class="currency">₹</span>
+                                            <span id="billsTotal" class="calculated-value">0.00</span>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="summary-value">
+                                            <span class="currency">₹</span>
+                                            <span id="totalReceipts" class="calculated-value">0.00</span>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="summary-value">
+                                            <span class="currency">₹</span>
+                                            <span id="totalPayments" class="calculated-value">0.00</span>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="summary-value total-highlight">
+                                            <span class="currency">₹</span>
+                                            <span id="currentBalance" class="calculated-value">0.00</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amount Details Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title mb-0">Transaction Details</h4>
+                            <p class="text-muted mb-0">Enter receipt and payment information</p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="card-body">
-                    <form method="POST" id="voucherForm">
-                        {% csrf_token %}
-                        
-                        <div class="row">
-                            <!-- Voucher Number -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.voucher_no.id_for_label }}" class="form-label fw-bold">
-                                    Voucher Number <span class="text-danger">*</span>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label text-success">
+                                    <i class="fas fa-plus-circle me-2"></i>{{ form.receipt.label }} (+)
                                 </label>
-                                {{ form.voucher_no }}
-                                {% if form.voucher_no.errors %}
-                                    <div class="text-danger small">{{ form.voucher_no.errors }}</div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Date -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.date.id_for_label }}" class="form-label fw-bold">
-                                    Date <span class="text-danger">*</span>
-                                </label>
-                                {{ form.date }}
-                                {% if form.date.errors %}
-                                    <div class="text-danger small">{{ form.date.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Tenant -->
-                            <div class="col-md-12 mb-3">
-                                <label for="{{ form.tenant.id_for_label }}" class="form-label fw-bold">
-                                    Tenant <span class="text-danger">*</span>
-                                </label>
-                                {{ form.tenant }}
-                                {% if form.tenant.errors %}
-                                    <div class="text-danger small">{{ form.tenant.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Balance Information Display -->
-                        <div class="row mb-4" id="balanceInfo" style="display: none;">
-                            <div class="col-md-12">
-                                <div class="alert alert-success">
-                                    <h5><i class="fas fa-info-circle"></i> Tenant Balance Information</h5>
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <strong>Total Bills:</strong> ₹<span id="billsTotal">0.00</span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <strong>Total Receipts:</strong> ₹<span id="totalReceipts">0.00</span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <strong>Total Payments:</strong> ₹<span id="totalPayments">0.00</span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <strong>Outstanding Balance:</strong> ₹<span id="currentBalance" class="text-success fw-bold">0.00</span>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2">
-                                        <small class="text-muted">
-                                            <i class="fas fa-user"></i> Tenant: <span id="tenantName">-</span>
-                                        </small>
-                                    </div>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-plus input-icon"></i>
+                                    {{ form.receipt }}
                                 </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Description -->
-                            <div class="col-md-12 mb-3">
-                                <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
-                                    Description
-                                </label>
-                                {{ form.description }}
-                                {% if form.description.errors %}
-                                    <div class="text-danger small">{{ form.description.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Remain Amount (readonly) -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.remain_amount.id_for_label }}" class="form-label fw-bold">
-                                    Previous Balance
-                                </label>
-                                {{ form.remain_amount }}
-                                {% if form.remain_amount.errors %}
-                                    <div class="text-danger small">{{ form.remain_amount.errors }}</div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Total Amount (readonly) -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.total_amount.id_for_label }}" class="form-label fw-bold">
-                                    New Total Amount
-                                </label>
-                                {{ form.total_amount }}
-                                {% if form.total_amount.errors %}
-                                    <div class="text-danger small">{{ form.total_amount.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!-- Receipt -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.receipt.id_for_label }}" class="form-label fw-bold text-success">
-                                    <i class="fas fa-plus-circle"></i> Receipt (+)
-                                </label>
-                                {{ form.receipt }}
                                 {% if form.receipt.errors %}
-                                    <div class="text-danger small">{{ form.receipt.errors }}</div>
+                                <div class="validation-error">{{ form.receipt.errors }}</div>
                                 {% endif %}
-                                <small class="form-text text-muted">Amount received from tenant</small>
+                                <small class="form-text text-success">Amount received from tenant</small>
                             </div>
+                        </div>
 
-                            <!-- Payment -->
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.payment.id_for_label }}" class="form-label fw-bold text-danger">
-                                    <i class="fas fa-minus-circle"></i> Payment (-)
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label text-danger">
+                                    <i class="fas fa-minus-circle me-2"></i>{{ form.payment.label }} (-)
                                 </label>
-                                {{ form.payment }}
-                                {% if form.payment.errors %}
-                                    <div class="text-danger small">{{ form.payment.errors }}</div>
-                                {% endif %}
-                                <small class="form-text text-muted">Amount paid to tenant</small>
-                            </div>
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-between">
-                                    <a href="{% url 'adminapp:tenantvoucher_list' %}" class="btn btn-secondary">
-                                        <i class="fas fa-arrow-left"></i> Cancel
-                                    </a>
-                                    <button type="submit" class="btn btn-success btn-lg">
-                                        <i class="fas fa-save"></i> Create Voucher
-                                    </button>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-minus input-icon"></i>
+                                    {{ form.payment }}
                                 </div>
+                                {% if form.payment.errors %}
+                                <div class="validation-error">{{ form.payment.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-danger">Amount paid to tenant</small>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
+
+            <!-- Amount Summary Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title mb-0">Amount Summary</h4>
+                            <p class="text-muted mb-0">Overview of calculated amounts</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Previous Balance</th>
+                                    <th class="table-header">New Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="summary-row">
+                                    <td class="table-cell">
+                                        <div class="summary-value">
+                                            <span class="currency">₹</span>
+                                            <span id="previous-balance-display" class="calculated-value">0.00</span>
+                                        </div>
+                                        <small class="unit">Before this transaction</small>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="summary-value total-highlight">
+                                            <span class="currency">₹</span>
+                                            <span id="new-total-display" class="calculated-value">0.00</span>
+                                        </div>
+                                        <small class="unit">After this transaction</small>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Submit Section -->
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-save me-2"></i>Create Voucher
+                </button>
+                <a href="{% url 'adminapp:tenantvoucher_list' %}" class="cancel-btn">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+
+        <!-- Hidden form fields -->
+        <div style="display: none;">
+            {{ form.remain_amount }}
+            {{ form.total_amount }}
         </div>
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tenantSelect = document.getElementById('id_tenant');
-    const remainAmountInput = document.getElementById('id_remain_amount');
-    const totalAmountInput = document.getElementById('id_total_amount');
-    const receiptInput = document.getElementById('id_receipt');
-    const paymentInput = document.getElementById('id_payment');
-    const balanceInfo = document.getElementById('balanceInfo');
-
-    // Function to calculate and update amounts
-    function updateAmounts() {
-        const remainAmount = parseFloat(remainAmountInput.value) || 0;
-        const receipt = parseFloat(receiptInput.value) || 0;
-        const payment = parseFloat(paymentInput.value) || 0;
-        
-        const newTotal = remainAmount + receipt - payment;
-        totalAmountInput.value = newTotal.toFixed(2);
+<style>
+    small.unit {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: 4px;
     }
 
-    // Function to fetch and display tenant balance
-    function fetchTenantBalance(tenantId) {
-        if (!tenantId) {
-            balanceInfo.style.display = 'none';
-            remainAmountInput.value = '0.00';
-            updateAmounts();
-            return;
+    /* Base Styles */
+    .voucher-form {
+        margin-top: 2rem;
+    }
+
+    /* Card Styling */
+    .form-card {
+        border-radius: 20px;
+        background: #ffffff;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: none;
+        overflow: hidden;
+    }
+
+    /* Card Header */
+    .card-header {
+        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+        border-bottom: 2px solid #f1f3f7;
+        padding: 25px 30px;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: #28a745;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+    }
+
+    .card-title {
+        font-size: 26px;
+        color: #2c3e50;
+        letter-spacing: -0.5px;
+    }
+
+    .card-header p {
+        color: #6c757d;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    /* Card Body */
+    .card-body {
+        padding: 30px;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Input Wrapper */
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 15px;
+        color: #6c757d;
+        font-size: 14px;
+        z-index: 2;
+    }
+
+    /* Form Controls Styling */
+    .form-control,
+    input,
+    select,
+    textarea {
+        padding: 12px 15px 12px 45px !important;
+        border: 2px solid #e9ecef !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        background: #ffffff !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .form-control:focus,
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #28a745 !important;
+        box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+        outline: none !important;
+    }
+
+    /* Table Styling */
+    .summary-table {
+        width: 100%;
+        margin: 0;
+        font-size: 14px;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
+
+    .table-header {
+        background: #f8f9fd;
+        border: none;
+        padding: 20px;
+        font-weight: 700;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 13px;
+        text-align: center;
+        width: 25%;
+        vertical-align: middle;
+    }
+
+    /* Table Rows */
+    .summary-row {
+        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    }
+
+    .table-cell {
+        padding: 20px;
+        border: none;
+        border-bottom: 1px solid #f1f3f7;
+        vertical-align: middle;
+        text-align: center;
+        width: 25%;
+    }
+
+    .summary-value {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .currency {
+        color: #28a745;
+        margin-right: 4px;
+        font-size: 14px;
+    }
+
+    .calculated-value {
+        color: #2c3e50;
+        font-weight: 700;
+    }
+
+    .total-highlight .calculated-value {
+        color: #dc3545;
+        font-size: 18px;
+    }
+
+    .total-highlight .currency {
+        color: #dc3545;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    .submit-btn {
+        background: #28a745;
+        color: white;
+        border: 2px solid #28a745;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .submit-btn:hover {
+        background: #218838;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    }
+
+    .cancel-btn {
+        background: transparent;
+        color: #6c757d;
+        border: 2px solid #e9ecef;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .cancel-btn:hover {
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+
+    /* Validation Errors */
+    .validation-error {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+
+    /* Form Text */
+    .form-text {
+        font-size: 12px;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+
+    .form-text.text-success {
+        color: #28a745 !important;
+    }
+
+    .form-text.text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-text.text-muted {
+        color: #6c757d !important;
+    }
+
+    /* Alert Styles */
+    .alert {
+        border-radius: 12px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-header .d-flex {
+            flex-direction: column;
+            align-items: stretch !important;
         }
 
-        fetch(`{% url 'adminapp:get_tenant_balance' %}?tenant_id=${tenantId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    console.error('Error:', data.error);
-                    balanceInfo.style.display = 'none';
-                    return;
-                }
+        .card-header .d-flex:first-child {
+            flex-direction: row !important;
+            align-items: center !important;
+            margin-bottom: 20px;
+        }
 
-                // Display balance information
-                document.getElementById('billsTotal').textContent = data.bills_total.toFixed(2);
-                document.getElementById('totalReceipts').textContent = data.total_receipt.toFixed(2);
-                document.getElementById('totalPayments').textContent = data.total_payment.toFixed(2);
-                document.getElementById('currentBalance').textContent = data.remain_amount.toFixed(2);
-                document.getElementById('tenantName').textContent = data.tenant_name || 'Unknown Tenant';
-                
-                // Update balance color based on amount
-                const balanceElement = document.getElementById('currentBalance');
-                if (data.remain_amount > 0) {
-                    balanceElement.className = 'text-danger fw-bold'; // Tenant owes money
-                } else if (data.remain_amount < 0) {
-                    balanceElement.className = 'text-success fw-bold'; // We owe tenant
-                } else {
-                    balanceElement.className = 'text-muted fw-bold'; // Balanced
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            margin-right: 15px;
+        }
+
+        .card-title {
+            font-size: 20px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .submit-btn,
+        .cancel-btn {
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-header {
+            padding: 20px;
+        }
+
+        .table-cell {
+            padding: 15px 10px;
+        }
+
+        .summary-value {
+            font-size: 14px;
+        }
+
+        .total-highlight .calculated-value {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tenantSelect = document.getElementById('id_tenant');
+        const remainAmountInput = document.getElementById('id_remain_amount');
+        const totalAmountInput = document.getElementById('id_total_amount');
+        const receiptInput = document.getElementById('id_receipt');
+        const paymentInput = document.getElementById('id_payment');
+        const balanceInfo = document.getElementById('balanceInfo');
+
+        // Display elements
+        const previousBalanceDisplay = document.getElementById('previous-balance-display');
+        const newTotalDisplay = document.getElementById('new-total-display');
+
+        // Function to calculate and update amounts
+        function updateAmounts() {
+            const remainAmount = parseFloat(remainAmountInput.value) || 0;
+            const receipt = parseFloat(receiptInput.value) || 0;
+            const payment = parseFloat(paymentInput.value) || 0;
+
+            const newTotal = remainAmount + receipt - payment;
+            totalAmountInput.value = newTotal.toFixed(2);
+
+            // Update display elements
+            if (previousBalanceDisplay) {
+                previousBalanceDisplay.textContent = remainAmount.toFixed(2);
+                // Color coding for previous balance
+                const prevBalanceParent = previousBalanceDisplay.closest('.summary-value');
+                if (prevBalanceParent) {
+                    if (remainAmount > 0) {
+                        prevBalanceParent.classList.add('text-danger');
+                        prevBalanceParent.classList.remove('text-success', 'text-muted');
+                    } else if (remainAmount < 0) {
+                        prevBalanceParent.classList.add('text-success');
+                        prevBalanceParent.classList.remove('text-danger', 'text-muted');
+                    } else {
+                        prevBalanceParent.classList.add('text-muted');
+                        prevBalanceParent.classList.remove('text-danger', 'text-success');
+                    }
                 }
-                
-                // Update remain amount field
-                remainAmountInput.value = data.remain_amount.toFixed(2);
-                
-                // Show balance info
-                balanceInfo.style.display = 'block';
-                
-                // Update total amount
-                updateAmounts();
-            })
-            .catch(error => {
-                console.error('Error fetching tenant balance:', error);
+            }
+
+            if (newTotalDisplay) {
+                newTotalDisplay.textContent = newTotal.toFixed(2);
+                // Color coding for new total
+                const newTotalParent = newTotalDisplay.closest('.summary-value');
+                if (newTotalParent) {
+                    if (newTotal > 0) {
+                        newTotalParent.classList.add('text-danger');
+                        newTotalParent.classList.remove('text-success', 'text-muted');
+                    } else if (newTotal < 0) {
+                        newTotalParent.classList.add('text-success');
+                        newTotalParent.classList.remove('text-danger', 'text-muted');
+                    } else {
+                        newTotalParent.classList.add('text-success');
+                        newTotalParent.classList.remove('text-danger', 'text-muted');
+                    }
+                }
+            }
+        }
+
+        // Function to fetch and display tenant balance
+        function fetchTenantBalance(tenantId) {
+            if (!tenantId) {
                 balanceInfo.style.display = 'none';
-            });
-    }
+                remainAmountInput.value = '0.00';
+                updateAmounts();
+                return;
+            }
 
-    // Event listeners
-    tenantSelect.addEventListener('change', function() {
-        fetchTenantBalance(this.value);
+            fetch(`{% url 'adminapp:get_tenant_balance' %}?tenant_id=${tenantId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error:', data.error);
+                        balanceInfo.style.display = 'none';
+                        return;
+                    }
+
+                    // Display balance information
+                    document.getElementById('billsTotal').textContent = data.bills_total.toFixed(2);
+                    document.getElementById('totalReceipts').textContent = data.total_receipt.toFixed(2);
+                    document.getElementById('totalPayments').textContent = data.total_payment.toFixed(2);
+                    document.getElementById('currentBalance').textContent = data.remain_amount.toFixed(2);
+                    document.getElementById('tenantName').textContent = data.tenant_name || 'Unknown Tenant';
+
+                    // Update balance color based on amount
+                    const balanceElement = document.getElementById('currentBalance');
+                    const balanceParent = balanceElement.closest('.summary-value');
+                    if (balanceParent) {
+                        if (data.remain_amount > 0) {
+                            balanceParent.classList.add('text-danger');
+                            balanceParent.classList.remove('text-success', 'text-muted');
+                        } else if (data.remain_amount < 0) {
+                            balanceParent.classList.add('text-success');
+                            balanceParent.classList.remove('text-danger', 'text-muted');
+                        } else {
+                            balanceParent.classList.add('text-muted');
+                            balanceParent.classList.remove('text-danger', 'text-success');
+                        }
+                    }
+
+                    // Update remain amount field
+                    remainAmountInput.value = data.remain_amount.toFixed(2);
+
+                    // Show balance info
+                    balanceInfo.style.display = 'block';
+
+                    // Update total amount
+                    updateAmounts();
+                })
+                .catch(error => {
+                    console.error('Error fetching tenant balance:', error);
+                    balanceInfo.style.display = 'none';
+                });
+        }
+
+        // Event listeners
+        tenantSelect.addEventListener('change', function () {
+            fetchTenantBalance(this.value);
+        });
+
+        receiptInput.addEventListener('input', updateAmounts);
+        paymentInput.addEventListener('input', updateAmounts);
+
+        // Initialize if tenant is already selected
+        if (tenantSelect.value) {
+            fetchTenantBalance(tenantSelect.value);
+        }
+
+        // Initial update
+        updateAmounts();
     });
-
-    receiptInput.addEventListener('input', updateAmounts);
-    paymentInput.addEventListener('input', updateAmounts);
-
-    // Initialize if tenant is already selected
-    if (tenantSelect.value) {
-        fetchTenantBalance(tenantSelect.value);
-    }
-});
 </script>
 
-<style>
-.alert-success {
-    background-color: #d1e7dd;
-    border-color: #badbcc;
-}
-
-.card-header.bg-success {
-    background-color: #198754 !important;
-}
-
-.text-success {
-    color: #198754 !important;
-}
-
-.btn-success {
-    background-color: #198754;
-    border-color: #198754;
-}
-
-.btn-success:hover {
-    background-color: #157347;
-    border-color: #146c43;
-}
-</style>
+<!-- Date Picker Scripts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        flatpickr("#id_date", {
+            dateFormat: "d/m/Y",
+            defaultDate: "today"
+        });
+    });
+</script>
 {% endblock %}

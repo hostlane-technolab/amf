@@ -987,7 +987,144 @@ class TenantVoucherForm(forms.ModelForm):
         # Update form choices
         self.fields['tenant'].choices = tenant_choices
 
+# temporary stock add 
 
+
+    
+
+class StockForm(forms.ModelForm):
+    class Meta:
+        model = Stock
+        fields = [
+            'store', 'brand', 'item', 'item_quality', 'freezing_category',
+            'unit', 'glaze', 'species', 'item_grade', 
+            'cs_quantity', 'kg_quantity', 
+            'usd_rate_per_kg', 'usd_rate_item', 'usd_rate_item_to_inr'
+        ]
+        
+        widgets = {
+            'store': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'brand': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'item': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'item_quality': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'freezing_category': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'unit': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'glaze': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'species': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'item_grade': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'cs_quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'kg_quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'usd_rate_per_kg': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'usd_rate_item': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'usd_rate_item_to_inr': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'min': '0'
+            }),
+        }
+        
+        labels = {
+            'store': 'Store *',
+            'brand': 'Brand *',
+            'item': 'Item *',
+            'item_quality': 'Item Quality',
+            'freezing_category': 'Freezing Category',
+            'unit': 'Packing Unit',
+            'glaze': 'Glaze Percentage',
+            'species': 'Species',
+            'item_grade': 'Item Grade',
+            'cs_quantity': 'CS Quantity',
+            'kg_quantity': 'KG Quantity',
+            'usd_rate_per_kg': 'USD Rate per KG',
+            'usd_rate_item': 'USD Rate Item',
+            'usd_rate_item_to_inr': 'USD Rate Item to INR',
+        }
+
+    def _init_(self, *args, **kwargs):
+        super()._init_(*args, **kwargs)
+        
+        # Set empty labels for optional dropdowns
+        self.fields['item_quality'].empty_label = "Select Item Quality (Optional)"
+        self.fields['freezing_category'].empty_label = "Select Freezing Category (Optional)"
+        self.fields['unit'].empty_label = "Select Packing Unit (Optional)"
+        self.fields['glaze'].empty_label = "Select Glaze Percentage (Optional)"
+        self.fields['species'].empty_label = "Select Species (Optional)"
+        self.fields['item_grade'].empty_label = "Select Item Grade (Optional)"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Check for unique constraint
+        store = cleaned_data.get('store')
+        item = cleaned_data.get('item')
+        brand = cleaned_data.get('brand')
+        item_quality = cleaned_data.get('item_quality')
+        unit = cleaned_data.get('unit')
+        glaze = cleaned_data.get('glaze')
+        species = cleaned_data.get('species')
+        item_grade = cleaned_data.get('item_grade')
+        
+        if all([store, item, brand]):
+            # Check if this combination already exists
+            existing_stock = Stock.objects.filter(
+                store=store,
+                item=item,
+                brand=brand,
+                item_quality=item_quality,
+                unit=unit,
+                glaze=glaze,
+                species=species,
+                item_grade=item_grade
+            )
+            
+            # If updating, exclude current instance
+            if self.instance.pk:
+                existing_stock = existing_stock.exclude(pk=self.instance.pk)
+                
+            if existing_stock.exists():
+                raise forms.ValidationError(
+                    "Stock with this combination of Store, Item, Brand, Item Quality, "
+                    "Unit, Glaze, Species, and Item Grade already exists."
+                )
+        
+        return cleaned_data
 
 
 

@@ -9,6 +9,45 @@
   <link rel="icon" href="{% static 'img/kaiadmin/favicon.ico' %}" type="image/x-icon" />
   <script src="https://cdn.tailwindcss.com"></script>
 
+<style>
+  /* Complete mobile dropdown reset */
+@media (max-width: 991px) {
+  /* Reset all hover-based styles that interfere with mobile */
+  .wrapper .sidebar {
+    width: 250px !important;
+    overflow: visible !important;
+  }
+  
+  .wrapper .sidebar .nav-secondary li a p,
+  .wrapper .sidebar .nav-secondary li a span.sub-item,
+  .wrapper .sidebar .sidebar-content .nav-section h4,
+  .wrapper .sidebar .sidebar-content .nav-section .sidebar-mini-icon,
+  .wrapper .sidebar .caret {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+  }
+  
+  .wrapper .main-panel {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* Ensure collapse elements work properly */
+  .sidebar .collapse {
+    transition: none !important;
+    overflow: visible !important;
+  }
+  
+  .sidebar .collapse:not(.show) {
+    display: none !important;
+  }
+  
+  .sidebar .collapse.show {
+    display: block !important;
+  }
+}
+</style>
 
   <style>
     /* Desktop only hover sidebar (min-width: 992px for better desktop targeting) */
@@ -839,6 +878,29 @@
               </div>
             </li>
 
+            <!-- stocks -->
+            <li class="nav-item">
+              <a data-bs-toggle="collapse" href="#stocks">
+                <i class="fa-solid fa-fish"></i>
+                <p>Stocks</p>
+                <span class="caret"></span>
+              </a>
+              <div class="collapse" id="stocks">
+                <ul class="nav nav-collapse">
+
+                  <li>
+                    <a href="">
+                      <span class="sub-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        Stock List
+                      </span>
+                    </a>
+                  </li>
+
+                </ul>
+              </div>
+            </li>
+
 
             <!-- Logout -->
             <li class="nav-item">
@@ -1380,6 +1442,155 @@
       });
     });
   </script>
+
+<script>
+$(document).ready(function() {
+  // Only run on mobile screens
+  function setupMobileNav() {
+    if ($(window).width() <= 991) {
+      console.log('Setting up mobile navigation');
+      
+      // Handle main navigation clicks
+      $('.sidebar [data-bs-toggle="collapse"]').off('click.mobile').on('click.mobile', function(e) {
+        e.preventDefault();
+        
+        var target = $(this).attr('href');
+        var $collapse = $(target);
+        
+        console.log('Clicked:', target);
+        
+        if ($collapse.hasClass('show')) {
+          $collapse.removeClass('show').hide();
+          $(this).attr('aria-expanded', 'false');
+        } else {
+          // Close siblings
+          $(this).closest('li').siblings().find('.collapse.show').removeClass('show').hide();
+          $(this).closest('li').siblings().find('[aria-expanded="true"]').attr('aria-expanded', 'false');
+          
+          // Open current
+          $collapse.addClass('show').show();
+          $(this).attr('aria-expanded', 'true');
+        }
+      });
+    }
+  }
+  
+  setupMobileNav();
+  
+  $(window).resize(function() {
+    setupMobileNav();
+  });
+});
+</script>
+
+<script>
+$(document).ready(function() {
+  function setupMobileNav() {
+    if ($(window).width() <= 991) {
+      
+      // Remove any existing handlers
+      $('.sidebar [data-bs-toggle="collapse"]').off('click.mobile');
+      
+      $('.sidebar [data-bs-toggle="collapse"]').on('click.mobile', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var target = $(this).attr('href');
+        var $collapse = $(target);
+        var $clickedLink = $(this);
+        
+        // Check current state more reliably
+        var isCurrentlyOpen = $collapse.is(':visible') && $collapse.hasClass('show');
+        
+        if (isCurrentlyOpen) {
+          // Hide the dropdown
+          $collapse.removeClass('show').slideUp(200);
+          $clickedLink.attr('aria-expanded', 'false');
+        } else {
+          // Close all other dropdowns at the same level
+          $clickedLink.closest('ul').find('.collapse.show').each(function() {
+            $(this).removeClass('show').slideUp(200);
+          });
+          $clickedLink.closest('ul').find('[aria-expanded="true"]').attr('aria-expanded', 'false');
+          
+          // Open current dropdown
+          $collapse.addClass('show').slideDown(200);
+          $clickedLink.attr('aria-expanded', 'true');
+        }
+      });
+    }
+  }
+  
+  setupMobileNav();
+  
+  $(window).resize(function() {
+    setTimeout(setupMobileNav, 100);
+  });
+});
+</script>
+
+
+<script>
+$(document).ready(function() {
+  function isMobileDevice() {
+    return (window.innerWidth <= 991) || 
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+  
+  function setupMobileNav() {
+    // Always setup for mobile devices and small screens
+    if (isMobileDevice() || $(window).width() <= 991) {
+      
+      // Remove any existing handlers
+      $('.sidebar [data-bs-toggle="collapse"]').off('click.mobile');
+      
+      $('.sidebar [data-bs-toggle="collapse"]').on('click.mobile', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var target = $(this).attr('href');
+        var $collapse = $(target);
+        var $clickedLink = $(this);
+        
+        // Force check visibility
+        var isCurrentlyOpen = $collapse.hasClass('show') && $collapse.css('display') !== 'none';
+        
+        if (isCurrentlyOpen) {
+          // Hide the dropdown
+          $collapse.removeClass('show').hide();
+          $clickedLink.attr('aria-expanded', 'false');
+        } else {
+          // Close all other dropdowns at the same level
+          $clickedLink.closest('ul').find('.collapse.show').removeClass('show').hide();
+          $clickedLink.closest('ul').find('[aria-expanded="true"]').attr('aria-expanded', 'false');
+          
+          // Open current dropdown
+          $collapse.addClass('show').show();
+          $clickedLink.attr('aria-expanded', 'true');
+        }
+      });
+      
+      // Also handle touch events for better mobile support
+      $('.sidebar [data-bs-toggle="collapse"]').on('touchstart.mobile', function(e) {
+        // Just prevent default to avoid double-tap issues
+        e.stopPropagation();
+      });
+    }
+  }
+  
+  // Initial setup
+  setupMobileNav();
+  
+  // Setup on window resize and orientation change
+  $(window).on('resize orientationchange', function() {
+    setTimeout(setupMobileNav, 150);
+  });
+  
+  // Force setup after page load (for mobile browsers)
+  setTimeout(setupMobileNav, 500);
+});
+</script>
+
 </body>
 
 </html>

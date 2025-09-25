@@ -10407,13 +10407,167 @@ def incomplete_freezing_list(request):
     }
     return render(request, 'adminapp/incomplete_freezing_list.html', context)
 
+# temporary stock add 
 
+# views.py - Function-based views for Stock management temporary
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db import IntegrityError
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from .models import Stock
+from .forms import StockForm
 
+def create_stock(request):
+    """Create new stock entry"""
+    if request.method == 'POST':
+        form = StockForm(request.POST)
+        if form.is_valid():
+            try:
+                stock = form.save()
+                messages.success(request, f'Stock for {stock.item.name} created successfully!')
+                return redirect('adminapp:list')
+            except IntegrityError:
+                messages.error(request, 'Stock with this combination already exists.')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = StockForm()
+    
+    context = {
+        'form': form,
+        'title': 'Create New Stock',
+        'action': 'Create'
+    }
+    return render(request, 'adminapp/stock/create_stock.html', context)
 
+def stock_list(request):
+    """List all stocks with search and pagination"""
+    stocks = Stock.objects.select_related(
+        'store', 'brand', 'item', 'item_quality', 'freezing_category',
+        'unit', 'glaze', 'species', 'item_grade'
+    ).all()
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        stocks = stocks.filter(
+            item_name_icontains=search_query
+        ) | stocks.filter(
+            store_name_icontains=search_query
+        ) | stocks.filter(
+            brand_name_icontains=search_query
+        )
+    
+    # Pagination
+    paginator = Paginator(stocks, 10)  # 10 stocks per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'stocks': page_obj,
+        'search_query': search_query,
+        'total_stocks': stocks.count()
+    }
+    return render(request, 'adminapp/stock/stock_list.html', context)
 
+def stock_detail(request, pk):
+    """View detailed information about a stock"""
+    stock = get_object_or_404(Stock, pk=pk)
+    
+    context = {
+        'stock': stock
+    }
+    return render(request, 'adminapp/stock/stock_detail.html', context)
 
+def update_stock(request, pk):
+    """Update existing stock"""
+    stock = get_object_or_404(Stock, pk=pk)
+    
+    if request.method == 'POST':
+        form = StockForm(request.POST, instance=stock)
+        if form.is_valid():
+            try:
+                updated_stock = form.save()
+                messages.success(request, f'Stock for {updated_stock.item.name} updated successfully!')
+                return redirect('adminapp:stock_detail', pk=updated_stock.pk)
+            except IntegrityError:
+                messages.error(request, 'Stock with this combination already exists.')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = StockForm(instance=stock)
+    
+    context = {
+        'form': form,
+        'stock': stock,
+        'title': f'Update Stock - {stock.item.name}',
+        'action': 'Update'
+    }
+    return render(request, 'adminapp/stock/update_stock.html', context)
 
+def delete_stock(request, pk):
+    """Delete stock entry"""
+    stock = get_object_or_404(Stock, pk=pk)
+    
+    if request.method == 'POST':
+        item_name = stock.item.name
+        stock.delete()
+        messages.success(request, f'Stock for {item_name} deleted successfully!')
+        return redirect('adminapp:stock_list')
+    
+    context = {
+        'stock': stock
+    }
+    return render(request, 'adminapp/stock/delete_stock.html', context)
 
+def stock_dashboard(request):
+    """Dashboard with stock statistics"""
+    total_stocks = Stock.objects.count()
+    total_stores = Stock.objects.values('store').distinct().count()
+    total_items = Stock.objects.values('item').distinct().count()
+    
+    # Recent stocks
+    recent_stocks = Stock.objects.select_related(
+        'store', 'item', 'brand'
+    ).order_by('-id')[:5]
+    
+    # Low stock alerts (items with less than 10 kg)
+    low_stock = Stock.objects.select_related(
+        'store', 'item', 'brand'
+    ).filter(kg_quantity__lt=10)[:5]
+    
+    context = {
+        'total_stocks': total_stocks,
+        'total_stores': total_stores,
+        'total_items': total_items,
+        'recent_stocks': recent_stocks,
+        'low_stock': low_stock,
+    }
+    return render(request, 'adminapp/stock/dashboard.html', context)
 
-
-
+def stock_search_ajax(request):
+    """AJAX search for stocks"""
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        query = request.GET.get('q', '')
+        if query:
+            stocks = Stock.objects.select_related(
+                'store', 'item', 'brand'
+            ).filter(
+                item_name_icontains=query
+            )[:10]
+            
+            results = []
+            for stock in stocks:
+                results.append({
+                    'id': stock.pk,
+                    'item_name': stock.item.name,
+                    'store_name': stock.store.name,
+                    'brand_name': stock.brand.name,
+                    'kg_quantity': str(stock.kg_quantity),
+                    'url': f'/stock/{stock.pk}/'
+                })
+            
+            return JsonResponse({'results': results})
+    
+    return JsonResponse({'results': []})

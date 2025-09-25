@@ -382,6 +382,15 @@ urlpatterns = [
     path('incomplete-freezing/', views.incomplete_freezing_list, name='incomplete_freezing_list'),
 
 
+    # Added BY Akhil From Shameer 25/09/2025
+    path('stocks/create/', views.create_stock, name='create_stock'),
+    path('stocks/<int:pk>/', views.stock_detail, name='stock_detail'),
+    path('stocks/<int:pk>/update/', views.update_stock, name='update_stock'),
+    
+    # AJAX Search
+    path('stocks/search/', views.stock_search_ajax, name='stock_search_ajax'),
+
+
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
