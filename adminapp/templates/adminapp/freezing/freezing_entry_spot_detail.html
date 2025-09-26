@@ -116,13 +116,13 @@
                 <tr>
                   <th class="table-header">
                     <div class="header-content">
-                      <i class="fas fa-user-cog header-icon"></i>
+                      <i class="fas fa-user-tie header-icon"></i>
                       <span class="header-text">Supervisor</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
-                      <i class="fas fa-info-circle header-icon"></i>
+                      <i class="fas fa-power-off header-icon"></i>
                       <span class="header-text">Status</span>
                     </div>
                   </th>
@@ -134,7 +134,7 @@
                   </th>
                   <th class="table-header">
                     <div class="header-content">
-                      <i class="fas fa-boxes header-icon"></i>
+                      <i class="fas fa-cube header-icon"></i>
                       <span class="header-text">Total C/S</span>
                     </div>
                   </th>
@@ -146,7 +146,7 @@
                   </th>
                   <th class="table-header">
                     <div class="header-content">
-                      <i class="fas fa-percentage header-icon"></i>
+                      <i class="fas fa-chart-line header-icon"></i>
                       <span class="header-text">Avg Yield %</span>
                     </div>
                   </th>
@@ -198,10 +198,30 @@
             <table class="summary-table">
               <thead>
                 <tr>
-                  <th class="table-header">Total USD</th>
-                  <th class="table-header">Total INR</th>
-                  <th class="table-header">Currency Status</th>
-                  <th class="table-header">Processing Value</th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-dollar-sign header-icon"></i>
+                      <span class="header-text">Total USD</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Total INR</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-exchange-alt header-icon"></i>
+                      <span class="header-text">Currency Status</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-industry header-icon"></i>
+                      <span class="header-text">Processing Value</span>
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -218,10 +238,21 @@
                       <small class="unit">INR</small>
                     </div>
                   </td>
+                  <style>
+                    /* Value Styling */
+.status-badge {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+                  </style>
                   <td class="table-cell">
                     <div class="summary-value">
-                      <span class="calculated-value">Active</span>
-                      <small class="unit">Status</small>
+                      <span class="status-badge">Active</span>
+
                     </div>
                   </td>
                   <td class="table-cell">

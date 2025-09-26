@@ -875,6 +875,14 @@
                   <a href="{% url 'adminapp:report_list' %}">
                     <span class="sub-item">
                       <i class="fa-solid fa-snowflake"></i>
+                      Stock Report Amt
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="{% url 'adminapp:stock_report_amt' %}">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-snowflake"></i>
                       Stock Report
                     </span>
                   </a>
@@ -1176,416 +1184,416 @@
                 </ul>
               </li> -->
               
-<li class="report-nav-wrapper topbar-icon dropdown hidden-caret">
-  <a class="report-trigger-btn" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-    <i class="fa-solid fa-file"></i>
-  </a>
-  <div class="report-dropdown-panel animated fadeIn">
-    <div class="report-header-section">
-      <span class="report-title mb-1">Reports</span>
-    </div>
-    <div class="report-content-area scrollbar-outer">
-      <div class="report-grid-container">
-        <div class="report-grid m-0">
-          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:spot_purchase_report'%}">
-            <div class="report-card">
-              <div class="report-icon-wrapper icon-red rounded-circle">
-                <i class="far fa-calendar-alt"></i>
+          <li class="report-nav-wrapper topbar-icon dropdown hidden-caret">
+            <a class="report-trigger-btn" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+              <i class="fa-solid fa-file"></i>
+            </a>
+            <div class="report-dropdown-panel animated fadeIn">
+              <div class="report-header-section">
+                <span class="report-title mb-1">Reports</span>
               </div>
-              <span class="report-label">Spot Purchase Report</span>
-            </div>
-          </a>
-          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:local_purchase_report'%}">
-            <div class="report-card">
-              <div class="report-icon-wrapper icon-orange rounded-circle">
-                <i class="fas fa-map"></i>
+              <div class="report-content-area scrollbar-outer">
+                <div class="report-grid-container">
+                  <div class="report-grid m-0">
+                    <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:spot_purchase_report'%}">
+                      <div class="report-card">
+                        <div class="report-icon-wrapper icon-red rounded-circle">
+                          <i class="far fa-calendar-alt"></i>
+                        </div>
+                        <span class="report-label">Spot Purchase Report</span>
+                      </div>
+                    </a>
+                    <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:local_purchase_report'%}">
+                      <div class="report-card">
+                        <div class="report-icon-wrapper icon-orange rounded-circle">
+                          <i class="fas fa-map"></i>
+                        </div>
+                        <span class="report-label">Local Purchase Report</span>
+                      </div>
+                    </a>
+                    <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:freezing_report'%}">
+                      <div class="report-card">
+                        <div class="report-icon-wrapper icon-teal rounded-circle">
+                          <i class="fas fa-file-excel"></i>
+                        </div>
+                        <span class="report-label">Freezing Report</span>
+                      </div>
+                    </a>
+                    <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:report_list'%}">
+                      <div class="report-card">
+                        <div class="report-icon-wrapper icon-green rounded-circle">
+                          <i class="fas fa-envelope"></i>
+                        </div>
+                        <span class="report-label">Stock Report</span>
+                      </div>
+                    </a>
+                    <div class="col-6 col-md-4 p-0 tenant-freezing-wrapper">
+                      <div class="report-card tenant-freezing-card">
+                        <div class="report-icon-wrapper icon-blue rounded-circle">
+                          <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <span class="report-label">Tenant Freezing Report</span>
+                        <i class="fas fa-chevron-right submenu-arrow"></i>
+                      </div>
+                      <div class="tenant-submenu">
+                        <a href="{%url 'adminapp:tenant_stock_summary'%}" class="submenu-item">
+                          <i class="fas fa-chart-line"></i>
+                          <span>Get Summary</span>
+                        </a>
+                        <a href="{%url 'adminapp:tenant_stock_balance'%}" class="submenu-item">
+                          <i class="fas fa-balance-scale"></i>
+                          <span>Get Balance</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <span class="report-label">Local Purchase Report</span>
             </div>
-          </a>
-          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:freezing_report'%}">
-            <div class="report-card">
-              <div class="report-icon-wrapper icon-teal rounded-circle">
-                <i class="fas fa-file-excel"></i>
-              </div>
-              <span class="report-label">Freezing Report</span>
-            </div>
-          </a>
-          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:report_list'%}">
-            <div class="report-card">
-              <div class="report-icon-wrapper icon-green rounded-circle">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <span class="report-label">Stock Report</span>
-            </div>
-          </a>
-          <div class="col-6 col-md-4 p-0 tenant-freezing-wrapper">
-            <div class="report-card tenant-freezing-card">
-              <div class="report-icon-wrapper icon-blue rounded-circle">
-                <i class="fas fa-file-invoice-dollar"></i>
-              </div>
-              <span class="report-label">Tenant Freezing Report</span>
-              <i class="fas fa-chevron-right submenu-arrow"></i>
-            </div>
-            <div class="tenant-submenu">
-              <a href="{%url 'adminapp:tenant_stock_summary'%}" class="submenu-item">
-                <i class="fas fa-chart-line"></i>
-                <span>Get Summary</span>
-              </a>
-              <a href="{%url 'adminapp:tenant_stock_balance'%}" class="submenu-item">
-                <i class="fas fa-balance-scale"></i>
-                <span>Get Balance</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</li>
+          </li>
 
-<style>
-  .report-nav-wrapper {
-    position: relative;
-    display: inline-block;
-  }
+          <style>
+            .report-nav-wrapper {
+              position: relative;
+              display: inline-block;
+            }
 
-  .report-trigger-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    background: rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 14px;
-    color: #495057;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(20px);
-    position: relative;
-    overflow: hidden;
-  }
+            .report-trigger-btn {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 48px;
+              height: 48px;
+              background: rgba(0, 0, 0, 0.06);
+              border: 1px solid rgba(0, 0, 0, 0.08);
+              border-radius: 14px;
+              color: #495057;
+              text-decoration: none;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              backdrop-filter: blur(20px);
+              position: relative;
+              overflow: hidden;
+            }
 
-  .report-trigger-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
+            .report-trigger-btn::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
+              opacity: 0;
+              transition: opacity 0.3s ease;
+            }
 
-  .report-trigger-btn:hover {
-    background: rgba(0, 0, 0, 0.12);
-    border-color: rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    color: #343a40;
-  }
+            .report-trigger-btn:hover {
+              background: rgba(0, 0, 0, 0.12);
+              border-color: rgba(0, 0, 0, 0.15);
+              transform: translateY(-2px);
+              box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+              color: #343a40;
+            }
 
-  .report-trigger-btn:hover::before {
-    opacity: 1;
-  }
+            .report-trigger-btn:hover::before {
+              opacity: 1;
+            }
 
-  .report-trigger-btn i {
-    font-size: 18px;
-    z-index: 2;
-    position: relative;
-  }
+            .report-trigger-btn i {
+              font-size: 18px;
+              z-index: 2;
+              position: relative;
+            }
 
-  .report-dropdown-panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 420px;
-    background: #ffffff;
-    backdrop-filter: blur(40px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 20px;
-    padding: 0;
-    box-shadow: 
-      0 20px 60px rgba(0, 0, 0, 0.1),
-      0 8px 25px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px) scale(0.95);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1000;
-    overflow: hidden;
-  }
+            .report-dropdown-panel {
+              position: absolute;
+              top: calc(100% + 8px);
+              right: 0;
+              width: 420px;
+              background: #ffffff;
+              backdrop-filter: blur(40px);
+              border: 1px solid rgba(0, 0, 0, 0.08);
+              border-radius: 20px;
+              padding: 0;
+              box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.1),
+                0 8px 25px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+              opacity: 0;
+              visibility: hidden;
+              transform: translateY(-10px) scale(0.95);
+              transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+              z-index: 1000;
+              overflow: hidden;
+            }
 
-  .report-nav-wrapper:hover .report-dropdown-panel {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-  }
+            .report-nav-wrapper:hover .report-dropdown-panel {
+              opacity: 1;
+              visibility: visible;
+              transform: translateY(0) scale(1);
+            }
 
-  .report-dropdown-panel::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
-  }
+            .report-dropdown-panel::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 1px;
+              background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+            }
 
-  .report-header-section {
-    padding: 24px 24px 16px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-    position: relative;
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  }
+            .report-header-section {
+              padding: 24px 24px 16px;
+              border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+              position: relative;
+              background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            }
 
-  .report-header-section .report-title {
-    display: block;
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 4px;
-    letter-spacing: -0.5px;
-  }
+            .report-header-section .report-title {
+              display: block;
+              font-size: 18px;
+              font-weight: 600;
+              color: #2c3e50;
+              margin-bottom: 4px;
+              letter-spacing: -0.5px;
+            }
 
-  .report-header-section .report-subtitle {
-    font-size: 13px;
-    color: rgba(0, 0, 0, 0.5);
-    font-weight: 400;
-    letter-spacing: 0.2px;
-  }
+            .report-header-section .report-subtitle {
+              font-size: 13px;
+              color: rgba(0, 0, 0, 0.5);
+              font-weight: 400;
+              letter-spacing: 0.2px;
+            }
 
-  .report-content-area {
-    max-height: 300px;
-    overflow-y: auto;
-    padding: 16px 24px 24px;
-    background: #ffffff;
-  }
+            .report-content-area {
+              max-height: 300px;
+              overflow-y: auto;
+              padding: 16px 24px 24px;
+              background: #ffffff;
+            }
 
-  .report-content-area::-webkit-scrollbar {
-    width: 4px;
-  }
+            .report-content-area::-webkit-scrollbar {
+              width: 4px;
+            }
 
-  .report-content-area::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 2px;
-  }
+            .report-content-area::-webkit-scrollbar-track {
+              background: rgba(0, 0, 0, 0.05);
+              border-radius: 2px;
+            }
 
-  .report-content-area::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 2px;
-  }
+            .report-content-area::-webkit-scrollbar-thumb {
+              background: rgba(0, 0, 0, 0.2);
+              border-radius: 2px;
+            }
 
-  .report-grid-container .report-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+            .report-grid-container .report-grid {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 12px;
+            }
 
-  .report-grid-container a {
-    flex: 0 0 calc(50% - 6px);
-    text-decoration: none;
-    position: relative;
-    display: block;
-  }
+            .report-grid-container a {
+              flex: 0 0 calc(50% - 6px);
+              text-decoration: none;
+              position: relative;
+              display: block;
+            }
 
-  .tenant-freezing-wrapper {
-    flex: 0 0 calc(50% - 6px);
-    position: relative;
-  }
+            .tenant-freezing-wrapper {
+              flex: 0 0 calc(50% - 6px);
+              position: relative;
+            }
 
-  .report-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px 16px;
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.06);
-    border-radius: 16px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-    min-height: 100px;
-    cursor: pointer;
-  }
+            .report-card {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              padding: 20px 16px;
+              background: rgba(0, 0, 0, 0.02);
+              border: 1px solid rgba(0, 0, 0, 0.06);
+              border-radius: 16px;
+              transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              position: relative;
+              overflow: hidden;
+              min-height: 100px;
+              cursor: pointer;
+            }
 
-  .tenant-freezing-card {
-    position: relative;
-  }
+            .tenant-freezing-card {
+              position: relative;
+            }
 
-  .submenu-arrow {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 10px;
-    color: rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s ease;
-  }
+            .submenu-arrow {
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              font-size: 10px;
+              color: rgba(0, 0, 0, 0.4);
+              transition: transform 0.3s ease;
+            }
 
-  .tenant-freezing-wrapper:hover .submenu-arrow {
-    transform: rotate(180deg);
-  }
+            .tenant-freezing-wrapper:hover .submenu-arrow {
+              transform: rotate(180deg);
+            }
 
-  .report-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    transition: left 0.6s ease;
-  }
+            .report-card::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+              transition: left 0.6s ease;
+            }
 
-  .report-card:hover {
-    background: rgba(0, 0, 0, 0.06);
-    border-color: rgba(0, 0, 0, 0.12);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
-  }
+            .report-card:hover {
+              background: rgba(0, 0, 0, 0.06);
+              border-color: rgba(0, 0, 0, 0.12);
+              transform: translateY(-3px);
+              box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            }
 
-  .report-card:hover::before {
-    left: 100%;
-  }
+            .report-card:hover::before {
+              left: 100%;
+            }
 
-/* wider submenu */
-.tenant-submenu {
-  position: absolute;
-  top: 0;
-  left: 100%;
-  margin-left: 8px;
+          /* wider submenu */
+          .tenant-submenu {
+            position: absolute;
+            top: 0;
+            left: 100%;
+            margin-left: 8px;
 
-  /* new width */
-  min-width: 200px;  /* adjust as you need */
-  /* or width: 200px; */
+            /* new width */
+            min-width: 200px;  /* adjust as you need */
+            /* or width: 200px; */
 
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 10;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-}
-  .tenant-freezing-wrapper:hover .tenant-submenu {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-  }
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+          }
+            .tenant-freezing-wrapper:hover .tenant-submenu {
+              opacity: 1;
+              visibility: visible;
+              transform: translateY(0);
+            }
 
- .submenu-item {
-  display: flex;
-  align-items: center;
-  white-space: nowrap; /* prevents wrapping to second line */
-  padding: 12px 16px;
-  text-decoration: none;
-  color: #495057;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-}
+          .submenu-item {
+            display: flex;
+            align-items: center;
+            white-space: nowrap; /* prevents wrapping to second line */
+            padding: 12px 16px;
+            text-decoration: none;
+            color: #495057;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+          }
 
-  .submenu-item:last-child {
-    border-bottom: none;
-  }
+            .submenu-item:last-child {
+              border-bottom: none;
+            }
 
-  .submenu-item:hover {
-    background: rgba(0, 0, 0, 0.04);
-    color: #2c3e50;
-    padding-left: 20px;
-  }
+            .submenu-item:hover {
+              background: rgba(0, 0, 0, 0.04);
+              color: #2c3e50;
+              padding-left: 20px;
+            }
 
-  .submenu-item i {
-    margin-right: 8px;
-    font-size: 12px;
-    width: 16px;
-    text-align: center;
-  }
+            .submenu-item i {
+              margin-right: 8px;
+              font-size: 12px;
+              width: 16px;
+              text-align: center;
+            }
 
-  .report-icon-wrapper {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
-  }
+            .report-icon-wrapper {
+              width: 44px;
+              height: 44px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 12px;
+              position: relative;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              transition: transform 0.3s ease;
+            }
 
-  .report-card:hover .report-icon-wrapper {
-    transform: scale(1.1);
-  }
+            .report-card:hover .report-icon-wrapper {
+              transform: scale(1.1);
+            }
 
-  .report-icon-wrapper i {
-    font-size: 18px;
-    color: white;
-    z-index: 2;
-    position: relative;
-  }
+            .report-icon-wrapper i {
+              font-size: 18px;
+              color: white;
+              z-index: 2;
+              position: relative;
+            }
 
-  .icon-red {
-    background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
-  }
+            .icon-red {
+              background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            }
 
-  .icon-orange {
-    background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
-  }
+            .icon-orange {
+              background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
+            }
 
-  .icon-teal {
-    background: linear-gradient(135deg, #26a69a 0%, #00acc1 100%);
-  }
+            .icon-teal {
+              background: linear-gradient(135deg, #26a69a 0%, #00acc1 100%);
+            }
 
-  .icon-green {
-    background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
-  }
+            .icon-green {
+              background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+            }
 
-  .icon-blue {
-    background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%);
-  }
+            .icon-blue {
+              background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%);
+            }
 
-  .icon-gray {
-    background: linear-gradient(135deg, #78909c 0%, #607d8b 100%);
-  }
+            .icon-gray {
+              background: linear-gradient(135deg, #78909c 0%, #607d8b 100%);
+            }
 
-  .report-card .report-label {
-    font-size: 13px;
-    color: #2c3e50;
-    font-weight: 500;
-    text-align: center;
-    line-height: 1.3;
-    letter-spacing: 0.1px;
-    transition: color 0.3s ease;
-  }
+            .report-card .report-label {
+              font-size: 13px;
+              color: #2c3e50;
+              font-weight: 500;
+              text-align: center;
+              line-height: 1.3;
+              letter-spacing: 0.1px;
+              transition: color 0.3s ease;
+            }
 
-  .report-card:hover .report-label {
-    color: #1a252f;
-  }
+            .report-card:hover .report-label {
+              color: #1a252f;
+            }
 
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+            @keyframes fadeIn {
+              from {
+                opacity: 0;
+                transform: translateY(-10px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
 
-  .animated.fadeIn {
-    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-</style>
+            .animated.fadeIn {
+              animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+          </style>
 
               <li class="nav-item topbar-user dropdown hidden-caret">
                 <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">

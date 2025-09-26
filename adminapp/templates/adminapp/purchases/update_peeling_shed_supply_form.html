@@ -1,8 +1,12 @@
-{% extends 'admin_base.html' %}
-{% block title %} Peeling Shed Supply Update {% endblock %}
-{% block content %}
-
-<style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <style>
     .main-wrapper {
         max-width: 1200px;
         margin: 0 auto;
@@ -434,7 +438,7 @@
         
         // Validate against available boxes
         if (boxesReceived > availableBoxes) {
-            alert(`Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available from this purchase.`);
+            alert(Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available from this purchase.);
             $("#id_boxes_received_shed").val(availableBoxes);
             boxesReceived = availableBoxes;
         }
@@ -460,7 +464,7 @@
         
         // Validate against available boxes
         if (boxesReceived > availableBoxes) {
-            alert(`Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available.`);
+            alert(Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available.);
             $("#id_boxes_received_shed").val(availableBoxes);
             boxesReceived = availableBoxes;
         }
@@ -484,7 +488,7 @@
                 <span style="color: ${data.is_fully_used ? '#dc2626' : '#059669'}; font-weight: bold;">
                     Available Boxes: ${data.available_boxes}
                 </span>
-                ${data.is_fully_used ? '<br><span style="color: #dc2626;">⚠️ This item is fully used!</span>' : ''}
+                ${data.is_fully_used ? '<br><span style="color: #dc2626;">⚠ This item is fully used!</span>' : ''}
             </div>
         `;
         
@@ -502,7 +506,7 @@
         }, function (data) {
             const select = $('#id_spot_purchase');
             select.empty().append('<option value="">Select Spot Purchase...</option>');
-            data.forEach(p => select.append(`<option value="${p.id}">${p.name}</option>`));
+            data.forEach(p => select.append(<option value="${p.id}">${p.name}</option>));
             $('#id_spot_purchase_item').empty().append('<option value="">Select Purchase Item...</option>');
             hideLoading('#id_spot_purchase');
             
@@ -526,7 +530,7 @@
             const select = $('#id_spot_purchase_item').empty().append('<option value="">Select Purchase Item...</option>');
             
             data.forEach(item => {
-                select.append(`<option value="${item.id}">${item.name}</option>`);
+                select.append(<option value="${item.id}">${item.name}</option>);
             });
             
             hideLoading('#id_spot_purchase_item');
@@ -569,7 +573,7 @@
             const currentReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
             if (currentReceived > data.available_boxes) {
                 // Don't auto-clear in update mode, just warn
-                showWarning(`Current value (${currentReceived}) exceeds available boxes (${data.available_boxes})`);
+                showWarning(Current value (${currentReceived}) exceeds available boxes (${data.available_boxes}));
             }
             
             // Disable form if no balance available
@@ -577,7 +581,7 @@
                 $("#id_boxes_received_shed").prop('disabled', true).attr('placeholder', 'No boxes available');
                 $("#id_SpotPurchase_balance_boxes").val(0);
             } else {
-                $("#id_boxes_received_shed").prop('disabled', false).attr('placeholder', `Max: ${data.available_boxes} boxes`);
+                $("#id_boxes_received_shed").prop('disabled', false).attr('placeholder', Max: ${data.available_boxes} boxes);
             }
             
             fields.forEach(field => hideLoading(field));
@@ -590,7 +594,7 @@
     // Show warning helper
     function showWarning(message) {
         $('.warning-msg').remove();
-        $("#id_boxes_received_shed").parent().append(`<small class="warning-msg" style="color: #f59e0b; font-weight: 500;">${message}</small>`);
+        $("#id_boxes_received_shed").parent().append(<small class="warning-msg" style="color: #f59e0b; font-weight: 500;">${message}</small>);
     }
 
     // Load Peeling charges dynamically
@@ -615,7 +619,7 @@
                     <div class="dynamic-input">
                         <label for="id_form-${i}-item_type">Type:</label>
                         <select name="form-${i}-item_type" id="id_form-${i}-item_type">
-                            ${pt.item_type_id ? `<option value="${pt.item_type_id}" selected>${pt.item_type_name}</option>` : `<option value="">------</option>`}
+                            ${pt.item_type_id ? <option value="${pt.item_type_id}" selected>${pt.item_type_name}</option> : <option value="">------</option>}
                         </select>
                     </div>
                     <div class="dynamic-input">
@@ -639,7 +643,7 @@
         const boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
         
         if (boxesReceived > availableBoxes) {
-            alert(`Cannot submit: ${boxesReceived} boxes exceeds available balance of ${availableBoxes} boxes.`);
+            alert(Cannot submit: ${boxesReceived} boxes exceeds available balance of ${availableBoxes} boxes.);
             return false;
         }
         
@@ -669,7 +673,7 @@
             if (value > availableBoxes && availableBoxes > 0) {
                 $(this).css('border-color', '#dc2626');
                 $(this).next('.error-msg').remove();
-                $(this).after(`<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>`);
+                $(this).after(<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>);
             } else {
                 $(this).css('border-color', '');
                 $(this).next('.error-msg').remove();
@@ -761,7 +765,7 @@
             if (value > availableBoxes && availableBoxes > 0) {
                 $(this).css('border-color', '#dc2626');
                 $(this).next('.error-msg').remove();
-                $(this).after(`<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>`);
+                $(this).after(<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>);
             } else {
                 $(this).css('border-color', '');
                 $(this).next('.error-msg').remove();
@@ -813,5 +817,5 @@
         }
     });
 </script>
-
-{% endblock %}
+</body>
+</html>
