@@ -3707,7 +3707,7 @@ def spot_purchase_report_print(request):
 # LOCAL PURCHASE REPORT - FIXED VERSION
 @check_permission('report_view')
 def local_purchase_report(request):
-    # ✅ Only get items, grades, categories, and species that exist in LocalPurchaseItem
+    # ✅ Only get items, grades, categories, species, and qualities that exist in LocalPurchaseItem
     items = Item.objects.filter(
         id__in=LocalPurchaseItem.objects.values_list('item_id', flat=True).distinct()
     ).distinct()
@@ -3717,15 +3717,21 @@ def local_purchase_report(request):
     ).distinct()
     
     categories = ItemCategory.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('item__category_id', flat=True).distinct()
+        id_in=LocalPurchaseItem.objects.values_list('item_category_id', flat=True).distinct()
     ).distinct()
     
     species = Species.objects.filter(
         id__in=LocalPurchaseItem.objects.values_list('species_id', flat=True).distinct()
     ).distinct()
 
+    # ✅ ADD: Get qualities that exist in LocalPurchaseItem
+    qualities = ItemQuality.objects.filter(
+        id__in=LocalPurchaseItem.objects.values_list('item_quality_id', flat=True).distinct()
+    ).distinct()
+
+    # ✅ FIXED: Added item_quality to select_related
     queryset = LocalPurchaseItem.objects.select_related(
-        "purchase", "item", "grade", "item__category", "species", "purchase__party_name"  # ✅ Added party_name relation
+        "purchase", "item", "grade", "item_category", "species", "item_quality", "purchase_party_name"
     )
 
     # ✅ Multi-select filters
@@ -3734,6 +3740,7 @@ def local_purchase_report(request):
     selected_categories = request.GET.getlist("categories")
     selected_parties = request.GET.getlist("parties")
     selected_species = request.GET.getlist("species")
+    selected_qualities = request.GET.getlist("qualities")  # ✅ ADD: Quality filter
     date_filter = request.GET.get("date_filter")
 
     # ✅ Date range filter
@@ -3744,45 +3751,48 @@ def local_purchase_report(request):
     party_search = request.GET.get("party_search", "").strip()
 
     if selected_items:
-        queryset = queryset.filter(item__id__in=selected_items)
+        queryset = queryset.filter(item_id_in=selected_items)
     if selected_grades:
-        queryset = queryset.filter(grade__id__in=selected_grades)
+        queryset = queryset.filter(grade_id_in=selected_grades)
     if selected_categories:
-        queryset = queryset.filter(item__category__id__in=selected_categories)
+        queryset = queryset.filter(item_categoryid_in=selected_categories)
     if selected_species:
-        queryset = queryset.filter(species__id__in=selected_species)
-    if selected_parties:  # ✅ Fixed party filter
-        queryset = queryset.filter(purchase__party_name__id__in=selected_parties)
-    if party_search:  # ✅ Fixed party search
-        queryset = queryset.filter(purchase__party_name__party__icontains=party_search)
+        queryset = queryset.filter(species_id_in=selected_species)
+    if selected_qualities:  # ✅ ADD: Quality filter
+        queryset = queryset.filter(item_quality_id_in=selected_qualities)
+    if selected_parties:
+        queryset = queryset.filter(purchase_party_nameid_in=selected_parties)
+    if party_search:
+        queryset = queryset.filter(purchase_party_nameparty_icontains=party_search)
 
     # ✅ Quick date filter
     if date_filter == "week":
-        queryset = queryset.filter(purchase__date__gte=now().date() - timedelta(days=7))
+        queryset = queryset.filter(purchase_date_gte=now().date() - timedelta(days=7))
     elif date_filter == "month":
-        queryset = queryset.filter(purchase__date__month=now().month)
+        queryset = queryset.filter(purchase_date_month=now().month)
     elif date_filter == "year":
-        queryset = queryset.filter(purchase__date__year=now().year)
+        queryset = queryset.filter(purchase_date_year=now().year)
 
     # ✅ Custom date range
     if start_date and end_date:
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
             end = datetime.strptime(end_date, "%Y-%m-%d").date()
-            queryset = queryset.filter(purchase__date__range=[start, end])
+            queryset = queryset.filter(purchase_date_range=[start, end])
         except:
             pass
 
-    # ✅ Group & summary - FIXED party access
+    # ✅ Group & summary - ADDED quality field
     summary = (
         queryset.values(
             "item__name",
-            "item__category__name",
+            "item_category_name",
             "species__name",
             "grade__grade",
-            "purchase__party_name__party",  # ✅ FIXED: Access the party field
-            "purchase__party_name__district",  # ✅ Also get district
-            "purchase__party_name__state",     # ✅ Also get state
+            "item_quality__quality",  # ✅ ADD: Quality field
+            "purchase_party_name_party",
+            "purchase_party_name_district",
+            "purchase_party_name_state",
             "purchase__voucher_number",
             "purchase__date",
         )
@@ -3794,7 +3804,7 @@ def local_purchase_report(request):
         .order_by("purchase__date")
     )
 
-    # ✅ Get unique parties for filter dropdown - FIXED
+    # ✅ Get unique parties for filter dropdown
     parties = LocalParty.objects.filter(
         id__in=LocalPurchase.objects.values_list('party_name_id', flat=True).distinct()
     ).distinct().order_by('party')
@@ -3819,17 +3829,19 @@ def local_purchase_report(request):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="local_purchase_report.csv"'
         writer = csv.writer(response)
-        writer.writerow(["Date", "Voucher No", "Party", "District", "State", "Item", "Grade", "Category", "Species", "Quantity", "Amount", "Avg Rate"])
+        # ✅ ADD: Quality column to CSV header
+        writer.writerow(["Date", "Voucher No", "Party", "District", "State", "Item", "Quality", "Grade", "Category", "Species", "Quantity", "Amount", "Avg Rate"])
         for row in summary:
             writer.writerow([
                 row["purchase__date"],
                 row["purchase__voucher_number"],
-                row["purchase__party_name__party"],  # ✅ FIXED
-                row["purchase__party_name__district"] or "N/A",  # ✅ NEW
-                row["purchase__party_name__state"] or "N/A",     # ✅ NEW
+                row["purchase_party_name_party"],
+                row["purchase_party_name_district"] or "N/A",
+                row["purchase_party_name_state"] or "N/A",
                 row["item__name"],
+                row["item_quality__quality"] or "N/A",  # ✅ ADD: Quality data
                 row["grade__grade"] or "N/A",
-                row["item__category__name"],
+                row["item_category_name"],
                 row["species__name"] or "N/A",
                 row["total_quantity"],
                 row["total_amount"],
@@ -3842,23 +3854,25 @@ def local_purchase_report(request):
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
         worksheet = workbook.add_worksheet("Report")
 
-        headers = ["Date", "Voucher No", "Party", "District", "State", "Item", "Grade", "Category", "Species", "Quantity", "Amount", "Avg Rate"]
+        # ✅ ADD: Quality column to Excel header
+        headers = ["Date", "Voucher No", "Party", "District", "State", "Item", "Quality", "Grade", "Category", "Species", "Quantity", "Amount", "Avg Rate"]
         for col, header in enumerate(headers):
             worksheet.write(0, col, header)
 
         for row_idx, row in enumerate(summary, start=1):
             worksheet.write(row_idx, 0, str(row["purchase__date"]))
             worksheet.write(row_idx, 1, row["purchase__voucher_number"])
-            worksheet.write(row_idx, 2, row["purchase__party_name__party"])  # ✅ FIXED
-            worksheet.write(row_idx, 3, row["purchase__party_name__district"] or "N/A")  # ✅ NEW
-            worksheet.write(row_idx, 4, row["purchase__party_name__state"] or "N/A")     # ✅ NEW
+            worksheet.write(row_idx, 2, row["purchase_party_name_party"])
+            worksheet.write(row_idx, 3, row["purchase_party_name_district"] or "N/A")
+            worksheet.write(row_idx, 4, row["purchase_party_name_state"] or "N/A")
             worksheet.write(row_idx, 5, row["item__name"])
-            worksheet.write(row_idx, 6, row["grade__grade"] or "N/A")
-            worksheet.write(row_idx, 7, row["item__category__name"])
-            worksheet.write(row_idx, 8, row["species__name"] or "N/A")
-            worksheet.write(row_idx, 9, row["total_quantity"])
-            worksheet.write(row_idx, 10, row["total_amount"])
-            worksheet.write(row_idx, 11, round(row["avg_rate"], 2) if row["avg_rate"] else 0)
+            worksheet.write(row_idx, 6, row["item_quality__quality"] or "N/A")  # ✅ ADD: Quality data
+            worksheet.write(row_idx, 7, row["grade__grade"] or "N/A")
+            worksheet.write(row_idx, 8, row["item_category_name"])
+            worksheet.write(row_idx, 9, row["species__name"] or "N/A")
+            worksheet.write(row_idx, 10, row["total_quantity"])
+            worksheet.write(row_idx, 11, row["total_amount"])
+            worksheet.write(row_idx, 12, round(row["avg_rate"], 2) if row["avg_rate"] else 0)
 
         workbook.close()
         output.seek(0)
@@ -3877,11 +3891,13 @@ def local_purchase_report(request):
             "categories": categories,
             "species": species,
             "parties": parties,
+            "qualities": qualities,  # ✅ ADD: Pass qualities to template
             "selected_items": selected_items,
             "selected_grades": selected_grades,
             "selected_categories": selected_categories,
             "selected_species": selected_species,
-            "selected_parties": selected_parties,  # ✅ Added this
+            "selected_parties": selected_parties,
+            "selected_qualities": selected_qualities,  # ✅ ADD: Pass selected qualities
             "date_filter": date_filter,
             "start_date": start_date,
             "end_date": end_date,
@@ -3889,6 +3905,113 @@ def local_purchase_report(request):
         },
     )
 
+@check_permission('report_export')
+def local_purchase_report_print(request):
+    """Separate view specifically for print format"""
+    # ✅ Only get data that exists in LocalPurchaseItem
+    items = Item.objects.filter(
+        id__in=LocalPurchaseItem.objects.values_list('item_id', flat=True).distinct()
+    ).distinct()
+    
+    grades = ItemGrade.objects.filter(
+        id__in=LocalPurchaseItem.objects.values_list('grade_id', flat=True).distinct()
+    ).distinct()
+    
+    categories = ItemCategory.objects.filter(
+        id_in=LocalPurchaseItem.objects.values_list('item_category_id', flat=True).distinct()
+    ).distinct()
+    
+    species = Species.objects.filter(
+        id__in=LocalPurchaseItem.objects.values_list('species_id', flat=True).distinct()
+    ).distinct()
+
+    # ✅ FIXED: Added item_quality to select_related
+    queryset = LocalPurchaseItem.objects.select_related(
+        "purchase", "item", "grade", "item_category", "species", "item_quality", "purchase_party_name"
+    )
+
+    # Apply the same filters as main view
+    selected_items = request.GET.getlist("items")
+    selected_grades = request.GET.getlist("grades")
+    selected_categories = request.GET.getlist("categories")
+    selected_parties = request.GET.getlist("parties")
+    selected_species = request.GET.getlist("species")
+    selected_qualities = request.GET.getlist("qualities")  # ✅ ADD: Quality filter
+    date_filter = request.GET.get("date_filter")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+    party_search = request.GET.get("party_search", "").strip()
+
+    if selected_items:
+        queryset = queryset.filter(item_id_in=selected_items)
+    if selected_grades:
+        queryset = queryset.filter(grade_id_in=selected_grades)
+    if selected_categories:
+        queryset = queryset.filter(item_categoryid_in=selected_categories)
+    if selected_species:
+        queryset = queryset.filter(species_id_in=selected_species)
+    if selected_qualities:  # ✅ ADD: Quality filter
+        queryset = queryset.filter(item_quality_id_in=selected_qualities)
+    if selected_parties:
+        queryset = queryset.filter(purchase_party_nameid_in=selected_parties)
+    if party_search:
+        queryset = queryset.filter(purchase_party_nameparty_icontains=party_search)
+
+    if date_filter == "week":
+        queryset = queryset.filter(purchase_date_gte=now().date() - timedelta(days=7))
+    elif date_filter == "month":
+        queryset = queryset.filter(purchase_date_month=now().month)
+    elif date_filter == "year":
+        queryset = queryset.filter(purchase_date_year=now().year)
+
+    if start_date and end_date:
+        try:
+            start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end = datetime.strptime(end_date, "%Y-%m-%d").date()
+            queryset = queryset.filter(purchase_date_range=[start, end])
+        except:
+            pass
+
+    # ✅ FIXED: Added quality field to summary
+    summary = (
+        queryset.values(
+            "item__name",
+            "item_category_name",
+            "species__name",
+            "grade__grade",
+            "item_quality__quality",  # ✅ ADD: Quality field
+            "purchase_party_name_party",
+            "purchase_party_name_district",
+            "purchase_party_name_state",
+            "purchase__voucher_number",
+            "purchase__date",
+        )
+        .annotate(
+            total_quantity=Sum("quantity"),
+            total_amount=Sum("amount"),
+            avg_rate=Sum(F("amount"), output_field=FloatField()) / Sum(F("quantity"), output_field=FloatField()),
+        )
+        .order_by("purchase__date")
+    )
+
+    return render(
+        request,
+        "adminapp/report/local_purchase_report_print.html",
+        {
+            "summary": summary,
+            "start_date": start_date,
+            "end_date": end_date,
+            "selected_items": selected_items,
+            "selected_grades": selected_grades,
+            "selected_categories": selected_categories,
+            "selected_species": selected_species,
+            "selected_parties": selected_parties,
+            "selected_qualities": selected_qualities,  # ✅ ADD: Pass selected qualities
+            "party_search": party_search,
+        },
+    )
+
+    
 @check_permission('report_export')
 def local_purchase_report_print(request):
     """Separate view specifically for print format"""

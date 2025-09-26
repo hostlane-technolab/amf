@@ -470,7 +470,7 @@
                 <th>Date</th>
                 <th>Voucher No</th>
                 <th>Party</th>
-                <th>Item</th>
+                <th>Item Sub</th>
                 <th>Species</th>
                 <th>Grade</th>
                 <th>Quantity</th>
@@ -484,7 +484,7 @@
                 <td class="date-cell">{{ row.purchase__date|date:"d/m/Y" }}</td>
                 <td class="voucher-cell">{{ row.purchase__voucher_number }}</td>
                 <td class="party-cell">{{ row.purchase__party_name__party }}</td>
-                <td class="item-cell">{{ row.item__name }}</td>
+                <td class="item-cell">{{ row.item_quality__quality }}</td>
                 <td>
                     {% if row.species__name %}
                         <span class="species-cell">{{ row.species__name }}</span>
