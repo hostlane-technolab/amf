@@ -423,6 +423,7 @@
                     <th>Processing Center</th>
                     <th>Store</th>
                     <th>Item</th>
+                    <th>Item Sub</th>
                     <th>Unit</th>
                     <th>Glaze %</th>
                     <th>Category</th>
@@ -445,6 +446,7 @@
                     <td>{{ item.processing_center|default:"-" }}</td>
                     <td>{{ item.store|default:"-" }}</td>
                     <td><strong>{{ item.item }}</strong></td>
+                    <td>{{ item.item_quality }}</td>
                     <td>{{ item.unit }}</td>
                     <td class="percentage-cell">{{ item.glaze }}%</td>
                     <td>{{ item.freezing_category }}</td>

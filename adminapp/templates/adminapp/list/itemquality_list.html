@@ -16,13 +16,13 @@
                   <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                  <a href="{%url 'adminapp:item_quality_list'%}">Item Qualities</a>
+                  <a href="{%url 'adminapp:item_quality_list'%}">Item Subs</a>
                 </li>
                 <li class="separator">
                   <i class="icon-arrow-right"></i>
                 </li>
                 <li class="nav-item">
-                  <a href="{%url 'adminapp:item_quality_create'%}">Create Quality</a>
+                  <a href="{%url 'adminapp:item_quality_create'%}">Create Item Sub</a>
                 </li>
               </ul>
             </div>
@@ -36,8 +36,8 @@
               <i class="fas fa-star"></i>
             </div>
             <div>
-              <h3 class="card-title mb-0 fw-bold">Item Qualities</h3>
-              <p class="text-muted mb-0 fs-6">Manage item quality standards and specifications</p>
+              <h3 class="card-title mb-0 fw-bold">Item Subs</h3>
+              <p class="text-muted mb-0 fs-6">Manage item subs standards and specifications</p>
             </div>
           </div>
           
@@ -46,7 +46,7 @@
             <div class="search-box-wrapper">
               <div class="search-input-group">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search qualities...">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search subs...">
                 <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
                   <i class="fas fa-times"></i>
                 </button>
@@ -55,7 +55,7 @@
             
             <div class="stats-badge">
               <span class="badge bg-light text-dark px-3 py-2 fs-6">
-                <i class="fas fa-clipboard-list me-2"></i><span id="qualityCount">{{ object_list|length }}</span> Qualities
+                <i class="fas fa-clipboard-list me-2"></i><span id="qualityCount">{{ object_list|length }}</span> Subs
               </span>
             </div>
           </div>
@@ -70,13 +70,13 @@
                 <th class="table-header">
                   <div class="header-content">
                     <i class="fas fa-hashtag header-icon"></i>
-                    <span class="header-text">ID</span>
+                    <span class="header-text">NO</span>
                   </div>
                 </th>
                 <th class="table-header">
                   <div class="header-content">
                     <i class="fas fa-star header-icon"></i>
-                    <span class="header-text">Quality Name</span>
+                    <span class="header-text">Sub Name</span>
                   </div>
                 </th>
                 <th class="table-header">
@@ -105,7 +105,7 @@
               <tr class="table-row" data-searchable="{{ obj.quality|lower }} {{ obj.code|lower }} {{ obj.item.name|lower }}">
                 <td class="table-cell">
                   <div class="id-badge">
-                    #{{ obj.id }}
+                    {{ forloop.counter }}
                   </div>
                 </td>
                 
@@ -116,7 +116,7 @@
                     </div>
                     <div class="quality-details">
                       <div class="quality-name">{{ obj.quality }}</div>
-                      <div class="quality-meta">Quality Standard</div>
+                      <div class="quality-meta">Item sub</div>
                     </div>
                   </div>
                 </td>

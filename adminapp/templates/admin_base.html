@@ -144,6 +144,48 @@
     }
   </style>
 
+
+<style>
+  /* Fix navbar width properly */
+.navbar-header {
+  width: 97% !important;
+  margin-left: 0 !important;
+
+}
+
+.navbar-header .container-fluid {
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 !important;
+}
+
+/* Ensure main header takes full width */
+.main-header {
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+/* Mobile specific */
+@media (max-width: 991px) {
+  .main-panel {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .main-header {
+    width: 100% !important;
+    left: 0 !important;
+  }
+}
+
+/* Desktop specific */
+@media (min-width: 992px) {
+  .main-panel {
+    margin-left: 60px !important;
+    width: calc(100% - 60px) !important;
+  }
+}
+</style>
   <!-- Fonts and icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     integrity="sha512-dymN7x4vS+U/n2Pb5L3PvGj3g3xFhPtX2+oCFYoMumOqUg6G4z5fdbUu9Qafj0pychj1zLkUp1tb6dXHjdXpwA=="
@@ -183,747 +225,783 @@
 <body>
 
   <div class="wrapper">
-    <!-- Sidebar -->
-    <div class="sidebar" data-background-color="dark">
+<!-- Sidebar -->
+      <div class="sidebar" data-background-color="dark">
       <div class="sidebar-logo">
       </div>
       <div class="sidebar-wrapper scrollbar scrollbar-inner">
-        <div class="sidebar-content">
-          <ul class="nav nav-secondary">
-            <li class="nav-item active">
-              <a href="{%url 'adminapp:admin_dashboard'%}" class="collapsed" aria-expanded="false">
-                <i class="fas fa-home"></i>
-                <p>Admin Panel</p>
-              </a>
-            </li>
+      <div class="sidebar-content">
+        <ul class="nav nav-secondary">
+          <li class="nav-item active">
+            <a href="{% url 'adminapp:admin_dashboard' %}" class="collapsed" aria-expanded="false">
+              <i class="fas fa-home"></i>
+              <p>Admin Panel</p>
+            </a>
+          </li>
 
-            <li class="nav-section">
-              <span class="sidebar-mini-icon">
-                <i class="fa fa-ellipsis-h"></i>
-              </span>
-              <h4 class="text-section">MANAGEMENT</h4>
-            </li>
+          <li class="nav-section">
+            <span class="sidebar-mini-icon">
+              <i class="fa fa-ellipsis-h"></i>
+            </span>
+            <h4 class="text-section">MANAGEMENT</h4>
+          </li>
 
-            <!-- Locations -->
-            <!-- Locations -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#locations">
-                <i class="fa-solid fa-user"></i>
-                <p>User Management</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="locations">
-                <ul class="nav nav-collapse">
-                  <!-- Processing Centers with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#processing-centers">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-user"></i>
-                        Users
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="processing-centers">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:users_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:create_user' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Add
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </li>
+          <!-- User Management - Show if user has user management permissions -->
+          {% if user_permissions.can_manage_users %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#locations">
+              <i class="fa-solid fa-user"></i>
+              <p>User Management</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="locations">
+              <ul class="nav nav-collapse">
+                <li>
+                  <a data-bs-toggle="collapse" href="#processing-centers">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-user"></i>
+                      Users
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="processing-centers">
+                    <ul class="nav nav-collapse subnav">
+                      <li>
+                        <a href="{% url 'adminapp:users_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="{% url 'adminapp:create_user' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Add
+                          </span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-            <!-- Personnel -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#purchase">
-                <i class="fas fa-shopping-cart"></i>
-                <p>Purchase Management</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="purchase">
-                <ul class="nav nav-collapse">
+          <!-- Purchase Management - Show if user has purchasing permissions -->
+          {% if user_permissions.can_view_purchasing or user_permissions.can_add_purchasing %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#purchase">
+              <i class="fas fa-shopping-cart"></i>
+              <p>Purchase Management</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="purchase">
+              <ul class="nav nav-collapse">
 
-                  <!-- Spot Purchase -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#spot-purchase">
-                      <span class="sub-item">
-                        <i class="fas fa-bolt"></i>
-                        Spot Purchase
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="spot-purchase">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:spot_purchase_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:spot_purchase_add' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                <!-- Spot Purchase -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#spot-purchase">
+                    <span class="sub-item">
+                      <i class="fas fa-bolt"></i>
+                      Spot Purchase
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="spot-purchase">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_purchasing %}
+                      <li>
+                        <a href="{% url 'adminapp:spot_purchase_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_purchasing %}
+                      <li>
+                        <a href="{% url 'adminapp:spot_purchase_add' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-                  <!-- Local Purchase -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#local-purchase">
-                      <span class="sub-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        Local Purchase
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="local-purchase">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:local_purchase_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:local_purchase_create' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                <!-- Local Purchase -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#local-purchase">
+                    <span class="sub-item">
+                      <i class="fas fa-map-marker-alt"></i>
+                      Local Purchase
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="local-purchase">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_purchasing %}
+                      <li>
+                        <a href="{% url 'adminapp:local_purchase_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_purchasing %}
+                      <li>
+                        <a href="{% url 'adminapp:local_purchase_create' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-                  <!-- Spot Purchase Workout -->
-                  <li>
-                    <a  href="{% url 'adminapp:spot_purchase_workout_summary' %}">
-                      <span class="sub-item">
-                        <i class="fas fa-dumbbell"></i>
-                        Spot Workout
-                      </span>
-                    </a>
-                  </li>
+                <!-- Spot Purchase Workout -->
+                {% if user_permissions.can_view_purchasing %}
+                <li>
+                  <a href="{% url 'adminapp:spot_purchase_workout_summary' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-dumbbell"></i>
+                      Spot Workout
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-                  <!-- Local Purchase Workout -->
-                  <li>
-                    <a  href="{% url 'adminapp:local_purchase_workout_summary' %}">
-                      <span class="sub-item">
-                        <i class="fas fa-running"></i>
-                        Local Workout
-                      </span>
-                    </a>
-                  </li>
+                <!-- Local Purchase Workout -->
+                {% if user_permissions.can_view_purchasing %}
+                <li>
+                  <a href="{% url 'adminapp:local_purchase_workout_summary' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-running"></i>
+                      Local Workout
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-                </ul>
-              </div>
-            </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
+          <!-- Processing Operations - Show if user has processing permissions -->
+          {% if user_permissions.can_view_processing %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#products">
+              <i class="fa-solid fa-gear"></i>
+              <p>Processing Operations</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="products">
+              <ul class="nav nav-collapse">
+                <!-- Peeling Types with sub-menu -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#peeling-types">
+                    <span class="sub-item">
+                      <i class="fas fa-layer-group"></i>
+                      Peeling Shed
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="peeling-types">
+                    <ul class="nav nav-collapse subnav">
+                      <li>
+                        <a href="{% url 'adminapp:peeling_shed_supply_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="{% url 'adminapp:create_peeling_shed_supply' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-            <!-- Products -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#products">
-                <i class="fa-solid fa-gear"></i>
-                <p>Processing Operations</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="products">
-                <ul class="nav nav-collapse">
+          <!-- Freezing Operations - Show if user has freezing permissions -->
+          {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#financial">
+              <i class="fa-solid fa-snowflake"></i>
+              <p>Freezing Operations</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="financial">
+              <ul class="nav nav-collapse">
+                <!-- Spot Freezing Entry -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#tenants">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-shop"></i>
+                      Spot Freezing Entry
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="tenants">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:freezing_entry_spot_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:freezing_entry_spot_create' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-                  <!-- Peeling Types with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#peeling-types">
-                      <span class="sub-item">
-                        <i class="fas fa-layer-group"></i>
-                        Peeling Shed
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="peeling-types">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:peeling_shed_supply_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:create_peeling_shed_supply' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </li>
+                <!-- Local Freezing Entry -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#purchase-overheads">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      Local Freezing <br>Entry
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="purchase-overheads">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:freezing_entry_local_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:freezing_entry_local_create' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-            <!-- Financial -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#financial">
-                <i class="fa-solid fa-snowflake"></i>
-                <p>Freezing Operations</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="financial">
-                <ul class="nav nav-collapse">
-                  <!-- Tenants with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#tenants">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-shop"></i>
-                        Spot Freezing Entry
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="tenants">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:freezing_entry_spot_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:freezing_entry_spot_create' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                <!-- Tenant Freezing Entry -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#tenant-freezing">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-snowflake"></i>
+                      Tenant Freezing <br>Entry
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="tenant-freezing">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:list_freezing_entry_tenant' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:create_freezing_entry_tenant' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-                  <!-- Purchase Overheads with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#purchase-overheads">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        Local Freezing <br>Entry
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="purchase-overheads">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:freezing_entry_local_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:freezing_entry_local_create' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                <!-- Return Tenant Freezing Entry -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#return-tenant">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-snowflake"></i>
+                      Return Tenant Freezing Entry
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="return-tenant">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:list_return_tenant' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_freezing %}
+                      <li>
+                        <a href="{% url 'adminapp:create_return_tenant' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-                  <li>
-                    <a data-bs-toggle="collapse" href="#tenant-freezing">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-snowflake"></i>
-                        Tenant Freezing <br>Entry
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="tenant-freezing">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:list_freezing_entry_tenant' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:create_freezing_entry_tenant' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                <!-- Freezing Workout -->
+                {% if user_permissions.can_view_freezing %}
+                <li>
+                  <a href="{% url 'adminapp:freezing_workout' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-warehouse"></i>
+                      Freezing Workout
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-                  <li>
-                    <a data-bs-toggle="collapse" href="#return-tenant">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-snowflake"></i>
-                        Return Tenant Freezing Entry
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="return-tenant">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:list_return_tenant' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:create_return_tenant' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-                  <!-- Peeling Overheads with sub-menu -->
-                  <li>
-                    <a href="{% url 'adminapp:freezing_workout' %}">
-                      <span class="sub-item">
-                        <i class="fas fa-warehouse"></i>
-                        Freezing Workout
-                      </span>
-                    </a>
-                  </li>
+          <!-- Shipping Operations - Show if user has shipping permissions -->
+          {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#shipping">
+              <i class="fa-solid fa-truck-fast"></i>
+              <p>Shipping Operations</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="shipping">
+              <ul class="nav nav-collapse">
+                <!-- Pre Shipment Workout -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#preshipment">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-shop"></i>
+                      Pre Shipment <br>Workout
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="preshipment">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_shipping %}
+                      <li>
+                        <a href="{% url 'adminapp:preshipment_workout_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_shipping %}
+                      <li>
+                        <a href="{% url 'adminapp:create_preshipment_workout' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-                </ul>
-              </div>
-            </li>
+                <!-- Stock Transaction -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#store-transaction">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-tent-arrow-left-right"></i>
+                      Stock Transaction
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="store-transaction">
+                    <ul class="nav nav-collapse subnav">
+                      {% if user_permissions.can_view_shipping %}
+                      <li>
+                        <a href="{% url 'adminapp:store_transfer_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                      {% if user_permissions.can_add_shipping %}
+                      <li>
+                        <a href="{% url 'adminapp:create_store_transfer' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                      {% endif %}
+                    </ul>
+                  </div>
+                </li>
 
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#shipping">
-                <i class="fa-solid fa-truck-fast"></i>
-                <p>Shipping Operations</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="shipping">
-                <ul class="nav nav-collapse">
-                  <!-- Tenants with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#tenants">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-shop"></i>
-                        Pre Shipment <br>Workout
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="tenants">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:preshipment_workout_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:create_preshipment_workout' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-                  <li>
-                    <a data-bs-toggle="collapse" href="#store-transaction">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-tent-arrow-left-right"></i>
-                        Stock Transcation
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="store-transaction">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:store_transfer_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:create_store_transfer' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+          <!-- Master Dashboard - Show if user has master data permissions -->
+          {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
+          <li class="nav-item">
+            <a href="{% url 'adminapp:master' %}">
+              <i class="fas fa-tachometer-alt"></i>
+              <p>Master Dashboard</p>
+            </a>
+          </li>
+          {% endif %}
 
+          <li class="nav-section">
+            <span class="sidebar-mini-icon">
+              <i class="fa fa-ellipsis-h"></i>
+            </span>
+            <h4 class="text-section">System</h4>
+          </li>
 
-                </ul>
-              </div>
-            </li>
+          <!-- Billing Operations - Show if user has billing permissions -->
+          {% if user_permissions.can_view_billing %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#bill">
+              <i class="fa-solid fa-file"></i>
+              <p>Billing Operations</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="bill">
+              <ul class="nav nav-collapse">
+                <!-- Tenant Bill -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#tenant-bill">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-shop"></i>
+                      Tenant Bill
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="tenant-bill">
+                    <ul class="nav nav-collapse subnav">
+                      <li>
+                        <a href="{% url 'adminapp:bill_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="{% url 'adminapp:generate_manual_bill' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
 
+                <!-- Main Stock Bill -->
+                <li>
+                  <a data-bs-toggle="collapse" href="#main-bill">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-file-import"></i>
+                      Main Stock Bill
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="main-bill">
+                    <ul class="nav nav-collapse subnav">
+                      <li>
+                        <a href="{% url 'adminapp:bill_list' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-list"></i>
+                            List
+                          </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="{% url 'adminapp:generate_manual_bill' %}">
+                          <span class="sub-item">
+                            <i class="fas fa-plus"></i>
+                            Create
+                          </span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
 
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-            <!-- Masters Dashboard -->
-            <li class="nav-item">
-              <a href="{% url 'adminapp:master' %}">
-                <i class="fas fa-tachometer-alt"></i>
-                <p>Master Dashboard
-                </p>
-              </a>
-            </li>
+          <!-- Profile & Settings - Always show -->
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#profile">
+              <i class="fas fa-user-circle"></i>
+              <p>Profile & Settings</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="profile">
+              <ul class="nav nav-collapse">
+                <li>
+                  <a href="#">
+                    <span class="sub-item">
+                      <i class="fas fa-user-edit"></i>
+                      Profile Settings
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                    <span class="sub-item">
+                      <i class="fas fa-cog"></i>
+                      System Settings
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#">
+                    <span class="sub-item">
+                      <i class="fas fa-database"></i>
+                      Backup & Restore
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </li>
 
-            <li class="nav-section">
-              <span class="sidebar-mini-icon">
-                <i class="fa fa-ellipsis-h"></i>
-              </span>
-              <h4 class="text-section">System</h4>
-            </li>
+          <!-- Reports - Show if user has reports permissions -->
+          {% if user_permissions.can_view_reports %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#report">
+              <i class="fas fa-chart-line"></i>
+              <p>Reports</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="report">
+              <ul class="nav nav-collapse">
+                {% if user_permissions.can_view_purchasing %}
+                <li>
+                  <a href="{% url 'adminapp:spot_purchase_report' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      Spot Purchase Report
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
+                
+                {% if user_permissions.can_view_purchasing %}
+                <li>
+                  <a href="{% url 'adminapp:local_purchase_report' %}">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-house-chimney"></i>
+                      Local Purchase Report
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
+                {% if user_permissions.can_view_freezing %}
+                <li>
+                  <a href="{% url 'adminapp:freezing_report' %}">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-snowflake"></i>
+                      Freezing Report
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-                        <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#bill">
-                <i class="fa-solid fa-file"></i>
-                <p>Billing Operations</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="bill">
-                <ul class="nav nav-collapse">
-                  <!-- Tenants with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#tenants">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-shop"></i>
-                        Tenant Bill
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="tenants">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:bill_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:generate_manual_bill' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                  <li>
-                    <a data-bs-toggle="collapse" href="#main">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-file-import"></i>
-                        Main Stock Bill
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="main">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{% url 'adminapp:bill_list' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-list"></i>
-                              List
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{% url 'adminapp:generate_manual_bill' %}">
-                            <span class="sub-item">
-                              <i class="fas fa-plus"></i>
-                              Create
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
+                <li>
+                  <a href="{% url 'adminapp:report_list' %}">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-snowflake"></i>
+                      Stock Report
+                    </span>
+                  </a>
+                </li>
 
+                <!-- Tenant Freezing Report -->
+                {% if user_permissions.can_view_freezing %}
+                <li>
+                  <a data-bs-toggle="collapse" href="#tenant-report">
+                    <span class="sub-item">
+                      <i class="fas fa-layer-group"></i>
+                      Tenant Freezing Report
+                      <span class="caret"></span>
+                    </span>
+                  </a>
+                  <div class="collapse" id="tenant-report">
+                    <ul class="nav nav-collapse subnav">
+                      <li>
+                        <a href="{% url 'adminapp:tenant_stock_summary' %}">
+                          <span class="sub-item">
+                            <i class="fa-solid fa-file"></i>
+                            Get Summary
+                          </span>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="{% url 'adminapp:tenant_stock_balance' %}">
+                          <span class="sub-item">
+                            <i class="fa-solid fa-file"></i>
+                            Get Balance
+                          </span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-                </ul>
-              </div>
-            </li>
+          <!-- Voucher - Show if user has voucher permissions -->
+          {% if user_permissions.can_view_voucher or user_permissions.can_add_voucher %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#voucher">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <p>Voucher</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="voucher">
+              <ul class="nav nav-collapse">
 
+                {% if user_permissions.can_add_voucher %}
+                <li>
+                  <a href="{% url 'adminapp:spotagentvoucher_create' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      Spot agent voucher
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
+                {% if user_permissions.can_add_voucher %}
+                <li>
+                  <a href="{% url 'adminapp:supervisorvoucher_create' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      Spot supervisor voucher
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-            <!-- Profile & Settings -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#profile">
-                <i class="fas fa-user-circle"></i>
-                <p>Profile & Settings</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="profile">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="#">
-                      <span class="sub-item">
-                        <i class="fas fa-user-edit"></i>
-                        Profile Settings
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#">
-                      <span class="sub-item">
-                        <i class="fas fa-cog"></i>
-                        System Settings
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#">
-                      <span class="sub-item">
-                        <i class="fas fa-database"></i>
-                        Backup & Restore
-                      </span>
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
+                {% if user_permissions.can_add_voucher %}
+                <li>
+                  <a href="{% url 'adminapp:localpurchasevoucher_create' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      local purchase voucher
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-            <!-- report -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#report">
-                <i class="fas fa-chart-line"></i> <!-- General reports icon -->
-                <p>Reports</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="report">
-                <ul class="nav nav-collapse">
-                  <li>
-                    <a href="{%url 'adminapp:spot_purchase_report'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        Spot Purchase Report
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{%url 'adminapp:local_purchase_report'%}">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-house-chimney"></i>
-                        Local Purchase Report
-                      </span>
-                    </a>
-                  </li>
-                  <!-- <li>
-                    <a href="{%url 'adminapp:peeling_shed_supply_report'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-receipt"></i>
-                        Peeling Shed Report
-                      </span>
-                    </a>
-                  </li> -->
-                  <li>
-                    <a href="{%url 'adminapp:freezing_report'%}">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-snowflake"></i>
-                        Freezing Report
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{%url 'adminapp:report_list'%}">
-                      <span class="sub-item">
-                        <i class="fa-solid fa-snowflake"></i>
-                        Stock Report
-                      </span>
-                    </a>
-                  </li>
-                  <!-- Peeling Types with sub-menu -->
-                  <li>
-                    <a data-bs-toggle="collapse" href="#peeling-types">
-                      <span class="sub-item">
-                        <i class="fas fa-layer-group"></i>
-                        Tenant Freezing Report
-                        <span class="caret"></span>
-                      </span>
-                    </a>
-                    <div class="collapse" id="peeling-types">
-                      <ul class="nav nav-collapse subnav">
-                        <li>
-                          <a href="{%url 'adminapp:tenant_stock_summary'%}">
-                            <span class="sub-item">
-                              <i class="fa-solid fa-file"></i>
-                              Get Summary
-                            </span>
-                          </a>
-                        </li>
-                        <li>
-                          <a href="{%url 'adminapp:tenant_stock_balance'%}">
-                            <span class="sub-item">
-                              <i class="fa-solid fa-file"></i>
-                              Get Balance
-                            </span>
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-            </li>
+                {% if user_permissions.can_add_voucher %}
+                <li>
+                  <a href="{% url 'adminapp:create_peeling_shed_voucher' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      peeling shed voucher
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
+                {% if user_permissions.can_add_voucher %}
+                <li>
+                  <a href="{% url 'adminapp:tenantvoucher_create' %}">
+                    <span class="sub-item">
+                      <i class="fas fa-shopping-cart"></i>
+                      tenant voucher
+                    </span>
+                  </a>
+                </li>
+                {% endif %}
 
-            <!-- voucher -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#voucher">
-                <i class="fa-solid fa-file-invoice-dollar"></i>
-                <p>Voucher</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="voucher">
-                <ul class="nav nav-collapse">
+              </ul>
+            </div>
+          </li>
+          {% endif %}
 
-                  <li>
-                    <a href="{%url 'adminapp:spotagentvoucher_create'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        Spot agent voucher
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{%url 'adminapp:supervisorvoucher_create'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        Spot supervisor voucher
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{%url 'adminapp:localpurchasevoucher_create'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        local purchase voucher
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{%url 'adminapp:create_peeling_shed_voucher'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        peeling shed voucher
-                      </span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="{%url 'adminapp:tenantvoucher_create'%}">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        tenant voucher
-                      </span>
-                    </a>
-                  </li>
-
-                </ul>
-              </div>
-            </li>
-
-            <!-- stocks -->
-            <li class="nav-item">
-              <a data-bs-toggle="collapse" href="#stocks">
-                <i class="fa-solid fa-fish"></i>
-                <p>Stocks</p>
-                <span class="caret"></span>
-              </a>
-              <div class="collapse" id="stocks">
-                <ul class="nav nav-collapse">
-
-                  <li>
-                    <a href="">
-                      <span class="sub-item">
-                        <i class="fas fa-shopping-cart"></i>
-                        Stock List
-                      </span>
-                    </a>
-                  </li>
-
-                </ul>
-              </div>
-            </li>
-
-
-            <!-- Logout -->
-            <li class="nav-item">
-              <a href="{% url 'adminapp:admin_logout' %}">
-                <i class="fas fa-sign-out-alt"></i>
-                <p>Logout</p>
-              </a>
-            </li>
-          </ul>
-        </div>
+          <!-- Logout - Always show -->
+          <li class="nav-item">
+            <a href="{% url 'adminapp:admin_logout' %}">
+              <i class="fas fa-sign-out-alt"></i>
+              <p>Logout</p>
+            </a>
+          </li>
+        </ul>
       </div>
-    </div>
-    <!-- End Sidebar -->
+      </div>
+      </div>
+      <!-- End Sidebar -->
 
-    <style>
-      /* Hide the .main-header on desktop (>=992px width) */
-@media screen and (min-width: 992px) {
-  .main-header {
-    display: none !important;
-  }
-}
 
-    </style>
 
     <div class="main-panel">
       <div class="main-header">
@@ -966,7 +1044,8 @@
                   </form>
                 </ul>
               </li>
-              <li class="nav-item topbar-icon dropdown hidden-caret">
+
+              <!-- <li class="nav-item topbar-icon dropdown hidden-caret">
                 <a class="nav-link dropdown-toggle" href="#" id="messageDropdown" role="button"
                   data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="fa fa-envelope"></i>
@@ -1095,81 +1174,431 @@
                     </a>
                   </li>
                 </ul>
-              </li>
-              <li class="nav-item topbar-icon dropdown hidden-caret">
-                <a class="nav-link" data-bs-toggle="dropdown" href="#" aria-expanded="false">
-                  <i class="fas fa-layer-group"></i>
-                </a>
-                <div class="dropdown-menu quick-actions animated fadeIn">
-                  <div class="quick-actions-header">
-                    <span class="title mb-1">Quick Actions</span>
-                    <span class="subtitle op-7">Shortcuts</span>
-                  </div>
-                  <div class="quick-actions-scroll scrollbar-outer">
-                    <div class="quick-actions-items">
-                      <div class="row m-0">
-                        <a class="col-6 col-md-4 p-0" href="#">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-danger rounded-circle">
-                              <i class="far fa-calendar-alt"></i>
-                            </div>
-                            <span class="text">Calendar</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="#">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-warning rounded-circle">
-                              <i class="fas fa-map"></i>
-                            </div>
-                            <span class="text">Maps</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="#">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-info rounded-circle">
-                              <i class="fas fa-file-excel"></i>
-                            </div>
-                            <span class="text">Reports</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="#">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-success rounded-circle">
-                              <i class="fas fa-envelope"></i>
-                            </div>
-                            <span class="text">Emails</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="#">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-primary rounded-circle">
-                              <i class="fas fa-file-invoice-dollar"></i>
-                            </div>
-                            <span class="text">Invoice</span>
-                          </div>
-                        </a>
-                        <a class="col-6 col-md-4 p-0" href="#">
-                          <div class="quick-actions-item">
-                            <div class="avatar-item bg-secondary rounded-circle">
-                              <i class="fas fa-credit-card"></i>
-                            </div>
-                            <span class="text">Payments</span>
-                          </div>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </li>
+              </li> -->
+              
+<li class="report-nav-wrapper topbar-icon dropdown hidden-caret">
+  <a class="report-trigger-btn" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+    <i class="fa-solid fa-file"></i>
+  </a>
+  <div class="report-dropdown-panel animated fadeIn">
+    <div class="report-header-section">
+      <span class="report-title mb-1">Reports</span>
+    </div>
+    <div class="report-content-area scrollbar-outer">
+      <div class="report-grid-container">
+        <div class="report-grid m-0">
+          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:spot_purchase_report'%}">
+            <div class="report-card">
+              <div class="report-icon-wrapper icon-red rounded-circle">
+                <i class="far fa-calendar-alt"></i>
+              </div>
+              <span class="report-label">Spot Purchase Report</span>
+            </div>
+          </a>
+          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:local_purchase_report'%}">
+            <div class="report-card">
+              <div class="report-icon-wrapper icon-orange rounded-circle">
+                <i class="fas fa-map"></i>
+              </div>
+              <span class="report-label">Local Purchase Report</span>
+            </div>
+          </a>
+          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:freezing_report'%}">
+            <div class="report-card">
+              <div class="report-icon-wrapper icon-teal rounded-circle">
+                <i class="fas fa-file-excel"></i>
+              </div>
+              <span class="report-label">Freezing Report</span>
+            </div>
+          </a>
+          <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:report_list'%}">
+            <div class="report-card">
+              <div class="report-icon-wrapper icon-green rounded-circle">
+                <i class="fas fa-envelope"></i>
+              </div>
+              <span class="report-label">Stock Report</span>
+            </div>
+          </a>
+          <div class="col-6 col-md-4 p-0 tenant-freezing-wrapper">
+            <div class="report-card tenant-freezing-card">
+              <div class="report-icon-wrapper icon-blue rounded-circle">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <span class="report-label">Tenant Freezing Report</span>
+              <i class="fas fa-chevron-right submenu-arrow"></i>
+            </div>
+            <div class="tenant-submenu">
+              <a href="{%url 'adminapp:tenant_stock_summary'%}" class="submenu-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Get Summary</span>
+              </a>
+              <a href="{%url 'adminapp:tenant_stock_balance'%}" class="submenu-item">
+                <i class="fas fa-balance-scale"></i>
+                <span>Get Balance</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</li>
+
+<style>
+  .report-nav-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .report-trigger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .report-trigger-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .report-trigger-btn:hover {
+    background: rgba(0, 0, 0, 0.12);
+    border-color: rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    color: #343a40;
+  }
+
+  .report-trigger-btn:hover::before {
+    opacity: 1;
+  }
+
+  .report-trigger-btn i {
+    font-size: 18px;
+    z-index: 2;
+    position: relative;
+  }
+
+  .report-dropdown-panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 420px;
+    background: #ffffff;
+    backdrop-filter: blur(40px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.1),
+      0 8px 25px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .report-nav-wrapper:hover .report-dropdown-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .report-dropdown-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+  }
+
+  .report-header-section {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    position: relative;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  }
+
+  .report-header-section .report-title {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+
+  .report-header-section .report-subtitle {
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
+
+  .report-content-area {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 16px 24px 24px;
+    background: #ffffff;
+  }
+
+  .report-content-area::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .report-content-area::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 2px;
+  }
+
+  .report-content-area::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  .report-grid-container .report-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .report-grid-container a {
+    flex: 0 0 calc(50% - 6px);
+    text-decoration: none;
+    position: relative;
+    display: block;
+  }
+
+  .tenant-freezing-wrapper {
+    flex: 0 0 calc(50% - 6px);
+    position: relative;
+  }
+
+  .report-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px;
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    min-height: 100px;
+    cursor: pointer;
+  }
+
+  .tenant-freezing-card {
+    position: relative;
+  }
+
+  .submenu-arrow {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 10px;
+    color: rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+  }
+
+  .tenant-freezing-wrapper:hover .submenu-arrow {
+    transform: rotate(180deg);
+  }
+
+  .report-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .report-card:hover {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .report-card:hover::before {
+    left: 100%;
+  }
+
+/* wider submenu */
+.tenant-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 8px;
+
+  /* new width */
+  min-width: 200px;  /* adjust as you need */
+  /* or width: 200px; */
+
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+  .tenant-freezing-wrapper:hover .tenant-submenu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+ .submenu-item {
+  display: flex;
+  align-items: center;
+  white-space: nowrap; /* prevents wrapping to second line */
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #495057;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+  .submenu-item:last-child {
+    border-bottom: none;
+  }
+
+  .submenu-item:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: #2c3e50;
+    padding-left: 20px;
+  }
+
+  .submenu-item i {
+    margin-right: 8px;
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+  }
+
+  .report-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .report-card:hover .report-icon-wrapper {
+    transform: scale(1.1);
+  }
+
+  .report-icon-wrapper i {
+    font-size: 18px;
+    color: white;
+    z-index: 2;
+    position: relative;
+  }
+
+  .icon-red {
+    background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+  }
+
+  .icon-orange {
+    background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
+  }
+
+  .icon-teal {
+    background: linear-gradient(135deg, #26a69a 0%, #00acc1 100%);
+  }
+
+  .icon-green {
+    background: linear-gradient(135deg, #66bb6a 0%, #4caf50 100%);
+  }
+
+  .icon-blue {
+    background: linear-gradient(135deg, #5c6bc0 0%, #3f51b5 100%);
+  }
+
+  .icon-gray {
+    background: linear-gradient(135deg, #78909c 0%, #607d8b 100%);
+  }
+
+  .report-card .report-label {
+    font-size: 13px;
+    color: #2c3e50;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.3;
+    letter-spacing: 0.1px;
+    transition: color 0.3s ease;
+  }
+
+  .report-card:hover .report-label {
+    color: #1a252f;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animated.fadeIn {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+</style>
 
               <li class="nav-item topbar-user dropdown hidden-caret">
                 <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
                   <div class="avatar-sm">
-                    <img src="{% static 'img/profile.jpg' %}" alt="..." class="avatar-img rounded-circle" />
+                    {% if request.user.profile_picture %}
+                    <img src="{{ request.user.profile_picture.url }}" alt="..." class="avatar-img rounded-circle" />
+                    {% else %}
+                    <img src="{% static 'img/profile.jpg' %}">
+                  {% endif %}
                   </div>
                   <span class="profile-username">
                     <span class="op-7">Hi,</span>
-                    <span class="fw-bold">Admin</span>
+                    <span class="fw-bold">{{ request.user.full_name }}</span>
                   </span>
                 </a>
                 <ul class="dropdown-menu dropdown-user animated fadeIn">
@@ -1177,11 +1606,15 @@
                     <li>
                       <div class="user-box">
                         <div class="avatar-lg">
-                          <img src="{% static 'img/profile.jpg' %}" alt="image profile" class="avatar-img rounded" />
+                          {% if request.user.profile_picture %}
+                          <img src="{{ request.user.profile_picture.url }}" alt="image profile" class="avatar-img rounded" />
+                          {% else %}
+                            <img src="{% static 'img/profile.jpg' %}">
+                          {% endif %}
                         </div>
                         <div class="u-text">
-                          <h4>Hizrian</h4>
-                          <p class="text-muted">hello@example.com</p>
+                          <h4>{{ request.user.full_name }}</h4>
+                          <p class="text-muted">{{request.user}}</p>
                           <a href="profile.html" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                         </div>
                       </div>
@@ -1194,7 +1627,7 @@
                       <div class="dropdown-divider"></div>
                       <a class="dropdown-item" href="#">Account Setting</a>
                       <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="#">Logout</a>
+                      <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
                     </li>
                   </div>
                 </ul>

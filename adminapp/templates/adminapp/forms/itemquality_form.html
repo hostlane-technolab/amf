@@ -36,14 +36,14 @@
           <li class="breadcrumb-item">
             <a href="{% url 'adminapp:item_quality_list' %}" class="breadcrumb-link">
               <i class="fas fa-star"></i>
-              <span>Item Qualities</span>
+              <span>Item Subs</span>
             </a>
           </li>
           <li class="breadcrumb-separator">
             <i class="icon-arrow-right"></i>
           </li>
           <li class="breadcrumb-item active">
-            <span>Create Item Quality</span>
+            <span>Create Item Sub</span>
           </li>
         </ol>
       </nav>
@@ -59,8 +59,8 @@
               <i class="fa-solid fa-medal"></i>
             </div>
             <div class="card-title-section">
-              <h4 class="card-title">Create Item Quality</h4>
-              <p class="card-description">Fill in the details to create item quality.</p>
+              <h4 class="card-title">Create Item Sub</h4>
+              <p class="card-description">Fill in the details to create item sub.</p>
             </div>
           </div>
           <div class="progress-indicator">
@@ -82,7 +82,13 @@
                   <div class="form-group">
                     <!-- Field Label -->
                     <label for="{{ field.id_for_label }}" class="form-label">
-                      <span  class="label-text">{{ field.label }}</span>
+                      <span class="label-text">
+                        {% if field.label == "Quality" %}
+                          Item Sub
+                        {% else %}
+                          {{ field.label }}
+                        {% endif %}
+                      </span>
                       {% if field.field.required %}
                         <span class="required-indicator">*</span>
                       {% endif %}
@@ -314,7 +320,7 @@
                 </button>
                 <button type="submit" class="btn-primary" id="submitBtn">
                   <i class="fas fa-save"></i>
-                  <span>Create Quality</span>
+                  <span>Create Item Sub</span>
                   <div class="btn-loading">
                     <i class="fas fa-spinner fa-spin"></i>
                   </div>

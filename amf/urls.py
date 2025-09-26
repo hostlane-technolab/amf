@@ -28,4 +28,6 @@ urlpatterns = [
     path('adminapp/', include('adminapp.urls')),
     path('userapp/', include('userapp.urls')),
 
+    path('logout/', views.admin_logout, name='logout'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

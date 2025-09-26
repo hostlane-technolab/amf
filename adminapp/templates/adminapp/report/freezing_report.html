@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
         <!-- Load required libraries from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -572,223 +568,501 @@
         }
     </style>
 
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .filter-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 24px 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: float 25s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: rotate(0deg) translate(0, 0); }
+            100% { transform: rotate(360deg) translate(0, 0); }
+        }
+
+        .card-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 32px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .filter-group {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .filter-group:hover {
+            border-color: rgba(79, 70, 229, 0.2);
+            box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+            transform: translateY(-3px);
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+        }
+
+        .filter-group:hover::before {
+            opacity: 1;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+        }
+
+        .filter-group select[multiple] {
+            width: 100%;
+            max-height: 180px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+
+        .filter-group select[multiple]::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-group select[multiple]::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .filter-group select[multiple]::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 3px;
+        }
+
+        .filter-group select[multiple]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-group select[multiple] option {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .filter-group select[multiple] option:hover {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+        }
+
+        .filter-group select:not([multiple]) {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .filter-group select:not([multiple]):focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-group input[type="text"],
+        .filter-group input[type="date"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-group input[type="text"]:focus,
+        .filter-group input[type="date"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-group input[type="text"]::placeholder {
+            color: #94a3b8;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-btn:hover::before {
+            left: 100%;
+        }
+
+        .filter-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .filter-btn.primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .filter-btn.secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .filter-btn.export {
+            background: linear-gradient(135deg, #059669, #0891b2);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .filter-buttons {
+                flex-direction: column;
+            }
+            
+            .filter-btn {
+                min-width: auto;
+            }
+        }
+    </style>
+
     <!-- Filter Form -->
-    <div class="filter-form">
-        <form method="GET" id="filterForm">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label for="section_by">Section By:</label>
-                    <select name="section_by" id="section_by">
-                        <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
-                        <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
-                        <option value="month" {% if section_by == 'month' %}selected{% endif %}>Month</option>
-                        <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
-                        <option value="processing_center" {% if section_by == 'processing_center' %}selected{% endif %}>Processing Center</option>
-                        <option value="grade" {% if section_by == 'grade' %}selected{% endif %}>Grade</option>
-                        <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
-                        <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
-                        {% if units %}
-                        <option value="unit" {% if section_by == 'unit' %}selected{% endif %}>Unit</option>
-                        {% endif %}
-                        {% if glazes %}
-                        <option value="glaze" {% if section_by == 'glaze' %}selected{% endif %}>Glaze</option>
-                        {% endif %}
-                    </select>
+    <div class="filter-card">
+        <div class="card-header">
+            <h3>Advanced Filters</h3>
+        </div>
+        
+        <div class="card-body">
+            <form method="GET" id="filterForm">
+                <div class="filter-grid">
+                    <div class="filter-group">
+                        <label for="section_by">Section By:</label>
+                        <select name="section_by" id="section_by">
+                            <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
+                            <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
+                            <option value="month" {% if section_by == 'month' %}selected{% endif %}>Month</option>
+                            <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
+                            <option value="processing_center" {% if section_by == 'processing_center' %}selected{% endif %}>Processing Center</option>
+                            <option value="grade" {% if section_by == 'grade' %}selected{% endif %}>Grade</option>
+                            <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
+                            <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
+                            {% if units %}
+                            <option value="unit" {% if section_by == 'unit' %}selected{% endif %}>Unit</option>
+                            {% endif %}
+                            {% if glazes %}
+                            <option value="glaze" {% if section_by == 'glaze' %}selected{% endif %}>Glaze</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="entry_type">Entry Type:</label>
+                        <select name="entry_type" id="entry_type">
+                            <option value="all" {% if entry_type == 'all' %}selected{% endif %}>All Types</option>
+                            <option value="spot" {% if entry_type == 'spot' %}selected{% endif %}>Spot</option>
+                            <option value="local" {% if entry_type == 'local' %}selected{% endif %}>Local</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="items">Items:</label>
+                        <select name="items" id="items" multiple>
+                            <option value="">All Items</option>
+                            {% for item in items %}
+                            <option value="{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}selected{% endif %}>
+                                {{ item.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="grades">Grades:</label>
+                        <select name="grades" id="grades" multiple>
+                            <option value="">All Grades</option>
+                            {% for grade in grades %}
+                            <option value="{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_grades %}selected{% endif %}>
+                                {{ grade.grade }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if units %}
+                    <div class="filter-group">
+                        <label for="units">Units:</label>
+                        <select name="units" id="units" multiple>
+                            <option value="">All Units</option>
+                            {% for unit in units %}
+                            <option value="{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}selected{% endif %}>
+                                {{ unit.name }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if glazes %}
+                    <div class="filter-group">
+                        <label for="glazes">Glazes:</label>
+                        <select name="glazes" id="glazes" multiple>
+                            <option value="">All Glazes</option>
+                            {% for glaze in glazes %}
+                            <option value="{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}selected{% endif %}>
+                                {{ glaze.name }}{% if glaze.percentage %} ({{ glaze.percentage }}%){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="filter-group">
+                        <label for="categories">Item Group:</label>
+                        <select name="categories" id="categories" multiple>
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="brands">Brands:</label>
+                        <select name="brands" id="brands" multiple>
+                            <option value="">All Brands</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}selected{% endif %}>
+                                {{ brand.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="species">Species:</label>
+                        <select name="species" id="species" multiple>
+                            <option value="">All Species</option>
+                            {% for spec in species %}
+                            <option value="{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}selected{% endif %}>
+                                {{ spec.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="freezing_categories">Freezing Categories:</label>
+                        <select name="freezing_categories" id="freezing_categories" multiple>
+                            <option value="">All Freezing Categories</option>
+                            {% for freezing_cat in freezing_categories %}
+                            <option value="{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}selected{% endif %}>
+                                {{ freezing_cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="processing_centers">Processing Centers:</label>
+                        <select name="processing_centers" id="processing_centers" multiple>
+                            <option value="">All Processing Centers</option>
+                            {% for pc in processing_centers %}
+                            <option value="{{ pc.id }}" {% if pc.id|stringformat:"s" in selected_processing_centers %}selected{% endif %}>
+                                {{ pc.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="stores">Stores:</label>
+                        <select name="stores" id="stores" multiple>
+                            <option value="">All Stores</option>
+                            {% for store in stores %}
+                            <option value="{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}selected{% endif %}>
+                                {{ store.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="date_filter">Date Filter:</label>
+                        <select name="date_filter" id="date_filter">
+                            <option value="" {% if not date_filter %}selected{% endif %}>All Time</option>
+                            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                            <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                            <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                            <option value="quarter" {% if date_filter == 'quarter' %}selected{% endif %}>This Quarter</option>
+                            <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                            <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="start_date">Start Date:</label>
+                        <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="end_date">End Date:</label>
+                        <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="freezing_status">Status:</label>
+                        <select name="freezing_status" id="freezing_status">
+                            <option value="" {% if not freezing_status %}selected{% endif %}>All Status</option>
+                            <option value="complete" {% if freezing_status == 'complete' %}selected{% endif %}>Complete</option>
+                            <option value="incomplete" {% if freezing_status == 'incomplete' %}selected{% endif %}>Incomplete</option>
+                            <option value="pending" {% if freezing_status == 'pending' %}selected{% endif %}>Pending</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="voucher_search">Voucher Search:</label>
+                        <input type="text" name="voucher_search" id="voucher_search" value="{{ voucher_search }}" placeholder="Search voucher number...">
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label for="entry_type">Entry Type:</label>
-                    <select name="entry_type" id="entry_type">
-                        <option value="all" {% if entry_type == 'all' %}selected{% endif %}>All Types</option>
-                        <option value="spot" {% if entry_type == 'spot' %}selected{% endif %}>Spot</option>
-                        <option value="local" {% if entry_type == 'local' %}selected{% endif %}>Local</option>
-                    </select>
+                <div class="filter-buttons">
+                    <button type="submit" class="filter-btn primary">Generate Report</button>
+                    <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
+                    <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
+                    <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
                 </div>
-
-                <div class="filter-group">
-                    <label for="items">Items:</label>
-                    <select name="items" id="items" multiple>
-                        <option value="">All Items</option>
-                        {% for item in items %}
-                        <option value="{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}selected{% endif %}>
-                            {{ item.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="grades">Grades:</label>
-                    <select name="grades" id="grades" multiple>
-                        <option value="">All Grades</option>
-                        {% for grade in grades %}
-                        <option value="{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_grades %}selected{% endif %}>
-                            {{ grade.grade }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                {% if units %}
-                <div class="filter-group">
-                    <label for="units">Units:</label>
-                    <select name="units" id="units" multiple>
-                        <option value="">All Units</option>
-                        {% for unit in units %}
-                        <option value="{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}selected{% endif %}>
-                            {{ unit.name }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                {% endif %}
-
-                {% if glazes %}
-                <div class="filter-group">
-                    <label for="glazes">Glazes:</label>
-                    <select name="glazes" id="glazes" multiple>
-                        <option value="">All Glazes</option>
-                        {% for glaze in glazes %}
-                        <option value="{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}selected{% endif %}>
-                            {{ glaze.name }}{% if glaze.percentage %} ({{ glaze.percentage }}%){% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                {% endif %}
-
-                <div class="filter-group">
-                    <label for="categories">Item Group:</label>
-                    <select name="categories" id="categories" multiple>
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}selected{% endif %}>
-                            {{ category.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="brands">Brands:</label>
-                    <select name="brands" id="brands" multiple>
-                        <option value="">All Brands</option>
-                        {% for brand in brands %}
-                        <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}selected{% endif %}>
-                            {{ brand.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="species">Species:</label>
-                    <select name="species" id="species" multiple>
-                        <option value="">All Species</option>
-                        {% for spec in species %}
-                        <option value="{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}selected{% endif %}>
-                            {{ spec.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="freezing_categories">Freezing Categories:</label>
-                    <select name="freezing_categories" id="freezing_categories" multiple>
-                        <option value="">All Freezing Categories</option>
-                        {% for freezing_cat in freezing_categories %}
-                        <option value="{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}selected{% endif %}>
-                            {{ freezing_cat.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="processing_centers">Processing Centers:</label>
-                    <select name="processing_centers" id="processing_centers" multiple>
-                        <option value="">All Processing Centers</option>
-                        {% for pc in processing_centers %}
-                        <option value="{{ pc.id }}" {% if pc.id|stringformat:"s" in selected_processing_centers %}selected{% endif %}>
-                            {{ pc.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="stores">Stores:</label>
-                    <select name="stores" id="stores" multiple>
-                        <option value="">All Stores</option>
-                        {% for store in stores %}
-                        <option value="{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}selected{% endif %}>
-                            {{ store.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="date_filter">Date Filter:</label>
-                    <select name="date_filter" id="date_filter">
-                        <option value="" {% if not date_filter %}selected{% endif %}>All Time</option>
-                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
-                        <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
-                        <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
-                        <option value="quarter" {% if date_filter == 'quarter' %}selected{% endif %}>This Quarter</option>
-                        <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
-                        <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="start_date">Start Date:</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
-                </div>
-
-                <div class="filter-group">
-                    <label for="end_date">End Date:</label>
-                    <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
-                </div>
-
-                <div class="filter-group">
-                    <label for="freezing_status">Status:</label>
-                    <select name="freezing_status" id="freezing_status">
-                        <option value="" {% if not freezing_status %}selected{% endif %}>All Status</option>
-                        <option value="complete" {% if freezing_status == 'complete' %}selected{% endif %}>Complete</option>
-                        <option value="incomplete" {% if freezing_status == 'incomplete' %}selected{% endif %}>Incomplete</option>
-                        <option value="pending" {% if freezing_status == 'pending' %}selected{% endif %}>Pending</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label for="voucher_search">Voucher Search:</label>
-                    <input type="text" name="voucher_search" id="voucher_search" value="{{ voucher_search }}" placeholder="Search voucher number...">
-                </div>
-            </div>
-
-            <div class="filter-buttons">
-                <button type="submit" class="filter-btn primary">Generate Report</button>
-                <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
-                <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
-                <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
-    <!-- Active Filters Display -->
-    {% if request.GET %}
-    <div class="active-filters">
-        <strong>Active Filters:</strong>
-        {% if section_by %}<span class="filter-tag">Section: {{ section_by|title }}</span>{% endif %}
-        {% if entry_type != 'all' %}<span class="filter-tag">Type: {{ entry_type|title }}</span>{% endif %}
-        {% if start_date %}<span class="filter-tag">From: {{ start_date }}</span>{% endif %}
-        {% if end_date %}<span class="filter-tag">To: {{ end_date }}</span>{% endif %}
-        {% if freezing_status %}<span class="filter-tag">Status: {{ freezing_status|title }}</span>{% endif %}
-        {% if voucher_search %}<span class="filter-tag">Voucher: {{ voucher_search }}</span>{% endif %}
-    </div>
-    {% endif %}
+    <script>
+        function resetForm() {
+            document.getElementById('filterForm').reset();
+        }
+
+        function exportToCSV() {
+            // Add your CSV export functionality here
+            alert('Export to CSV functionality');
+        }
+
+        function exportToExcel() {
+            // Add your Excel export functionality here
+            alert('Export to Excel functionality');
+        }
+    </script>
 
     <!-- Report Header -->
     <div class="report-header">
@@ -1406,5 +1680,6 @@ window.addEventListener('afterprint', function() {
     });
 });
 </script>
-</body>
-</html>
+
+
+{%endblock%}

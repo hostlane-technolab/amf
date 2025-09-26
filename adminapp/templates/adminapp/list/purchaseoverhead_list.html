@@ -70,7 +70,7 @@
                 <th class="table-header">
                   <div class="header-content">
                     <i class="fas fa-hashtag header-icon"></i>
-                    <span class="header-text">ID</span>
+                    <span class="header-text">NO</span>
                   </div>
                 </th>
                 <th class="table-header">
@@ -99,7 +99,7 @@
               <tr class="table-row" data-searchable="{{ obj.category_name|lower }}">
                 <td class="table-cell">
                   <div class="id-badge">
-                    #{{ obj.id }}
+                    {{ forloop.counter }}
                   </div>
                 </td>
                 
