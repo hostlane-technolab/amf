@@ -1,2 +1,2 @@
-git rm --cached amf/settings.py
-git rm --cached db.sqlite3
+amf/settings.py
+db.sqlite3
