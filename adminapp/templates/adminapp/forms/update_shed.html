@@ -1,0 +1,382 @@
+{% extends 'master2base.html' %}
+{%block title%} Update Shed{%endblock%}
+{% block content %}
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header">
+      <h3 class="fw-bold mb-3">Operational & Location Masters</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="#">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="{%url 'adminapp:peeling_center_list'%}">Sheds</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Update - {{ shed.name }}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Update Shed Information - {{ shed.name }}</div>
+          </div>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              {{ formset.management_form }}
+              
+              <!-- Main Shed Form Fields -->
+              {{ form.non_field_errors }}
+              <div class="row">
+                {% for field in form %}
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                      {% if field.field.widget.input_type == 'textarea' %}
+                        <textarea 
+                          class="form-control{% if field.errors %} is-invalid{% endif %}" 
+                          name="{{ field.name }}" 
+                          id="{{ field.id_for_label }}"
+                          {% if field.field.required %}required{% endif %}
+                          {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                          {% if field.field.widget.attrs.rows %}rows="{{ field.field.widget.attrs.rows }}"{% else %}rows="3"{% endif %}
+                        >{{ field.value|default_if_none:"" }}</textarea>
+                      
+                      {% elif field.field.widget.input_type == 'select' %}
+                        <select 
+                          class="form-select{% if field.errors %} is-invalid{% endif %}" 
+                          name="{{ field.name }}" 
+                          id="{{ field.id_for_label }}"
+                          {% if field.field.required %}required{% endif %}
+                        >
+                          {% if not field.field.required %}
+                            <option value="">---------</option>
+                          {% endif %}
+                          {% for choice_value, choice_label in field.field.choices %}
+                            <option value="{{ choice_value }}" {% if choice_value == field.value %}selected{% endif %}>
+                              {{ choice_label }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      
+                      {% elif field.field.widget.input_type == 'number' %}
+                        <input 
+                          type="number" 
+                          class="form-control{% if field.errors %} is-invalid{% endif %}" 
+                          name="{{ field.name }}" 
+                          id="{{ field.id_for_label }}"
+                          value="{{ field.value|default_if_none:"" }}"
+                          {% if field.field.required %}required{% endif %}
+                          {% if field.field.widget.attrs.min %}min="{{ field.field.widget.attrs.min }}"{% endif %}
+                          {% if field.field.widget.attrs.max %}max="{{ field.field.widget.attrs.max }}"{% endif %}
+                          {% if field.field.widget.attrs.step %}step="{{ field.field.widget.attrs.step }}"{% endif %}
+                          {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                        >
+                      
+                      {% else %}
+                        <input 
+                          type="text" 
+                          class="form-control{% if field.errors %} is-invalid{% endif %}" 
+                          name="{{ field.name }}" 
+                          id="{{ field.id_for_label }}"
+                          value="{{ field.value|default_if_none:"" }}"
+                          {% if field.field.required %}required{% endif %}
+                          {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                          {% if field.field.widget.attrs.maxlength %}maxlength="{{ field.field.widget.attrs.maxlength }}"{% endif %}
+                        >
+                      {% endif %}
+
+                      {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                      {% endif %}
+
+                      {% if field.errors %}
+                        <div class="invalid-feedback">
+                          {% for error in field.errors %}
+                            {{ error }}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+
+              <!-- Shed Items Formset Section -->
+              <div class="row mt-4">
+                <div class="col-md-12">
+                  <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                      <div class="card-title">
+                        <h4 class="fw-bold mb-0">Shed Items</h4>
+                      </div>
+                      <button type="button" class="btn btn-primary btn-sm" id="add-more">
+                        <i class="fas fa-plus"></i> Add More Item
+                      </button>
+                    </div>
+                    <div class="card-body">
+                      <div id="formset-container">
+                        {{ formset.non_form_errors }}
+                        
+                        {% for form in formset %}
+                          <div class="formset-row mb-3 p-3" style="border: 1px solid #dee2e6; border-radius: 0.375rem; position: relative;">
+                            <button type="button" class="btn btn-danger btn-sm delete-row" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                              <i class="fas fa-trash"></i>
+                            </button>
+                            
+                            {{ form.non_field_errors }}
+                            <div class="row">
+                              {% for field in form.visible_fields %}
+                                <div class="col-md-6 col-lg-3">
+                                  <div class="form-group">
+                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                    <div class="input-group">
+                                      {{ field }}
+                                    </div>
+                                    
+                                    {% if field.help_text %}
+                                      <small class="form-text text-muted">{{ field.help_text }}</small>
+                                    {% endif %}
+
+                                    {% if field.errors %}
+                                      <div class="text-danger small">
+                                        {% for error in field.errors %}
+                                          {{ error }}
+                                        {% endfor %}
+                                      </div>
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              {% endfor %}
+                            </div>
+
+                            <!-- Hidden fields for formset -->
+                            {% for hidden in form.hidden_fields %}
+                              {{ hidden }}
+                            {% endfor %}
+                          </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-action">
+                <button type="submit" class="btn btn-success">Update</button>
+                <button type="button" class="btn btn-danger" onclick="history.back()">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden empty form template -->
+<div id="empty-form-template" style="display: none;">
+    {% with formset.empty_form as form %}
+    <div class="formset-row mb-3 p-3" style="border: 1px solid #dee2e6; border-radius: 0.375rem; position: relative;">
+        <button type="button" class="btn btn-danger btn-sm delete-row" style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+            <i class="fas fa-trash"></i>
+        </button>
+        
+        <div class="row">
+            {% for field in form.visible_fields %}
+            <div class="col-md-6 col-lg-3">
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% for hidden in form.hidden_fields %}
+            {{ hidden }}
+        {% endfor %}
+    </div>
+    {% endwith %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('formset-container');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const maxFormsInput = document.querySelector('input[name$="-MAX_NUM_FORMS"]');
+    const minFormsInput = document.querySelector('input[name$="-MIN_NUM_FORMS"]');
+    
+    // Add form function
+    document.getElementById('add-more').addEventListener('click', function () {
+        const formCount = parseInt(totalFormsInput.value);
+        const maxForms = maxFormsInput ? parseInt(maxFormsInput.value) : 1000;
+
+        if (formCount >= maxForms) {
+            alert('Maximum number of forms reached.');
+            return;
+        }
+
+        // Clone the empty form template
+        const template = document.getElementById('empty-form-template');
+        const newForm = template.firstElementChild.cloneNode(true);
+        
+        // Update all name and id attributes
+        const inputs = newForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(function(input) {
+            if (input.name) {
+                input.name = input.name.replace('__prefix__', formCount);
+            }
+            if (input.id) {
+                input.id = input.id.replace('__prefix__', formCount);
+            }
+        });
+
+        // Update labels
+        const labels = newForm.querySelectorAll('label');
+        labels.forEach(function(label) {
+            if (label.getAttribute('for')) {
+                label.setAttribute('for', label.getAttribute('for').replace('__prefix__', formCount));
+            }
+        });
+
+        // Add to container
+        container.appendChild(newForm);
+        
+        // Update total forms count
+        totalFormsInput.value = formCount + 1;
+    });
+
+    // Delete form function with improved logic for existing vs new forms
+    container.addEventListener('click', function (e) {
+        if (e.target.classList.contains('delete-row') || e.target.closest('.delete-row')) {
+            const button = e.target.classList.contains('delete-row') ? e.target : e.target.closest('.delete-row');
+            const row = button.closest('.formset-row');
+            const formRows = container.querySelectorAll('.formset-row:not([style*="display: none"])');
+            
+            const minForms = minFormsInput ? parseInt(minFormsInput.value) : 0;
+            
+            if (formRows.length <= minForms) {
+                alert('Minimum number of forms required.');
+                return;
+            }
+
+            // Check if this form has a DELETE checkbox (existing form)
+            const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                // If it's an existing form, mark for deletion and hide
+                deleteCheckbox.checked = true;
+                row.style.display = 'none';
+            } else {
+                // If it's a new form, remove it completely
+                row.remove();
+                // Update total forms count
+                const currentTotal = parseInt(totalFormsInput.value);
+                totalFormsInput.value = Math.max(minForms, currentTotal - 1);
+            }
+        }
+    });
+});
+</script>
+
+<style>
+/* Form styling to match the reference design */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100% !important;
+  padding: 0.6rem 0.75rem !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: #212529 !important;
+  background-color: #fff !important;
+  background-image: none !important;
+  border: 1px solid #ced4da !important;
+  border-radius: 0.375rem !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out !important;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  color: #212529 !important;
+  background-color: #fff !important;
+  border-color: #86b7fe !important;
+  outline: 0 !important;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+.form-group select {
+  background-repeat: no-repeat !important;
+  background-position: right 0.75rem center !important;
+  background-size: 16px 12px !important;
+}
+
+/* Hide the DELETE checkbox in formsets */
+input[name$="-DELETE"] {
+  display: none !important;
+}
+
+/* Also hide the label if it exists */
+label[for*="-DELETE"] {
+  display: none !important;
+}
+
+/* Hide the entire form group containing the DELETE field */
+.form-group:has(input[name$="-DELETE"]) {
+  display: none !important;
+}
+
+/* Alternative selector for older browsers that don't support :has() */
+input[name$="-DELETE"]:closest(.form-group) {
+  display: none !important;
+}
+
+/* Card styling improvements */
+.card {
+  box-shadow: 0 0 0 1px rgba(63, 63, 68, 0.05), 0 1px 3px 0 rgba(63, 63, 68, 0.15);
+  border: none;
+  border-radius: 0.75rem;
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+.formset-row {
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.formset-row:hover {
+  background-color: #e9ecef;
+}
+
+.delete-row {
+  transition: all 0.3s ease;
+}
+
+.delete-row:hover {
+  transform: scale(1.05);
+}
+
+
+</style>
+{% endblock %}

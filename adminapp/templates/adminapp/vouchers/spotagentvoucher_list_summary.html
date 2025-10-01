@@ -1,0 +1,1904 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Spot Agent Vouchers - Summary{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="margin-top: 7rem;">
+    <div class="page-inner">
+        <div class="page-header">
+            <h3 style="font-size: 2rem;" class="fw-bold mb-4">Spot Agent Vouchers Summary</h3>
+            <ul class="breadcrumbs mb-3">
+                <li class="nav-home">
+                    <a href="#">
+                        <i class="icon-home"></i>
+                    </a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Agent Vouchers</a>
+                </li>
+                <li class="separator">
+                    <i class="icon-arrow-right"></i>
+                </li>
+                <li class="nav-item">
+                    <a href="#">Summary</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="myclass">
+            <!-- Summary Cards -->
+            <div class="form-card mb-4 supply-info-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title mb-0">Financial Overview</h3>
+                            <p class="text-muted mb-0">Complete voucher financial summary</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="supply-info-grid">
+                        <div class="info-card receipts-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-down bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Receipts</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Incoming</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card payments-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-up bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Payments</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-minus-circle"></i>
+                                    <span>Outgoing</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card net-card">
+                            <div class="info-background">
+                                <i class="fas fa-calculator bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Net Amount</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-balance-scale"></i>
+                                    <span>Balance</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card purchases-card">
+                            <div class="info-background">
+                                <i class="fas fa-shopping-cart bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Purchases</div>
+                                <div class="info-value">₹{{ total_purchases|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-cart-plus"></i>
+                                    <span>Purchase</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card outstanding-card">
+                            <div class="info-background">
+                                <i class="fas fa-balance-scale bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Outstanding</div>
+                                <div class="info-value">₹{{ total_outstanding|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Due</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card vouchers-card">
+                            <div class="info-background">
+                                <i class="fas fa-receipt bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Vouchers</div>
+                                <div class="info-value">{{ summary.total_vouchers }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Card -->
+<!-- Spot Agent Vouchers Data Section -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="card border-0 shadow-lg">
+      <div class="card-header bg-white border-0 py-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+          <div class="d-flex align-items-center mb-3 mb-md-0">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-user-tie"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0 fw-bold">Spot Agent Vouchers</h3>
+              <p class="text-muted mb-0 fs-6">Manage agent voucher transactions</p>
+            </div>
+          </div>
+          
+          <!-- Search Box -->
+          <div class="search-controls d-flex align-items-center gap-3">
+            <div class="search-box-wrapper">
+              <div class="search-input-group">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search vouchers...">
+                <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            
+            <div class="stats-badge">
+              <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                <i class="fas fa-receipt me-2"></i><span id="voucherCount">12</span> Vouchers
+              </span>
+            </div>
+
+            <a href="{% url 'adminapp:spotagentvoucher_create' %}" class="add-new-btn">
+              <i class="fas fa-plus me-2"></i>Add New Voucher
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table id="multi-filter" class="table table-hover mb-0 custom-table">
+            <thead>
+              <tr>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-hashtag header-icon"></i>
+                    <span class="header-text">Voucher No.</span>
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-user header-icon"></i>
+                    <span class="header-text">Agent</span>
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-calendar header-icon"></i>
+                    <span class="header-text">Date</span>
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-arrow-down header-icon"></i>
+                    <span class="header-text">Receipt (+)</span>
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-arrow-up header-icon"></i>
+                    <span class="header-text">Payment (-)</span>
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-calculator header-icon"></i>
+                    <span class="header-text">Net Amount</span>
+                  </div>
+                </th>
+                <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-balance-scale header-icon"></i>
+                    <span class="header-text">Running Balance</span>
+                  </div>
+                </th>
+                <th class="table-header text-center">
+                  <div class="header-content justify-content-center">
+                    <i class="fas fa-cogs header-icon"></i>
+                    <span class="header-text">Actions</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody id="tableBody">
+              {% for voucher in vouchers %}
+              <tr class="table-row" data-searchable="{{ voucher.voucher_no|lower }} {{ voucher.agent.name|lower }} {{ voucher.agent.code|lower }} {{ voucher.date }} {{ voucher.description|lower }}">
+                <td class="table-cell">
+                  <div class="voucher-display">
+                    <span class="voucher-badge">{{ voucher.voucher_no }}</span>
+                    {% if voucher.description %}
+                    <div class="voucher-meta">{{ voucher.description|truncatechars:30 }}</div>
+                    {% endif %}
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="agent-info">
+                    <div class="agent-avatar">
+                      <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="agent-details">
+                      <div class="agent-name">{{ voucher.agent.name }}</div>
+                      {% if voucher.agent.code %}
+                      <div class="agent-meta">{{ voucher.agent.code }}</div>
+                      {% endif %}
+                      {% if voucher.agent.mobile %}
+                      <div class="agent-mobile">{{ voucher.agent.mobile }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="date-display">
+                    <i class="fas fa-calendar-day me-2"></i>
+                    <span class="date-text">{{ voucher.date|date:"M d, Y" }}</span>
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="receipt-display">
+                    {% if voucher.receipt > 0 %}
+                    <span class="currency-symbol">+₹</span>
+                    <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
+                    {% else %}
+                    <span class="text-muted">₹0.00</span>
+                    {% endif %}
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="payment-display">
+                    {% if voucher.payment > 0 %}
+                    <span class="currency-symbol">-₹</span>
+                    <span class="payment-value">{{ voucher.payment|floatformat:2 }}</span>
+                    {% else %}
+                    <span class="text-muted">₹0.00</span>
+                    {% endif %}
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="net-amount-display">
+                    {% with net_amount=voucher.receipt|add:"-"|add:voucher.payment %}
+                    <span class="currency-symbol {% if voucher.receipt > voucher.payment %}text-success{% elif voucher.payment > voucher.receipt %}text-danger{% else %}text-muted{% endif %}">
+                    {% if voucher.receipt > voucher.payment %}+{% elif voucher.payment > voucher.receipt %}-{% endif %}₹
+                    </span>
+                    <span class="net-value {% if voucher.receipt > voucher.payment %}text-success{% elif voucher.payment > voucher.receipt %}text-danger{% else %}text-muted{% endif %}">
+                    {{ net_amount|floatformat:2 }}
+                    </span>
+                    {% endwith %}
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="balance-display">
+                    <span class="currency-symbol {% if voucher.total_amount > 0 %}text-warning{% elif voucher.total_amount < 0 %}text-danger{% else %}text-success{% endif %}">₹</span>
+                    <span class="balance-value {% if voucher.total_amount > 0 %}text-warning{% elif voucher.total_amount < 0 %}text-danger{% else %}text-success{% endif %}">{{ voucher.total_amount|floatformat:2 }}</span>
+                  </div>
+                </td>
+                
+                <td class="table-cell">
+                  <div class="action-buttons">
+                    <a href="{% url 'adminapp:spot_agent_statement_pdf' voucher.agent.pk %}?{{ request.GET.urlencode }}" 
+                       class="action-btn view-btn" 
+                       title="Agent Statement"
+                       target="_blank">
+                      <i class="fas fa-file-invoice"></i>
+                      <span>Statement</span>
+                    </a>
+                    <a href="#" 
+                       class="action-btn view-btn" 
+                       title="View Details">
+                      <i class="fas fa-eye"></i>
+                      <span>View</span>
+                    </a>
+                    <a href="#" 
+                       class="action-btn edit-btn" 
+                       title="Edit Voucher">
+                      <i class="fas fa-edit"></i>
+                      <span>Edit</span>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8" class="empty-state-cell">
+                  <div class="empty-state-content">
+                    <i class="fas fa-user-tie empty-state-icon"></i>
+                    <h4>No Vouchers Found</h4>
+                    <p>There are no spot agent vouchers to display yet.</p>
+                    <a href="{% url 'adminapp:spotagentvoucher_create' %}" class="add-new-btn">Create Your First Voucher</a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          
+          <!-- No Results Message -->
+          <div id="noResults" class="no-results" style="display: none;">
+            <div class="no-results-content">
+              <i class="fas fa-search-minus no-results-icon"></i>
+              <h4>No vouchers found</h4>
+              <p>Try adjusting your search terms</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent-wise Summary Card -->
+<div class="card border-0 shadow-lg mb-4">
+  <div class="card-header bg-white border-0 py-4">
+    <div class="d-flex align-items-center">
+      <div class="icon-wrapper me-4">
+        <i class="fas fa-chart-pie"></i>
+      </div>
+      <div>
+        <h4 class="card-title mb-0 fw-bold">Agent-wise Summary</h4>
+        <p class="text-muted mb-0 fs-6">Overview by individual agents</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card-body p-0">
+    <div class="agent-summary-container" style="max-height: 600px; overflow-y: auto; padding: 20px;">
+      {% for agent in agent_summary %}
+      <div class="agent-summary-item">
+        <div class="agent-summary-content">
+          <!-- Agent Info Section -->
+          <div class="agent-info-section">
+            <div class="agent-avatar">
+              <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="agent-details">
+              <div style="font-size: 20px;" class="agent-name">{{ agent.agent__name|truncatechars:20|capfirst }}</div>
+
+              <div style="font-size: 15px;" class="agent-mobile">{{ agent.agent__mobile|default:"—" }}</div>
+            </div>
+
+          </div>
+          
+          <!-- Financial Summary Section -->
+          <div class="financial-summary-section">
+            <div class="financial-metrics">
+            <div class="metric-item receipt-metric">
+                <div class="metric-label"><i class="fas fa-receipt me-1"></i>Vouchers</div>
+                <div class="metric-value"> {{ agent.voucher_count }}</div>
+              </div>
+
+              <div class="metric-item receipt-metric">
+                <div class="metric-label">Receipts</div>
+                <div class="metric-value">+₹{{ agent.total_receipts|floatformat:2 }}</div>
+              </div>
+              
+
+
+              <div class="metric-item payment-metric">
+                <div class="metric-label">Payments</div>
+                <div class="metric-value">-₹{{ agent.total_payments|floatformat:2 }}</div>
+              </div>
+              
+              <div class="metric-item net-metric">
+                <div class="metric-label">Net Amount</div>
+                <div class="metric-value net-amount {% if agent.net_amount > 0 %}positive{% elif agent.net_amount < 0 %}negative{% else %}neutral{% endif %}">
+                  {% if agent.net_amount >= 0 %}₹{{ agent.net_amount|floatformat:2 }}{% else %}₹{{ agent.net_amount|floatformat:2 }}{% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Action Button -->
+            <div class="action-section">
+              <a href="{% url 'adminapp:spot_agent_statement_pdf' agent.agent__id %}?{{ request.GET.urlencode }}" 
+                 class="statement-btn" 
+                 title="Generate Statement" 
+                 target="_blank">
+                <i class="fas fa-file-alt"></i>
+                <span>Statement</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Progress Bar for Visual Representation -->
+        <div class="financial-progress">
+          {% if agent.total_receipts > 0 or agent.total_payments > 0 %}
+            {% with max_amount=agent.total_receipts|add:agent.total_payments %}
+            <div class="progress-bar-container">
+              <div class="progress-bar receipt-bar" 
+                   style="width: {% widthratio agent.total_receipts max_amount 100 %}%"></div>
+              <div class="progress-bar payment-bar" 
+                   style="width: {% widthratio agent.total_payments max_amount 100 %}%"></div>
+            </div>
+            {% endwith %}
+          {% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-state">
+        <div class="empty-state-content">
+          <i class="fas fa-users empty-state-icon"></i>
+          <h5>No Agent Data Available</h5>
+          <p>There are no agent summaries to display yet.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+            <!-- Quick Stats Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4" style="background: #6c757d;">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-0">Quick Stats</h6>
+                            <p class="text-muted mb-0">Summary statistics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Active Agents</th>
+                                    <th class="table-header">Net Balance</th>
+                                    <th class="table-header">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="summary-row">
+                                    <td class="table-cell">
+                                        <div class="summary-value">
+                                            <span class="calculated-value">{{ agent_summary|length }}</span>
+                                            <small class="unit">AGENTS</small>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="summary-value">
+                                            <span class="calculated-value">₹{{ summary.net_amount|floatformat:0 }}</span>
+                                            <small class="unit">BALANCE</small>
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="summary-value total-highlight">
+                                            <span class="calculated-value">Active</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="small text-muted text-center mt-3">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Positive amounts indicate money owed by agents, negative amounts indicate credits due to agents.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFilter = document.getElementById('dateFilter');
+    const startDateDiv = document.getElementById('startDateDiv');
+    const endDateDiv = document.getElementById('endDateDiv');
+
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                if (startDateDiv) startDateDiv.style.display = 'block';
+                if (endDateDiv) endDateDiv.style.display = 'block';
+            } else {
+                if (startDateDiv) startDateDiv.style.display = 'none';
+                if (endDateDiv) endDateDiv.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+
+<script>
+  // Enhanced search functionality for vouchers table
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const voucherCount = document.getElementById('voucherCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    // Enhanced search data extraction
+    function getSearchableText(row) {
+      const searchableElements = [
+        // Voucher number
+        row.querySelector('.voucher-badge')?.textContent || '',
+        // Voucher description
+        row.querySelector('.voucher-meta')?.textContent || '',
+        // Agent name
+        row.querySelector('.agent-name')?.textContent || '',
+        // Agent code
+        row.querySelector('.agent-meta')?.textContent || '',
+        // Agent mobile
+        row.querySelector('.agent-mobile')?.textContent || '',
+        // Date
+        row.querySelector('.date-text')?.textContent || '',
+        // Receipt amount
+        row.querySelector('.receipt-value')?.textContent || '',
+        // Payment amount
+        row.querySelector('.payment-value')?.textContent || '',
+        // Net amount
+        row.querySelector('.net-value')?.textContent || '',
+        // Balance
+        row.querySelector('.balance-value')?.textContent || ''
+      ];
+      
+      return searchableElements.join(' ').toLowerCase().trim();
+    }
+
+    // Update counter display
+    function updateCounter(visibleCount) {
+      voucherCount.textContent = visibleCount;
+    }
+
+    // Show/hide clear button
+    function showClearButton(show) {
+      clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    // Main filter function
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      if (searchTerm === '') {
+        // Show all rows
+        allRows.forEach(row => {
+          row.style.display = '';
+          visibleCount++;
+        });
+        noResults.style.display = 'none';
+        showClearButton(false);
+      } else {
+        // Filter rows
+        allRows.forEach(row => {
+          // Get searchable text from data attribute or extract it
+          let searchableText = row.getAttribute('data-searchable');
+          
+          // If data-searchable doesn't exist or is empty, extract text
+          if (!searchableText) {
+            searchableText = getSearchableText(row);
+            row.setAttribute('data-searchable', searchableText); // Cache it
+          }
+          
+          if (searchableText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0 && totalCount > 0) {
+          noResults.style.display = 'block';
+        } else {
+          noResults.style.display = 'none';
+        }
+        
+        showClearButton(true);
+      }
+
+      updateCounter(visibleCount);
+    }
+
+    // Clear search function
+    function clearSearch() {
+      searchInput.value = '';
+      filterTable();
+      searchInput.focus();
+    }
+
+    // Event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+          clearSearch();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Keyboard navigation for table rows
+    allRows.forEach(row => {
+      row.setAttribute('tabindex', '0');
+      row.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const viewLink = this.querySelector('.view-btn');
+          if (viewLink) {
+            viewLink.click();
+          }
+        }
+      });
+    });
+
+    // Initialize counter
+    updateCounter(totalCount);
+  });
+</script>
+
+<style>
+/* Base Styles */
+.myclass {
+    margin-top: 2rem;
+}
+
+/* Page Header */
+.page-header h3 {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+/* Card Styling */
+.form-card, .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+    overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 25px 30px;
+    border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #28a745;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+}
+
+.card-header p {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Card Body */
+.card-body {
+    padding: 30px;
+}
+
+/* Supply Information Grid */
+.supply-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 30px;
+}
+
+.info-card {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fd 100%);
+    border-radius: 20px;
+    padding: 25px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(40, 167, 69, 0.1);
+    cursor: pointer;
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.info-card:hover::before {
+    transform: scaleX(1);
+}
+
+.info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(40, 167, 69, 0.15);
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
+.info-background {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-icon {
+    font-size: 40px;
+    color: rgba(40, 167, 69, 0.1);
+    transform: rotate(-15deg);
+}
+
+.info-content {
+    position: relative;
+    z-index: 2;
+}
+
+.info-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.info-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.info-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.info-badge i {
+    margin-right: 4px;
+    font-size: 10px;
+}
+
+/* Specific card color variations */
+.receipts-card:hover {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff);
+}
+
+.receipts-card .info-background {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(0, 123, 255, 0.02) 100%);
+}
+
+.receipts-card .bg-icon {
+    color: rgba(0, 123, 255, 0.15);
+}
+
+.receipts-card .info-badge {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.payments-card:hover {
+    background: linear-gradient(135deg, #fff5f5 0%, #fee);
+}
+
+.payments-card .info-background {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.02) 100%);
+}
+
+.payments-card .bg-icon {
+    color: rgba(220, 53, 69, 0.15);
+}
+
+.payments-card .info-badge {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.net-card:hover {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff);
+}
+
+.net-card .info-background {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.05) 0%, rgba(23, 162, 184, 0.02) 100%);
+}
+
+.net-card .bg-icon {
+    color: rgba(23, 162, 184, 0.15);
+}
+
+.net-card .info-badge {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+}
+
+.purchases-card:hover {
+    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8);
+}
+
+.purchases-card .info-background {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+}
+
+.purchases-card .bg-icon {
+    color: rgba(40, 167, 69, 0.15);
+}
+
+.purchases-card .info-badge {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.outstanding-card:hover {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffeaa7);
+}
+
+.outstanding-card .info-background {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%);
+}
+
+.outstanding-card .bg-icon {
+    color: rgba(255, 193, 7, 0.2);
+}
+
+.outstanding-card .info-badge {
+    background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.vouchers-card:hover {
+    background: linear-gradient(135deg, #f8f0ff 0%, #f3e5f5);
+}
+
+.vouchers-card .info-background {
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(108, 117, 125, 0.02) 100%);
+}
+
+.vouchers-card .bg-icon {
+    color: rgba(108, 117, 125, 0.15);
+}
+
+.vouchers-card .info-badge {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Search Controls */
+.search-controls {
+    min-width: 300px;
+}
+
+.search-box-wrapper {
+    position: relative;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 280px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+    background: #ffffff;
+}
+
+.search-input::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.stats-badge .badge {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+/* Add New Button */
+.add-new-btn {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid #28a745;
+    font-size: 14px;
+}
+
+.add-new-btn:hover {
+    background: #218838;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+/* Table Styling */
+.custom-table {
+    font-size: 15px;
+}
+
+.summary-table {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* Row Styling */
+.table-row {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.table-row:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+.table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+}
+
+/* Voucher Display */
+.voucher-display {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.voucher-badge {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    display: inline-block;
+    width: fit-content;
+}
+
+.voucher-meta {
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Agent Info */
+.agent-info {
+    display: flex;
+    align-items: center;
+}
+
+.agent-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.agent-details {
+    flex: 1;
+}
+
+.agent-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.agent-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.agent-mobile {
+    color: #28a745;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Date Display */
+.date-display {
+    color: #495057;
+    font-weight: 600;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 15px;
+}
+
+/* Financial Displays */
+.receipt-display, .payment-display, .net-amount-display, .balance-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.receipt-display {
+    color: #28a745;
+}
+
+.payment-display {
+    color: #dc3545;
+}
+
+.currency-symbol {
+    font-size: 14px;
+    margin-right: 2px;
+}
+
+.receipt-value {
+    color: #28a745;
+}
+
+.payment-value {
+    color: #dc3545;
+}
+
+.net-value {
+    font-weight: 700;
+}
+
+.balance-value {
+    font-weight: 700;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+}
+
+.view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+.edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+}
+
+.edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.action-btn i {
+    margin-right: 6px;
+    font-size: 12px;
+}
+
+/* No Results Styling */
+.no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.no-results p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Empty State */
+.empty-state-content {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-state-content h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.empty-state-content p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Agent Summary Styles */
+.agent-summary-container {
+    padding: 20px;
+}
+
+.agent-summary-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.agent-summary-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.agent-summary-container::-webkit-scrollbar-thumb {
+    background: #17a2b8;
+    border-radius: 10px;
+}
+
+.agent-summary-container::-webkit-scrollbar-thumb:hover {
+    background: #138496;
+}
+
+.agent-summary-item {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border: 2px solid #e9ecef;
+    border-left: 6px solid #28a745;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.agent-summary-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-left-color: #17a2b8;
+}
+
+.agent-summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.agent-summary-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.agent-info-section {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.voucher-count-badge {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+    display: inline-flex;
+    align-items: center;
+}
+
+.financial-summary-section {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.financial-metrics {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    min-width: 100px;
+}
+
+.receipt-metric {
+    background: rgba(40, 167, 69, 0.1);
+    border: 2px solid rgba(40, 167, 69, 0.2);
+}
+
+.payment-metric {
+    background: rgba(220, 53, 69, 0.1);
+    border: 2px solid rgba(220, 53, 69, 0.2);
+}
+
+.net-metric {
+    background: rgba(23, 162, 184, 0.1);
+    border: 2px solid rgba(23, 162, 184, 0.2);
+}
+
+.metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.receipt-metric .metric-value {
+    color: #28a745;
+}
+
+.payment-metric .metric-value {
+    color: #dc3545;
+}
+
+.net-amount.positive {
+    color: #28a745;
+}
+
+.net-amount.negative {
+    color: #dc3545;
+}
+
+.net-amount.neutral {
+    color: #6c757d;
+}
+
+.action-section {
+    flex-shrink: 0;
+}
+
+.statement-btn {
+    background: #17a2b8;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border: 2px solid #17a2b8;
+}
+
+.statement-btn:hover {
+    background: #138496;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+}
+
+.statement-btn i {
+    font-size: 12px;
+}
+
+.financial-progress {
+    margin-top: 16px;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-container {
+    display: flex;
+    height: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.receipt-bar {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.payment-bar {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state-content {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-state h5 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Summary Table Styling */
+.summary-row {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.calculated-value {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.unit {
+    color: #6c757d;
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.total-highlight .calculated-value {
+    color: #28a745;
+    font-size: 18px;
+}
+
+/* Column Widths */
+.custom-table th:nth-child(1),
+.custom-table td:nth-child(1) {
+    width: 12%;
+    min-width: 140px;
+}
+
+.custom-table th:nth-child(2),
+.custom-table td:nth-child(2) {
+    width: 22%;
+    min-width: 250px;
+}
+
+.custom-table th:nth-child(3),
+.custom-table td:nth-child(3) {
+    width: 12%;
+    min-width: 130px;
+}
+
+.custom-table th:nth-child(4),
+.custom-table td:nth-child(4),
+.custom-table th:nth-child(5),
+.custom-table td:nth-child(5),
+.custom-table th:nth-child(6),
+.custom-table td:nth-child(6),
+.custom-table th:nth-child(7),
+.custom-table td:nth-child(7) {
+    width: 13%;
+    min-width: 130px;
+}
+
+.custom-table th:nth-child(8),
+.custom-table td:nth-child(8) {
+    width: 15%;
+    min-width: 180px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .supply-info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .info-card {
+        padding: 20px;
+    }
+    
+    .info-value {
+        font-size: 18px;
+    }
+    
+    .info-background {
+        width: 100px;
+        height: 100px;
+        top: -15px;
+        right: -15px;
+    }
+    
+    .bg-icon {
+        font-size: 32px;
+    }
+    
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .card-header .d-flex > .d-flex:first-child {
+        flex-direction: row !important;
+        align-items: center !important;
+        margin-bottom: 20px;
+    }
+    
+    .search-controls {
+        min-width: auto;
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0;
+    }
+    
+    .search-input {
+        width: 200px;
+    }
+    
+    .card-title {
+        font-size: 22px;
+    }
+    
+    .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .action-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .agent-info {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    .agent-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 16px !important;
+        margin-right: 12px !important;
+        flex-shrink: 0;
+    }
+    
+    .agent-name {
+        font-size: 14px !important;
+    }
+    
+    .agent-meta, .agent-mobile {
+        font-size: 11px !important;
+    }
+
+    .agent-summary-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .financial-summary-section {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .financial-metrics {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .metric-item {
+        min-width: 80px;
+        padding: 10px 12px;
+    }
+
+    .metric-value {
+        font-size: 13px;
+    }
+
+    .agent-info-section {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .agent-avatar {
+        margin-right: 12px;
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+
+    .agent-name {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .supply-info-grid {
+        padding: 15px;
+    }
+    
+    .info-card {
+        padding: 18px;
+    }
+    
+    .info-value {
+        font-size: 16px;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .card-header {
+        padding: 20px;
+    }
+    
+    .search-controls {
+        flex-direction: column;
+        gap: 15px !important;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .stats-badge {
+        align-self: center;
+    }
+    
+    .agent-avatar {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 14px !important;
+        margin-right: 10px !important;
+    }
+    
+    .agent-name {
+        font-size: 12px;
+    }
+    
+    .agent-meta, .agent-mobile {
+        font-size: 10px;
+    }
+    
+    .icon-wrapper {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+        margin-right: 15px;
+    }
+    
+    .card-title {
+        font-size: 20px;
+    }
+    
+    .voucher-badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .action-btn span {
+        display: none;
+    }
+    
+    .action-btn {
+        padding: 8px;
+    }
+
+    .financial-metrics {
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+    }
+
+    .metric-item {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .agent-info-section {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .agent-avatar {
+        margin-right: 0;
+        margin-bottom: 12px;
+    }
+
+    .statement-btn span {
+        display: none;
+    }
+
+    .statement-btn {
+        padding: 10px;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .agent-summary-item {
+        padding: 20px;
+    }
+
+    .summary-value {
+        font-size: 14px;
+    }
+    
+    .total-highlight .calculated-value {
+        font-size: 16px;
+    }
+    
+    .table-responsive {
+        font-size: 12px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .action-btn,
+    .action-buttons,
+    .pagination,
+    .search-controls,
+    .add-new-btn {
+        display: none !important;
+    }
+    
+    .page-header {
+        display: none !important;
+    }
+    
+    .form-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        margin-bottom: 20px !important;
+        break-inside: avoid;
+    }
+    
+    .card-header {
+        background: #f8f9fa !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+    
+    .myclass {
+        margin-top: 0 !important;
+    }
+    
+    .info-card:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .table-row:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+</style>
+
+{% endblock %}

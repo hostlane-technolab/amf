@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Spot Purchase Expenses</h2>
+<a href="{% url 'adminapp:spot_purchase_expense_create' %}" class="btn btn-success mb-2">+ Add New Expense</a>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Voucher</th>
+            <th>Date</th>
+            <th>Spot</th>
+            <th>Agent</th>
+            <th>Total</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for exp in expenses %}
+        <tr>
+            <td>{{ exp.purchase.voucher_number }}</td>
+            <td>{{ exp.purchase.date }}</td>
+            <td>{{ exp.purchase.spot.location_name }}</td>
+            <td>{{ exp.agent.name }}</td>
+            <td>{{ exp.total_expense }}</td>
+            <td>
+                <a href="{% url 'adminapp:spot_purchase_expense_update' exp.pk %}" class="btn btn-warning btn-sm">Edit</a>
+                <a href="{% url 'adminapp:spot_purchase_expense_delete' exp.pk %}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

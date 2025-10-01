@@ -1,0 +1,583 @@
+<!-- templates/sales/sales_entry_form.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if form.instance.pk %}Edit{% else %}Create{% endif %} Sales Entry</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .section-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fff;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        .item-row {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #dee2e6;
+        }
+        .delete-item {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .add-item-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .totals-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #3498db;
+        }
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            color: #dc3545;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>
+                        <i class="bi bi-file-earmark-text"></i>
+                        {% if form.instance.pk %}Edit Sales Entry{% else %}Create New Sales Entry{% endif %}
+                    </h2>
+                    <a href="#" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+
+                <form method="post" id="salesEntryForm">
+                    {% csrf_token %}
+                    
+                    <!-- Invoice Details Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-receipt"></i> Invoice Details</h5>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Voucher No <span class="text-danger">*</span></label>
+                                    {{ form.voucher_no }}
+                                    {{ form.voucher_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Date <span class="text-danger">*</span></label>
+                                    {{ form.date }}
+                                    {{ form.date.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Invoice No <span class="text-danger">*</span></label>
+                                    {{ form.invoice_no }}
+                                    {{ form.invoice_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">HS Code</label>
+                                    {{ form.hs_code }}
+                                    {{ form.hs_code.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buyer Information Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-person-badge"></i> Buyer Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Buyer <span class="text-danger">*</span></label>
+                                    {{ form.buyer }}
+                                    {{ form.buyer.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Buyer Order No</label>
+                                    {{ form.buyer_order_no }}
+                                    {{ form.buyer_order_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Purchase Order Date</label>
+                                    {{ form.purchase_order_date }}
+                                    {{ form.purchase_order_date.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exporter Information Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-building"></i> Exporter Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Exporter Name</label>
+                                    {{ form.exporter_name }}
+                                    {{ form.exporter_name.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">IEC Code</label>
+                                    {{ form.exporter_iec_code }}
+                                    {{ form.exporter_iec_code.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">GSTIN Number</label>
+                                    {{ form.gstin_number }}
+                                    {{ form.gstin_number.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Exporter Address</label>
+                                    {{ form.exporter_address }}
+                                    {{ form.exporter_address.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Details Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-truck"></i> Shipping Details</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Exporters Ref No</label>
+                                    {{ form.exporters_ref_no }}
+                                    {{ form.exporters_ref_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Container No</label>
+                                    {{ form.container_no }}
+                                    {{ form.container_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Customs Seal No</label>
+                                    {{ form.customs_seal_no }}
+                                    {{ form.customs_seal_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Steamer Line No</label>
+                                    {{ form.steamer_line_no }}
+                                    {{ form.steamer_line_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">REX Reg No</label>
+                                    {{ form.rex_reg_no }}
+                                    {{ form.rex_reg_no.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">IGST Number</label>
+                                    {{ form.igst_number }}
+                                    {{ form.igst_number.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Port/Destination Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-geo-alt"></i> Origin & Destination</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Country of Origin</label>
+                                    {{ form.country_of_origin }}
+                                    {{ form.country_of_origin.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Country of Destination <span class="text-danger">*</span></label>
+                                    {{ form.country_of_destination }}
+                                    {{ form.country_of_destination.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Information Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-box-seam"></i> Product Information</h5>
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Item <span class="text-danger">*</span></label>
+                                    {{ form.item }}
+                                    {{ form.item.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Item Quality</label>
+                                    {{ form.item_quality }}
+                                    {{ form.item_quality.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Unit <span class="text-danger">*</span></label>
+                                    {{ form.unit }}
+                                    {{ form.unit.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Glaze <span class="text-danger">*</span></label>
+                                    {{ form.glaze }}
+                                    {{ form.glaze.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Freezing Category <span class="text-danger">*</span></label>
+                                    {{ form.freezing_category }}
+                                    {{ form.freezing_category.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">Brand</label>
+                                    {{ form.brand }}
+                                    {{ form.brand.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Items Section -->
+                    <div class="section-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="section-title mb-0"><i class="bi bi-list-ul"></i> Sales Items</h5>
+                            <button type="button" id="add-item-btn" class="add-item-btn">
+                                <i class="bi bi-plus-circle"></i> Add More Item
+                            </button>
+                        </div>
+                        
+                        {{ formset.management_form }}
+                        
+                        <div id="items-container">
+                            {% for item_form in formset %}
+                            <div class="item-row" data-form-index="{{ forloop.counter0 }}">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Item #<span class="item-number">{{ forloop.counter }}</span></h6>
+                                    {% if formset.can_delete %}
+                                    <div class="form-check">
+                                        {{ item_form.DELETE }}
+                                        <label class="form-check-label text-danger">
+                                            Delete
+                                        </label>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                {{ item_form.id }}
+                                
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Species <span class="text-danger">*</span></label>
+                                            {{ item_form.species }}
+                                            {{ item_form.species.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Peeling Type</label>
+                                            {{ item_form.peeling_type }}
+                                            {{ item_form.peeling_type.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Grade</label>
+                                            {{ item_form.grade }}
+                                            {{ item_form.grade.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Cartons <span class="text-danger">*</span></label>
+                                            {{ item_form.cartons }}
+                                            {{ item_form.cartons.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Quantity (kg) <span class="text-danger">*</span></label>
+                                            {{ item_form.quantity }}
+                                            {{ item_form.quantity.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Price (USD/kg) <span class="text-danger">*</span></label>
+                                            {{ item_form.price_usd_per_kg }}
+                                            {{ item_form.price_usd_per_kg.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tax Rate (%)</label>
+                                            {{ item_form.tax_rate }}
+                                            {{ item_form.tax_rate.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tax Amount</label>
+                                            {{ item_form.tax_amount }}
+                                            {{ item_form.tax_amount.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Total Amount</label>
+                                            {{ item_form.total_amount }}
+                                            {{ item_form.total_amount.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Amount In USD</label>
+                                            {{ item_form.amount_usd }}
+                                            {{ item_form.amount_usd.errors }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="mb-3">
+                                            <label class="form-label">Taxable Value</label>
+                                            {{ item_form.taxable_value }}
+                                            {{ item_form.taxable_value.errors }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Empty form template for cloning -->
+                        <div id="empty-form-template" style="display: none;">
+                            <div class="item-row" data-form-index="__prefix__">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Item #<span class="item-number"></span></h6>
+                                    <button type="button" class="btn btn-sm btn-danger remove-item-btn">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Species <span class="text-danger">*</span></label>
+                                            {{ formset.empty_form.species }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Peeling Type</label>
+                                            {{ formset.empty_form.peeling_type }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Grade</label>
+                                            {{ formset.empty_form.grade }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3">
+                                            <label class="form-label">Cartons <span class="text-danger">*</span></label>
+                                            {{ formset.empty_form.cartons }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Quantity (kg) <span class="text-danger">*</span></label>
+                                            {{ formset.empty_form.quantity }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Price (USD/kg) <span class="text-danger">*</span></label>
+                                            {{ formset.empty_form.price_usd_per_kg }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tax Rate (%)</label>
+                                            {{ formset.empty_form.tax_rate }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Information Section -->
+                    <div class="section-card">
+                        <h5 class="section-title"><i class="bi bi-info-circle"></i> Additional Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    {{ form.status }}
+                                    {{ form.status.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Narrative</label>
+                                    {{ form.narrative }}
+                                    {{ form.narrative.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Processed By</label>
+                                    {{ form.processed_by }}
+                                    {{ form.processed_by.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Declaration Text</label>
+                                    {{ form.declaration_text }}
+                                    {{ form.declaration_text.errors }}
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Bank Details</label>
+                                    {{ form.bank_details }}
+                                    {{ form.bank_details.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="#" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" name="status" value="draft" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Save as Draft
+                        </button>
+                        <button type="submit" name="status" value="confirmed" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save & Confirm
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.getElementById('add-item-btn');
+            const container = document.getElementById('items-container');
+            const totalFormsInput = document.getElementById('id_items-TOTAL_FORMS');
+            const template = document.getElementById('empty-form-template');
+            
+            // Function to update item numbers
+            function updateItemNumbers() {
+                const items = container.querySelectorAll('.item-row');
+                items.forEach((item, index) => {
+                    const numberSpan = item.querySelector('.item-number');
+                    if (numberSpan) {
+                        numberSpan.textContent = index + 1;
+                    }
+                });
+            }
+            
+            // Add new item
+            addButton.addEventListener('click', function() {
+                const formCount = parseInt(totalFormsInput.value);
+                const newForm = template.cloneNode(true);
+                newForm.style.display = 'block';
+                newForm.id = '';
+                
+                // Replace __prefix__ with the actual form number
+                newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formCount);
+                
+                // Update the data attribute
+                const itemRow = newForm.querySelector('.item-row');
+                if (itemRow) {
+                    itemRow.setAttribute('data-form-index', formCount);
+                }
+                
+                container.appendChild(newForm.querySelector('.item-row'));
+                
+                // Increment total forms
+                totalFormsInput.value = formCount + 1;
+                
+                // Update item numbers
+                updateItemNumbers();
+            });
+            
+            // Handle remove button (for dynamically added items)
+            container.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-item-btn')) {
+                    const itemRow = e.target.closest('.item-row');
+                    itemRow.remove();
+                    updateItemNumbers();
+                }
+            });
+            
+            // Initialize item numbers on page load
+            updateItemNumbers();
+        });
+    </script>
+</body>
+</html>

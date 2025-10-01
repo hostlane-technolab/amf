@@ -1,0 +1,836 @@
+{% extends 'admin_base.html' %}
+{%block title%} Pre-Shipment WorkOut Details{%endblock%}
+{% block content %}
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header">
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Pre-Shipment WorkOut Details</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="#">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'adminapp:preshipment_workout_list' %}">Pre-Shipment WorkOut</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Details</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <!-- Header Card -->
+        <div class="card border-0 shadow-lg mb-4">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center">
+                <div class="icon-wrapper me-4">
+                  <i class="fas fa-shipping-fast"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Pre-Shipment WorkOut Details</h3>
+                  <p class="text-muted mb-0 fs-6">Complete workout information and analysis</p>
+                </div>
+              </div>
+              
+              <div class="action-controls">
+                <a href="{% url 'adminapp:preshipment_workout_list' %}" class="btn btn-outline-primary btn-lg">
+                  <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Basic Information Card -->
+        <div class="card border-0 shadow-lg mb-4">
+          <div class="card-header border-0 py-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4" style="background: #007bff;">
+                <i class="fas fa-info-circle"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Basic Information</h4>
+                <p class="text-muted mb-0">Essential workout details</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <label class="info-label">Workout Date</label>
+                    <div class="info-value">{{ workout.workout_date }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-receipt"></i>
+                  </div>
+                  <div class="info-content">
+                    <label class="info-label">Voucher Number</label>
+                    <div class="info-value">{{ workout.voucher_number }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-item">
+                  <div class="info-icon">
+                    <i class="fas fa-sticky-note"></i>
+                  </div>
+                  <div class="info-content">
+                    <label class="info-label">Remarks</label>
+                    <div class="info-value">{{ workout.remarks|default:"No remarks" }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Details Card -->
+        <div class="card border-0 shadow-lg mb-4">
+          <div class="card-header border-0 py-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4" style="background: #28a745;">
+                <i class="fas fa-box"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Product Details</h4>
+                <p class="text-muted mb-0">Product specifications and details</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="product-details-table">
+                  <div class="detail-row">
+                    <span class="detail-label">
+                      <i class="fas fa-cube me-2"></i>Item
+                    </span>
+                    <span class="detail-value">{{ workout.item.name }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">
+                      <i class="fas fa-weight me-2"></i>Unit
+                    </span>
+                    <span class="detail-value">{{ workout.unit.unit_code }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">
+                      <i class="fas fa-percentage me-2"></i>Glaze
+                    </span>
+                    <span class="detail-value">{{ workout.glaze.percentage }}%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="product-details-table">
+                  <div class="detail-row">
+                    <span class="detail-label">
+                      <i class="fas fa-tags me-2"></i>Category
+                    </span>
+                    <span class="detail-value">{{ workout.category.name }}</span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">
+                      <i class="fas fa-trademark me-2"></i>Brand
+                    </span>
+                    <span class="detail-value">{{ workout.brand.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table Card -->
+        <div class="card border-0 shadow-lg mb-4">
+          <div class="card-header border-0 py-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4" style="background: #17a2b8;">
+                <i class="fas fa-list"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Items Details</h4>
+                <p class="text-muted mb-0">Detailed breakdown of all items</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 modern-table">
+                <thead>
+                  <tr>
+                    <th class="table-header"><i class="fas fa-fish me-2"></i>Species</th>
+                    <th class="table-header"><i class="fas fa-cut me-2"></i>Peeling Type</th>
+                    <th class="table-header"><i class="fas fa-star me-2"></i>Grade</th>
+                    <th class="table-header"><i class="fas fa-boxes me-2"></i>Cartons</th>
+                    <th class="table-header"><i class="fas fa-balance-scale me-2"></i>Quantity</th>
+                    <th class="table-header"><i class="fas fa-dollar-sign me-2"></i>USD/KG</th>
+                    <th class="table-header"><i class="fas fa-money-bill me-2"></i>USD Item</th>
+                    <th class="table-header"><i class="fas fa-rupee-sign me-2"></i>USD Item INR</th>
+                    <th class="table-header"><i class="fas fa-dollar-sign me-2"></i>USD/KG Get</th>
+                    <th class="table-header"><i class="fas fa-money-bill me-2"></i>USD Item Get</th>
+                    <th class="table-header"><i class="fas fa-rupee-sign me-2"></i>USD Item INR Get</th>
+                    <th class="table-header profit-header"><i class="fas fa-arrow-up me-2"></i>Profit</th>
+                    <th class="table-header loss-header"><i class="fas fa-arrow-down me-2"></i>Loss</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for item in items %}
+                  <tr class="table-row">
+                    <td class="table-cell">
+                      <div class="species-badge">
+                        <i class="fas fa-fish species-icon"></i>
+                        {{ item.species.name }}
+                      </div>
+                    </td>
+                    <td class="table-cell">{{ item.peeling_type.name }}</td>
+                    <td class="table-cell">
+                      <span class="grade-badge">{{ item.grade.grade }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="number-badge">{{ item.cartons }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="number-badge">{{ item.quantity }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="currency-value">${{ item.usd_rate_per_kg }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="currency-value">${{ item.usd_rate_item }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="currency-value-inr">₹{{ item.usd_rate_item_to_inr }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="currency-value">${{ item.usd_rate_per_kg_get }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="currency-value">${{ item.usd_rate_item_get }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="currency-value-inr">₹{{ item.usd_rate_item_to_inr_get }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="profit-value">${{ item.profit }}</span>
+                    </td>
+                    <td class="table-cell">
+                      <span class="loss-value">${{ item.loss }}</span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card border-0 shadow-lg mb-4">
+          <div class="card-header border-0 py-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4" style="background: #ffc107;">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Financial Summary</h4>
+                <p class="text-muted mb-0">Overview of summary totals</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="summary-section">
+                  <h6 class="summary-title">
+                    <i class="fas fa-boxes me-2"></i>Quantity Summary
+                  </h6>
+                  <div class="summary-grid">
+                    <div class="summary-item">
+                      <span class="summary-label">Total Cartons</span>
+                      <span class="summary-value">{{ summary.total_cartons }}</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Total Quantity</span>
+                      <span class="summary-value">{{ summary.total_quantity }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="summary-section mt-4">
+                  <h6 class="summary-title">
+                    <i class="fas fa-dollar-sign me-2"></i>USD Summary
+                  </h6>
+                  <div class="summary-grid">
+                    <div class="summary-item">
+                      <span class="summary-label">Total USD Item</span>
+                      <span class="summary-value currency">${{ summary.total_usd_rate_item }}</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Total USD Item Get</span>
+                      <span class="summary-value currency">${{ summary.total_usd_rate_item_get }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-6">
+                <div class="summary-section">
+                  <h6 class="summary-title">
+                    <i class="fas fa-rupee-sign me-2"></i>INR Summary
+                  </h6>
+                  <div class="summary-grid">
+                    <div class="summary-item">
+                      <span class="summary-label">Total USD INR</span>
+                      <span class="summary-value currency-inr">₹{{ summary.total_usd_inr }}</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Total USD INR Get</span>
+                      <span class="summary-value currency-inr">₹{{ summary.total_usd_inr_get }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="summary-section mt-4">
+                  <h6 class="summary-title">
+                    <i class="fas fa-chart-bar me-2"></i>Average Rates
+                  </h6>
+                  <div class="summary-grid">
+                    <div class="summary-item">
+                      <span class="summary-label">Average USD/KG</span>
+                      <span class="summary-value currency">${{ summary.avg_usd_per_kg }}</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Average USD/KG Get</span>
+                      <span class="summary-value currency">${{ summary.avg_usd_per_kg_get }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row mt-4">
+              <div class="col-md-12">
+                <div class="profit-loss-summary">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="profit-summary-card">
+                        <div class="profit-summary-icon">
+                          <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="profit-summary-content">
+                          <h6>Total Profit</h6>
+                          <div class="profit-value-large">${{ summary.total_profit }}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="loss-summary-card">
+                        <div class="loss-summary-icon">
+                          <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="loss-summary-content">
+                          <h6>Total Loss</h6>
+                          <div class="loss-value-large">${{ summary.total_loss }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Card Styling from Peeling Shed Supply Detail */
+.card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+}
+
+/* Card Header Styling - Updated to match Peeling Shed Supply Detail */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Action Controls */
+.btn-outline-primary {
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  border-width: 2px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+/* Info Items */
+.info-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.info-item:hover {
+  background: #e9ecef;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.info-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  margin-right: 15px;
+}
+
+.info-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.info-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Product Details */
+.product-details-table {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #495057;
+  display: flex;
+  align-items: center;
+}
+
+.detail-value {
+  font-weight: 700;
+  color: #2c3e50;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+/* Table Styling */
+.modern-table {
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px 15px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+}
+
+.profit-header {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+  color: #28a745;
+}
+
+.loss-header {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.1) 100%);
+  color: #dc3545;
+}
+
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(23, 162, 184, 0.02) 0%, rgba(19, 132, 150, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.table-cell {
+  padding: 15px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+/* Badges and Values */
+.species-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 15px;
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  color: white;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.species-icon {
+  margin-right: 6px;
+}
+
+.grade-badge {
+  padding: 6px 12px;
+  background: #ffc107;
+  color: #000;
+  border-radius: 15px;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.number-badge {
+  padding: 6px 12px;
+  background: #e9ecef;
+  color: #495057;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.currency-value {
+  color: #007bff;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.currency-value-inr {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.profit-value {
+  color: #28a745;
+  font-weight: 700;
+  font-size: 15px;
+  background: rgba(40, 167, 69, 0.1);
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+.loss-value {
+  color: #dc3545;
+  font-weight: 700;
+  font-size: 15px;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+
+/* Summary Styling */
+.summary-section {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.summary-title {
+  color: #495057;
+  font-weight: 700;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.summary-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.summary-item:hover {
+  border-color: #007bff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.summary-value.currency {
+  color: #007bff;
+}
+
+.summary-value.currency-inr {
+  color: #28a745;
+}
+
+/* Profit/Loss Summary Cards */
+.profit-loss-summary {
+  background: #ffffff;
+  border-radius: 15px;
+  border: 2px solid #e9ecef;
+  padding: 20px;
+}
+
+.profit-summary-card, .loss-summary-card {
+  display: flex;
+  align-items: center;
+  padding: 25px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.profit-summary-card {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+  border: 2px solid rgba(40, 167, 69, 0.2);
+}
+
+.profit-summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(40, 167, 69, 0.2);
+}
+
+.loss-summary-card {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.1) 100%);
+  border: 2px solid rgba(220, 53, 69, 0.2);
+}
+
+.loss-summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(220, 53, 69, 0.2);
+}
+
+.profit-summary-icon, .loss-summary-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-right: 20px;
+}
+
+.profit-summary-icon {
+  background: #28a745;
+  color: white;
+}
+
+.loss-summary-icon {
+  background: #dc3545;
+  color: white;
+}
+
+.profit-summary-content h6, .loss-summary-content h6 {
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #495057;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profit-value-large {
+  font-size: 28px;
+  font-weight: 800;
+  color: #28a745;
+}
+
+.loss-value-large {
+  font-size: 28px;
+  font-weight: 800;
+  color: #dc3545;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex > .d-flex:first-child {
+    margin-bottom: 15px;
+  }
+  
+  .action-controls {
+    align-self: center;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .card-title {
+    font-size: 22px;
+  }
+  
+  .summary-grid {
+    gap: 8px;
+  }
+  
+  .profit-summary-card, .loss-summary-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .profit-summary-icon, .loss-summary-icon {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .info-item {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+  }
+  
+  .info-icon {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 0;
+  }
+  
+  .detail-label {
+    margin-bottom: 8px;
+    justify-content: center;
+  }
+  
+  .detail-value {
+    text-align: center;
+  }
+  
+  .summary-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .modern-table {
+    font-size: 12px;
+  }
+  
+  .table-header {
+    padding: 15px 10px;
+    font-size: 11px;
+  }
+  
+  .table-cell {
+    padding: 10px 8px;
+  }
+}
+</style>
+
+{%endblock%}

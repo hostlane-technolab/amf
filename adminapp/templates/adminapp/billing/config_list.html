@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Billing Configurations</title>
+</head>
+<body>
+    <h1>Billing Configurations</h1>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <p><a href="{% url 'adminapp:setup_billing_configuration' %}">➕ Setup New Configuration</a></p>
+
+    <table border="1" cellpadding="6" cellspacing="0">
+        <tr>
+            <th>Tenant</th>
+            <th>Start Date</th>
+            <th>Frequency (days)</th>
+            <th>Last Bill</th>
+            <th>Next Bill</th>
+            <th>Active</th>
+            <th>Actions</th>
+        </tr>
+        {% for config in configs %}
+        <tr>
+            <td>{{ config.tenant.company_name }}</td>
+            <td>{{ config.billing_start_date }}</td>
+            <td>{{ config.billing_frequency_days }}</td>
+            <td>{{ config.last_bill_generated_date|default:"-" }}</td>
+            <td>{{ config.next_bill_date }}</td>
+            <td>{{ config.is_active }}</td>
+            <td>
+                <form action="{% url 'adminapp:run_auto_billing' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="config_id" value="{{ config.id }}">
+                    <button type="submit">⚡ Run Billing</button>
+                </form>
+                <a href="{% url 'adminapp:delete_billing_configuration' config.id %}">🗑 Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No configurations found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="{% url 'adminapp:debug_billing_status' %}">🛠 Debug Billing Status</a></p>
+</body>
+</html>

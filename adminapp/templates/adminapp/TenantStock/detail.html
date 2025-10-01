@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ tenant.company_name }} - Stock Details</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <!-- DataTables CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            --info-gradient: linear-gradient(135deg, #3498db 0%, #9b59b6 100%);
+            --warning-gradient: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+            --danger-gradient: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .hero-header {
+            background: var(--primary-gradient);
+            position: relative;
+            overflow: hidden;
+            min-height: 200px;
+        }
+
+        .hero-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .balance-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .balance-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .balance-card.success { background: var(--success-gradient); color: white; }
+        .balance-card.info { background: var(--info-gradient); color: white; }
+        .balance-card.warning { background: var(--warning-gradient); color: white; }
+        .balance-card.dark { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; }
+
+        .metric-icon {
+            font-size: 3rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .nav-pills .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .transaction-card {
+            background: white;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .transaction-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 5px 20px rgba(0,123,255,0.1);
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-processing { background: #d1ecf1; color: #0c5460; }
+
+        .quantity-badges {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .quantity-badge {
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .quick-action-btn {
+            border-radius: 15px;
+            padding: 15px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .quick-action-btn:hover::before {
+            left: 100%;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -8px;
+            top: 20px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #007bff;
+        }
+
+        .search-box {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+
+        .floating-actions {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .hero-header { min-height: 150px; }
+            .metric-value { font-size: 2rem; }
+            .metric-icon { font-size: 2rem; }
+            .floating-actions { bottom: 20px; right: 20px; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Hero Header -->
+    <div class="hero-header text-white position-relative">
+        <div class="container-fluid py-5 position-relative">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-3">
+                        <i class="fas fa-building me-3"></i>{{ tenant.company_name }}
+                    </h1>
+                    <p class="lead mb-0">Comprehensive stock management and transaction overview</p>
+                    <div class="mt-3">
+                        <span class="badge bg-white text-dark me-2">
+                            <i class="fas fa-map-marker-alt"></i> {{ tenant.address|default:"No address" }}
+                        </span>
+                        <span class="badge bg-white text-dark me-2">
+                            <i class="fas fa-phone"></i> {{ tenant.phone|default:"No phone" }}
+                        </span>
+                        {% if tenant.email %}
+                        <span class="badge bg-white text-dark">
+                            <i class="fas fa-envelope"></i> {{ tenant.email }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'adminapp:tenant_stock_balance' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Balance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Balance Summary Cards -->
+    <div class="container-fluid mt-n5 position-relative">
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="balance-card success h-100 p-4 text-center">
+                    <div class="metric-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="metric-value">{{ balance_totals.slab_balance|default:0 }}</div>
+                    <div class="metric-label">Total Slabs</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="balance-card info h-100 p-4 text-center">
+                    <div class="metric-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="metric-value">{{ balance_totals.cs_balance|default:0 }}</div>
+                    <div class="metric-label">Total C/S</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="balance-card warning h-100 p-4 text-center">
+                    <div class="metric-icon">
+                        <i class="fas fa-weight-hanging"></i>
+                    </div>
+                    <div class="metric-value">{{ balance_totals.kg_balance|default:0 }}</div>
+                    <div class="metric-label">Total KG</div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="balance-card dark h-100 p-4 text-center">
+                    <div class="metric-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="metric-value">${{ total_value|default:0|floatformat:0 }}</div>
+                    <div class="metric-label">Estimated Value</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-6">
+                <div class="chart-container">
+                    <h5 class="mb-4"><i class="fas fa-chart-pie text-primary me-2"></i>Stock Distribution</h5>
+                    <canvas id="stockPieChart" height="300"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-container">
+                    <h5 class="mb-4"><i class="fas fa-chart-bar text-primary me-2"></i>Monthly Trend</h5>
+                    <canvas id="trendChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div class="row">
+            <div class="col-12">
+                <div class="transaction-card">
+                    <!-- Tab Navigation -->
+                    <div class="p-4 border-bottom">
+                        <ul class="nav nav-pills justify-content-center" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link active" id="stock-in-tab" data-bs-toggle="pill" 
+                                        data-bs-target="#stock-in" type="button" role="tab">
+                                    <i class="fas fa-arrow-down text-success me-2"></i>
+                                    Stock In Entries
+                                    <span class="badge bg-primary ms-2">{{ freezing_entries.count|default:0 }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="stock-out-tab" data-bs-toggle="pill" 
+                                        data-bs-target="#stock-out" type="button" role="tab">
+                                    <i class="fas fa-arrow-up text-danger me-2"></i>
+                                    Stock Out Entries
+                                    <span class="badge bg-warning ms-2">{{ return_entries.count|default:0 }}</span>
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link" id="analytics-tab" data-bs-toggle="pill" 
+                                        data-bs-target="#analytics" type="button" role="tab">
+                                    <i class="fas fa-analytics me-2"></i>
+                                    Analytics
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content p-4">
+                        <!-- Stock In Tab -->
+                        <div class="tab-pane fade show active" id="stock-in" role="tabpanel">
+                            {% if freezing_entries %}
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0">Freezing Entries (Stock Inbound)</h5>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control search-box" id="stockInSearch" 
+                                           placeholder="🔍 Search entries..." style="width: 300px;">
+                                    <button class="btn btn-outline-primary" onclick="exportData('stock-in')">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="stockInTable">
+                                    <thead class="table-primary">
+                                        <tr>
+                                            <th><i class="fas fa-calendar"></i> Date</th>
+                                            <th><i class="fas fa-receipt"></i> Voucher</th>
+                                            <th><i class="fas fa-box"></i> Item Details</th>
+                                            <th><i class="fas fa-store"></i> Store</th>
+                                            <th class="text-center"><i class="fas fa-cubes"></i> Quantities</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in freezing_entries %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ entry.freezing_tenant.freezing_date|date:"M d, Y" }}</strong>
+                                                <br><small class="text-muted">{{ entry.freezing_tenant.freezing_date|time:"h:i A" }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">{{ entry.freezing_tenant.voucher_number }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold">{{ entry.item.item_name }}</div>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-fish"></i> {{ entry.species.species_name }}
+                                                </small>
+                                                <small class="text-muted">
+                                                    <span class="badge bg-secondary">{{ entry.grade.grade_name }}</span>
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% if entry.store %}
+                                                    <i class="fas fa-warehouse text-info"></i> {{ entry.store.store_name }}
+                                                {% else %}
+                                                    <span class="text-muted">No Store</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="quantity-badges">
+                                                    <span class="badge bg-info quantity-badge">
+                                                        <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} Slab
+                                                    </span>
+                                                    <span class="badge bg-primary quantity-badge">
+                                                        <i class="fas fa-boxes"></i> {{ entry.c_s_quantity|default:0 }} C/S
+                                                    </span>
+                                                    <span class="badge bg-dark quantity-badge">
+                                                        <i class="fas fa-weight"></i> {{ entry.kg|default:0 }} KG
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-info" onclick="viewEntry('{{ entry.id }}', 'freezing')" 
+                                                            data-bs-toggle="tooltip" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-primary" onclick="editEntry('{{ entry.id }}', 'freezing')" 
+                                                            data-bs-toggle="tooltip" title="Edit Entry">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-primary">
+                                        <tr>
+                                            <th colspan="4" class="text-end">Totals:</th>
+                                            <th class="text-center">
+                                                <div class="quantity-badges">
+                                                    <span class="badge bg-info quantity-badge">
+                                                        {{ freezing_totals.total_slab|default:0 }} Slab
+                                                    </span>
+                                                    <span class="badge bg-primary quantity-badge">
+                                                        {{ freezing_totals.total_cs|default:0 }} C/S
+                                                    </span>
+                                                    <span class="badge bg-dark quantity-badge">
+                                                        {{ freezing_totals.total_kg|default:0 }} KG
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-snowflake"></i>
+                                </div>
+                                <h4>No Stock In Entries</h4>
+                                <p>This tenant has not received any stock entries yet.</p>
+                                <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-plus me-2"></i>Add First Entry
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Stock Out Tab -->
+                        <div class="tab-pane fade" id="stock-out" role="tabpanel">
+                            {% if return_entries %}
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0">Return Entries (Stock Outbound)</h5>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-control search-box" id="stockOutSearch" 
+                                           placeholder="🔍 Search returns..." style="width: 300px;">
+                                    <button class="btn btn-outline-warning" onclick="exportData('stock-out')">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="stockOutTable">
+                                    <thead class="table-warning">
+                                        <tr>
+                                            <th><i class="fas fa-calendar"></i> Date</th>
+                                            <th><i class="fas fa-receipt"></i> Voucher</th>
+                                            <th><i class="fas fa-box"></i> Item Details</th>
+                                            <th><i class="fas fa-store"></i> Store</th>
+                                            <th><i class="fas fa-info-circle"></i> Status</th>
+                                            <th class="text-center"><i class="fas fa-cubes"></i> Quantities</th>
+                                            <th class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in return_entries %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ entry.return_tenant.return_date|date:"M d, Y" }}</strong>
+                                                <br><small class="text-muted">{{ entry.return_tenant.return_date|time:"h:i A" }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-warning">{{ entry.return_tenant.voucher_number }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold">{{ entry.item.item_name }}</div>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-fish"></i> {{ entry.species.species_name }}
+                                                </small>
+                                                <small class="text-muted">
+                                                    <span class="badge bg-secondary">{{ entry.grade.grade_name }}</span>
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% if entry.store %}
+                                                    <i class="fas fa-warehouse text-info"></i> {{ entry.store.store_name }}
+                                                {% else %}
+                                                    <span class="text-muted">No Store</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if entry.return_tenant.return_status == 'pending' %}
+                                                    <span class="status-badge status-pending">
+                                                        <i class="fas fa-clock"></i> Pending
+                                                    </span>
+                                                {% elif entry.return_tenant.return_status == 'completed' %}
+                                                    <span class="status-badge status-completed">
+                                                        <i class="fas fa-check-circle"></i> Completed
+                                                    </span>
+                                                {% else %}
+                                                    <span class="status-badge status-processing">
+                                                        <i class="fas fa-spinner"></i> {{ entry.return_tenant.return_status|title }}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="quantity-badges">
+                                                    <span class="badge bg-warning quantity-badge">
+                                                        <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} Slab
+                                                    </span>
+                                                    <span class="badge bg-warning quantity-badge">
+                                                        <i class="fas fa-boxes"></i> {{ entry.c_s_quantity|default:0 }} C/S
+                                                    </span>
+                                                    <span class="badge bg-warning quantity-badge">
+                                                        <i class="fas fa-weight"></i> {{ entry.kg|default:0 }} KG
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-info" onclick="viewEntry('{{ entry.id }}', 'return')" 
+                                                            data-bs-toggle="tooltip" title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-warning" onclick="editEntry('{{ entry.id }}', 'return')" 
+                                                            data-bs-toggle="tooltip" title="Edit Entry">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    {% if entry.return_tenant.return_status == 'pending' %}
+                                                    <button class="btn btn-outline-success" onclick="completeReturn('{{ entry.id }}')" 
+                                                            data-bs-toggle="tooltip" title="Mark Complete">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-warning">
+                                        <tr>
+                                            <th colspan="5" class="text-end">Totals:</th>
+                                            <th class="text-center">
+                                                <div class="quantity-badges">
+                                                    <span class="badge bg-warning quantity-badge">
+                                                        {{ return_totals.total_slab|default:0 }} Slab
+                                                    </span>
+                                                    <span class="badge bg-warning quantity-badge">
+                                                        {{ return_totals.total_cs|default:0 }} C/S
+                                                    </span>
+                                                    <span class="badge bg-warning quantity-badge">
+                                                        {{ return_totals.total_kg|default:0 }} KG
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-undo"></i>
+                                </div>
+                                <h4>No Stock Out Entries</h4>
+                                <p>This tenant has no return entries yet.</p>
+                                <a href="{% url 'adminapp:create_return_tenant' %}" class="btn btn-warning btn-lg">
+                                    <i class="fas fa-plus me-2"></i>Add Return Entry
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Analytics Tab -->
+                        <div class="tab-pane fade" id="analytics" role="tabpanel">
+                            <div class="row g-4">
+                                <!-- Key Metrics -->
+                                <div class="col-lg-8">
+                                    <div class="chart-container">
+                                        <h5 class="mb-4"><i class="fas fa-chart-area text-primary me-2"></i>Transaction Timeline</h5>
+                                        <canvas id="timelineChart" height="400"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="chart-container">
+                                        <h5 class="mb-4"><i class="fas fa-list-ul text-primary me-2"></i>Recent Activity</h5>
+                                        <div class="timeline-container">
+                                            {% for entry in recent_activity %}
+                                            <div class="timeline-item">
+                                                <div class="timeline-dot"></div>
+                                                <div class="timeline-content">
+                                                    <h6 class="mb-1">{{ entry.activity_type|title }}</h6>
+                                                    <p class="text-muted mb-1">{{ entry.description }}</p>
+                                                    <small class="text-muted">{{ entry.timestamp|timesince }} ago</small>
+                                                </div>
+                                            </div>
+                                            {% empty %}
+                                            <p class="text-muted">No recent activity</p>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Additional Analytics Cards -->
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="balance-card info h-100 p-3 text-center">
+                                        <h6 class="mb-2">Average Transaction</h6>
+                                        <h4>{{ avg_transaction_kg|default:0|floatformat:1 }} KG</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="balance-card success h-100 p-3 text-center">
+                                        <h6 class="mb-2">Stock Turnover</h6>
+                                        <h4>{{ stock_turnover|default:0|floatformat:1 }}%</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="balance-card warning h-100 p-3 text-center">
+                                        <h6 class="mb-2">Days in Stock</h6>
+                                        <h4>{{ avg_days_in_stock|default:0 }}</h4>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-3">
+                                    <div class="balance-card dark h-100 p-3 text-center">
+                                        <h6 class="mb-2">Total Transactions</h6>
+                                        <h4>{{ total_transactions|default:0 }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="transaction-card p-4 text-center">
+                    <h5 class="mb-4"><i class="fas fa-bolt text-warning me-2"></i>Quick Actions</h5>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" 
+                           class="btn btn-success quick-action-btn">
+                            <i class="fas fa-plus me-2"></i>Add Stock Entry
+                        </a>
+                        <a href="{% url 'adminapp:create_return_tenant' %}" 
+                           class="btn btn-warning quick-action-btn">
+                            <i class="fas fa-minus me-2"></i>Process Return
+                        </a>
+                        <button class="btn btn-info quick-action-btn" onclick="generateReport()">
+                            <i class="fas fa-file-alt me-2"></i>Generate Report
+                        </button>
+                        <button class="btn btn-primary quick-action-btn" onclick="scheduleAlert()">
+                            <i class="fas fa-bell me-2"></i>Set Stock Alert
+                        </button>
+                        <a href="{% url 'adminapp:tenant_stock_balance' %}" 
+                           class="btn btn-outline-secondary quick-action-btn">
+                            <i class="fas fa-list me-2"></i>View All Balances
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="floating-actions d-none d-lg-block">
+        <div class="fab bg-success text-white" onclick="quickAddStock()" data-bs-toggle="tooltip" title="Quick Add Stock">
+            <i class="fas fa-plus"></i>
+        </div>
+        <div class="fab bg-warning text-white" onclick="quickReturn()" data-bs-toggle="tooltip" title="Quick Return">
+            <i class="fas fa-minus"></i>
+        </div>
+        <div class="fab bg-primary text-white" onclick="scrollToTop()" data-bs-toggle="tooltip" title="Back to Top">
+            <i class="fas fa-arrow-up"></i>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.21/js/dataTables.bootstrap5.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+
+            // Initialize DataTables for both tables
+            if ($('#stockInTable').length) {
+                $('#stockInTable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    order: [[0, 'desc']],
+                    columnDefs: [
+                        { orderable: false, targets: [-1] }
+                    ],
+                    dom: 'lrtip'
+                });
+            }
+
+            if ($('#stockOutTable').length) {
+                $('#stockOutTable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    order: [[0, 'desc']],
+                    columnDefs: [
+                        { orderable: false, targets: [-1] }
+                    ],
+                    dom: 'lrtip'
+                });
+            }
+
+            // Custom search functionality
+            $('#stockInSearch').on('keyup', function() {
+                $('#stockInTable').DataTable().search(this.value).draw();
+            });
+
+            $('#stockOutSearch').on('keyup', function() {
+                $('#stockOutTable').DataTable().search(this.value).draw();
+            });
+
+            // Initialize Charts
+            initializeCharts();
+        });
+
+        // Chart initialization
+        function initializeCharts() {
+            // Stock Distribution Pie Chart
+            if ($('#stockPieChart').length) {
+                const ctx1 = document.getElementById('stockPieChart').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Slabs', 'C/S', 'KG'],
+                        datasets: [{
+                            data: [
+                                {{ balance_totals.slab_balance|default:0 }},
+                                {{ balance_totals.cs_balance|default:0 }},
+                                {{ balance_totals.kg_balance|default:0 }}
+                            ],
+                            backgroundColor: ['#28a745', '#17a2b8', '#343a40'],
+                            borderWidth: 3,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    font: { size: 14 }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Monthly Trend Chart
+            if ($('#trendChart').length) {
+                const ctx2 = document.getElementById('trendChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                        datasets: [{
+                            label: 'Stock In (KG)',
+                            data: [120, 190, 300, 500, 200, 300],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }, {
+                            label: 'Stock Out (KG)',
+                            data: [80, 150, 200, 300, 150, 250],
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Timeline Chart
+            if ($('#timelineChart').length) {
+                const ctx3 = document.getElementById('timelineChart').getContext('2d');
+                new Chart(ctx3, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                        datasets: [{
+                            label: 'Entries',
+                            data: [12, 19, 3, 5],
+                            backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2
+                        }, {
+                            label: 'Returns',
+                            data: [8, 15, 2, 3],
+                            backgroundColor: 'rgba(255, 206, 86, 0.8)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Action Functions
+        function viewEntry(entryId, type) {
+            alert(`View ${type} entry: ${entryId}`);
+        }
+
+        function editEntry(entryId, type) {
+            alert(`Edit ${type} entry: ${entryId}`);
+        }
+
+        function completeReturn(entryId) {
+            if (confirm('Mark this return as completed?')) {
+                alert(`Complete return: ${entryId}`);
+            }
+        }
+
+        function exportData(type) {
+            alert(`Export ${type} data`);
+        }
+
+        function generateReport() {
+            alert('Generate comprehensive stock report');
+        }
+
+        function scheduleAlert() {
+            alert('Set up stock level alerts');
+        }
+
+        function quickAddStock() {
+            window.location.href = "{% url 'adminapp:create_freezing_entry_tenant' %}";
+        }
+
+        function quickReturn() {
+            window.location.href = "{% url 'adminapp:create_return_tenant' %}";
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Auto-hide floating actions on scroll
+        let lastScrollTop = 0;
+        $(window).scroll(function() {
+            let scrollTop = $(this).scrollTop();
+            if (scrollTop > lastScrollTop && scrollTop > 200) {
+                $('.floating-actions').fadeOut();
+            } else {
+                $('.floating-actions').fadeIn();
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        // Tab change animation
+        $('button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
+            $(e.target.getAttribute('data-bs-target')).hide().fadeIn(500);
+        });
+    </script>
+</body>
+</html>

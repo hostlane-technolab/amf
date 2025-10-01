@@ -1,0 +1,1290 @@
+{% extends 'admin_base.html' %}
+{% block title %} Spot Purchase Detail {% endblock %}
+{% block content %}
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header">
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Purchase Details</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="#">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Purchases</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'adminapp:spot_purchase_list' %}">Purchase List</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Purchase Detail</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="myclass">
+      <!-- Purchase Information Card -->
+      <div class="form-card mb-4 purchase-info-card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Purchase Information</h3>
+              <p class="text-muted mb-0">Complete purchase overview</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="purchase-info-grid">
+            <div class="info-card date-card">
+              <div class="info-background">
+                <i class="fas fa-calendar-alt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Purchase Date</div>
+                <div class="info-value">{{ purchase.date }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-clock"></i>
+                  <span>Transaction</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card voucher-card">
+              <div class="info-background">
+                <i class="fas fa-hashtag bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Voucher Number</div>
+                <div class="info-value">{{ purchase.voucher_number|default:"AUTO-GEN" }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-barcode"></i>
+                  <span>Reference</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card location-card">
+              <div class="info-background">
+                <i class="fas fa-map-marker-alt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Purchase Spot</div>
+                <div class="info-value">{{ purchase.spot }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-location-dot"></i>
+                  <span>Location</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card supervisor-card">
+              <div class="info-background">
+                <i class="fas fa-user-tie bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Supervisor</div>
+                <div class="info-value">{{ purchase.supervisor }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-shield-alt"></i>
+                  <span>Authority</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card agent-card">
+              <div class="info-background">
+                <i class="fas fa-user bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Field Agent</div>
+                <div class="info-value">{{ purchase.agent }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-handshake"></i>
+                  <span>Handler</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Items Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-boxes"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Items</h4>
+              <p class="text-muted mb-0">Items in this purchase</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tag header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-weight-hanging header-icon"></i>
+                      <span class="header-text">Quantity</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-calculator header-icon"></i>
+                      <span class="header-text">Rate</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Amount</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-cube header-icon"></i>
+                      <span class="header-text">Boxes</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in purchase.items.all %}
+                <tr class="table-row">
+                  <td class="table-cell">
+                    <strong>{{ item.item }}</strong>
+                  </td>
+                  <td class="table-cell ">
+                    <span class="quantity-badge">{{ item.quantity|floatformat:2 }} kg</span>
+                  </td>
+                  <td class="table-cell ">
+                    <span class="currency-value">₹{{ item.rate|floatformat:2 }}</span>
+                  </td>
+                  <td class="table-cell ">
+                    <span class="amount-value">₹{{ item.amount|floatformat:2 }}</span>
+                  </td>
+                  <td class="table-cell ">
+                    <span class="boxes-badge">{{ item.boxes|default:"0" }}</span>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="table-cell text-center empty-state">
+                    <div class="empty-content">
+                      <i class="fas fa-inbox empty-icon"></i>
+                      <h4>No Items Found</h4>
+                      <p>No items have been added to this purchase yet.</p>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Summary</h4>
+              <p class="text-muted mb-0">Overview of purchase totals</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="table-header">Total Quantity</th>
+                  <th class="table-header">Total Amount</th>
+                  <th class="table-header">Total Items</th>
+                  <th class="table-header">Total Expense</th>
+                  <th class="table-header">Total Purchase Amount</th>
+                  <th class="table-header">Total Purchase Amount / kg</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="calculated-value">{{ purchase.total_quantity|floatformat:2|default:"0.00" }}</span>
+                      <small class="unit">kg</small>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span class="calculated-value">{{ purchase.total_amount|floatformat:2|default:"0.00" }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="calculated-value">{{ purchase.items.count }}</span>
+                      <small class="unit">items</small>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span class="calculated-value">{{ purchase.total_expense|floatformat:2|default:"0.00" }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span class="calculated-value">{{ purchase.total_purchase_amount|floatformat:2 }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span class="calculated-value">{{ purchase.total_purchase_amount_per_kg|floatformat:2|default:"0.00" }}</span>
+                      <small class="unit">/kg</small>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expenses Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Expense Details</h4>
+              <p class="text-muted mb-0">Additional costs breakdown</p>
+            </div>
+          </div>
+        </div>
+        
+        {% if purchase.expense %}
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="expense-table">
+              <tbody>
+                <tr class="table-row">
+                  <td class="expense-label">
+                    <i class="fas fa-snowflake expense-icon"></i>
+                    <span>Ice Expense</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    <span class="currency-value">₹{{ purchase.expense.ice_expense|floatformat:2 }}</span>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="expense-label">
+                    <i class="fas fa-truck expense-icon"></i>
+                    <span>Vehicle Rent</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    <span class="currency-value">₹{{ purchase.expense.vehicle_rent|floatformat:2 }}</span>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="expense-label">
+                    <i class="fas fa-dolly expense-icon"></i>
+                    <span>Loading/Unloading</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    <span class="currency-value">₹{{ purchase.expense.loading_and_unloading|floatformat:2 }}</span>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="expense-label">
+                    <i class="fas fa-cut expense-icon"></i>
+                    <span>Peeling Charge</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    <span class="currency-value">₹{{ purchase.expense.peeling_charge|floatformat:2 }}</span>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="expense-label">
+                    <i class="fas fa-plus-circle expense-icon"></i>
+                    <span>Other Expense</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    <span class="currency-value">₹{{ purchase.expense.other_expense|floatformat:2 }}</span>
+                  </td>
+                </tr>
+                <tr class="total-expense-row">
+                  <td class="expense-label">
+                    <i class="fas fa-calculator expense-icon"></i>
+                    <span>Total Purchase Amount</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    <span class="total-amount">₹{{ purchase.total_purchase_amount|floatformat:2 }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {% else %}
+        <div class="card-body">
+          <div class="no-expense">
+            <i class="fas fa-info-circle no-expense-icon"></i>
+            <h5>No Expense Details</h5>
+            <p>No expense details are available for this purchase.</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <a href="{% url 'adminapp:spot_purchase_edit' purchase.pk %}" class="action-btn btn-edit">
+          <i class="fas fa-edit me-2"></i>Edit Purchase
+        </a>
+        <button onclick="printMyclassIsolated()" class="action-btn btn-print">
+          <i class="fas fa-print me-2"></i>Print
+        </button>
+        <form method="post" action="{% url 'adminapp:spot_purchase_delete' purchase.pk %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="action-btn btn-delete" onclick="return confirmDelete()">
+            <i class="fas fa-trash-alt me-2"></i>Delete Purchase
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+small.unit {
+  font-size: 0.8rem;        
+  font-weight: 600;        
+  color: #2c3e50;     
+  text-transform: uppercase;
+  letter-spacing: 0.5px;   
+  margin-left: 4px;         
+}
+
+/* Base Styles */
+.myclass {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Purchase Information Grid */
+.purchase-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+.info-card {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fd 100%);
+  border-radius: 20px;
+  padding: 25px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(40, 167, 69, 0.1);
+  cursor: pointer;
+}
+
+.info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.info-card:hover::before {
+  transform: scaleX(1);
+}
+
+.info-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(40, 167, 69, 0.15);
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.info-background {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-icon {
+  font-size: 40px;
+  color: rgba(40, 167, 69, 0.1);
+  transform: rotate(-15deg);
+}
+
+.info-content {
+  position: relative;
+  z-index: 2;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.info-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.info-badge i {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+/* Specific card color variations */
+.date-card:hover {
+  background: linear-gradient(135deg, #fff5f5 0%, #fee);
+}
+
+.date-card .info-background {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.02) 100%);
+}
+
+.date-card .bg-icon {
+  color: rgba(220, 53, 69, 0.15);
+}
+
+.date-card .info-badge {
+  background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.voucher-card:hover {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff);
+}
+
+.voucher-card .info-background {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(0, 123, 255, 0.02) 100%);
+}
+
+.voucher-card .bg-icon {
+  color: rgba(0, 123, 255, 0.15);
+}
+
+.voucher-card .info-badge {
+  background: linear-gradient(135deg, #007bff 0%, #6f42c1 100%);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.location-card:hover {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffeaa7);
+}
+
+.location-card .info-background {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%);
+}
+
+.location-card .bg-icon {
+  color: rgba(255, 193, 7, 0.2);
+}
+
+.location-card .info-badge {
+  background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.supervisor-card:hover {
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7);
+}
+
+.supervisor-card .info-background {
+  background: linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(156, 39, 176, 0.02) 100%);
+}
+
+.supervisor-card .bg-icon {
+  color: rgba(156, 39, 176, 0.15);
+}
+
+.supervisor-card .info-badge {
+  background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+  box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+.agent-card:hover {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9);
+}
+
+.agent-card .info-background {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%);
+}
+
+.agent-card .bg-icon {
+  color: rgba(76, 175, 80, 0.15);
+}
+
+.agent-card .info-badge {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+/* Responsive adjustments for purchase info */
+@media (max-width: 768px) {
+  .purchase-info-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+  }
+  
+  .info-card {
+    padding: 20px;
+  }
+  
+  .info-value {
+    font-size: 18px;
+  }
+  
+  .info-background {
+    width: 100px;
+    height: 100px;
+    top: -15px;
+    right: -15px;
+  }
+  
+  .bg-icon {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 576px) {
+  .purchase-info-grid {
+    padding: 15px;
+  }
+  
+  .info-card {
+    padding: 18px;
+  }
+  
+  .info-value {
+    font-size: 16px;
+  }
+}
+
+/* Detail Items (keeping original for other sections) */
+.detail-item {
+  background: #f8f9fd;
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #28a745;
+  transition: all 0.3s ease;
+}
+
+.detail-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.1);
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-icon {
+  color: #28a745;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.detail-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Table Styling */
+.modern-table, .summary-table, .expense-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  color: #6c757d;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+/* Table Rows */
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+/* Value Styling */
+.quantity-badge {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.currency-value {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.amount-value {
+  color: #dc3545;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.boxes-badge {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 60px 20px;
+}
+
+.empty-content {
+  text-align: center;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 48px;
+  color: #dee2e6;
+  margin-bottom: 20px;
+}
+
+.empty-content h4 {
+  color: #495057;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.empty-content p {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+/* Summary Table Styling */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.unit {
+  color: #6c757d;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+/* Expense Table */
+.expense-label {
+  padding: 20px;
+  border-bottom: 1px solid #f1f3f7;
+  font-weight: 600;
+  color: #495057;
+  width: 50%;
+}
+
+.expense-icon {
+  color: #28a745;
+  margin-right: 12px;
+  font-size: 16px;
+}
+
+.total-expense-row {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.total-expense-row .expense-label,
+.total-expense-row .table-cell {
+  color: #155724;
+  font-weight: 700;
+  font-size: 16px;
+  border-bottom: none;
+}
+
+.total-amount {
+  color: #dc3545;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* No Expense */
+.no-expense {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.no-expense-icon {
+  font-size: 48px;
+  color: #dee2e6;
+  margin-bottom: 20px;
+}
+
+.no-expense h5 {
+  color: #495057;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.no-expense p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Action Buttons */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.action-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.action-btn:hover {
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.btn-edit {
+  background: #007bff;
+  border-color: #007bff;
+}
+
+.btn-edit:hover {
+  background: #0056b3;
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+.btn-print {
+  background: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-print:hover {
+  background: #5a32a3;
+  box-shadow: 0 8px 25px rgba(111, 66, 193, 0.3);
+}
+
+.btn-delete {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* Print Styles */
+@media print {
+  .form-actions {
+    display: none !important;
+  }
+  
+  .page-header {
+    display: none !important;
+  }
+  
+  .form-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .card-header {
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+  
+  .myclass {
+    margin-top: 0 !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .detail-item {
+    padding: 15px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .total-highlight .calculated-value {
+    font-size: 16px;
+  }
+}
+</style>
+
+<script>
+function confirmDelete() {
+    const purchaseId = '{{ purchase.id }}';
+    const date = '{{ purchase.date }}';
+    const spot = '{{ purchase.spot }}';
+    
+    const confirmMessage = `Are you sure you want to delete this purchase?\n\nPurchase ID: #${purchaseId}\nDate: ${date}\nSpot: ${spot}\n\nThis action will permanently delete the purchase and all associated items and expenses. This cannot be undone.`;
+    
+    return confirm(confirmMessage);
+}
+
+// Print functionality
+function printMyclassIsolated() {
+    const myclassElement = document.querySelector('.myclass');
+    const clonedContent = myclassElement.cloneNode(true);
+    
+    // Remove action buttons from cloned content
+    const actionButtons = clonedContent.querySelector('.form-actions');
+    if (actionButtons) {
+        actionButtons.remove();
+    }
+    
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Purchase Details - Print</title>
+            <meta charset="utf-8">
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                @page { margin: 0.5in; size: A4; }
+                body { 
+                    font-family: 'Roboto', Arial, sans-serif; 
+                    background: white; 
+                    color: #333; 
+                    font-size: 14px; 
+                    line-height: 1.4; 
+                }
+                .form-card { 
+                    background: white; 
+                    border: 1px solid #ddd; 
+                    margin-bottom: 20px; 
+                    border-radius: 8px; 
+                }
+                .card-header { 
+                    background: #f8f9fa; 
+                    padding: 15px 20px; 
+                    border-bottom: 1px solid #ddd; 
+                }
+                .card-title { font-size: 18px; color: #333; margin: 0; }
+                .card-body { padding: 20px; }
+                .detail-item { 
+                    background: #f8f9fa; 
+                    padding: 12px; 
+                    margin-bottom: 10px; 
+                    border-radius: 4px; 
+                    border-left: 3px solid #28a745; 
+                }
+                .detail-label { 
+                    font-size: 12px; 
+                    color: #666; 
+                    text-transform: uppercase; 
+                    margin-bottom: 4px; 
+                }
+                .detail-value { 
+                    font-size: 14px; 
+                    font-weight: 600; 
+                    color: #333; 
+                }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { 
+                    padding: 8px 10px; 
+                    border: 1px solid #ddd; 
+                    font-size: 12px; 
+                }
+                th { 
+                    background: #f8f9fa; 
+                    font-weight: 600; 
+                    text-transform: uppercase; 
+                }
+                .currency-value, .amount-value { 
+                    color: #28a745; 
+                    font-weight: 600; 
+                }
+                .total-amount { 
+                    color: #dc3545; 
+                    font-weight: 700; 
+                }
+                .icon-wrapper { display: none; }
+                .d-flex { display: flex; align-items: center; }
+                .me-4 { margin-right: 1rem; }
+                .mb-0 { margin-bottom: 0; }
+                .text-muted { color: #6c757d; }
+            </style>
+        </head>
+        <body>
+            ${clonedContent.innerHTML}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = function() {
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            
+            // Close after printing
+            printWindow.onafterprint = function() {
+                printWindow.close();
+            };
+        }, 500);
+    };
+}
+
+// Add keyboard navigation and accessibility features
+document.addEventListener('DOMContentLoaded', function() {
+    // Make detail items focusable for accessibility
+    const detailItems = document.querySelectorAll('.detail-item');
+    detailItems.forEach(item => {
+        item.setAttribute('tabindex', '0');
+    });
+    
+    // Add keyboard support for action buttons
+    const actionBtns = document.querySelectorAll('.action-btn');
+    actionBtns.forEach(btn => {
+        btn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+
+    // Add smooth scrolling for tables on mobile
+    const tableContainers = document.querySelectorAll('.table-responsive');
+    tableContainers.forEach(container => {
+        container.addEventListener('wheel', function(e) {
+            if (this.scrollWidth > this.clientWidth) {
+                e.preventDefault();
+                this.scrollLeft += e.deltaY;
+            }
+        });
+    });
+});
+
+// Advanced print styles for better print output
+function addAdvancedPrintStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @media print {
+            * {
+                visibility: hidden;
+            }
+            
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+            
+            .myclass, .myclass * {
+                visibility: visible;
+            }
+            
+            .myclass {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 15px !important;
+                background: white !important;
+                box-sizing: border-box !important;
+            }
+            
+            .form-actions {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            .page-header {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            .form-card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                page-break-inside: avoid;
+            }
+            
+            .card-header {
+                background: #f8f9fa !important;
+                border-bottom: 1px solid #ddd !important;
+            }
+            
+            .icon-wrapper {
+                display: none !important;
+            }
+            
+            table {
+                font-size: 12px !important;
+            }
+            
+            th, td {
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Initialize advanced print styles
+addAdvancedPrintStyles();
+</script>
+
+{% endblock %}

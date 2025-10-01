@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tenant Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { max-width: 900px; margin: auto; }
+        h2 { margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #f2f2f2; }
+        .form-actions { margin-top: 20px; }
+        .delete-col { text-align: center; }
+        .add-row { margin-top: 10px; display: inline-block; padding: 6px 12px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px; }
+        .remove-row { color: red; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>{% if object %}Update Tenant{% else %}Create Tenant{% endif %}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <h2>Tenant Details</h2>
+        {{ form.as_p }}
+
+        <h2>Freezing Tariffs</h2>
+        {{ formset.management_form }}
+        <table id="tariff-table">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Tariff</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subform in formset %}
+                <tr class="form-row">
+                    <td>{{ subform.category }}</td>
+                    <td>{{ subform.tariff }}</td>
+                    <td class="delete-col">
+                        {% if subform.instance.pk %}
+                            {{ subform.DELETE }}
+                        {% else %}
+                            <span class="remove-row">Remove</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="#" class="add-row" id="add-row">+ Add More</a>
+
+        <div class="form-actions">
+            <button type="submit">Save</button>
+            <a href="{% url 'adminapp:tenant_list' %}">Cancel</a>
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let formsetPrefix = "{{ formset.prefix }}";  
+            let totalForms = document.getElementById("id_" + formsetPrefix + "-TOTAL_FORMS");
+            let formTable = document.getElementById("tariff-table").getElementsByTagName("tbody")[0];
+            let addButton = document.getElementById("add-row");
+
+            addButton.addEventListener("click", function (e) {
+                e.preventDefault();
+
+                let currentForms = formTable.querySelectorAll(".form-row").length;
+                let newFormIndex = currentForms;
+
+                // Get empty form template (hidden in Django formsets)
+                let emptyRow = `
+                    <tr class="form-row">
+                        <td>${document.getElementById("empty_form_category").innerHTML.replace(/__prefix__/g, newFormIndex)}</td>
+                        <td>${document.getElementById("empty_form_tariff").innerHTML.replace(/__prefix__/g, newFormIndex)}</td>
+                        <td class="delete-col"><span class="remove-row">Remove</span></td>
+                    </tr>
+                `;
+
+                formTable.insertAdjacentHTML("beforeend", emptyRow);
+                totalForms.value = parseInt(totalForms.value) + 1;
+            });
+
+            // Handle remove row
+            document.addEventListener("click", function (e) {
+                if (e.target.classList.contains("remove-row")) {
+                    let row = e.target.closest(".form-row");
+                    row.remove();
+                    totalForms.value = parseInt(totalForms.value) - 1;
+                }
+            });
+        });
+    </script>
+
+    <!-- Hidden template row for cloning -->
+    <div style="display:none;">
+        <span id="empty_form_category">{{ formset.empty_form.category }}</span>
+        <span id="empty_form_tariff">{{ formset.empty_form.tariff }}</span>
+    </div>
+</body>
+</html>

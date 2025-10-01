@@ -1,0 +1,2592 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+        <!-- Load required libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .outer {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .filter-form {
+            background: white;
+            padding: 25px;
+            border: 1px solid #ddd;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+        }
+
+        .filter-group select[multiple] {
+            height: 100px;
+            overflow-y: auto;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 140px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .filter-btn.primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .filter-btn.primary:hover {
+            background: #0056b3;
+        }
+
+        .filter-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .filter-btn.secondary:hover {
+            background: #5a6268;
+        }
+
+        .filter-btn.export {
+            background: #28a745;
+            color: white;
+        }
+
+        .filter-btn.export:hover {
+            background: #218838;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px solid #007bff;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .report-subtitle {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .company-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #28a745;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 5px;
+            color: #155724;
+        }
+
+        .company-location {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 3px;
+            color: #155724;
+        }
+
+        .date-range {
+            font-size: 16px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .section-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            margin: 25px 0 10px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .section-title {
+            text-transform: uppercase;
+        }
+
+        .section-summary {
+            background: #fff3cd;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #007bff;
+            background-color: white;
+            font-size: 12px;
+        }
+
+        .data-table th {
+            background: #007bff;
+            color: white;
+            border: 1px solid #004085;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 11px;
+        }
+
+        .data-table .number-col {
+            text-align: right;
+            padding-right: 10px;
+            font-weight: bold;
+        }
+
+        .data-table .center-col {
+            text-align: center;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .section-total-row {
+            background: #d4edda !important;
+            font-weight: bold;
+        }
+
+        .section-total-row td {
+            border-top: 2px solid #28a745;
+            border-bottom: 2px solid #28a745;
+            font-weight: bold;
+            padding: 12px 8px;
+            color: #155724;
+        }
+
+        .grand-total-section {
+            margin-top: 30px;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .grand-total-header {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .grand-total-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grand-total-table td {
+            border: 1px solid #dc3545;
+            padding: 12px;
+            font-weight: bold;
+            text-align: right;
+            font-size: 14px;
+            background: white;
+        }
+
+        .grand-total-table .label-col {
+            background: #f8d7da;
+            text-align: left;
+            width: 60%;
+            color: #721c24;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            font-style: italic;
+            color: #6c757d;
+            font-size: 16px;
+            border: 2px dashed #dee2e6;
+            margin: 25px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: 1px solid #007bff;
+            background: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 4px;
+            min-width: 150px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .print-btn {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        .pdf-btn {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .pdf-btn:hover {
+            background: #c82333;
+        }
+
+        .active-filters {
+            background: #e3f2fd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+
+        .filter-tag {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        /* PDF-specific large font styles */
+        .pdf-mode {
+            font-size: 18px !important;
+        }
+
+        .pdf-mode .report-title {
+            font-size: 36px !important;
+        }
+
+        .pdf-mode .report-subtitle {
+            font-size: 24px !important;
+        }
+
+        .pdf-mode .company-name {
+            font-size: 24px !important;
+        }
+
+        .pdf-mode .company-location {
+            font-size: 18px !important;
+        }
+
+        .pdf-mode .date-range {
+            font-size: 20px !important;
+        }
+
+        .pdf-mode .section-header {
+            font-size: 24px !important;
+            padding: 20px !important;
+        }
+
+        .pdf-mode .section-summary {
+            font-size: 18px !important;
+            padding: 15px !important;
+        }
+
+        .pdf-mode .data-table {
+            font-size: 16px !important;
+        }
+
+        .pdf-mode .data-table th {
+            font-size: 16px !important;
+            padding: 15px 10px !important;
+        }
+
+        .pdf-mode .data-table td {
+            font-size: 15px !important;
+            padding: 12px 8px !important;
+        }
+
+        .pdf-mode .section-total-row td {
+            font-size: 16px !important;
+            padding: 15px 10px !important;
+        }
+
+        .pdf-mode .grand-total-header {
+            font-size: 24px !important;
+            padding: 20px !important;
+        }
+
+        .pdf-mode .grand-total-table td {
+            font-size: 18px !important;
+            padding: 15px !important;
+        }
+
+        /* Enhanced print styles - hides form completely */
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            body {
+                font-size: 14px;
+                background: white;
+                padding: 0;
+            }
+            
+            /* Hide all interactive elements for print */
+            .filter-form, 
+            .action-buttons, 
+            .active-filters,
+            .notification {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            .report-header {
+                margin-bottom: 15mm;
+                padding: 10mm;
+            }
+
+            .report-title {
+                font-size: 22px;
+            }
+
+            .report-subtitle {
+                font-size: 18px;
+            }
+
+            .section-header {
+                margin: 5mm 0;
+                padding: 5mm;
+                font-size: 18px;
+                page-break-after: avoid;
+            }
+            
+            .data-table {
+                font-size: 12px;
+                margin-bottom: 5mm;
+                page-break-inside: avoid;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 3mm 2mm;
+                font-size: 11px;
+            }
+            
+            .grand-total-section {
+                margin-top: 5mm;
+                page-break-inside: avoid;
+            }
+
+            .grand-total-header {
+                font-size: 18px;
+                padding: 5mm;
+            }
+
+            .grand-total-table td {
+                font-size: 14px;
+                padding: 3mm;
+            }
+
+            /* Ensure clean page breaks */
+            .section-header {
+                page-break-after: avoid;
+            }
+            
+            .data-table {
+                page-break-before: avoid;
+                page-break-after: auto;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 12px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .data-table {
+                font-size: 10px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 6px 4px;
+                font-size: 9px;
+            }
+
+            .filter-buttons, .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .filter-btn, .action-btn {
+                width: 90%;
+                max-width: 250px;
+            }
+        }
+    </style>
+
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .filter-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 24px 32px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: float 25s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: rotate(0deg) translate(0, 0); }
+            100% { transform: rotate(360deg) translate(0, 0); }
+        }
+
+        .card-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 32px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .filter-group {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid transparent;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .filter-group:hover {
+            border-color: rgba(79, 70, 229, 0.2);
+            box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+            transform: translateY(-3px);
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+        }
+
+        .filter-group:hover::before {
+            opacity: 1;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+        }
+
+        .filter-group select[multiple] {
+            width: 100%;
+            max-height: 180px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+            font-size: 0.9rem;
+            padding: 8px;
+        }
+
+        .filter-group select[multiple]::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .filter-group select[multiple]::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .filter-group select[multiple]::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 3px;
+        }
+
+        .filter-group select[multiple]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-group select[multiple] option {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .filter-group select[multiple] option:hover {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+        }
+
+        .filter-group select:not([multiple]) {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .filter-group select:not([multiple]):focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-group input[type="text"],
+        .filter-group input[type="date"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-group input[type="text"]:focus,
+        .filter-group input[type="date"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .filter-group input[type="text"]::placeholder {
+            color: #94a3b8;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .filter-btn:hover::before {
+            left: 100%;
+        }
+
+        .filter-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .filter-btn.primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .filter-btn.secondary {
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            color: white;
+        }
+
+        .filter-btn.export {
+            background: linear-gradient(135deg, #059669, #0891b2);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .filter-buttons {
+                flex-direction: column;
+            }
+            
+            .filter-btn {
+                min-width: auto;
+            }
+        }
+    </style>
+
+    <!-- Filter Form -->
+<!-- Replace only the filter-card section in your freezing report template -->
+
+<style>
+    /* Enhanced Filter Styles - matching spot purchase design exactly */
+    .filter-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+        max-width: 1400px;
+        margin: 0 auto 30px auto;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        padding: 24px 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        animation: float 25s infinite linear;
+    }
+
+    @keyframes float {
+        0% { transform: rotate(0deg) translate(0, 0); }
+        100% { transform: rotate(360deg) translate(0, 0); }
+    }
+
+    .card-header h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 32px;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .filter-section {
+        background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        padding: 24px;
+        border: 2px solid transparent;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .filter-section:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        transform: translateY(-3px);
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+    }
+
+    .filter-section:hover::before {
+        opacity: 1;
+    }
+
+    .filter-section > label:first-child {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 16px;
+        font-size: 1.05rem;
+    }
+
+    .selected-count {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        min-width: 24px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        0% { opacity: 0; transform: scale(0.8) translateX(10px); }
+        100% { opacity: 1; transform: scale(1) translateX(0); }
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        margin-bottom: 16px;
+        background: white;
+        font-weight: 500;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .search-box::placeholder {
+        color: #94a3b8;
+    }
+
+    .options-container {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .options-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .options-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .options-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-radius: 3px;
+    }
+
+    .option-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .option-item:last-child {
+        border-bottom: none;
+    }
+
+    .option-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        transition: width 0.3s ease;
+    }
+
+    .option-item:hover {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+        padding-left: 20px;
+    }
+
+    .option-item:hover::before {
+        width: 4px;
+    }
+
+    .option-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #4f46e5;
+        cursor: pointer;
+    }
+
+    .option-item label {
+        cursor: pointer;
+        flex: 1;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .option-item:hover label {
+        color: #4f46e5;
+        font-weight: 600;
+    }
+
+    /* Single select dropdowns and inputs */
+    .filter-section select:not([multiple]),
+    .filter-section input[type="text"],
+    .filter-section input[type="date"] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        background: white;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .filter-section select:not([multiple]):focus,
+    .filter-section input[type="text"]:focus,
+    .filter-section input[type="date"]:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .filter-section input[type="text"]::placeholder {
+        color: #94a3b8;
+    }
+
+    .filter-section select:not([multiple]) {
+        cursor: pointer;
+    }
+
+    .date-section {
+        background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 32px;
+        border: 2px solid transparent;
+        transition: all 0.4s ease;
+        display: flex;
+        gap: 32px;
+        align-items: end;
+        flex-wrap: wrap;
+    }
+
+    .date-section:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+    }
+
+    .date-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .date-section label {
+        display: block;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
+        font-size: 1rem;
+    }
+
+    .date-section select,
+    .date-section input[type="date"] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        background: white;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .date-section select:focus,
+    .date-section input[type="date"]:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .apply-button {
+        width: 100%;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .apply-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .apply-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px rgba(79, 70, 229, 0.4);
+    }
+
+    .apply-button:hover::before {
+        left: 100%;
+    }
+
+    .apply-button:active {
+        transform: translateY(-1px);
+    }
+
+    /* Filter Buttons */
+    .filter-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 16px 24px;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex: 1;
+        min-width: 140px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-btn:hover::before {
+        left: 100%;
+    }
+
+    .filter-btn:active {
+        transform: translateY(-1px);
+    }
+
+    .filter-btn.primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+    }
+
+    .filter-btn.secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .filter-btn.export {
+        background: linear-gradient(135deg, #059669, #0891b2);
+        color: white;
+    }
+
+    /* Page Header Styling */
+    .outer {
+        min-height: 100vh;
+        padding: 20px;
+        color: #1e293b;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+        border-radius: 20px;
+        padding: 24px 32px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border: 2px solid #f1f3f7;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .justify-content-between {
+        justify-content: space-between;
+    }
+
+    .flex-wrap {
+        flex-wrap: wrap;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .mb-md-0 {
+        margin-bottom: 0;
+    }
+
+    .me-4 {
+        margin-right: 1.5rem;
+    }
+
+    .mb-0 {
+        margin-bottom: 0;
+    }
+
+    .fw-bold {
+        font-weight: bold;
+    }
+
+    .text-muted {
+        color: #6c757d;
+    }
+
+    .fs-6 {
+        font-size: 1rem;
+    }
+
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .card-title {
+        font-size: 26px;
+        color: #2c3e50;
+        letter-spacing: -0.5px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 20px;
+        }
+        
+        .filters-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .date-section {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 20px;
+        }
+    }
+
+    /* Print styles - hide filter completely */
+    @media print {
+        .filter-card {
+            display: none !important;
+            visibility: hidden !important;
+        }
+    }
+</style>
+
+<!-- Page Header for Freezing Report -->
+<div class="outer" style="margin-top: 5rem;">
+    <div class="container">
+        <div class="page-header">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                <div class="d-flex align-items-center mb-3 mb-md-0">
+                    <div class="icon-wrapper me-4">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0 fw-bold">Enhanced Sectioned Freezing Report</h3>
+                        <p class="text-muted mb-0 fs-6">Comprehensive freezing analysis and detailed breakdown by {{ section_by|title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Enhanced Filter Form -->
+<div class="filter-card">
+    <div class="card-header">
+        <h3>🔍 Advanced Filters</h3>
+    </div>
+    
+    <div class="card-body">
+        <form method="GET" id="filterForm">
+            <div class="filters-grid">
+                <!-- Section By -->
+                <div class="filter-section">
+                    <label>Section By:</label>
+                    <select name="section_by" id="section_by">
+                        <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
+                        <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
+                        <option value="month" {% if section_by == 'month' %}selected{% endif %}>Month</option>
+                        <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
+                        <option value="processing_center" {% if section_by == 'processing_center' %}selected{% endif %}>Processing Center</option>
+                        <option value="grade" {% if section_by == 'grade' %}selected{% endif %}>Grade</option>
+                        <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
+                        <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
+                        {% if units %}
+                        <option value="unit" {% if section_by == 'unit' %}selected{% endif %}>Unit</option>
+                        {% endif %}
+                        {% if glazes %}
+                        <option value="glaze" {% if section_by == 'glaze' %}selected{% endif %}>Glaze</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <!-- Entry Type -->
+                <div class="filter-section">
+                    <label>Entry Type:</label>
+                    <select name="entry_type" id="entry_type">
+                        <option value="all" {% if entry_type == 'all' %}selected{% endif %}>All Types</option>
+                        <option value="spot" {% if entry_type == 'spot' %}selected{% endif %}>Spot</option>
+                        <option value="local" {% if entry_type == 'local' %}selected{% endif %}>Local</option>
+                    </select>
+                </div>
+
+                <!-- Items -->
+                <div class="filter-section">
+                    <label>Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
+                    <div class="options-container" id="itemsContainer">
+                        {% for item in items %}
+                            <div class="option-item">
+                                <input type="checkbox" name="items" value="{{ item.id }}" id="item_{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}checked{% endif %}>
+                                <label for="item_{{ item.id }}">{{ item.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Grades -->
+                <div class="filter-section">
+                    <label>Grades: <span id="gradesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search grades..." id="gradesSearch">
+                    <div class="options-container" id="gradesContainer">
+                        {% for grade in grades %}
+                            <div class="option-item">
+                                <input type="checkbox" name="grades" value="{{ grade.id }}" id="grade_{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_grades %}checked{% endif %}>
+                                <label for="grade_{{ grade.id }}">{{ grade.grade }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if units %}
+                <!-- Units -->
+                <div class="filter-section">
+                    <label>Units: <span id="unitsCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search units..." id="unitsSearch">
+                    <div class="options-container" id="unitsContainer">
+                        {% for unit in units %}
+                            <div class="option-item">
+                                <input type="checkbox" name="units" value="{{ unit.id }}" id="unit_{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}checked{% endif %}>
+                                <label for="unit_{{ unit.id }}">{{ unit.name }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if glazes %}
+                <!-- Glazes -->
+                <div class="filter-section">
+                    <label>Glazes: <span id="glazesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search glazes..." id="glazesSearch">
+                    <div class="options-container" id="glazesContainer">
+                        {% for glaze in glazes %}
+                            <div class="option-item">
+                                <input type="checkbox" name="glazes" value="{{ glaze.id }}" id="glaze_{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}checked{% endif %}>
+                                <label for="glaze_{{ glaze.id }}">{{ glaze.name }}{% if glaze.percentage %} ({{ glaze.percentage }}%){% endif %}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Categories -->
+                <div class="filter-section">
+                    <label style="font-size: 1.1rem !important;">Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
+                    <div class="options-container" id="categoriesContainer">
+                        {% for category in categories %}
+                            <div class="option-item">
+                                <input type="checkbox" name="categories" value="{{ category.id }}" id="category_{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                <label for="category_{{ category.id }}">{{ category.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Brands -->
+                <div class="filter-section">
+                    <label>Brands: <span id="brandsCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search brands..." id="brandsSearch">
+                    <div class="options-container" id="brandsContainer">
+                        {% for brand in brands %}
+                            <div class="option-item">
+                                <input type="checkbox" name="brands" value="{{ brand.id }}" id="brand_{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                <label for="brand_{{ brand.id }}">{{ brand.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Species -->
+                <div class="filter-section">
+                    <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
+                    <div class="options-container" id="speciesContainer">
+                        {% for spec in species %}
+                            <div class="option-item">
+                                <input type="checkbox" name="species" value="{{ spec.id }}" id="species_{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}checked{% endif %}>
+                                <label for="species_{{ spec.id }}">{{ spec.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Freezing Categories -->
+                <div class="filter-section">
+                    <label>Freezing Categories: <span id="freezingCategoriesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search freezing categories..." id="freezingCategoriesSearch">
+                    <div class="options-container" id="freezingCategoriesContainer">
+                        {% for freezing_cat in freezing_categories %}
+                            <div class="option-item">
+                                <input type="checkbox" name="freezing_categories" value="{{ freezing_cat.id }}" id="freezing_cat_{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}checked{% endif %}>
+                                <label for="freezing_cat_{{ freezing_cat.id }}">{{ freezing_cat.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Processing Centers -->
+                <div class="filter-section">
+                    <label>Processing Centers: <span id="processingCentersCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search processing centers..." id="processingCentersSearch">
+                    <div class="options-container" id="processingCentersContainer">
+                        {% for pc in processing_centers %}
+                            <div class="option-item">
+                                <input type="checkbox" name="processing_centers" value="{{ pc.id }}" id="pc_{{ pc.id }}" {% if pc.id|stringformat:"s" in selected_processing_centers %}checked{% endif %}>
+                                <label for="pc_{{ pc.id }}">{{ pc.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Stores -->
+                <div class="filter-section">
+                    <label>Stores: <span id="storesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search stores..." id="storesSearch">
+                    <div class="options-container" id="storesContainer">
+                        {% for store in stores %}
+                            <div class="option-item">
+                                <input type="checkbox" name="stores" value="{{ store.id }}" id="store_{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}checked{% endif %}>
+                                <label for="store_{{ store.id }}">{{ store.name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Freezing Status -->
+                <div class="filter-section">
+                    <label>Freezing Status:</label>
+                    <select name="freezing_status" id="freezing_status">
+                        <option value="" {% if not freezing_status %}selected{% endif %}>All Status</option>
+                        <option value="complete" {% if freezing_status == 'complete' %}selected{% endif %}>Complete</option>
+                        <option value="incomplete" {% if freezing_status == 'incomplete' %}selected{% endif %}>Incomplete</option>
+                        <option value="pending" {% if freezing_status == 'pending' %}selected{% endif %}>Pending</option>
+                    </select>
+                </div>
+
+                <!-- Voucher Search -->
+                <div class="filter-section">
+                    <label>Voucher Search:</label>
+                    <input type="text" name="voucher_search" id="voucher_search" value="{{ voucher_search }}" placeholder="Search voucher number...">
+                </div>
+            </div>
+
+            <!-- Date Section -->
+            <div class="date-section">
+                <div class="date-group">
+                    <label style="font-size: 1.1rem !important;">Quick Date:</label>
+                    <select name="date_filter" id="date_filter">
+                        <option value="" {% if not date_filter %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                        <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                        <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                        <option value="quarter" {% if date_filter == 'quarter' %}selected{% endif %}>This Quarter</option>
+                        <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                        <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="date-group">
+                    <label style="font-size: 1.1rem !important;">Date Range:</label>
+                    <div class="date-range-group">
+                        <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
+                        <span class="date-separator">to</span>
+                        <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-buttons">
+                <button type="submit" class="filter-btn primary">Generate Report</button>
+                <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
+                <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
+                <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+
+<script>
+    // Search functionality for each filter section - keeping all original functionality
+    function setupSearch(searchId, containerId, countId) {
+        const searchInput = document.getElementById(searchId);
+        const container = document.getElementById(containerId);
+        const countSpan = document.getElementById(countId);
+        
+        if (!searchInput || !container || !countSpan) return;
+        
+        const options = container.querySelectorAll('.option-item');
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            options.forEach(option => {
+                const label = option.querySelector('label').textContent.toLowerCase();
+                if (label.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+
+        // Count selected items
+        function updateCount() {
+            const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+            const count = checkedBoxes.length;
+            if (count > 0) {
+                countSpan.textContent = count;
+                countSpan.style.display = 'inline-block';
+            } else {
+                countSpan.style.display = 'none';
+            }
+        }
+
+        // Add event listeners to checkboxes
+        options.forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', updateCount);
+            }
+        });
+
+        // Click anywhere on option item to toggle checkbox
+        options.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        });
+
+        // Initial count update
+        updateCount();
+    }
+
+    // Setup all functionality when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup search for all filter sections
+        setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
+        setupSearch('gradesSearch', 'gradesContainer', 'gradesCount');
+        setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
+        setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
+        setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
+        setupSearch('freezingCategoriesSearch', 'freezingCategoriesContainer', 'freezingCategoriesCount');
+        setupSearch('processingCentersSearch', 'processingCentersContainer', 'processingCentersCount');
+        setupSearch('storesSearch', 'storesContainer', 'storesCount');
+        
+        // Setup conditional sections
+        if (document.getElementById('unitsSearch')) {
+            setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
+        }
+        if (document.getElementById('glazesSearch')) {
+            setupSearch('glazesSearch', 'glazesContainer', 'glazesCount');
+        }
+
+        // Initialize date filter visibility
+        const dateFilter = document.getElementById('date_filter');
+        const startDateGroup = document.getElementById('start_date').parentElement;
+        const endDateGroup = document.getElementById('end_date').parentElement;
+        
+        if (dateFilter.value !== 'custom') {
+            startDateGroup.style.display = 'none';
+            endDateGroup.style.display = 'none';
+        }
+    });
+
+    // Date filter handling - preserving original functionality
+    document.getElementById('date_filter').addEventListener('change', function() {
+        const startDate = document.getElementById('start_date');
+        const endDate = document.getElementById('end_date');
+        
+        if (this.value === 'custom') {
+            startDate.parentElement.style.display = 'block';
+            endDate.parentElement.style.display = 'block';
+            startDate.required = true;
+            endDate.required = true;
+        } else {
+            startDate.parentElement.style.display = 'none';
+            endDate.parentElement.style.display = 'none';
+            startDate.required = false;
+            endDate.required = false;
+            
+            if (this.value) {
+                setTimeout(() => {
+                    document.getElementById('filterForm').submit();
+                }, 500);
+            }
+        }
+    });
+
+    // Auto-submit form when section_by changes - preserving original functionality
+    document.getElementById('section_by').addEventListener('change', function() {
+        setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 500);
+    });
+
+    // Filter button functions
+    function resetForm() {
+        const form = document.getElementById('filterForm');
+        if (form) {
+            form.reset();
+            const multiSelects = form.querySelectorAll('select[multiple]');
+            multiSelects.forEach(select => {
+                Array.from(select.options).forEach(option => {
+                    option.selected = false;
+                });
+            });
+            // Reset to default values
+            document.getElementById('section_by').value = 'category';
+            document.getElementById('entry_type').value = 'all';
+            document.getElementById('freezing_status').value = '';
+            document.getElementById('date_filter').value = '';
+            document.getElementById('voucher_search').value = '';
+            
+            // Reset date inputs
+            document.getElementById('start_date').value = '';
+            document.getElementById('end_date').value = '';
+            
+            // Hide date range inputs
+            document.getElementById('start_date').parentElement.style.display = 'none';
+            document.getElementById('end_date').parentElement.style.display = 'none';
+            
+            // Reset all counters
+            document.querySelectorAll('.selected-count').forEach(counter => {
+                counter.style.display = 'none';
+                counter.textContent = '0';
+            });
+            
+            setTimeout(() => {
+                window.location.href = window.location.pathname;
+            }, 100);
+        }
+    }
+
+    // Function to get current filter parameters for export
+    function getCurrentFilters() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const urlParams = new URLSearchParams();
+        
+        for (let [key, value] of formData.entries()) {
+            urlParams.append(key, value);
+        }
+        
+        return urlParams.toString();
+    }
+
+    // Simple CSV Export
+    function exportToCSV() {
+        try {
+            let csvContent = '\uFEFF'; // BOM for UTF-8
+            const tables = document.querySelectorAll('.data-table');
+            
+            if (tables.length === 0) {
+                alert('No data to export. Please generate a report first.');
+                return;
+            }
+
+            // Add report header info
+            const reportTitle = document.querySelector('.report-title');
+            const companyName = document.querySelector('.company-name');
+            const dateRange = document.querySelector('.date-range');
+            
+            if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
+            if (companyName) csvContent += companyName.textContent.trim() + '\n';
+            if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
+
+            tables.forEach((table, index) => {
+                // Add section header
+                const sectionHeader = table.closest('.sectioned-content, [id="sectioned-content"]')?.querySelector('.section-header .section-title');
+                if (sectionHeader) {
+                    csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+                }
+
+                // Add table headers
+                const headers = [];
+                table.querySelectorAll('thead th').forEach(th => {
+                    headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+                });
+                csvContent += headers.join(',') + '\n';
+
+                // Add data rows
+                table.querySelectorAll('tbody tr:not(.section-total-row)').forEach(row => {
+                    const cells = [];
+                    row.querySelectorAll('td').forEach(td => {
+                        cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                    });
+                    if (cells.length > 0) {
+                        csvContent += cells.join(',') + '\n';
+                    }
+                });
+            });
+
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const now = new Date().toISOString().split('T')[0];
+            const sectionBy = document.getElementById('section_by')?.value || 'category';
+            const filename = `Freezing_Report_${sectionBy}_${now}.csv`;
+
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.href = url;
+                link.download = filename;
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                alert('CSV exported successfully!');
+            }
+        } catch (error) {
+            console.error('CSV Error:', error);
+            alert('CSV export failed: ' + error.message);
+        }
+    }
+
+    // Simple Excel Export using CSV format
+    function exportToExcel() {
+        try {
+            let csvContent = '\uFEFF'; // BOM for UTF-8
+            const tables = document.querySelectorAll('.data-table');
+            
+            if (tables.length === 0) {
+                alert('No data to export. Please generate a report first.');
+                return;
+            }
+
+            // Add report header info
+            const reportTitle = document.querySelector('.report-title');
+            const companyName = document.querySelector('.company-name');
+            const dateRange = document.querySelector('.date-range');
+            
+            if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
+            if (companyName) csvContent += companyName.textContent.trim() + '\n';
+            if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
+
+            tables.forEach((table, index) => {
+                // Add section header
+                const sectionHeader = table.closest('.sectioned-content, [id="sectioned-content"]')?.querySelector('.section-header .section-title');
+                if (sectionHeader) {
+                    csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+                }
+
+                // Add summary if exists
+                const summary = table.closest('.sectioned-content, [id="sectioned-content"]')?.querySelector('.section-summary');
+                if (summary) {
+                    csvContent += summary.textContent.trim() + '\n\n';
+                }
+
+                // Add table headers
+                const headers = [];
+                table.querySelectorAll('thead th').forEach(th => {
+                    headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+                });
+                csvContent += headers.join(',') + '\n';
+
+                // Add data rows
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const cells = [];
+                    row.querySelectorAll('td').forEach(td => {
+                        let cellText = td.textContent.trim().replace(/"/g, '""');
+                        // Handle numbers for Excel
+                        if (td.classList.contains('number-col')) {
+                            cellText = cellText.replace(/[$₹,]/g, '');
+                        }
+                        cells.push('"' + cellText + '"');
+                    });
+                    if (cells.length > 0) {
+                        csvContent += cells.join(',') + '\n';
+                    }
+                });
+            });
+
+            // Add grand totals if exists
+            const grandTotalTable = document.querySelector('.grand-total-table');
+            if (grandTotalTable) {
+                csvContent += '\n\nGRAND TOTALS\n';
+                grandTotalTable.querySelectorAll('tr').forEach(row => {
+                    const cells = [];
+                    row.querySelectorAll('td').forEach(td => {
+                        cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                    });
+                    csvContent += cells.join(',') + '\n';
+                });
+            }
+
+            // Download as Excel file
+            const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const link = document.createElement('a');
+            const now = new Date().toISOString().split('T')[0];
+            const sectionBy = document.getElementById('section_by')?.value || 'category';
+            const filename = `Freezing_Report_${sectionBy}_${now}.xls`;
+
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.href = url;
+                link.download = filename;
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                alert('Excel file exported successfully!');
+            }
+        } catch (error) {
+            console.error('Excel Error:', error);
+            alert('Excel export failed: ' + error.message);
+        }
+    }
+</script>
+
+    <script>
+        function resetForm() {
+            document.getElementById('filterForm').reset();
+        }
+
+        function exportToCSV() {
+            // Add your CSV export functionality here
+            alert('Export to CSV functionality');
+        }
+
+        function exportToExcel() {
+            // Add your Excel export functionality here
+            alert('Export to Excel functionality');
+        }
+    </script>
+
+<div class="outer">
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title">ENHANCED SECTIONED FREEZING REPORT</div>
+            <div class="report-subtitle">Detailed Breakdown by {{ section_by|title }}</div>
+            
+            <div class="company-info">
+                <div class="company-name">PREMIER MARINE FOOD</div>
+                <div class="company-location">VANDANAM, ALAPPUZHA</div>
+                <div class="company-location">KERALA, INDIA</div>
+            </div>
+            
+            <div class="date-range">
+                {% if start_date and end_date %}
+                    Period: {{ start_date|date:"d-M-Y" }} to {{ end_date|date:"d-M-Y" }}
+                {% elif date_filter == 'month' %}
+                    Period: Current Month ({{ "now"|date:"F Y" }})
+                {% elif date_filter == 'week' %}
+                    Period: Current Week
+                {% elif date_filter == 'year' %}
+                    Period: Current Year ({{ "now"|date:"Y" }})
+                {% else %}
+                    Period: All Records
+                {% endif %}
+                | Sectioned by: {{ section_by|upper }}
+            </div>
+        </div>
+    
+        <!-- Sectioned Data Display -->
+        <div id="sectioned-content">
+            {% for section_name, section_data in sectioned_data.items %}
+            <!-- Section Header -->
+            <div class="section-header">
+                <div class="section-title">
+                    {% if section_by == 'month' %}
+                        {{ section_name|date:"F Y" }}
+                    {% elif section_by == 'category' %}
+                        CATEGORY: {{ section_name|upper }}
+                    {% elif section_by == 'brand' %}
+                        BRAND: {{ section_name|upper }}
+                    {% elif section_by == 'species' %}
+                        SPECIES: {{ section_name|upper }}
+                    {% elif section_by == 'grade' %}
+                        GRADE: {{ section_name|upper }}
+                    {% elif section_by == 'item' %}
+                        ITEM: {{ section_name|upper }}
+                    {% elif section_by == 'unit' %}
+                        UNIT: {{ section_name|upper }}
+                    {% elif section_by == 'glaze' %}
+                        GLAZE: {{ section_name|upper }}
+                    {% elif section_by == 'processing_center' %}
+                        PROCESSING CENTER: {{ section_name|upper }}
+                    {% elif section_by == 'store' %}
+                        STORE: {{ section_name|upper }}
+                    {% else %}
+                        {{ section_name|upper }}
+                    {% endif %}
+                </div>
+            </div>
+    
+            <!-- Section Summary -->
+            <div class="section-summary">
+                <strong>Section Summary:</strong> 
+                {{ section_data.items|length }} records | 
+                Total: {{ section_data.totals.total_kg|floatformat:2 }} KG | 
+                USD: ${{ section_data.totals.total_usd_amount|floatformat:2 }} | 
+                INR: ₹{{ section_data.totals.total_inr_amount|floatformat:2 }}
+            </div>
+    
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>S.NO</th>
+                        <th>DATE</th>
+                        <th>ITEM NAME</th>
+                        <th>BRAND</th>
+                        <th>GRADE</th>
+                        {% if units %}
+                        <th>UNIT</th>
+                        {% endif %}
+                        {% if glazes %}
+                        <th>GLAZE</th>
+                        {% endif %}
+                        <th>CATEGORY</th>
+                        <th>SPECIES</th>
+                        <th>TYPE</th>
+                        <th>QTY (KG)</th>
+                        <th>USD AMT</th>
+                        <th>INR AMT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in section_data.items %}
+                    <tr>
+                        <td class="center-col">{{ forloop.counter }}</td>
+                        <td class="center-col">{{ item.freezing_entry__freezing_date|date:"d/m/Y" }}</td>
+                        <td>{{ item.item__name|truncatechars:20 }}</td>
+                        <td>{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td class="center-col">{{ item.grade__grade|default:"N/A" }}</td>
+                        {% if units %}
+                        <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
+                        {% endif %}
+                        {% if glazes %}
+                        <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}{{ item.glaze__name|default:"N/A"|truncatechars:10 }}{% endif %}</td>
+                        {% endif %}
+                        <td>{{ item.item__category__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td>{{ item.item__species__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td class="center-col">{{ item.entry_type|upper }}</td>
+                        <td class="number-col">{{ item.total_kg|floatformat:2 }}</td>
+                        <td class="number-col">${{ item.total_usd_amount|floatformat:2 }}</td>
+                        <td class="number-col">₹{{ item.total_inr_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Section Total Row -->
+                    <tr class="section-total-row">
+                        <td colspan="{% if units and glazes %}10{% elif units or glazes %}9{% else %}8{% endif %}" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        <td class="number-col"><strong>{{ section_data.totals.total_kg|floatformat:2 }}</strong></td>
+                        <td class="number-col"><strong>${{ section_data.totals.total_usd_amount|floatformat:2 }}</strong></td>
+                        <td class="number-col"><strong>₹{{ section_data.totals.total_inr_amount|floatformat:2 }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            {% empty %}
+            <div class="no-data">
+                <h3>No Records Found</h3>
+                <p>No freezing records match your current filter criteria.</p>
+                <p>Try adjusting your filters or selecting a different date range.</p>
+            </div>
+            {% endfor %}
+    
+            <!-- Grand Total Section -->
+            {% if sectioned_data %}
+            <div class="grand-total-section">
+                <div class="grand-total-header">GRAND TOTALS - ALL SECTIONS</div>
+                <table class="grand-total-table">
+                    <tr>
+                        <td class="label-col">TOTAL QUANTITY (KG)</td>
+                        <td>{{ grand_totals.total_kg|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL USD AMOUNT</td>
+                        <td>${{ grand_totals.total_usd_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL INR AMOUNT</td>
+                        <td>₹{{ grand_totals.total_inr_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL RECORDS</td>
+                        <td>{{ grand_totals.count }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL SECTIONS</td>
+                        <td>{{ sectioned_data|length }}</td>
+                    </tr>
+                    {% if grand_totals.avg_kg %}
+                    <tr>
+                        <td class="label-col">AVERAGE QUANTITY PER RECORD (KG)</td>
+                        <td>{{ grand_totals.avg_kg|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if grand_totals.avg_usd_amount %}
+                    <tr>
+                        <td class="label-col">AVERAGE USD AMOUNT PER RECORD</td>
+                        <td>${{ grand_totals.avg_usd_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="button" onclick="window.print()" class="action-btn print-btn">
+                Print Report
+            </button>
+            <button type="button" onclick="generatePDF()" class="action-btn pdf-btn" id="pdfBtn">
+                Generate PDF
+            </button>
+            <a href="?print=1&{{ request.GET.urlencode }}" target="_blank" class="action-btn">
+                Print Preview
+            </a>
+            <button type="button" onclick="exportToCSV()" class="action-btn">
+                Export CSV
+            </button>
+            <button type="button" onclick="exportToExcel()" class="action-btn">
+                Export Excel
+            </button>
+            <button type="button" onclick="showReportSummary()" class="action-btn">
+                Report Summary
+            </button>
+        </div>
+</div>
+
+<script>
+// Simple form reset function
+function resetForm() {
+    const form = document.getElementById('filterForm');
+    if (form) {
+        form.reset();
+        const multiSelects = form.querySelectorAll('select[multiple]');
+        multiSelects.forEach(select => {
+            Array.from(select.options).forEach(option => {
+                option.selected = false;
+            });
+        });
+        document.getElementById('section_by').value = 'category';
+        document.getElementById('entry_type').value = 'all';
+        setTimeout(() => {
+            window.location.href = window.location.pathname;
+        }, 100);
+    }
+}
+
+// Enhanced PDF Generation with large fonts
+async function generatePDF() {
+    const pdfBtn = document.getElementById('pdfBtn');
+    
+    try {
+        // Show loading
+        pdfBtn.textContent = 'Generating PDF...';
+        pdfBtn.disabled = true;
+
+        // Check if libraries are loaded
+        if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+            throw new Error('PDF libraries not loaded. Please refresh the page.');
+        }
+
+        // Hide ALL interactive elements and apply large font mode
+        const elementsToHide = [
+            '.filter-form',
+            '.action-buttons', 
+            '.active-filters',
+            '.notification'
+        ];
+        
+        const hiddenElements = [];
+        elementsToHide.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                if (el && el.style.display !== 'none') {
+                    hiddenElements.push({
+                        element: el,
+                        originalDisplay: el.style.display
+                    });
+                    el.style.display = 'none';
+                    el.style.visibility = 'hidden';
+                }
+            });
+        });
+
+        // Apply PDF mode for large fonts
+        document.body.classList.add('pdf-mode');
+
+        // Wait a moment for layout to settle
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Create canvas with higher scale for better quality
+        const element = document.body;
+        const canvas = await html2canvas(element, {
+            scale: 2, // Increased scale for better quality with large fonts
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: element.scrollWidth,
+            height: element.scrollHeight,
+            ignoreElements: (element) => {
+                return element.classList.contains('filter-form') || 
+                       element.classList.contains('action-buttons') ||
+                       element.classList.contains('active-filters') ||
+                       element.classList.contains('notification');
+            }
+        });
+
+        // Create PDF with proper dimensions for A4
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgData = canvas.toDataURL('image/png', 0.9);
+        const pageWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const margin = 8; // Reduced margin for more content space
+        
+        const imgWidth = pageWidth - (margin * 2);
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        let remainingHeight = imgHeight;
+        let pageNumber = 1;
+        let currentY = 0;
+        
+        // Add pages as needed
+        while (remainingHeight > 0) {
+            const pageContentHeight = pageHeight - (margin * 2);
+            const currentPageHeight = Math.min(pageContentHeight, remainingHeight);
+            
+            if (pageNumber > 1) {
+                pdf.addPage();
+            }
+            
+            // Calculate the portion of the image to include on this page
+            const sourceY = currentY;
+            const sourceHeight = (currentPageHeight / imgHeight) * canvas.height;
+            
+            // Create a temporary canvas for this page portion
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = sourceHeight;
+            
+            // Draw the portion of the original canvas onto the temp canvas
+            tempCtx.drawImage(canvas, 
+                0, sourceY * (canvas.height / imgHeight), 
+                canvas.width, sourceHeight,
+                0, 0,
+                canvas.width, sourceHeight
+            );
+            
+            const pageImgData = tempCanvas.toDataURL('image/png', 0.9);
+            
+            pdf.addImage(
+                pageImgData, 
+                'PNG', 
+                margin, 
+                margin, 
+                imgWidth, 
+                currentPageHeight,
+                undefined,
+                'FAST'
+            );
+            
+            currentY += currentPageHeight;
+            remainingHeight -= currentPageHeight;
+            pageNumber++;
+        }
+
+        // Generate filename with timestamp
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Freezing_Report_${sectionBy}_LargeFont_${dateStr}_${timeStr}.pdf`;
+
+        pdf.save(filename);
+        showNotification('Large font PDF generated successfully!', 'success');
+
+    } catch (error) {
+        console.error('PDF Error:', error);
+        showNotification('PDF generation failed: ' + error.message, 'error');
+    } finally {
+        // Remove PDF mode and restore elements
+        document.body.classList.remove('pdf-mode');
+        
+        // Restore all hidden elements
+        const hiddenElements = document.querySelectorAll('.filter-form, .action-buttons, .active-filters');
+        hiddenElements.forEach(el => {
+            if (el) {
+                el.style.display = '';
+                el.style.visibility = 'visible';
+            }
+        });
+
+        pdfBtn.textContent = 'Generate PDF';
+        pdfBtn.disabled = false;
+    }
+}
+
+// Simple CSV Export
+function exportToCSV() {
+    try {
+        let csvContent = '\uFEFF'; // BOM for UTF-8
+        const tables = document.querySelectorAll('.data-table');
+        
+        if (tables.length === 0) {
+            showNotification('No data to export', 'error');
+            return;
+        }
+
+        tables.forEach((table, index) => {
+            // Add section header
+            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
+            if (sectionHeader) {
+                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+            }
+
+            // Add table headers
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csvContent += headers.join(',') + '\n';
+
+            // Add data rows
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                });
+                csvContent += cells.join(',') + '\n';
+            });
+        });
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const now = new Date().toISOString().split('T')[0];
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Freezing_Report_${sectionBy}_${now}.csv`;
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('CSV exported successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('CSV Error:', error);
+        showNotification('CSV export failed: ' + error.message, 'error');
+    }
+}
+
+// Simple Excel Export using CSV format
+function exportToExcel() {
+    try {
+        let csvContent = '\uFEFF'; // BOM for UTF-8
+        const tables = document.querySelectorAll('.data-table');
+        
+        if (tables.length === 0) {
+            showNotification('No data to export', 'error');
+            return;
+        }
+
+        // Add report header info
+        const reportTitle = document.querySelector('.report-title');
+        const companyName = document.querySelector('.company-name');
+        const dateRange = document.querySelector('.date-range');
+        
+        if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
+        if (companyName) csvContent += companyName.textContent.trim() + '\n';
+        if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
+
+        tables.forEach((table, index) => {
+            // Add section header
+            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
+            if (sectionHeader) {
+                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+            }
+
+            // Add summary
+            const summary = table.parentElement.querySelector('.section-summary');
+            if (summary) {
+                csvContent += summary.textContent.trim() + '\n\n';
+            }
+
+            // Add table headers
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csvContent += headers.join(',') + '\n';
+
+            // Add data rows
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    let cellText = td.textContent.trim().replace(/"/g, '""');
+                    // Handle numbers for Excel
+                    if (td.classList.contains('number-col')) {
+                        cellText = cellText.replace(/[$₹,]/g, '');
+                    }
+                    cells.push('"' + cellText + '"');
+                });
+                csvContent += cells.join(',') + '\n';
+            });
+        });
+
+        // Add grand totals
+        const grandTotalTable = document.querySelector('.grand-total-table');
+        if (grandTotalTable) {
+            csvContent += '\n\nGRAND TOTALS\n';
+            grandTotalTable.querySelectorAll('tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                });
+                csvContent += cells.join(',') + '\n';
+            });
+        }
+
+        // Download as Excel file
+        const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement('a');
+        const now = new Date().toISOString().split('T')[0];
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Freezing_Report_${sectionBy}_${now}.xls`;
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('Excel file exported successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('Excel Error:', error);
+        showNotification('Excel export failed: ' + error.message, 'error');
+    }
+}
+
+// Show report summary
+function showReportSummary() {
+    const grandTotals = document.querySelector('.grand-total-table');
+    if (!grandTotals) {
+        showNotification('No summary data available', 'error');
+        return;
+    }
+    
+    let summary = 'REPORT SUMMARY\n\n';
+    grandTotals.querySelectorAll('tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 2) {
+            summary += cells[0].textContent.trim() + ': ' + cells[1].textContent.trim() + '\n';
+        }
+    });
+    
+    alert(summary);
+}
+
+// Simple notification system
+function showNotification(message, type) {
+    // Remove existing notifications
+    document.querySelectorAll('.notification').forEach(notification => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    });
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Auto-submit form when section_by changes
+document.getElementById('section_by').addEventListener('change', function() {
+    showNotification('Updating report...', 'success');
+    setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
+
+// Date filter handling
+document.getElementById('date_filter').addEventListener('change', function() {
+    const startDate = document.getElementById('start_date');
+    const endDate = document.getElementById('end_date');
+    
+    if (this.value === 'custom') {
+        startDate.parentElement.style.display = 'flex';
+        endDate.parentElement.style.display = 'flex';
+        startDate.required = true;
+        endDate.required = true;
+    } else {
+        startDate.parentElement.style.display = 'none';
+        endDate.parentElement.style.display = 'none';
+        startDate.required = false;
+        endDate.required = false;
+        
+        if (this.value) {
+            setTimeout(() => {
+                document.getElementById('filterForm').submit();
+            }, 500);
+        }
+    }
+});
+
+// Initialize date filter visibility
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFilter = document.getElementById('date_filter');
+    const startDateGroup = document.getElementById('start_date').parentElement;
+    const endDateGroup = document.getElementById('end_date').parentElement;
+    
+    if (dateFilter.value !== 'custom') {
+        startDateGroup.style.display = 'none';
+        endDateGroup.style.display = 'none';
+    }
+});
+
+// Print event handlers
+window.addEventListener('beforeprint', function() {
+    document.querySelectorAll('.filter-form, .action-buttons, .active-filters').forEach(el => {
+        if (el) el.style.display = 'none';
+    });
+});
+
+window.addEventListener('afterprint', function() {
+    document.querySelectorAll('.filter-form, .action-buttons, .active-filters').forEach(el => {
+        if (el) el.style.display = '';
+    });
+});
+</script>
+
+
+{%endblock%}

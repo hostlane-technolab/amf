@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Create Peeling Charge</h2>
+<form method="POST">
+  {% csrf_token %}
+  
+  <div class="mb-3">
+    {{ form.shed.label_tag }} {{ form.shed }}
+  </div>
+  
+  <div class="mb-3">
+    {{ form.item.label_tag }} {{ form.item }}
+  </div>
+
+  <div id="div_id_item_type" class="mb-3" style="display: none;">
+    {{ form.item_type.label_tag }} {{ form.item_type }}
+  </div>
+
+  <div class="mb-3">
+    {{ form.amount.label_tag }} {{ form.amount }}
+  </div>
+
+  <button type="submit" class="btn btn-primary">Save</button>
+</form>
+
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const itemSelect = document.getElementById('id_item');
+    const itemTypeDiv = document.getElementById('div_id_item_type');
+
+    function updateItemTypes() {
+        const itemId = itemSelect.value;
+
+        if (!itemId) {
+            itemTypeDiv.style.display = "none";
+            return;
+        }
+
+        fetch(`/adminapp/ajax/get-item-types/${itemId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const itemTypeSelect = document.getElementById('id_item_type');
+                itemTypeSelect.innerHTML = '<option value="">Select item type</option>';
+
+                if (data.length === 0) {
+                    itemTypeDiv.style.display = "none";
+                } else {
+                    data.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.id;
+                        option.text = type.name;
+                        itemTypeSelect.appendChild(option);
+                    });
+                    itemTypeDiv.style.display = "";
+                }
+            });
+    }
+
+    itemSelect.addEventListener('change', updateItemTypes);
+    updateItemTypes();
+});
+</script>
+
+
+{% endblock %}

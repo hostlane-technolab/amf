@@ -1,0 +1,1396 @@
+{% extends 'admin_base.html' %}
+{% block title %} Enhanced Sectioned Stock Report {% endblock %}
+{% block content %}
+    
+    <!-- Load required libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .filter-form {
+            background: white;
+            padding: 25px;
+            border: 1px solid #ddd;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .filter-group select, .filter-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+        }
+
+        .filter-group select[multiple] {
+            height: 100px;
+            overflow-y: auto;
+        }
+
+        .filter-group select:focus, .filter-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 140px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .filter-btn.primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .filter-btn.primary:hover {
+            background: #0056b3;
+        }
+
+        .filter-btn.secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .filter-btn.secondary:hover {
+            background: #5a6268;
+        }
+
+        .filter-btn.export {
+            background: #28a745;
+            color: white;
+        }
+
+        .filter-btn.export:hover {
+            background: #218838;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 2px solid #007bff;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+
+        .report-subtitle {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .company-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #28a745;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 5px;
+            color: #155724;
+        }
+
+        .company-location {
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 3px;
+            color: #155724;
+        }
+
+        .date-range {
+            font-size: 16px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .section-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            margin: 25px 0 10px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            border-radius: 4px;
+        }
+
+        .section-title {
+            text-transform: uppercase;
+        }
+
+        .section-summary {
+            background: #fff3cd;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            border: 1px solid #007bff;
+            background-color: white;
+            font-size: 12px;
+        }
+
+        .data-table th {
+            background: #007bff;
+            color: white;
+            border: 1px solid #004085;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 11px;
+        }
+
+        .data-table .number-col {
+            text-align: right;
+            padding-right: 10px;
+            font-weight: bold;
+        }
+
+        .data-table .center-col {
+            text-align: center;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .section-total-row {
+            background: #d4edda !important;
+            font-weight: bold;
+        }
+
+        .section-total-row td {
+            border-top: 2px solid #28a745;
+            border-bottom: 2px solid #28a745;
+            font-weight: bold;
+            padding: 12px 8px;
+            color: #155724;
+        }
+
+        .stock-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .stock-status.in-stock {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .stock-status.low-stock {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .stock-status.out-of-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .grand-total-section {
+            margin-top: 30px;
+            border: 2px solid #dc3545;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .grand-total-header {
+            background: #dc3545;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .grand-total-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grand-total-table td {
+            border: 1px solid #dc3545;
+            padding: 12px;
+            font-weight: bold;
+            text-align: right;
+            font-size: 14px;
+            background: white;
+        }
+
+        .grand-total-table .label-col {
+            background: #f8d7da;
+            text-align: left;
+            width: 60%;
+            color: #721c24;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            font-style: italic;
+            color: #6c757d;
+            font-size: 16px;
+            border: 2px dashed #dee2e6;
+            margin: 25px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: 1px solid #007bff;
+            background: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+            border-radius: 4px;
+            min-width: 150px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .print-btn {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .print-btn:hover {
+            background: #218838;
+        }
+
+        .pdf-btn {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .pdf-btn:hover {
+            background: #c82333;
+        }
+
+        .active-filters {
+            background: #e3f2fd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+
+        .filter-tag {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        /* PDF-specific large font styles */
+        .pdf-mode {
+            font-size: 18px !important;
+        }
+
+        .pdf-mode .report-title {
+            font-size: 36px !important;
+        }
+
+        .pdf-mode .report-subtitle {
+            font-size: 24px !important;
+        }
+
+        .pdf-mode .company-name {
+            font-size: 24px !important;
+        }
+
+        .pdf-mode .company-location {
+            font-size: 18px !important;
+        }
+
+        .pdf-mode .date-range {
+            font-size: 20px !important;
+        }
+
+        .pdf-mode .section-header {
+            font-size: 24px !important;
+            padding: 20px !important;
+        }
+
+        .pdf-mode .section-summary {
+            font-size: 18px !important;
+            padding: 15px !important;
+        }
+
+        .pdf-mode .data-table {
+            font-size: 16px !important;
+        }
+
+        .pdf-mode .data-table th {
+            font-size: 16px !important;
+            padding: 15px 10px !important;
+        }
+
+        .pdf-mode .data-table td {
+            font-size: 15px !important;
+            padding: 12px 8px !important;
+        }
+
+        .pdf-mode .section-total-row td {
+            font-size: 16px !important;
+            padding: 15px 10px !important;
+        }
+
+        .pdf-mode .grand-total-header {
+            font-size: 24px !important;
+            padding: 20px !important;
+        }
+
+        .pdf-mode .grand-total-table td {
+            font-size: 18px !important;
+            padding: 15px !important;
+        }
+
+        /* Enhanced print styles */
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+
+            body {
+                font-size: 14px;
+                background: white;
+                padding: 0;
+            }
+            
+            .filter-form, 
+            .action-buttons, 
+            .active-filters,
+            .notification {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            .report-header {
+                margin-bottom: 15mm;
+                padding: 10mm;
+            }
+
+            .report-title {
+                font-size: 22px;
+            }
+
+            .report-subtitle {
+                font-size: 18px;
+            }
+
+            .section-header {
+                margin: 5mm 0;
+                padding: 5mm;
+                font-size: 18px;
+                page-break-after: avoid;
+            }
+            
+            .data-table {
+                font-size: 12px;
+                margin-bottom: 5mm;
+                page-break-inside: avoid;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 3mm 2mm;
+                font-size: 11px;
+            }
+            
+            .grand-total-section {
+                margin-top: 5mm;
+                page-break-inside: avoid;
+            }
+
+            .grand-total-header {
+                font-size: 18px;
+                padding: 5mm;
+            }
+
+            .grand-total-table td {
+                font-size: 14px;
+                padding: 3mm;
+            }
+
+            .section-header {
+                page-break-after: avoid;
+            }
+            
+            .data-table {
+                page-break-before: avoid;
+                page-break-after: auto;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                font-size: 12px;
+            }
+            
+            .filter-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .data-table {
+                font-size: 10px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 6px 4px;
+                font-size: 9px;
+            }
+
+            .filter-buttons, .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .filter-btn, .action-btn {
+                width: 90%;
+                max-width: 250px;
+            }
+        }
+    </style>
+
+    <!-- Filter Form -->
+    <div class="filter-form">
+        <form method="GET" id="filterForm">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label for="section_by">Section By:</label>
+                    <select name="section_by" id="section_by">
+                        <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
+                        <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
+                        <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
+                        <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
+                        <option value="grade" {% if section_by == 'grade' %}selected{% endif %}>Grade</option>
+                        <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
+                        <option value="stock_status" {% if section_by == 'stock_status' %}selected{% endif %}>Stock Status</option>
+                        {% if units %}
+                        <option value="unit" {% if section_by == 'unit' %}selected{% endif %}>Unit</option>
+                        {% endif %}
+                        {% if glazes %}
+                        <option value="glaze" {% if section_by == 'glaze' %}selected{% endif %}>Glaze</option>
+                        {% endif %}
+                        {% if item_qualities %}
+                        <option value="quality" {% if section_by == 'quality' %}selected{% endif %}>Quality</option>
+                        {% endif %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="source_type">Source Type:</label>
+                    <select name="source_type" id="source_type">
+                        <option value="all" {% if source_type == 'all' %}selected{% endif %}>All Sources</option>
+                        <option value="spot" {% if source_type == 'spot' %}selected{% endif %}>Spot</option>
+                        <option value="local" {% if source_type == 'local' %}selected{% endif %}>Local</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="items">Items:</label>
+                    <select name="items" id="items" multiple>
+                        <option value="">All Items</option>
+                        {% for item in items %}
+                        <option value="{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}selected{% endif %}>
+                            {{ item.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="categories">Categories:</label>
+                    <select name="categories" id="categories" multiple>
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="brands">Brands:</label>
+                    <select name="brands" id="brands" multiple>
+                        <option value="">All Brands</option>
+                        {% for brand in brands %}
+                        <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}selected{% endif %}>
+                            {{ brand.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="stores">Stores:</label>
+                    <select name="stores" id="stores" multiple>
+                        <option value="">All Stores</option>
+                        {% for store in stores %}
+                        <option value="{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}selected{% endif %}>
+                            {{ store.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if species %}
+                <div class="filter-group">
+                    <label for="species">Species:</label>
+                    <select name="species" id="species" multiple>
+                        <option value="">All Species</option>
+                        {% for spec in species %}
+                        <option value="{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}selected{% endif %}>
+                            {{ spec.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                {% if item_grades %}
+                <div class="filter-group">
+                    <label for="item_grades">Grades:</label>
+                    <select name="item_grades" id="item_grades" multiple>
+                        <option value="">All Grades</option>
+                        {% for grade in item_grades %}
+                        <option value="{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_item_grades %}selected{% endif %}>
+                            {{ grade.grade }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                {% if units %}
+                <div class="filter-group">
+                    <label for="units">Units:</label>
+                    <select name="units" id="units" multiple>
+                        <option value="">All Units</option>
+                        {% for unit in units %}
+                        <option value="{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}selected{% endif %}>
+                            {{ unit.description }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                {% if glazes %}
+                <div class="filter-group">
+                    <label for="glazes">Glazes:</label>
+                    <select name="glazes" id="glazes" multiple>
+                        <option value="">All Glazes</option>
+                        {% for glaze in glazes %}
+                        <option value="{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}selected{% endif %}>
+                            {{ glaze.percentage }}%
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                {% if item_qualities %}
+                <div class="filter-group">
+                    <label for="item_qualities">Qualities:</label>
+                    <select name="item_qualities" id="item_qualities" multiple>
+                        <option value="">All Qualities</option>
+                        {% for quality in item_qualities %}
+                        <option value="{{ quality.id }}" {% if quality.id|stringformat:"s" in selected_item_qualities %}selected{% endif %}>
+                            {{ quality.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                {% if freezing_categories %}
+                <div class="filter-group">
+                    <label for="freezing_categories">Freezing Categories:</label>
+                    <select name="freezing_categories" id="freezing_categories" multiple>
+                        <option value="">All Freezing Categories</option>
+                        {% for freezing_cat in freezing_categories %}
+                        <option value="{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}selected{% endif %}>
+                            {{ freezing_cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
+                <div class="filter-group">
+                    <label for="stock_filter">Stock Filter:</label>
+                    <select name="stock_filter" id="stock_filter">
+                        <option value="" {% if not stock_filter %}selected{% endif %}>All Stock</option>
+                        <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>In Stock</option>
+                        <option value="low_stock" {% if stock_filter == 'low_stock' %}selected{% endif %}>Low Stock</option>
+                        <option value="zero_stock" {% if stock_filter == 'zero_stock' %}selected{% endif %}>Zero Stock</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="search">Search:</label>
+                    <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Search items, brands, stores...">
+                </div>
+            </div>
+
+            <div class="filter-buttons">
+                <button type="submit" class="filter-btn primary">Generate Report</button>
+                <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
+                <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
+                <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Filters Display -->
+    {% if request.GET %}
+    <div class="active-filters">
+        <strong>Active Filters:</strong>
+        {% if section_by %}<span class="filter-tag">Section: {{ section_by|title }}</span>{% endif %}
+        {% if source_type != 'all' %}<span class="filter-tag">Source: {{ source_type|title }}</span>{% endif %}
+        {% if stock_filter %}<span class="filter-tag">Stock: {{ stock_filter|title }}</span>{% endif %}
+        {% if search_query %}<span class="filter-tag">Search: {{ search_query }}</span>{% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <div class="report-title">ENHANCED SECTIONED STOCK REPORT</div>
+        <div class="report-subtitle">Current Stock Levels by {{ section_by|title }}</div>
+        
+        <div class="company-info">
+            <div class="company-name">PREMIER MARINE FOOD</div>
+            <div class="company-location">VANDANAM, ALAPPUZHA</div>
+            <div class="company-location">KERALA, INDIA</div>
+        </div>
+        
+        <div class="date-range">
+            Generated on: {{ "now"|date:"d-M-Y H:i" }}
+            | Sectioned by: {{ section_by|upper }}
+        </div>
+    </div>
+
+    <!-- Sectioned Data Display -->
+    <div id="sectioned-content">
+        {% for section_name, section_data in sectioned_data.items %}
+        <!-- Section Header -->
+        <div class="section-header">
+            <div class="section-title">
+                {% if section_by == 'category' %}
+                    CATEGORY: {{ section_name|upper }}
+                {% elif section_by == 'brand' %}
+                    BRAND: {{ section_name|upper }}
+                {% elif section_by == 'store' %}
+                    STORE: {{ section_name|upper }}
+                {% elif section_by == 'species' %}
+                    SPECIES: {{ section_name|upper }}
+                {% elif section_by == 'grade' %}
+                    GRADE: {{ section_name|upper }}
+                {% elif section_by == 'item' %}
+                    ITEM: {{ section_name|upper }}
+                {% elif section_by == 'unit' %}
+                    UNIT: {{ section_name|upper }}
+                {% elif section_by == 'glaze' %}
+                    GLAZE: {{ section_name|upper }}
+                {% elif section_by == 'quality' %}
+                    QUALITY: {{ section_name|upper }}
+                {% elif section_by == 'stock_status' %}
+                    STATUS: {{ section_name|upper }}
+                {% else %}
+                    {{ section_name|upper }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Section Summary -->
+        <div class="section-summary">
+            <strong>Section Summary:</strong> 
+            {{ section_data.items|length }} items | 
+            Total CS: {{ section_data.totals.total_cs|floatformat:0 }} | 
+            Total KG: {{ section_data.totals.total_kg|floatformat:2 }} | 
+            USD Value: ${{ section_data.totals.total_usd_value|floatformat:2 }}
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>S.NO</th>
+                    <th>ITEM NAME</th>
+                    <th>BRAND</th>
+                    <th>STORE</th>
+
+                    {% if species %}
+                    <th>SPECIES</th>
+                    {% endif %}
+                    {% if item_grades %}
+                    <th>GRADE</th>
+                    {% endif %}
+                    {% if units %}
+                    <th>UNIT</th>
+                    {% endif %}
+                    {% if glazes %}
+                    <th>GLAZE</th>
+                    {% endif %}
+                    {% if item_qualities %}
+                    <th>QUALITY</th>
+                    {% endif %}
+                    <th>CS QTY</th>
+                    <th>KG QTY</th>
+                    <th>USD/KG</th>
+                    <th>USD VALUE</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in section_data.items %}
+                <tr>
+                    <td class="center-col">{{ forloop.counter }}</td>
+                    <td>{{ item.item__name|truncatechars:20 }}</td>
+                    <td>{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
+                    <td>{{ item.store__name|default:"N/A"|truncatechars:15 }}</td>
+
+                    {% if species %}
+                    <td>{{ item.species__name|default:"N/A"|truncatechars:12 }}</td>
+                    {% endif %}
+                    {% if item_grades %}
+                    <td class="center-col">{{ item.item_grade__grade|default:"N/A" }}</td>
+                    {% endif %}
+                    {% if units %}
+                    <td class="center-col">{{ item.unit__description|default:"N/A"|truncatechars:10 }}</td>
+                    {% endif %}
+                    {% if glazes %}
+                    <td class="center-col">{{ item.glaze__percentage|default:"N/A" }}{% if item.glaze__percentage %}%{% endif %}</td>
+                    {% endif %}
+                    {% if item_qualities %}
+                    <td>{{ item.item_quality__name|default:"N/A"|truncatechars:10 }}</td>
+                    {% endif %}
+                    <td class="number-col">{{ item.cs_quantity|floatformat:0 }}</td>
+                    <td class="number-col">{{ item.kg_quantity|floatformat:2 }}</td>
+                    <td class="number-col">${{ item.usd_rate_per_kg|floatformat:2 }}</td>
+                    <td class="number-col">${{ item.total_usd_value|floatformat:2 }}</td>
+                    <td class="center-col">
+                        <span class="stock-status {{ item.stock_status_class }}">
+                            {{ item.stock_status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+                
+                <!-- Section Total Row -->
+                <tr class="section-total-row">
+                    <td colspan="{% if species and item_grades and units and glazes and item_qualities %}11{% elif species and item_grades and units and glazes %}10{% elif species and item_grades and units %}9{% elif species and item_grades %}8{% else %}7{% endif %}" class="center-col"><strong>SECTION TOTAL</strong></td>
+                    <td class="number-col"><strong>{{ section_data.totals.total_cs|floatformat:0 }}</strong></td>
+                    <td class="number-col"><strong>{{ section_data.totals.total_kg|floatformat:2 }}</strong></td>
+                    <td class="number-col"><strong>-</strong></td>
+                    <td class="number-col"><strong>${{ section_data.totals.total_usd_value|floatformat:2 }}</strong></td>
+                    <td class="center-col"><strong>-</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        {% empty %}
+        <div class="no-data">
+            <h3>No Stock Records Found</h3>
+            <p>No stock records match your current filter criteria.</p>
+            <p>Try adjusting your filters or selecting different options.</p>
+        </div>
+        {% endfor %}
+
+        <!-- Grand Total Section -->
+        {% if sectioned_data %}
+        <div class="grand-total-section">
+            <div class="grand-total-header">GRAND TOTALS - ALL SECTIONS</div>
+            <table class="grand-total-table">
+                <tr>
+                    <td class="label-col">TOTAL CS QUANTITY</td>
+                    <td>{{ grand_totals.total_cs|floatformat:0 }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">TOTAL KG QUANTITY</td>
+                    <td>{{ grand_totals.total_kg|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">TOTAL USD VALUE</td>
+                    <td>${{ grand_totals.total_usd_value|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">TOTAL STOCK ITEMS</td>
+                    <td>{{ grand_totals.count }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">TOTAL SECTIONS</td>
+                    <td>{{ sectioned_data|length }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">IN STOCK ITEMS</td>
+                    <td>{{ grand_totals.in_stock_count|default:0 }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">LOW STOCK ITEMS</td>
+                    <td>{{ grand_totals.low_stock_count|default:0 }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">OUT OF STOCK ITEMS</td>
+                    <td>{{ grand_totals.zero_stock_count|default:0 }}</td>
+                </tr>
+                {% if grand_totals.avg_kg %}
+                <tr>
+                    <td class="label-col">AVERAGE KG PER ITEM</td>
+                    <td>{{ grand_totals.avg_kg|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+                {% if grand_totals.avg_usd_value %}
+                <tr>
+                    <td class="label-col">AVERAGE USD VALUE PER ITEM</td>
+                    <td>${{ grand_totals.avg_usd_value|floatformat:2 }}</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <button type="button" onclick="printReport()" class="action-btn print-btn">
+            Print Report
+        </button>
+        <button type="button" onclick="generatePDF()" id="pdfBtn" class="action-btn pdf-btn">
+            Generate PDF        
+        </button>
+        <a href="?print=1&{{ request.GET.urlencode }}" target="_blank" class="action-btn">
+            Print Preview
+        </a>
+        <button type="button" onclick="exportToCSV()" class="action-btn">
+            Export CSV
+        </button>
+        <button type="button" onclick="exportToExcel()" class="action-btn">
+            Export Excel
+        </button>
+        <button type="button" onclick="showReportSummary()" class="action-btn">
+            Report Summary
+        </button>
+    </div>
+
+<script>
+// Simple form reset function
+function resetForm() {
+    const form = document.getElementById('filterForm');
+    if (form) {
+        form.reset();
+        const multiSelects = form.querySelectorAll('select[multiple]');
+        multiSelects.forEach(select => {
+            Array.from(select.options).forEach(option => {
+                option.selected = false;
+            });
+        });
+        document.getElementById('section_by').value = 'category';
+        document.getElementById('source_type').value = 'all';
+        setTimeout(() => {
+            window.location.href = window.location.pathname;
+        }, 100);
+    }
+}
+
+// Print report function
+function printReport() {
+    window.print();
+}
+
+// Enhanced PDF Generation with large fonts
+async function generatePDF() {
+    const pdfBtn = document.getElementById('pdfBtn');
+    
+    try {
+        // Show loading
+        pdfBtn.textContent = 'Generating PDF...';
+        pdfBtn.disabled = true;
+
+        // Check if libraries are loaded
+        if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+            throw new Error('PDF libraries not loaded. Please refresh the page.');
+        }
+
+        // Hide ALL interactive elements and apply large font mode
+        const elementsToHide = [
+            '.filter-form',
+            '.action-buttons', 
+            '.active-filters',
+            '.notification'
+        ];
+        
+        const hiddenElements = [];
+        elementsToHide.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                if (el && el.style.display !== 'none') {
+                    hiddenElements.push({
+                        element: el,
+                        originalDisplay: el.style.display
+                    });
+                    el.style.display = 'none';
+                    el.style.visibility = 'hidden';
+                }
+            });
+        });
+
+        // Apply PDF mode for large fonts
+        document.body.classList.add('pdf-mode');
+
+        // Wait a moment for layout to settle
+        await new Promise(resolve => setTimeout(resolve, 300));
+
+        // Create canvas with higher scale for better quality
+        const element = document.body;
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: element.scrollWidth,
+            height: element.scrollHeight,
+            ignoreElements: (element) => {
+                return element.classList.contains('filter-form') || 
+                       element.classList.contains('action-buttons') ||
+                       element.classList.contains('active-filters') ||
+                       element.classList.contains('notification');
+            }
+        });
+
+        // Create PDF with proper dimensions for A4
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgData = canvas.toDataURL('image/png', 0.9);
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 8;
+        
+        const imgWidth = pageWidth - (margin * 2);
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        let remainingHeight = imgHeight;
+        let pageNumber = 1;
+        let currentY = 0;
+        
+        // Add pages as needed
+        while (remainingHeight > 0) {
+            const pageContentHeight = pageHeight - (margin * 2);
+            const currentPageHeight = Math.min(pageContentHeight, remainingHeight);
+            
+            if (pageNumber > 1) {
+                pdf.addPage();
+            }
+            
+            const sourceY = currentY;
+            const sourceHeight = (currentPageHeight / imgHeight) * canvas.height;
+            
+            const tempCanvas = document.createElement('canvas');
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = sourceHeight;
+            
+            tempCtx.drawImage(canvas, 
+                0, sourceY * (canvas.height / imgHeight), 
+                canvas.width, sourceHeight,
+                0, 0,
+                canvas.width, sourceHeight
+            );
+            
+            const pageImgData = tempCanvas.toDataURL('image/png', 0.9);
+            
+            pdf.addImage(
+                pageImgData, 
+                'PNG', 
+                margin, 
+                margin, 
+                imgWidth, 
+                currentPageHeight,
+                undefined,
+                'FAST'
+            );
+            
+            currentY += currentPageHeight;
+            remainingHeight -= currentPageHeight;
+            pageNumber++;
+        }
+
+        // Generate filename with timestamp
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Stock_Report_${sectionBy}_${dateStr}_${timeStr}.pdf`;
+
+        pdf.save(filename);
+        showNotification('PDF generated successfully!', 'success');
+
+    } catch (error) {
+        console.error('PDF Error:', error);
+        showNotification('PDF generation failed: ' + error.message, 'error');
+    } finally {
+        // Remove PDF mode and restore elements
+        document.body.classList.remove('pdf-mode');
+        
+        const hiddenElements = document.querySelectorAll('.filter-form, .action-buttons, .active-filters');
+        hiddenElements.forEach(el => {
+            if (el) {
+                el.style.display = '';
+                el.style.visibility = 'visible';
+            }
+        });
+
+        pdfBtn.textContent = 'Generate PDF';
+        pdfBtn.disabled = false;
+    }
+}
+
+// Simple CSV Export
+function exportToCSV() {
+    try {
+        let csvContent = '\uFEFF';
+        const tables = document.querySelectorAll('.data-table');
+        
+        if (tables.length === 0) {
+            showNotification('No data to export', 'error');
+            return;
+        }
+
+        tables.forEach((table, index) => {
+            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
+            if (sectionHeader) {
+                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+            }
+
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csvContent += headers.join(',') + '\n';
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                });
+                csvContent += cells.join(',') + '\n';
+            });
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const now = new Date().toISOString().split('T')[0];
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Stock_Report_${sectionBy}_${now}.csv`;
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('CSV exported successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('CSV Error:', error);
+        showNotification('CSV export failed: ' + error.message, 'error');
+    }
+}
+
+// Simple Excel Export using CSV format
+function exportToExcel() {
+    try {
+        let csvContent = '\uFEFF';
+        const tables = document.querySelectorAll('.data-table');
+        
+        if (tables.length === 0) {
+            showNotification('No data to export', 'error');
+            return;
+        }
+
+        const reportTitle = document.querySelector('.report-title');
+        const companyName = document.querySelector('.company-name');
+        const dateRange = document.querySelector('.date-range');
+        
+        if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
+        if (companyName) csvContent += companyName.textContent.trim() + '\n';
+        if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
+
+        tables.forEach((table, index) => {
+            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
+            if (sectionHeader) {
+                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+            }
+
+            const summary = table.parentElement.querySelector('.section-summary');
+            if (summary) {
+                csvContent += summary.textContent.trim() + '\n\n';
+            }
+
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csvContent += headers.join(',') + '\n';
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    let cellText = td.textContent.trim().replace(/"/g, '""');
+                    if (td.classList.contains('number-col')) {
+                        cellText = cellText.replace(/[$₹,]/g, '');
+                    }
+                    cells.push('"' + cellText + '"');
+                });
+                csvContent += cells.join(',') + '\n';
+            });
+        });
+
+        const grandTotalTable = document.querySelector('.grand-total-table');
+        if (grandTotalTable) {
+            csvContent += '\n\nGRAND TOTALS\n';
+            grandTotalTable.querySelectorAll('tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
+                });
+                csvContent += cells.join(',') + '\n';
+            });
+        }
+
+        const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement('a');
+        const now = new Date().toISOString().split('T')[0];
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Stock_Report_${sectionBy}_${now}.xls`;
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('Excel file exported successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('Excel Error:', error);
+        showNotification('Excel export failed: ' + error.message, 'error');
+    }
+}
+
+// Show report summary
+function showReportSummary() {
+    const grandTotals = document.querySelector('.grand-total-table');
+    if (!grandTotals) {
+        showNotification('No summary data available', 'error');
+        return;
+    }
+    
+    let summary = 'STOCK REPORT SUMMARY\n\n';
+    grandTotals.querySelectorAll('tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length === 2) {
+            summary += cells[0].textContent.trim() + ': ' + cells[1].textContent.trim() + '\n';
+        }
+    });
+    
+    alert(summary);
+}
+
+// Simple notification system
+function showNotification(message, type) {
+    document.querySelectorAll('.notification').forEach(notification => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    });
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Auto-submit form when section_by changes
+document.getElementById('section_by').addEventListener('change', function() {
+    showNotification('Updating report...', 'success');
+    setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
+
+// Stock filter handling
+document.getElementById('stock_filter').addEventListener('change', function() {
+    if (this.value) {
+        setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 500);
+    }
+});
+
+// Print event handlers
+window.addEventListener('beforeprint', function() {
+    document.querySelectorAll('.filter-form, .action-buttons, .active-filters').forEach(el => {
+        if (el) el.style.display = 'none';
+    });
+});
+
+window.addEventListener('afterprint', function() {
+    document.querySelectorAll('.filter-form, .action-buttons, .active-filters').forEach(el => {
+        if (el) el.style.display = '';
+    });
+});
+</script>
+
+{%endblock%}

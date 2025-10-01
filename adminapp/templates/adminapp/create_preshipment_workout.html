@@ -1,0 +1,1261 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+
+<div class="page-inner">
+    <div class="page-header">
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Pre-Shipment WorkOut & Summary</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="#">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Pre-Shipment WorkOut List</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="{%url 'adminapp:create_preshipment_workout'%}">Create</a>
+        </li>
+      </ul>
+    </div>
+      
+  
+      <!-- Freezing Workout Summary Section -->
+      <div class="card mb-4">
+          <div class="card-header">
+              <div class="header-content">
+                  <div class="header-info">
+                      <div class="icon-wrapper">
+                          <i class="fas fa-snowflake"></i>
+                      </div>
+                      <div class="header-text">
+                          <h3 class="card-title mb-0 fw-bold">Freezing Workout Summary</h3>
+                          <p>Filter and view workout summaries by various parameters</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+  
+          <!-- Filter Form -->
+          <form method="get" class="p-4">
+              <div class="table-responsive">
+                  <table class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Freezing Category</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-filter header-icon"></i>Actions</div></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr class="table-row">
+                              <td>
+                                  <select name="item" id="item" class="form-select">
+                                      <option value="">All Items</option>
+                                      {% for obj in items %}
+                                          <option value="{{ obj.id }}" {% if request.GET.item == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="unit" id="unit" class="form-select">
+                                      <option value="">All Units</option>
+                                      {% for obj in units %}
+                                          <option value="{{ obj.id }}" {% if request.GET.unit == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.unit_code }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="glaze" id="glaze" class="form-select">
+                                      <option value="">All Glaze</option>
+                                      {% for obj in glazes %}
+                                          <option value="{{ obj.id }}" {% if request.GET.glaze == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.percentage }}%
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="category" id="category" class="form-select">
+                                      <option value="">All Categories</option>
+                                      {% for obj in categories %}
+                                          <option value="{{ obj.id }}" {% if request.GET.category == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="brand" id="brand" class="form-select">
+                                      <option value="">All Brands</option>
+                                      {% for obj in brands %}
+                                          <option value="{{ obj.id }}" {% if request.GET.brand == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <button type="submit" class="action-btn view-btn">
+                                      <i class="fas fa-filter"></i> Apply Filters
+                                  </button>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </form>
+  
+          <!-- Summary Results -->
+          {% if combined_summary %}
+  
+  
+              <div class="table-responsive">
+                  <table class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling Type</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Unit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-layer-group header-icon"></i>Slab</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>C/S</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>KG</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>USD</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>INR</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percentage header-icon"></i>Yield %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-chart-line header-icon"></i>USD/KG</div></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for row in combined_summary %}
+                              <tr class="table-row">
+                                  <td>
+                                      <div class="company-info">
+                                          <div class="company-avatar">
+                                              <i class="fas fa-box"></i>
+                                          </div>
+                                          <div class="company-details">
+                                              <div class="company-name">{{ row.item_name }}</div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  <td><span class="badge badge-primary">{{ row.grade_name }}</span></td>
+                                  <td>{{ row.species_name }}</td>
+                                  <td>{{ row.peeling_type_name }}</td>
+                                  <td><span class="badge badge-success">{{ row.brand_name }}</span></td>
+                                  <td>{{ row.glaze_percentage }}%</td>
+                                  <td>{{ row.unit_code }}</td>
+                                  <td><span class="badge badge-warning">{{ row.freezing_category_name }}</span></td>
+                                  <td class="weight-display">{{ row.total_slab }}</td>
+                                  <td class="weight-display">{{ row.total_c_s }}</td>
+                                  <td class="weight-display">{{ row.total_kg }}<span class="weight-unit">KG</span></td>
+                                  <td class="weight-display">${{ row.total_usd|floatformat:2 }}</td>
+                                  <td class="weight-display">₹{{ row.total_inr|floatformat:2 }}</td>
+                                  <td class="weight-display">{{ row.avg_yield|floatformat:2 }}%</td>
+                                  <td class="weight-display">${{ row.avg_usd_per_kg|floatformat:2 }}</td>
+                              </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+          {% else %}
+              <div class="empty-state">
+                  <div class="empty-state-icon">
+                      <i class="fas fa-search"></i>
+                  </div>
+                  <h4>No Results Found</h4>
+                  <p>No items found for the selected filters. Try adjusting your filter criteria.</p>
+              </div>
+          {% endif %}
+      </div>
+  
+      <!-- Create Pre-Shipment WorkOut Section -->
+      <div class="card">
+          <div class="card-header">
+              <div class="header-content">
+                  <div class="header-info">
+                      <div class="icon-wrapper">
+                          <i class="fas fa-plus-circle"></i>
+                      </div>
+                      <div class="header-text">
+                          <h3 class="mb-0 fw-bold card-title">Create Pre-Shipment WorkOut</h3>
+                          <p>Add new workout entries with detailed calculations</p>
+                      </div>
+                  </div>
+                  <div class="controls-section">
+                      <a href="{% url 'adminapp:preshipment_workout_list' %}" class="action-btn view-btn">
+                          <i class="fas fa-list"></i> View All WorkOuts
+                      </a>
+                  </div>
+              </div>
+          </div>
+  
+          <form method="post" class="p-4">
+              {% csrf_token %}
+  
+              <!-- Main Workout Form -->
+              <div class="table-responsive mb-4">
+                  <table class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr class="table-row">
+                              <td>
+                                  <select id="id_item" name="item" class="form-select">
+                                      <option value="">Select Item</option>
+                                      {% for obj in items %}
+                                          <option value="{{ obj.id }}"
+                                              {% if workout_form.item.value == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>{{ workout_form.unit }}</td>
+                              <td>{{ workout_form.glaze }}</td>
+                              <td>{{ workout_form.category }}</td>
+                              <td>{{ workout_form.brand }}</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+  
+              <!-- Items Formset -->
+              {{ formset.management_form }}
+              <div class="table-responsive">
+                  <table id="formset-table" class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-boxes header-icon"></i>Cartons</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>Quantity</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>$ KG</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-calculator header-icon"></i>$ Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>₹ Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-hand-holding-usd header-icon"></i>$ KG-Get</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-coins header-icon"></i>$ Item-Get</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-money-bill header-icon"></i>₹ Item-Get</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-arrow-up header-icon"></i>Profit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-arrow-down header-icon"></i>Loss</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cogs header-icon"></i>Actions</div></th>
+                          </tr>
+                      </thead>
+                      <tbody id="formset-body">
+                          {% for form in formset %}
+                              <tr class="form-row table-row">
+                                  <td>{{ form.species }}</td>
+                                  <td>{{ form.peeling_type }}</td>
+                                  <td>{{ form.grade }}</td>
+                                  <td>{{ form.cartons }}</td>
+                                  <td>{{ form.quantity }}</td>
+                                  <td>{{ form.usd_rate_per_kg }}</td>
+                                  <td>{{ form.usd_rate_item }}</td>
+                                  <td>{{ form.usd_rate_item_to_inr }}</td>
+                                  <td>{{ form.usd_rate_per_kg_get }}</td>
+                                  <td>{{ form.usd_rate_item_get }}</td>
+                                  <td>{{ form.usd_rate_item_to_inr_get }}</td>
+                                  <td>
+                                      <input type="hidden" name="{{ form.profit.name }}" class="profit">
+                                      <span class="profit-display status-completed"></span>
+                                  </td>
+                                  <td>
+                                      <input type="hidden" name="{{ form.loss.name }}" class="loss">
+                                      <span class="loss-display status-returned"></span>
+                                  </td>
+                                  <td>
+                                      <div class="action-buttons">
+                                          <button type="button" class="action-btn delete-btn remove-row">
+                                              <i class="fas fa-trash"></i> Remove
+                                          </button>
+                                      </div>
+                                  </td>
+                              </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+  
+              <!-- Action Buttons -->
+              <div class="text-center mt-4">
+                  <div class="action-buttons">
+                      <button type="button" id="add-row" class="add-new-btn">
+                          <i class="fas fa-plus"></i> Add More Rows
+                      </button>
+                      <button type="submit" class="action-btn edit-btn">
+                          <i class="fas fa-save"></i> Save WorkOut
+                      </button>
+                  </div>
+              </div>
+          </form>
+      </div>
+  
+      <!-- Hidden empty form template -->
+      <table style="display:none;">
+          <tbody>
+              <tr id="empty-form" class="form-row table-row">
+                  <td>{{ formset.empty_form.species }}</td>
+                  <td>{{ formset.empty_form.peeling_type }}</td>
+                  <td>{{ formset.empty_form.grade }}</td>
+                  <td>{{ formset.empty_form.cartons }}</td>
+                  <td>{{ formset.empty_form.quantity }}</td>
+                  <td>{{ formset.empty_form.usd_rate_per_kg }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item_to_inr }}</td>
+                  <td>{{ formset.empty_form.usd_rate_per_kg_get }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item_get }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item_to_inr_get }}</td>
+                  <td>
+                      <input type="hidden" name="{{ formset.empty_form.profit.name }}" class="profit">
+                      <span class="profit-display status-completed"></span>
+                  </td>
+                  <td>
+                      <input type="hidden" name="{{ formset.empty_form.loss.name }}" class="loss">
+                      <span class="loss-display status-returned"></span>
+                  </td>
+                  <td>
+                      <div class="action-buttons">
+                          <button type="button" class="action-btn delete-btn remove-row">
+                              <i class="fas fa-trash"></i> Remove
+                          </button>
+                      </div>
+                  </td>
+              </tr>
+          </tbody>
+      </table>
+</div>
+</div>
+
+
+<style>
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 30px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    margin-right: 20px;
+  }
+
+  .header-text h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+  }
+
+  .header-text p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* Controls Section */
+  .controls-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Search Box */
+  .search-wrapper {
+    position: relative;
+  }
+
+  .search-input {
+    width: 300px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 14px;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: none;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  /* Stats Badge */
+  .stats-badge .badge {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e9ecef;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Add Button */
+  .add-new-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+  }
+
+  .add-new-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 25px 30px;
+    background: #f8f9fd;
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+
+  .stat-card.entries {
+    border-color: rgba(231, 76, 60, 0.2);
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.weight {
+    border-color: rgba(40, 167, 69, 0.2);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.amount {
+    border-color: rgba(255, 193, 7, 0.2);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, white 100%);
+  }
+
+  .stat-card h4 {
+    margin: 0 0 10px 0;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .stat-card.entries .value { color: #e74c3c; }
+  .stat-card.weight .value { color: #28a745; }
+  .stat-card.amount .value { color: #ffc107; }
+
+  /* Table */
+  .table-responsive {
+    background: white;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin: 0;
+  }
+
+  .modern-table th {
+    background: #f8f9fd;
+    padding: 20px;
+    text-align: left;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    border: none;
+  }
+
+  .header-content-table {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .modern-table td {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  .table-row {
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.02) 0%, rgba(231, 76, 60, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+
+  /* Date Display */
+  .date-display {
+    display: flex;
+    align-items: center;
+    color: #495057;
+    font-weight: 600;
+    font-family: 'Monaco', 'Consolas', monospace;
+  }
+
+  .date-display i {
+    margin-right: 8px;
+    color: #e74c3c;
+  }
+
+  /* Company Display */
+  .company-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .company-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .company-details .company-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .company-details .company-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-primary {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 2px solid rgba(231, 76, 60, 0.2);
+  }
+
+  .badge-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .badge-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  /* Weight Display */
+  .weight-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #28a745;
+  }
+
+  .weight-unit {
+    font-size: 12px;
+    color: #6c757d;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+
+  /* Status Badges */
+  .status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .status-completed {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+  }
+
+  .status-pending {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    color: white;
+  }
+
+  .status-returned {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    color: #e74c3c;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  .empty-state h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    display: none;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+    
+    .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .header-info {
+      margin-bottom: 20px;
+    }
+    
+    .controls-section {
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .search-input {
+      width: 200px;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    
+    .modern-table th,
+    .modern-table td {
+      padding: 15px 10px;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .company-info {
+      flex-direction: row;
+    }
+    
+    .company-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .controls-section {
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .search-input {
+      width: 100%;
+    }
+    
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .header-text h3 {
+      font-size: 20px;
+    }
+    
+    .company-avatar {
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+    }
+    
+    .company-name {
+      font-size: 14px;
+    }
+  }
+</style>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const addButton = document.getElementById("add-row");
+    const formsetBody = document.getElementById("formset-body");
+    const totalForms = document.getElementById("id_items-TOTAL_FORMS");
+
+    // Add new row
+    addButton.addEventListener("click", function () {
+        let formIndex = parseInt(totalForms.value);
+        let template = document.getElementById("empty-form").cloneNode(true);
+
+        template.removeAttribute("id");
+        template.style.display = "";
+
+        template.querySelectorAll("input, select, textarea").forEach(input => {
+            input.name = input.name.replace(/__prefix__/, formIndex);
+            input.id = input.id.replace(/__prefix__/, formIndex);
+        });
+
+        formsetBody.appendChild(template);
+        totalForms.value = formIndex + 1;
+    });
+
+    // Remove row
+    formsetBody.addEventListener("click", function (e) {
+        if (e.target.classList.contains("remove-row") || e.target.closest('.remove-row')) {
+            e.preventDefault();
+            let row = e.target.closest(".form-row");
+            if (row) {
+                row.remove();
+                let formRows = formsetBody.querySelectorAll(".form-row");
+                totalForms.value = formRows.length;
+
+                formRows.forEach((row, index) => {
+                    row.querySelectorAll("input, select, textarea").forEach(input => {
+                        input.name = input.name.replace(/items-\d+-/, `items-${index}-`);
+                        input.id = input.id.replace(/id_items-\d+-/, `id_items-${index}-`);
+                    });
+                });
+            }
+        }
+    });
+
+    // Species change → load grades
+    formsetBody.addEventListener("change", function (e) {
+        if (e.target.name.endsWith("species")) {
+            let speciesId = e.target.value;
+            let row = e.target.closest(".form-row");
+            let gradeSelect = row.querySelector("select[name$='grade']");
+
+            if (speciesId) {
+                fetch("{% url 'adminapp:get_grade_for_species' %}?species_id=" + speciesId)
+                    .then(response => response.json())
+                    .then(data => {
+                        gradeSelect.innerHTML = '<option value="">---------</option>';
+                        data.grades.forEach(grade => {
+                            let opt = document.createElement("option");
+                            opt.value = grade.id;
+                            opt.textContent = grade.grade;
+                            gradeSelect.appendChild(opt);
+                        });
+                    });
+            } else {
+                gradeSelect.innerHTML = '<option value="">---------</option>';
+            }
+        }
+    });
+});
+</script>
+
+<!-- Load species -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function(){
+    $("#id_item").change(function(){
+        var itemId = $(this).val();
+
+        if (itemId) {
+            $.ajax({
+                url: "{% url 'adminapp:get_species_for_item' %}",
+                data: { "item_id": itemId },
+                dataType: "json",
+                success: function(data){
+                    $(".form-row select[name$='species']").each(function(){
+                        var $speciesSelect = $(this);
+                        $speciesSelect.empty();
+                        $speciesSelect.append($("<option>", {value: "", text: "---------"}));
+
+                        $.each(data.species, function(index, species){
+                            $speciesSelect.append($("<option>", {
+                                value: species.id,
+                                text: species.name
+                            }));
+                        });
+                    });
+                }
+            });
+        }
+    });
+});
+</script>
+
+<!-- Load peeling type -->
+<script>
+$(document).ready(function(){
+    $("#id_item").change(function(){
+        var itemId = $(this).val();
+
+        if (itemId) {
+            $.ajax({
+                url: "{% url 'adminapp:get_peeling_for_item' %}",
+                data: { "item_id": itemId },
+                dataType: "json",
+                success: function(data){
+                    $(".form-row select[name$='peeling_type']").each(function(){
+                        var $peelingSelect = $(this);
+                        $peelingSelect.empty();
+                        $peelingSelect.append($("<option>", {value: "", text: "---------"}));
+
+                        $.each(data.peeling_types, function(index, peeling){
+                            $peelingSelect.append($("<option>", {
+                                value: peeling.id,
+                                text: peeling.name
+                            }));
+                        });
+                    });
+                }
+            });
+        }
+    });
+});
+</script>
+
+<!-- Load grade -->
+<script>
+$(document).on("change", "select[name$='species']", function(){
+    var speciesId = $(this).val();
+    var $gradeSelect = $(this).closest(".form-row").find("select[name$='grade']");
+
+    if (speciesId) {
+        $.ajax({
+            url: "{% url 'adminapp:get_grade_for_species' %}",
+            data: { "species_id": speciesId },
+            dataType: "json",
+            success: function(data){
+                $gradeSelect.empty();
+                $gradeSelect.append($("<option>", { value: "", text: "---------" }));
+
+                $.each(data.grades, function(index, grade){
+                    $gradeSelect.append($("<option>", {
+                        value: grade.id,
+                        text: grade.grade
+                    }));
+                });
+            }
+        });
+    } else {
+        $gradeSelect.empty();
+        $gradeSelect.append($("<option>", { value: "", text: "---------" }));
+    }
+});
+</script>
+
+<!-- Cartons calculation -->
+<script>
+document.addEventListener("input", function (e) {
+    if (e.target && e.target.name.includes("cartons")) {
+        let cartonsInput = e.target;
+        let quantityInput = cartonsInput
+            .closest("tr")
+            .querySelector("input[name$='quantity']");
+
+        let cartons = parseFloat(cartonsInput.value) || 0;
+        quantityInput.value = (cartons * 20).toFixed(2);
+    }
+});
+</script>
+
+<!-- USD Rate per KG changes -->
+<script>
+document.addEventListener("input", function (e) {
+    let target = e.target;
+
+    if (target.name.includes("cartons")) {
+        let row = target.closest("tr");
+        let cartons = parseFloat(target.value) || 0;
+        let quantityInput = row.querySelector("input[name$='quantity']");
+        quantityInput.value = (cartons * 20).toFixed(2);
+
+        let ratePerKgInput = row.querySelector("input[name$='usd_rate_per_kg']");
+        if (ratePerKgInput.value) {
+            let rateItemInput = row.querySelector("input[name$='usd_rate_item']");
+            let ratePerKg = parseFloat(ratePerKgInput.value) || 0;
+            rateItemInput.value = (parseFloat(quantityInput.value) * ratePerKg).toFixed(2);
+        }
+    }
+
+    if (target.name.includes("usd_rate_per_kg")) {
+        let row = target.closest("tr");
+        let quantityInput = row.querySelector("input[name$='quantity']");
+        let rateItemInput = row.querySelector("input[name$='usd_rate_item']");
+
+        let quantity = parseFloat(quantityInput.value) || 0;
+        let ratePerKg = parseFloat(target.value) || 0;
+
+        rateItemInput.value = (quantity * ratePerKg).toFixed(2);
+    }
+});
+</script>
+
+<!-- USD to INR calculation -->
+<script>
+let dollarRateToInr = 0;
+
+$.ajax({
+    url: "{% url 'adminapp:get_dollar_rate_pre_workout' %}",
+    method: "GET",
+    success: function(response) {
+        if (response.dollar_rate_to_inr) {
+            dollarRateToInr = parseFloat(response.dollar_rate_to_inr);
+        }
+    }
+});
+
+function recalcUsdToInr($row) {
+    let quantity = parseFloat($row.find("input[name$='quantity']").val()) || 0;
+
+    let usdRateKg = parseFloat($row.find("input[name$='usd_rate_per_kg']").val()) || 0;
+    let usdItem = quantity * usdRateKg;
+    $row.find("input[name$='usd_rate_item']").val(usdItem.toFixed(2));
+
+    $row.find("input[name$='usd_rate_item_to_inr']").val((usdItem * dollarRateToInr).toFixed(2));
+
+    let usdRateKgGet = parseFloat($row.find("input[name$='usd_rate_per_kg_get']").val()) || 0;
+    let usdItemGet = quantity * usdRateKgGet;
+    $row.find("input[name$='usd_rate_item_get']").val(usdItemGet.toFixed(2));
+
+    $row.find("input[name$='usd_rate_item_to_inr_get']").val((usdItemGet * dollarRateToInr).toFixed(2));
+}
+
+$(document).on("input", "input[name$='quantity'], input[name$='usd_rate_per_kg'], input[name$='usd_rate_per_kg_get']", function() {
+    let $row = $(this).closest("tr");
+    recalcUsdToInr($row);
+});
+</script>
+
+<!-- Loss / profit -->
+<script>
+$(document).ready(function() {
+    let dollarRateToInr = 0;
+
+    $.ajax({
+        url: "{% url 'adminapp:get_dollar_rate_pre_workout' %}",
+        method: "GET",
+        success: function(response) {
+            if (response.dollar_rate_to_inr) {
+                dollarRateToInr = parseFloat(response.dollar_rate_to_inr);
+            }
+        }
+    });
+
+    function recalcProfitLoss($row) {
+        let buyingInr = parseFloat($row.find("input[name$='usd_rate_item_to_inr']").val()) || 0;
+        let sellingInr = parseFloat($row.find("input[name$='usd_rate_item_to_inr_get']").val()) || 0;
+
+        let profitInput = $row.find(".profit");
+        let lossInput = $row.find(".loss");
+        let profitDisplay = $row.find(".profit-display");
+        let lossDisplay = $row.find(".loss-display");
+
+        let diff = sellingInr - buyingInr;
+
+        if (diff >= 0) {
+            profitInput.val(diff.toFixed(2));
+            profitDisplay.text("+₹" + diff.toFixed(2)).addClass("status-completed").removeClass("status-returned");
+            lossInput.val(0);
+            lossDisplay.text("").removeClass("status-returned");
+        } else {
+            profitInput.val(0);
+            profitDisplay.text("").removeClass("status-completed");
+            lossInput.val(Math.abs(diff).toFixed(2));
+            lossDisplay.text("-₹" + Math.abs(diff).toFixed(2)).addClass("status-returned").removeClass("status-completed");
+        }
+    }
+
+    function recalcRow($row) {
+        let cartons = parseFloat($row.find("input[name$='cartons']").val()) || 0;
+        let quantity = cartons * 20;
+        $row.find("input[name$='quantity']").val(quantity.toFixed(2));
+
+        // Buying
+        let usdRateKg = parseFloat($row.find("input[name$='usd_rate_per_kg']").val()) || 0;
+        let usdItem = quantity * usdRateKg;
+        $row.find("input[name$='usd_rate_item']").val(usdItem.toFixed(2));
+        $row.find("input[name$='usd_rate_item_to_inr']").val((usdItem * dollarRateToInr).toFixed(2));
+
+        // Selling
+        let usdRateKgGet = parseFloat($row.find("input[name$='usd_rate_per_kg_get']").val()) || 0;
+        let usdItemGet = quantity * usdRateKgGet;
+        $row.find("input[name$='usd_rate_item_get']").val(usdItemGet.toFixed(2));
+        $row.find("input[name$='usd_rate_item_to_inr_get']").val((usdItemGet * dollarRateToInr).toFixed(2));
+
+        recalcProfitLoss($row);
+    }
+
+    // Trigger recalculation on input changes
+    $(document).on("input", "input[name$='cartons'], input[name$='usd_rate_per_kg'], input[name$='usd_rate_per_kg_get']", function() {
+        let $row = $(this).closest("tr");
+        recalcRow($row);
+    });
+
+    // Recalc on page load
+    $("#formset-table tbody tr").each(function() {
+        recalcRow($(this));
+    });
+});
+</script>
+
+        <script>
+    $(document).ready(function() {
+        // Disable DataTables auto-initialization
+        $.fn.dataTable.ext.errMode = 'none';
+        
+        // Or if you want to be more specific, you can also add:
+        $.extend($.fn.dataTable.defaults, {
+            "autoWidth": false,
+            "searching": false,
+            "paging": false,
+            "info": false
+        });
+    });
+    </script>
+
+{% endblock %}

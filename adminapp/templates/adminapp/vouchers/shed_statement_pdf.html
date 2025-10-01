@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Shed Statement - {{ shed.name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #198754;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 5px;
+        }
+        
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .shed-info {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .report-period {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .generated-date {
+            font-size: 10px;
+            color: #999;
+        }
+        
+        .summary-section {
+            margin-bottom: 30px;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #198754;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .summary-row {
+            display: table-row;
+        }
+        
+        .summary-cell {
+            display: table-cell;
+            width: 25%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        
+        .summary-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .calculation-section {
+            margin-bottom: 30px;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .calculation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .calculation-table th {
+            background-color: #198754;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #146c43;
+        }
+        
+        .calculation-table td {
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+        }
+        
+        .calculation-table tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+        
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        
+        .transaction-table th {
+            background-color: #198754;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #146c43;
+        }
+        
+        .transaction-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .transaction-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-success {
+            color: #198754;
+            font-weight: bold;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .text-info {
+            color: #0dcaf0;
+            font-weight: bold;
+        }
+        
+        .text-warning {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        .section-break {
+            page-break-before: always;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .balance-positive {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+        
+        .balance-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .balance-zero {
+            color: #198754;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="report-title">Shed Statement</div>
+        <div class="shed-info">{{ shed.name }} {% if shed.code %}({{ shed.code }}){% endif %}</div>
+        <div class="report-period">Period: {{ period_name }}</div>
+        <div class="generated-date">Generated on {{ generated_date|date:"F d, Y \a\t H:i A" }}</div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-section">
+        <div class="summary-title">Account Summary</div>
+        <div class="summary-grid">
+            <div class="summary-row">
+                <div class="summary-cell">
+                    <div class="summary-value text-info">{{ total_work_amount|floatformat:2 }}</div>
+                    <div class="summary-label">Total Work Amount</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value text-success">{{ total_receipts|floatformat:2 }}</div>
+                    <div class="summary-label">Total Receipts</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value text-danger">{{ total_payments|floatformat:2 }}</div>
+                    <div class="summary-label">Total Payments</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value {% if outstanding_balance > 0 %}balance-positive{% elif outstanding_balance < 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                        {{ outstanding_balance|floatformat:2 }}
+                    </div>
+                    <div class="summary-label">Outstanding Balance</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Work Calculation Breakdown -->
+    {% if base_calculation.calculation_breakdown %}
+    <div class="calculation-section">
+        <div class="summary-title">Work Calculation Breakdown</div>
+        <table class="calculation-table">
+            <thead>
+                <tr>
+                    <th>Peeling Type</th>
+                    <th class="text-right">Quantity (KG)</th>
+                    <th class="text-right">Rate per KG</th>
+                    <th class="text-right">Amount</th>
+                    <th class="text-center">Entries</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in base_calculation.calculation_breakdown %}
+                <tr>
+                    <td>{{ item.peeling_type }}</td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">
+                        {% if item.error %}
+                            <span class="text-danger">{{ item.rate }}</span>
+                        {% else %}
+                            ₹{{ item.rate }}
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if item.error %}
+                            <span class="text-danger">₹{{ item.amount }}</span>
+                        {% else %}
+                            ₹{{ item.amount }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center">{{ item.entries_count }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="background-color: #e9ecef; font-weight: bold;">
+                    <td colspan="3">Total Work Amount</td>
+                    <td class="text-right">₹{{ total_work_amount|floatformat:2 }}</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        
+        {% if base_calculation.warnings %}
+        <div style="margin-top: 15px; padding: 10px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
+            <strong>Warnings:</strong>
+            <ul style="margin-bottom: 0;">
+                {% for warning in base_calculation.warnings %}
+                <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Transaction History -->
+    {% if transactions %}
+    <div class="section-break">
+        <div class="summary-title">Transaction History</div>
+        <table class="transaction-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Reference</th>
+                    <th>Description</th>
+                    <th class="text-right">Debit</th>
+                    <th class="text-right">Credit</th>
+                    <th class="text-right">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.date|date:"M d, Y" }}</td>
+                    <td>
+                        {% if transaction.type == 'Work Done' %}
+                            <span class="text-info">{{ transaction.type }}</span>
+                        {% elif transaction.type == 'Receipt' %}
+                            <span class="text-success">{{ transaction.type }}</span>
+                        {% elif transaction.type == 'Payment' %}
+                            <span class="text-danger">{{ transaction.type }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ transaction.reference }}</td>
+                    <td>{{ transaction.description|truncatechars:40 }}</td>
+                    <td class="text-right">
+                        {% if transaction.debit > 0 %}
+                            ₹{{ transaction.debit|floatformat:2 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if transaction.credit > 0 %}
+                            ₹{{ transaction.credit|floatformat:2 }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-right {% if transaction.balance > 0 %}balance-positive{% elif transaction.balance < 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                        ₹{{ transaction.balance|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Balance Status -->
+    <div style="margin-top: 30px; padding: 20px; border: 2px solid #198754; background-color: #f8f9fa; text-align: center;">
+        <h3 style="margin: 0; color: #198754;">Final Balance Status</h3>
+        <div style="font-size: 24px; font-weight: bold; margin: 10px 0;">
+            <span class="{% if outstanding_balance > 0 %}balance-positive{% elif outstanding_balance < 0 %}balance-negative{% else %}balance-zero{% endif %}">
+                ₹{{ outstanding_balance|floatformat:2 }}
+            </span>
+        </div>
+        <div style="font-size: 14px; color: #666;">
+            {% if outstanding_balance > 0 %}
+                Amount owed to shed: ₹{{ outstanding_balance|floatformat:2 }}
+            {% elif outstanding_balance < 0 %}
+                Shed owes: ₹{{ outstanding_balance|floatformat:2|slice:"1:" }}
+            {% else %}
+                Account is fully settled
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This is a computer-generated statement. No signature required.</p>
+        <p>{{ company_name }} - Peeling Shed Management System</p>
+        <p>For any discrepancies, please contact the accounts department immediately.</p>
+    </div>
+</body>
+</html>

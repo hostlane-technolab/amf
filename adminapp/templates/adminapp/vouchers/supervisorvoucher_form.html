@@ -1,0 +1,644 @@
+{% extends 'admin_base.html' %}
+{% block title %}Spot Supervisor Voucher - Admin panel{% endblock %}
+{% block content %}
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header">
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Supervisor Voucher Management</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="#">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Vouchers</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Add Supervisor Voucher</a>
+        </li>
+      </ul>
+    </div>
+
+    <form method="post" class="voucher-form">
+      {% csrf_token %}
+
+      <!-- Voucher Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Supervisor Voucher Details</h3>
+              <p class="text-muted mb-0">Enter supervisor voucher information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.voucher_no.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-hashtag input-icon"></i>
+                  {{ form.voucher_no }}
+                </div>
+                {% if form.voucher_no.errors %}
+                  <div class="validation-error">{{ form.voucher_no.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.supervisor.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user-tie input-icon"></i>
+                  {{ form.supervisor }}
+                </div>
+                {% if form.supervisor.errors %}
+                  <div class="validation-error">{{ form.supervisor.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.date.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calendar-alt input-icon"></i>
+                  {{ form.date }}
+                </div>
+                {% if form.date.errors %}
+                  <div class="validation-error">{{ form.date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-12">
+              <div class="form-group">
+                <label class="form-label">{{ form.description.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-align-left input-icon"></i>
+                  {{ form.description }}
+                </div>
+                {% if form.description.errors %}
+                  <div class="validation-error">{{ form.description.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amount Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Amount Details</h4>
+              <p class="text-muted mb-0">Enter receipt and payment amounts</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">{{ form.receipt.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-receipt input-icon"></i>
+                  {{ form.receipt }}
+                </div>
+                {% if form.receipt.errors %}
+                  <div class="validation-error">{{ form.receipt.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">{{ form.payment.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-credit-card input-icon"></i>
+                  {{ form.payment }}
+                </div>
+                {% if form.payment.errors %}
+                  <div class="validation-error">{{ form.payment.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Balance Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Balance Summary</h4>
+              <p class="text-muted mb-0">Overview of amounts and balance</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="summary-header">Receipt Amount</th>
+                  <th class="summary-header">Payment Amount</th>
+                  <th class="summary-header">Balance</th>
+                  <th class="summary-header">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="summary-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="receipt-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="summary-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="payment-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="summary-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span id="balance-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="summary-cell">
+                    <div class="summary-value">
+                      <span id="balance-status" class="status-badge balanced">Balanced</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-save me-2"></i>Save Voucher
+        </button>
+        <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="cancel-btn">
+          <i class="fas fa-times me-2"></i>Cancel
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.voucher-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Textarea specific styling */
+textarea {
+  min-height: 80px !important;
+  resize: vertical !important;
+}
+
+/* Table Styling */
+.summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.summary-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+  text-align: center;
+  width: 25%;
+  vertical-align: middle;
+}
+
+.summary-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+  text-align: center;
+  width: 25%;
+}
+
+/* Table Rows */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+  text-align: center;
+  width: 25%;
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+/* Status Badge */
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.balanced {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.status-badge.debit {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.status-badge.credit {
+  background: rgba(23, 162, 184, 0.1);
+  color: #17a2b8;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #6c757d;
+  border: 2px solid #e9ecef;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.cancel-btn:hover {
+  background: #6c757d;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .total-highlight .calculated-value {
+    font-size: 16px;
+  }
+}
+</style>
+
+<script>
+// Calculate balance and update status
+function calculateBalance() {
+    const receiptInput = document.querySelector('input[name="receipt"]');
+    const paymentInput = document.querySelector('input[name="payment"]');
+    
+    const receiptAmount = parseFloat(receiptInput?.value) || 0;
+    const paymentAmount = parseFloat(paymentInput?.value) || 0;
+    const balance = receiptAmount - paymentAmount;
+    
+    // Update display values
+    document.getElementById('receipt-amount').textContent = receiptAmount.toFixed(2);
+    document.getElementById('payment-amount').textContent = paymentAmount.toFixed(2);
+    document.getElementById('balance-amount').textContent = Math.abs(balance).toFixed(2);
+    
+    // Update status
+    const statusElement = document.getElementById('balance-status');
+    const balanceElement = document.getElementById('balance-amount').parentElement;
+    
+    if (balance === 0) {
+        statusElement.textContent = 'Balanced';
+        statusElement.className = 'status-badge balanced';
+        balanceElement.querySelector('.currency').style.color = '#28a745';
+        balanceElement.querySelector('.calculated-value').style.color = '#28a745';
+    } else if (balance > 0) {
+        statusElement.textContent = 'Credit';
+        statusElement.className = 'status-badge credit';
+        balanceElement.querySelector('.currency').style.color = '#17a2b8';
+        balanceElement.querySelector('.calculated-value').style.color = '#17a2b8';
+    } else {
+        statusElement.textContent = 'Debit';
+        statusElement.className = 'status-badge debit';
+        balanceElement.querySelector('.currency').style.color = '#dc3545';
+        balanceElement.querySelector('.calculated-value').style.color = '#dc3545';
+    }
+}
+
+// Update balance on input change
+document.addEventListener('input', function (e) {
+    if (e.target.name === 'receipt' || e.target.name === 'payment') {
+        calculateBalance();
+    }
+});
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', function() {
+    calculateBalance();
+});
+
+// Arrow key navigation for form fields
+document.addEventListener('keydown', function(e) {
+    if (e.target.matches('input, select, textarea')) {
+        // Get all focusable form elements
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]):visible, select:visible, textarea:visible'));
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Left arrow key (keyCode 37)
+        if (e.keyCode === 37 || e.which === 37) {
+            // Only trigger if cursor is at the beginning of input or it's a select
+            if (e.target.tagName === 'SELECT' || 
+                (e.target.tagName === 'INPUT' && e.target.selectionStart === 0)) {
+                
+                e.preventDefault();
+                // Move to previous field
+                if (currentIndex > 0) {
+                    activeElements[currentIndex - 1].focus();
+                }
+                return false;
+            }
+        }
+        
+        // Right arrow key (keyCode 39)  
+        if (e.keyCode === 39 || e.which === 39) {
+            // Only trigger if cursor is at the end of input or it's a select
+            if (e.target.tagName === 'SELECT' || 
+                (e.target.tagName === 'INPUT' && e.target.selectionStart === e.target.value.length)) {
+                
+                e.preventDefault();
+                // Move to next field
+                if (currentIndex < activeElements.length - 1) {
+                    activeElements[currentIndex + 1].focus();
+                }
+                return false;
+            }
+        }
+    }
+});
+</script>
+
+<!-- Date Picker Scripts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    flatpickr("#id_date", {
+        dateFormat: "d/m/Y",
+        defaultDate: "today"
+    });
+});
+</script>
+
+{% endblock %}

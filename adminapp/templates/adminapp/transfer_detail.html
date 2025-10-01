@@ -1,0 +1,88 @@
+
+<!-- transfers/transfer_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">{{ title }}</h4>
+                        <a href="{% url 'adminapp:store_transfer_list' %}" class="btn btn-secondary">Back to List</a>
+                    </div>
+                    <div class="card-body">
+                        <!-- Transfer Information -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header"><strong>Transfer Information</strong></div>
+                                    <div class="card-body">
+                                        <p><strong>Voucher No:</strong> {{ transfer.voucher_no }}</p>
+                                        <p><strong>Date:</strong> {{ transfer.date|date:"F d, Y" }}</p>
+                                        <p><strong>From Store:</strong> {{ transfer.from_store.name }}</p>
+                                        <p><strong>To Store:</strong> {{ transfer.to_store.name }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transfer Items -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Transferred Items ({{ items.count }} items)</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if items %}
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Brand</th>
+                                                    <th>Unit</th>
+                                                    <th>Glaze</th>
+                                                    <th>Species</th>
+                                                    <th>Grade</th>
+                                                    <th>Quality</th>
+                                                    <th>CS Qty</th>
+                                                    <th>KG Qty</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for item in items %}
+                                                    <tr>
+                                                        <td>{{ item.item.name }}</td>
+                                                        <td>{{ item.brand.name }}</td>
+                                                        <td>{{ item.unit }}</td>
+                                                        <td>{{ item.glaze }}</td>
+                                                        <td>{{ item.species }}</td>
+                                                        <td>{{ item.item_grade }}</td>
+                                                        <td>{{ item.item_quality.quality }}</td>
+                                                        <td>{{ item.cs_quantity }}</td>
+                                                        <td>{{ item.kg_quantity }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No items in this transfer.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

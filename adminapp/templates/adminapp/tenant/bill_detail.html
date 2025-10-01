@@ -1,0 +1,224 @@
+
+<!-- BILL DETAIL TEMPLATE -->
+<!-- adminapp/tenant/bill_detail.html -->
+{% extends "adminapp/tenant/billing_base.html" %}
+
+{% block title %}Bill #{{ bill.id }} - {{ bill.tenant.name }}{% endblock %}
+
+{% block page_title %}Bill #{{ bill.id }}{% endblock %}
+{% block page_subtitle %}{{ bill.tenant.name }} • {{ bill.start_date|date:"M j, Y" }} - {{ bill.end_date|date:"M j, Y" }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Bill Details Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Bill Information</h5>
+                {% if bill.saved %}
+                    <span class="badge bg-success">Saved</span>
+                {% else %}
+                    <span class="badge bg-warning">Draft</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Bill ID:</strong></td>
+                                <td>#{{ bill.id }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tenant:</strong></td>
+                                <td>{{ bill.tenant.company_name }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Period:</strong></td>
+                                <td>{{ bill.start_date|date:"M j, Y" }} - {{ bill.end_date|date:"M j, Y" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Days:</strong></td>
+                                <td>{{ bill.day_count }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td><strong>Total Weight:</strong></td>
+                                <td>{{ bill.total_kg|floatformat:2 }} kg</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Amount:</strong></td>
+                                <td><span class="h5 text-success">${{ bill.total_amount|floatformat:2 }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Created:</strong></td>
+                                <td>{{ bill.created_at|date:"M j, Y g:i A" }}</td>
+                            </tr>
+                            {% if bill.date_saved %}
+                            <tr>
+                                <td><strong>Saved:</strong></td>
+                                <td>{{ bill.date_saved|date:"M j, Y g:i A" }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bill Items Card -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Bill Items</h5>
+            </div>
+            <div class="card-body">
+                {% if items %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th class="text-end">Weight (kg)</th>
+                                    <th class="text-end">Rate</th>
+                                    <th class="text-end">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in items %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-tag me-2 text-primary"></i>
+                                        {{ item.freezing_category.name }}
+                                    </td>
+                                    <td class="text-end">{{ item.kg|floatformat:2 }}</td>
+                                    <td class="text-end">${{ item.tariff|floatformat:2 }}</td>
+                                    <td class="text-end">
+                                        <strong>${{ item.amount|floatformat:2 }}</strong>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active">
+                                    <th>Total</th>
+                                    <th class="text-end">{{ bill.total_kg|floatformat:2 }} kg</th>
+                                    <th></th>
+                                    <th class="text-end">
+                                        <span class="h5 text-success">${{ bill.total_amount|floatformat:2 }}</span>
+                                    </th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                        <h6>No items found for this bill</h6>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if not bill.saved %}
+                    <!-- Draft Bill Actions -->
+                    <div class="d-grid gap-2 mb-3">
+                        <form method="post" action="{% url 'adminapp:bulk_save_bills' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="bill_ids" value="{{ bill.id }}">
+                            <button type="submit" class="btn btn-success w-100" 
+                                    onclick="return confirmAction('Save this bill?')">
+                                <i class="fas fa-save me-2"></i>Save Bill
+                            </button>
+                        </form>
+                        
+                        <form method="post" action="{% url 'adminapp:bulk_delete_bills' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="bill_ids" value="{{ bill.id }}">
+                            <button type="submit" class="btn btn-outline-danger w-100" 
+                                    onclick="return confirmAction('Delete this draft bill? This cannot be undone.')">
+                                <i class="fas fa-trash me-2"></i>Delete Draft
+                            </button>
+                        </form>
+                    </div>
+                {% else %}
+                    <!-- Saved Bill Actions -->
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        This bill has been saved and finalized.
+                    </div>
+                {% endif %}
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'adminapp:tenant_bill_detail' bill.id %}?print=1" 
+                       class="btn btn-outline-primary" target="_blank">
+                        <i class="fas fa-print me-2"></i>Print Bill
+                    </a>
+                    
+                    <a href="{% url 'adminapp:single_tenant_bill_generate' bill.tenant.id %}" 
+                       class="btn btn-outline-secondary">
+                        <i class="fas fa-plus me-2"></i>New Bill for Tenant
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tenant Information -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-building me-2"></i>Tenant Information</h5>
+            </div>
+            <div class="card-body">
+                <h6>{{ bill.tenant.name }}</h6>
+                {% if bill.tenant.email %}
+                    <p class="mb-1">
+                        <i class="fas fa-envelope me-2 text-muted"></i>
+                        <a href="mailto:{{ bill.tenant.email }}">{{ bill.tenant.email }}</a>
+                    </p>
+                {% endif %}
+                {% if bill.tenant.phone %}
+                    <p class="mb-1">
+                        <i class="fas fa-phone me-2 text-muted"></i>
+                        <a href="tel:{{ bill.tenant.phone }}">{{ bill.tenant.phone }}</a>
+                    </p>
+                {% endif %}
+                {% if bill.tenant.address %}
+                    <p class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+                        {{ bill.tenant.address }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="row mt-4">
+    <div class="col-12">
+        <nav aria-label="Bill navigation">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{% if bill.saved %}{% url 'adminapp:tenant_bill_list' %}{% else %}{% url 'adminapp:tenant_bill_unsaved_list' %}{% endif %}" 
+                   class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Bills
+                </a>
+                
+                <div>
+                    <!-- Add navigation to previous/next bills if needed -->
+                    <small class="text-muted">Bill #{{ bill.id }}</small>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+{% endblock %}

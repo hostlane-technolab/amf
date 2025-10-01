@@ -1,0 +1,1434 @@
+{% extends "admin_base.html" %}
+{% block title %}Update Return Tenant {% endblock %}
+{% block content %}
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        .myclass {
+            font-family: 'Roboto', sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        h2 {
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 100%;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #007BFF;
+            outline: none;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        .text-danger {
+            color: red;
+            font-size: 0.9em;
+        }
+
+        fieldset {
+            border: 1px solid #007BFF;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            background: #f9f9f9;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        legend {
+            font-weight: bold;
+            color: #007BFF;
+        }
+
+        .formset-form {
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .button, .btn {
+            background: #007BFF;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover, .btn:hover {
+            background: #0056b3;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #007BFF;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-sm {
+            padding: 6px 10px;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .entry-table {
+            width: 90%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .entry-table th,
+        .entry-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .entry-table th {
+            background: #f5f7fa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .entry-table td input,
+        .entry-table td select {
+            width: 95%;
+            padding: 4px 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .data-row td {
+            font-size: 11px;
+        }
+
+        .totals-heading {
+            margin-top: 30px;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0056b3;
+            border-left: 5px solid #0056b3;
+            padding-left: 10px;
+        }
+
+        .total-table {
+            margin-top: 10px;
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .total-table th, .total-table td {
+            padding: 12px 15px;
+            border: 1px solid #e2e6ea;
+            font-size: 0.95rem;
+        }
+
+        .total-table th {
+            background-color: #0056b3;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .total-table td {
+            font-weight: 600;
+            background: #f9fbfd;
+        }
+
+        .total-table td input {
+            font-weight: bold;
+            color: #0d6efd;
+            text-align: center;
+            background: #eef4ff;
+            border: 1px solid #ccdfff;
+            border-radius: 4px;
+            padding: 6px 8px;
+        }
+
+        /* Items table styling */
+        .items-container {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: visible;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .items-table {
+            width: 100%;
+            min-width: 1500px;
+            table-layout: auto;
+            border-collapse: collapse;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 6px 4px;
+            border: 1px solid #ddd;
+            font-size: 11px;
+            text-align: center;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+
+        .items-table th {
+            background: #f5f7fa;
+            font-weight: 600;
+            color: #333;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 12px;
+        }
+
+        .items-table td input,
+        .items-table td select {
+            width: 100%;
+            padding: 1.5px 2px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 12px;
+            box-sizing: border-box;
+        }
+
+        /* Column width optimization */
+        .col-original { min-width: 50px; max-width: 50px; }
+        .col-processing { min-width: 50px; max-width: 50px; }
+        .col-store { min-width: 50px; max-width: 50px; }
+        .col-item { min-width: 50px; max-width: 50px; }
+        .col-quality { min-width: 50px; max-width: 50px; }
+        .col-unit { min-width: 50px; max-width: 50px; }
+        .col-glaze { min-width: 50px; max-width: 50px; }
+        .col-freezing { min-width: 50px; max-width: 50px; }
+        .col-brand { min-width: 50px; max-width: 50px; }
+        .col-species { min-width: 50px; max-width: 50px; }
+        .col-grade { min-width: 50px; max-width: 50px; }
+        .col-slab { min-width: 50px; max-width: 50px; }
+        .col-cs { min-width: 30px; max-width: 30px; }
+        .col-kg { min-width: 30px; max-width: 30px; }
+        .col-rate { min-width: 30px; max-width: 30px; }
+        .col-amount { min-width: 30px; max-width: 30px; }
+        .col-action { min-width: 50px; max-width: 50px; }
+
+        /* Form validation styles */
+        .is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        .form-control.is-invalid:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        /* Selected item container styling */
+        .selected-item-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .change-selection-btn {
+            white-space: nowrap;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+        }
+
+        .btn-outline-secondary {
+            background: transparent;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* Card styling */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h5 {
+            color: #007BFF;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Input group styling */
+        .input-group {
+            display: flex;
+            width: 100%;
+        }
+
+        .input-group-text {
+            background: #f8f9fa;
+            border: 1px solid #ccc;
+            border-right: none;
+            padding: 10px;
+            border-radius: 6px 0 0 6px;
+            font-weight: bold;
+        }
+
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* Table responsive styling */
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 0;
+            background-color: transparent;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 8px;
+            vertical-align: middle;
+            border-top: 1px solid #dee2e6;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+
+        .table thead th {
+            vertical-align: bottom;
+            border-bottom: 2px solid #dee2e6;
+            background: #f5f7fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table-bordered {
+            border: 1px solid #dee2e6;
+        }
+
+        .table-bordered th,
+        .table-bordered td {
+            border: 1px solid #dee2e6;
+        }
+
+        .table-sm th,
+        .table-sm td {
+            padding: 6px;
+        }
+
+        /* Row styling */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-right: -15px;
+            margin-left: -15px;
+        }
+
+        .col-md-3 {
+            flex: 0 0 25%;
+            max-width: 25%;
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .col-md-3 {
+                flex: 0 0 50%;
+                max-width: 50%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .col-md-3 {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Focus styles */
+        input:focus, 
+        select:focus, 
+        textarea:focus {
+            border-color: #007BFF !important;
+            outline: 2px solid #007BFF !important;
+            outline-offset: 0px;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+        }
+
+        .items-table td input:focus,
+        .items-table td select:focus {
+            border-color: #007BFF !important;
+            outline: 2px solid #007BFF !important;
+            outline-offset: 0px;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+        }
+
+        .entry-table td input:focus,
+        .entry-table td select:focus {
+            border-color: #007BFF !important;
+            outline: 2px solid #007BFF !important;
+            outline-offset: 0px;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+        }
+
+        .total-table td input:focus,
+        .total-table td select:focus {
+            border-color: #007BFF !important;
+            outline: 2px solid #007BFF !important;
+            outline-offset: 0px;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25) !important;
+        }
+    </style>
+
+    <div class="myclass">
+        <h2>Update Return Tenant Entry</h2>
+    
+        <form method="post" novalidate id="return-form">
+            {% csrf_token %}
+    
+            <!-- Main form -->
+            <div class="card">
+                <h5>Return Entry Details</h5>
+                <div class="form-grid">
+                    <div class="form-column">
+                        {{ form.return_date.label_tag }}
+                        {{ form.return_date }}
+                        {% if form.return_date.errors %}
+                            <div class="text-danger">{{ form.return_date.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-column">
+                        {{ form.voucher_number.label_tag }}
+                        {{ form.voucher_number }}
+                        {% if form.voucher_number.errors %}
+                            <div class="text-danger">{{ form.voucher_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-column">
+                        {{ form.tenant_company_name.label_tag }}
+                        <select id="tenant-company" name="tenant_company_name" class="tenant-select">
+                            <option value="">Select Tenant</option>
+                        </select>
+                        {% if form.tenant_company_name.errors %}
+                            <div class="text-danger">{{ form.tenant_company_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Formset for items -->
+            <fieldset>
+                <legend>Returned Items</legend>
+                {{ formset.management_form }}
+    
+                <div class="items-container">
+                    <table class="entry-table items-table" id="formset-table">
+                        <thead>
+                            <tr>
+                                <th class="col-original">Original Item</th>
+                                <th class="col-processing">PR Center</th>
+                                <th class="col-store">Store</th>
+                                <th class="col-item">Item</th>
+                                <th class="col-quality">Category</th>
+                                <th class="col-unit">Unit</th>
+                                <th class="col-glaze">Glaze</th>
+                                <th class="col-freezing">FR Category</th>
+                                <th class="col-brand">Brand</th>
+                                <th class="col-species">Species</th>
+                                <th class="col-grade">Grade</th>
+                                <th class="col-slab">Slab Qty</th>
+                                <th class="col-cs">CS Qty</th>
+                                <th class="col-kg">KG</th>
+                                <th class="col-rate">Rate</th>
+                                <th class="col-amount">Amount</th>
+                                <th class="col-action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for form in formset %}
+                                <tr class="form-row formset-form data-row">
+                                    <td class="col-original">
+                                        <div class="original-item-container">
+                                            {{ form.original_item }}
+                                        </div>
+                                        {{ form.original_item.errors }}
+                                    </td>
+                                    <td class="col-processing">
+                                        {{ form.processing_center }}
+                                        {{ form.processing_center.errors }}
+                                    </td>
+                                    <td class="col-store">
+                                        {{ form.store }}
+                                        {{ form.store.errors }}
+                                    </td>
+                                    <td class="col-item">
+                                        {{ form.item }}
+                                        {{ form.item.errors }}
+                                    </td>
+                                    <td class="col-quality">
+                                        {{ form.item_quality }}
+                                        {{ form.item_quality.errors }}
+                                    </td>
+                                    <td class="col-unit">
+                                        {{ form.unit }}
+                                        {{ form.unit.errors }}
+                                    </td>
+                                    <td class="col-glaze">
+                                        {{ form.glaze }}
+                                        {{ form.glaze.errors }}
+                                    </td>
+                                    <td class="col-freezing">
+                                        {{ form.freezing_category }}
+                                        {{ form.freezing_category.errors }}
+                                    </td>
+                                    <td class="col-brand">
+                                        {{ form.brand }}
+                                        {{ form.brand.errors }}
+                                    </td>
+                                    <td class="col-species">
+                                        {{ form.species }}
+                                        {{ form.species.errors }}
+                                    </td>
+                                    <td class="col-grade">
+                                        {{ form.grade }}
+                                        {{ form.grade.errors }}
+                                    </td>
+                                    <td class="col-slab">
+                                        {{ form.slab_quantity }}
+                                        {{ form.slab_quantity.errors }}
+                                    </td>
+                                    <td class="col-cs">
+                                        {{ form.c_s_quantity }}
+                                        {{ form.c_s_quantity.errors }}
+                                    </td>
+                                    <td class="col-kg">
+                                        {{ form.kg }}
+                                        {{ form.kg.errors }}
+                                    </td>
+                                    <td class="col-rate">
+                                        <input type="text" class="tariff-display" readonly placeholder="₹0.00">
+                                    </td>
+                                    <td class="col-amount">
+                                        <input type="text" class="amount-display" readonly placeholder="₹0.00">
+                                    </td>
+                                    <td class="col-action">
+                                        <button type="button" class="btn btn-danger btn-sm remove-row">Remove</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+    
+                <button type="button" class="button" id="add-row">+ Add More Item</button>
+            </fieldset>
+    
+            <h3 class="totals-heading">Return Entry Summary</h3>
+            <table class="total-table">
+                <thead>
+                    <tr>
+                        <th>Total Slab</th>
+                        <th>Total C/S</th>
+                        <th>Total KG</th>
+                        <th>Total Amount</th>
+                        <th>Return Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ form.total_slab }} {{ form.total_slab.errors }}</td>
+                        <td>{{ form.total_c_s }} {{ form.total_c_s.errors }}</td>
+                        <td>{{ form.total_kg }} {{ form.total_kg.errors }}</td>
+                        <td>
+                            <div class="input-group">
+                                <input type="number" id="id_total_amount" readonly>
+                        
+                            </div>
+                        </td>
+                        <td>{{ form.return_status }} {{ form.return_status.errors }}</td>
+                    </tr>
+                </tbody>
+            </table>
+    
+            <br>
+            <button type="submit" class="button">Save Return Entry</button>
+            <!-- <a href="{% url 'adminapp:list_return_tenant' %}" class="btn btn-secondary">Back</a> -->
+        </form>
+    
+        <script>
+            // Initialize functions for row management
+            function initializeRow($row) {
+                // Add CSS classes for easier selection
+                $row.find('select[name*="original_item"]').addClass('original-item-select');
+                $row.find('select[name*="item"]:not([name*="original_item"])').addClass('item-select');
+                $row.find('select[name*="species"]').addClass('species-select');
+                $row.find('select[name*="unit"]').addClass('unit-select');
+                $row.find('input[name*="slab_quantity"]').addClass('slab-quantity');
+                $row.find('input[name*="c_s_quantity"]').addClass('cs-quantity');
+                $row.find('input[name*="kg"]').addClass('kg kg-input');
+                $row.find('select[name*="freezing_category"]').addClass('freezing-category-select');
+            }
+            
+            function initializeNewRow($row) {
+                initializeRow($row);
+                // Load original items for new row if tenant is already selected
+                let tenantId = $('.tenant-select').val();
+                if (tenantId) {
+                    loadOriginalItemsForRow($row, tenantId);
+                }
+                // Focus on the first field
+                $row.find('select, input').first().focus();
+            }
+    
+            $(document).ready(function () {
+                // Initialize existing rows
+                $('.formset-form').each(function() {
+                    initializeRow($(this));
+                });
+            });
+    
+            // Load Original Items based on selected tenant for all rows
+            function loadOriginalItems(tenantId = null) {
+                $('.original-item-select').each(function() {
+                    let $select = $(this);
+                    let $container = $select.closest('.original-item-container');
+                    
+                    if (!tenantId) {
+                        // Clear the dropdown if no tenant selected
+                        $select.html('<option value="">Select Tenant First</option>');
+                        $container.find('.change-selection-btn').remove();
+                        return;
+                    }
+                    
+                    loadOriginalItemsForRow($select.closest('.formset-form'), tenantId);
+                });
+            }
+    
+            // Load Original Items for a specific row
+            function loadOriginalItemsForRow($row, tenantId) {
+                let $select = $row.find('.original-item-select');
+                let $container = $select.closest('.original-item-container');
+                
+                if (!tenantId) {
+                    $select.html('<option value="">Select Tenant First</option>');
+                    $container.find('.change-selection-btn').remove();
+                    return;
+                }
+                
+                // Show loading
+                $select.html('<option value="">Loading...</option>');
+                
+                $.ajax({
+                    url: "{% url 'adminapp:get_tenant_original_items' %}",
+                    data: { tenant_id: tenantId },
+                    success: function(data) {
+                        $select.empty();
+                        $select.append('<option value="">Select Original Item</option>');
+                        
+                        if (data.items && data.items.length > 0) {
+                            data.items.forEach(function(item) {
+                                $select.append('<option value="' + item.id + '">' + item.display_name + '</option>');
+                            });
+                        } else {
+                            $select.append('<option value="">No items found for this tenant</option>');
+                        }
+                    },
+                    error: function() {
+                        $select.html('<option value="">Error loading items</option>');
+                        console.error('Failed to load original items for tenant:', tenantId);
+                    }
+                });
+            }
+    
+            // Updated tenant selection handler
+            $(document).on('change', '.tenant-select', function() {
+                let tenantId = $(this).val();
+                
+                // Clear all existing selections in original item dropdowns
+                $('.original-item-select').each(function() {
+                    let $select = $(this);
+                    let $container = $select.closest('.original-item-container');
+                    let $row = $select.closest('.formset-form');
+                    
+                    // Remove change button and clear stored options
+                    $container.find('.change-selection-btn').remove();
+                    $select.removeData('original-options');
+                    
+                    // Clear all populated fields
+                    $row.find('select, input').not('[name*="DELETE"]').val('');
+                    $row.find('.tariff-display, .amount-display').val('');
+                });
+                
+                // Load new items for the selected tenant
+                loadOriginalItems(tenantId);
+                
+                // Update tariffs for all rows
+                $('.formset-form').each(function() {
+                    updateRowTariff($(this));
+                });
+            });
+    
+            // Auto-populate fields when original item is selected
+            $(document).on('change', '.original-item-select', function() {
+                let $row = $(this).closest('.formset-form');
+                let $select = $(this);
+                let $container = $(this).closest('.original-item-container');
+                let originalItemId = $(this).val();
+                
+                if (originalItemId) {
+                    // Store all options for potential restoration
+                    if (!$select.data('original-options')) {
+                        $select.data('original-options', $select.html());
+                    }
+                    
+                    // AJAX call to get original item details
+                    $.getJSON("{% url 'adminapp:get_tenant_original_items' %}", {
+                        item_id: originalItemId
+                    }, function(data) {
+                        if (data.success) {
+                            // Replace dropdown with only the selected item
+                            let selectedOptionText = data.item_name || data.full_description || 'Selected Item';
+                            let emptyOption = $select.find('option[value=""]').length > 0 ? '<option value="">---------</option>' : '';
+                            $select.html(emptyOption + '<option value="' + originalItemId + '" selected>' + selectedOptionText + '</option>');
+                            
+                            
+                            // Auto-populate form fields with IDs
+                            $row.find('select[name*="item"]:not([name*="original_item"])').val(data.item).trigger('change');
+                            $row.find('select[name*="store"]').val(data.store);
+                            $row.find('select[name*="item_quality"]').val(data.item_quality);
+                            $row.find('select[name*="unit"]').val(data.unit).trigger('change');
+                            $row.find('select[name*="species"]').val(data.species).trigger('change');
+                            $row.find('select[name*="grade"]').val(data.grade);
+                            $row.find('select[name*="glaze"]').val(data.glaze);
+                            $row.find('select[name*="freezing_category"]').val(data.freezing_category).trigger('change');
+                            $row.find('select[name*="brand"]').val(data.brand);
+                            $row.find('select[name*="processing_center"]').val(data.processing_center);
+                            
+                            console.log('Original item details loaded successfully');
+                        } else {
+                            console.error('Error loading item details:', data.error);
+                            alert('Error loading item details: ' + data.error);
+                            // Restore original options on error
+                            if ($select.data('original-options')) {
+                                $select.html($select.data('original-options'));
+                            }
+                        }
+                    }).fail(function(xhr, status, error) {
+                        console.error('Failed to load original item details:', error);
+                        alert('Failed to load original item details. Please try again.');
+                        // Restore original options on error
+                        if ($select.data('original-options')) {
+                            $select.html($select.data('original-options'));
+                        }
+                    });
+                } else {
+                    // Restore all options if no item selected
+                    if ($select.data('original-options')) {
+                        $select.html($select.data('original-options'));
+                    }
+                    
+                    // Remove change button
+                    $container.find('.change-selection-btn').remove();
+                    
+                    // Clear all fields if no original item selected
+                    $row.find('select, input').not('[name*="DELETE"]').val('');
+                    $row.find('.tariff-display, .amount-display').val('');
+                }
+            });
+    
+            // Handle "Change Selection" button click
+            $(document).on('click', '.change-selection-btn', function() {
+                let $container = $(this).closest('.original-item-container');
+                let $select = $container.find('.original-item-select');
+                let $row = $(this).closest('.formset-form');
+                let tenantId = $('.tenant-select').val();
+                
+                // Remove the change button
+                $(this).remove();
+                
+                // Clear all populated fields
+                $row.find('select, input').not('[name*="DELETE"]').val('');
+                $row.find('.tariff-display, .amount-display').val('');
+                
+                // Reload original items for this tenant
+                if (tenantId) {
+                    loadOriginalItemsForRow($row, tenantId);
+                } else {
+                    $select.html('<option value="">Select Tenant First</option>');
+                }
+                
+                // Focus back on the select after items are loaded
+                setTimeout(function() {
+                    $select.focus();
+                }, 500);
+            });
+        </script>
+    
+        <!-- Total Calculation Script -->
+        <script>
+            function calculateTotals() {
+                let totalSlab = 0, totalCS = 0, totalKG = 0;
+    
+                $('.formset-form:visible').each(function () {
+                    // Skip deleted forms
+                    if ($(this).find('[name*="DELETE"]').is(':checked')) {
+                        return;
+                    }
+    
+                    const getVal = (selector) => {
+                        const val = parseFloat($(this).find(selector).val()) || 0;
+                        return isNaN(val) ? 0 : val;
+                    };
+    
+                    const slabQty = getVal('[name*="slab_quantity"]');
+                    const csQty = getVal('[name*="c_s_quantity"]');
+                    const kgWeight = getVal('[name*="kg"]');
+                    
+                    totalSlab += slabQty;
+                    totalCS += csQty;
+                    totalKG += kgWeight;
+                });
+    
+                // Update the total fields
+                $('#id_total_slab').val(totalSlab.toFixed(2));
+                $('#id_total_c_s').val(totalCS.toFixed(2));
+                $('#id_total_kg').val(totalKG.toFixed(2));
+                
+                console.log("Totals calculated - Slab:", totalSlab, "CS:", totalCS, "KG:", totalKG);
+            }
+    
+            // Trigger calculation on any input change
+            $(document).on('input change', '.formset-form :input', function() {
+                // Debounce the calculation to avoid too many calls
+                clearTimeout(window.calcTimeout);
+                window.calcTimeout = setTimeout(function() {
+                    calculateTotals();
+                    calculateTotalAmount();
+                }, 300);
+            });
+            
+            $(document).on('change', '.formset-form [name*="DELETE"]', function() {
+                calculateTotals();
+                calculateTotalAmount();
+            });
+            
+            $(document).ready(function() {
+                calculateTotals();
+                calculateTotalAmount();
+            });
+        </script>
+    
+        <!-- Unit Calculation Script -->
+        <script>
+            $(document).ready(function () {
+                // Helper to recalc a single formset row
+                function recalcRow($row) {
+                    let slabQty = parseFloat($row.find('.slab-quantity').val()) || 0;
+                    let precision = parseFloat($row.data('precision')) || 0;
+                    let factor = parseFloat($row.data('factor')) || 0;
+    
+                    // Calculate CS Quantity only if we have slab quantity and precision
+                    if (slabQty && precision) {
+                        $row.find('.cs-quantity').val((slabQty / precision).toFixed(2));
+                    } else if (!slabQty) {
+                        $row.find('.cs-quantity').val('');
+                    }
+    
+                    // Calculate KG only if we have slab quantity and factor
+                    if (slabQty && factor) {
+                        $row.find('.kg').val((slabQty * factor).toFixed(2));
+                    } else if (!slabQty) {
+                        $row.find('.kg').val('');
+                    }
+                    
+                    updateRowAmount($row);
+                    
+                    // Trigger total calculation
+                    calculateTotals();
+                }
+    
+                // When unit changes → fetch precision/factor and recalc
+                $(document).on('change', '.unit-select', function () {
+                    let $row = $(this).closest('.formset-form');
+                    let unitId = $(this).val();
+    
+                    if (!unitId) {
+                        // Clear data attributes if no unit selected
+                        $row.removeData('precision').removeData('factor');
+                        recalcRow($row);
+                        return;
+                    }
+    
+                    $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+                        $row.data('precision', data.precision || 0);
+                        $row.data('factor', data.factor || 0);
+                        console.log('Unit details loaded - Precision:', data.precision, 'Factor:', data.factor);
+                        recalcRow($row);
+                    }).fail(function(xhr, status, error) {
+                        console.error('Could not fetch unit details for unit ID:', unitId, error);
+                    });
+                });
+    
+                // Trigger recalculation on input changes
+                $(document).on('input', '.slab-quantity', function () {
+                    let $row = $(this).closest('.formset-form');
+                    // Debounce the recalculation
+                    clearTimeout($row.data('recalcTimeout'));
+                    $row.data('recalcTimeout', setTimeout(function() {
+                        recalcRow($row);
+                    }, 200));
+                });
+    
+                // Clear dependent fields when slab quantity is cleared
+                $(document).on('input', '.slab-quantity', function () {
+                    let $row = $(this).closest('.formset-form');
+                    if (!$(this).val()) {
+                        $row.find('.cs-quantity, .kg').val('');
+                        $row.find('.amount-display').val('');
+                        $row.data('amount', 0);
+                        calculateTotals();
+                        calculateTotalAmount();
+                    }
+                });
+    
+                // Initialize existing rows with unit data
+                $('.formset-form').each(function() {
+                    let $row = $(this);
+                    let $unitSelect = $row.find('.unit-select');
+                    if ($unitSelect.val()) {
+                        $unitSelect.trigger('change');
+                    }
+                });
+            });
+        </script>
+    
+        <!-- Tariff Calculation Script -->
+        <script>
+            // Track pending tariff requests
+            let pendingTariffRequests = 0;
+            
+            // Update tariff for individual row
+            function updateRowTariff($row) {
+                let tenantId = $('.tenant-select').val();
+                let freezingCategoryId = $row.find('.freezing-category-select').val();
+                let $tariffDisplay = $row.find('.tariff-display');
+                let $amountDisplay = $row.find('.amount-display');
+                
+                if (!tenantId || !freezingCategoryId) {
+                    $tariffDisplay.val('');
+                    $amountDisplay.val('');
+                    $row.data('tariff', 0);
+                    updateRowAmount($row);
+                    calculateTotalAmount();
+                    return;
+                }
+                
+                // Show loading
+                $tariffDisplay.val('Loading...');
+                pendingTariffRequests++;
+                
+                $.getJSON("{% url 'adminapp:get_tenant_tariff' %}", {
+                    tenant_id: tenantId,
+                    freezing_category_id: freezingCategoryId
+                }, function(data) {
+                    if (data.success) {
+                        let tariff = parseFloat(data.tariff) || 0;
+                        $tariffDisplay.val('₹' + tariff.toFixed(2));
+                        $row.data('tariff', tariff);
+                        
+                        // Calculate amount for this row
+                        updateRowAmount($row);
+                    } else {
+                        $tariffDisplay.val('₹0.00');
+                        $row.data('tariff', 0);
+                        $amountDisplay.val('₹0.00');
+                        console.warn('No tariff found:', data.error);
+                    }
+                }).fail(function(xhr, status, error) {
+                    $tariffDisplay.val('Error');
+                    $row.data('tariff', 0);
+                    $amountDisplay.val('₹0.00');
+                    console.error('Failed to get tariff:', error);
+                }).always(function() {
+                    pendingTariffRequests--;
+                    if (pendingTariffRequests === 0) {
+                        calculateTotalAmount();
+                    }
+                });
+            }
+            
+            // Update amount for individual row
+            function updateRowAmount($row) {
+                let tariff = parseFloat($row.data('tariff')) || 0;
+                let kg = parseFloat($row.find('.kg-input').val()) || 0;
+                let amount = tariff * kg;
+                
+                $row.find('.amount-display').val('₹' + amount.toFixed(2));
+                $row.data('amount', amount);
+                
+                if (pendingTariffRequests === 0) {
+                    calculateTotalAmount();
+                }
+            }
+            
+            // Calculate total amount from all rows
+            function calculateTotalAmount() {
+                let totalAmount = 0;
+                
+                $('.formset-form:visible').each(function() {
+                    // Skip deleted forms
+                    if ($(this).find('[name*="DELETE"]').is(':checked')) {
+                        return;
+                    }
+                    
+                    let rowAmount = parseFloat($(this).data('amount')) || 0;
+                    totalAmount += rowAmount;
+                });
+                
+                $('#id_total_amount').val(totalAmount.toFixed(2));
+                
+                // Update calculation status
+                let $status = $('#calculation-status span');
+                if (totalAmount > 0) {
+                    $status.text('✅').removeClass('text-muted').addClass('text-success');
+                } else {
+                    $status.text('💰').removeClass('text-success').addClass('text-muted');
+                }
+                
+                console.log("Total amount calculated:", totalAmount);
+            }
+            
+            // Event handlers for tariff calculation
+            $(document).on('change', '.freezing-category-select', function() {
+                let $row = $(this).closest('.formset-form');
+                updateRowTariff($row);
+            });
+            
+            $(document).on('input change', '.kg-input', function() {
+                let $row = $(this).closest('.formset-form');
+                // Debounce the amount calculation
+                clearTimeout($row.data('amountTimeout'));
+                $row.data('amountTimeout', setTimeout(function() {
+                    updateRowAmount($row);
+                }, 300));
+            });
+            
+            $(document).ready(function() {
+                // First calculate basic totals
+                calculateTotals();
+                
+                // Then initialize tariffs for existing rows that have data
+                $('.formset-form').each(function() {
+                    let $row = $(this);
+                    let tenantId = $('.tenant-select').val();
+                    let freezingCategoryId = $row.find('.freezing-category-select').val();
+                    
+                    if (tenantId && freezingCategoryId) {
+                        updateRowTariff($row);
+                    } else {
+                        // If no tariff data, still calculate with zero tariff
+                        $row.data('tariff', 0);
+                        updateRowAmount($row);
+                    }
+                });
+                
+                setTimeout(function() {
+                    if (pendingTariffRequests === 0) {
+                        calculateTotalAmount();
+                    }
+                }, 1000);
+            });
+        </script>
+    
+        <!-- Form Validation Script -->
+        <script>
+            $(document).ready(function() {
+                $('#return-form').on('submit', function(e) {
+                    let isValid = true;
+                    let errorMessages = [];
+                    
+                    // Check if at least one item exists
+                    let visibleRows = $('.formset-form:visible').filter(function() {
+                        return !$(this).find('[name*="DELETE"]').is(':checked');
+                    });
+                    
+                    if (visibleRows.length === 0) {
+                        isValid = false;
+                        errorMessages.push('At least one item is required.');
+                    }
+                    
+                    // Validate each visible row
+                    visibleRows.each(function(index) {
+                        let $row = $(this);
+                        let rowErrors = [];
+                        let rowIndex = index + 1;
+                        
+                        // Check if item is selected
+                        let $itemField = $row.find('select[name*="item"]:not([name*="original_item"])');
+                        let itemValue = $itemField.val();
+                        
+                        if (!itemValue || itemValue.toString().trim() === '' || itemValue === 'null') {
+                            rowErrors.push('Item is required');
+                            $itemField.addClass('is-invalid');
+                        } else {
+                            $itemField.removeClass('is-invalid');
+                        }
+                        
+                        // Check freezing category
+                        let $freezingField = $row.find('select[name*="freezing_category"]');
+                        let freezingValue = $freezingField.val();
+                        
+                        if (!freezingValue || freezingValue.toString().trim() === '' || freezingValue === 'null') {
+                            rowErrors.push('Freezing Category is required');
+                            $freezingField.addClass('is-invalid');
+                        } else {
+                            $freezingField.removeClass('is-invalid');
+                        }
+                        
+                        // Check KG value
+                        let $kgField = $row.find('input[name*="kg"]');
+                        let kgValue = $kgField.val();
+                        let kg = parseFloat(kgValue) || 0;
+                        
+                        if (kg <= 0) {
+                            rowErrors.push('KG must be greater than 0');
+                            $kgField.addClass('is-invalid');
+                        } else {
+                            $kgField.removeClass('is-invalid');
+                        }
+                        
+                        // Check slab quantity
+                        let $slabField = $row.find('input[name*="slab_quantity"]');
+                        let slabValue = $slabField.val();
+                        let slab = parseFloat(slabValue) || 0;
+                        
+                        if (slab <= 0) {
+                            rowErrors.push('Slab quantity must be greater than 0');
+                            $slabField.addClass('is-invalid');
+                        } else {
+                            $slabField.removeClass('is-invalid');
+                        }
+                        
+                        if (rowErrors.length > 0) {
+                            isValid = false;
+                            errorMessages.push(`Row ${rowIndex}: ${rowErrors.join(', ')}`);
+                        }
+                    });
+                    
+                    if (!isValid) {
+                        e.preventDefault();
+                        
+                        // Scroll to first invalid field
+                        let $firstInvalid = $('.is-invalid').first();
+                        if ($firstInvalid.length) {
+                            $firstInvalid[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            // Focus on the field after scrolling
+                            setTimeout(() => $firstInvalid.focus(), 500);
+                        }
+                        
+                        alert('Please fix the following errors:\n\n' + errorMessages.join('\n'));
+                        return false;
+                    }
+                    
+                    // Remove any remaining invalid styling
+                    $('.is-invalid').removeClass('is-invalid');
+                    
+                    // Show loading state
+                    $(this).find('button[type="submit"]').prop('disabled', true).text('Saving...');
+                });
+                
+                // Remove invalid styling when user starts typing/selecting
+                $(document).on('input change', '.form-control', function() {
+                    $(this).removeClass('is-invalid');
+                });
+            });
+        </script>
+    
+        <!-- Add/Remove Rows Script -->
+        <script>
+            $(document).ready(function () {
+                // Get the correct formset prefix from the management form
+                let formIndex = parseInt($('#id_items-TOTAL_FORMS').val()) || 0;
+                
+                // Add row functionality
+                $("#add-row").click(function () {
+                    let currentTotal = parseInt($('#id_items-TOTAL_FORMS').val());
+                    
+                    // Clone the first row (template)
+                    let emptyFormHtml = $('#formset-table tbody tr.formset-form:first').clone(true);
+                    
+                    // Update all form indices in the cloned row
+                    emptyFormHtml.find("input, select, textarea").each(function () {
+                        let name = $(this).attr("name");
+                        let id = $(this).attr("id");
+                        
+                        if (name) {
+                            // Replace the form index in name attribute
+                            let newName = name.replace(/items-\d+-/, "items-" + currentTotal + "-");
+                            $(this).attr("name", newName);
+                            
+                            if (id) {
+                                let newId = id.replace(/items-\d+-/, "items-" + currentTotal + "-");
+                                $(this).attr("id", newId);
+                            }
+                            
+                            // Clear values except for DELETE checkbox
+                            if (!name.includes('DELETE')) {
+                                if ($(this).is('select')) {
+                                    $(this).val('').trigger('change');
+                                } else {
+                                    $(this).val('');
+                                }
+                            } else {
+                                $(this).prop('checked', false);
+                            }
+                        }
+                    });
+                    
+                    // Remove any error states from cloned form
+                    emptyFormHtml.find('.is-invalid').removeClass('is-invalid');
+                    emptyFormHtml.find('.text-danger').remove();
+                    
+                    // Clear display fields
+                    emptyFormHtml.find('.tariff-display, .amount-display').val('');
+                    
+                    // Reset the original item container
+                    let $originalContainer = emptyFormHtml.find('.original-item-container');
+                    $originalContainer.find('.change-selection-btn').remove();
+                    
+                    // Append to table
+                    emptyFormHtml.appendTo("#formset-table tbody");
+                    
+                    // Update total forms count
+                    $('#id_items-TOTAL_FORMS').val(currentTotal + 1);
+                    
+                    console.log('Added row with index:', currentTotal);
+                    console.log('New total forms:', currentTotal + 1);
+                    
+                    // Initialize the new row
+                    initializeNewRow(emptyFormHtml);
+                });
+    
+                // Remove row functionality
+                $(document).on('click', '.remove-row', function () {
+                    let $row = $(this).closest("tr");
+                    
+                    if ($("#formset-table tbody tr.formset-form:visible").length > 1) {
+                        // Check if this is an existing record (has an ID field with value)
+                        let deleteField = $row.find('[name*="DELETE"]');
+                        let idField = $row.find('[name*="id"]');
+                        
+                        if (deleteField.length > 0 && idField.val()) {
+                            // Mark for deletion instead of removing
+                            deleteField.prop('checked', true);
+                            $row.hide();
+                        } else {
+                            // Actually remove the row for new items
+                            $row.remove();
+                            
+                            // Reindex all remaining forms
+                            reindexForms();
+                        }
+                        
+                        // Recalculate totals
+                        calculateTotals();
+                        calculateTotalAmount();
+                    } else {
+                        alert("At least one item is required.");
+                    }
+                });
+                
+                // Function to reindex all forms after removal
+                function reindexForms() {
+                    let formIndex = 0;
+                    $('#formset-table tbody tr.formset-form:visible').each(function() {
+                        let $row = $(this);
+                        
+                        // Skip if this row is marked for deletion
+                        if ($row.find('[name*="DELETE"]').is(':checked')) {
+                            return;
+                        }
+                        
+                        $row.find('input, select, textarea').each(function() {
+                            let name = $(this).attr('name');
+                            let id = $(this).attr('id');
+                            
+                            if (name) {
+                                let newName = name.replace(/items-\d+-/, 'items-' + formIndex + '-');
+                                $(this).attr('name', newName);
+                                
+                                if (id) {
+                                    let newId = id.replace(/items-\d+-/, 'items-' + formIndex + '-');
+                                    $(this).attr('id', newId);
+                                }
+                            }
+                        });
+                        
+                        formIndex++;
+                    });
+                    
+                    // Update the total forms count
+                    $('#id_items-TOTAL_FORMS').val(formIndex);
+                    console.log('Reindexed forms, new total:', formIndex);
+                }
+            });
+        </script>
+    
+        <!-- Load Tenant Companies Script -->
+        <script>
+            $(document).ready(function(){
+                $.ajax({
+                    url: "{% url 'adminapp:get_tenant_companies' %}",
+                    success: function(data){
+                        var tenantSelect = $("#tenant-company");
+                        tenantSelect.empty();
+                        tenantSelect.append('<option value="">Select Tenant</option>');
+                        data.tenants.forEach(function(tenant){
+                            tenantSelect.append('<option value="'+tenant.id+'">'+tenant.name+'</option>');
+                        });
+                    },
+                    error: function() {
+                        console.error('Failed to load tenant companies');
+                    }
+                });
+            });
+        </script>
+    
+        <script>
+    $(document).ready(function() {
+        // Disable DataTables auto-initialization
+        $.fn.dataTable.ext.errMode = 'none';
+        
+        // Or if you want to be more specific, you can also add:
+        $.extend($.fn.dataTable.defaults, {
+            "autoWidth": false,
+            "searching": false,
+            "paging": false,
+            "info": false
+        });
+    });
+    </script>
+    </div>
+
+{%endblock%}
