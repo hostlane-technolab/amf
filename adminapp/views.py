@@ -1229,7 +1229,7 @@ def create_spot_purchase(request):
             # Use the model's calculate_totals method instead of manual calculation
             purchase.calculate_totals()
 
-            return redirect('adminapp:spot_purchase_list')
+            return redirect('adminapp:create_peeling_shed_supply')
 
     else:
         purchase_form = SpotPurchaseForm()
@@ -1709,11 +1709,12 @@ def local_purchase_workout_summary(request):
 
 
 # function for Peelingshed 
-class PeelingShedSupplyListView(CustomPermissionMixin,ListView):
+class PeelingShedSupplyListView(CustomPermissionMixin, ListView):
     permission_required = 'adminapp.processing_view'
     model = PeelingShedSupply
     template_name = 'adminapp/purchases/peeling_shed_supply_list.html'
     context_object_name = 'supplies'
+    ordering = ['-date']
 
 class PeelingShedSupplyDeleteView(CustomPermissionMixin,DeleteView):
     permission_required = 'adminapp.processing_delete'
