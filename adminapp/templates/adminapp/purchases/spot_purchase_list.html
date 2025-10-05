@@ -8,21 +8,29 @@
     width: 20%;
     min-width: 200px;
   }
+
   .custom-table th:nth-child(2),
   .custom-table td:nth-child(2),
-  .custom-table th:nth-child(4),
-  .custom-table td:nth-child(4),
+  .custom-table th:nth-child(5),
+  .custom-table td:nth-child(5),
+  .custom-table th:nth-child(6),
+  .custom-table td:nth-child(6),
   .custom-table th:nth-child(3),
   .custom-table td:nth-child(3) {
-    width: 18%;
-    min-width: 160px;
+    width: 20%;
+    min-width: 200px;
+  }
+    .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4){
+        width: 23%;
+    min-width: 230px;
   }
 </style>
 
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 class="fw-bold mb-3">Purchase Management</h3>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-3">Purchase Management</h3>
       <ul class="breadcrumbs mb-3">
         <li class="nav-home">
           <a href="#">
@@ -58,7 +66,7 @@
                   <p class="text-muted mb-0 fs-6">Manage your spot purchase transactions</p>
                 </div>
               </div>
-              
+
               <!-- Search Box -->
               <div class="search-controls d-flex align-items-center gap-3">
                 <div class="search-box-wrapper">
@@ -70,7 +78,7 @@
                     </button>
                   </div>
                 </div>
-                
+
                 <div class="stats-badge">
                   <span class="badge bg-light text-dark px-3 py-2 fs-6">
                     <i class="fas fa-receipt me-2"></i><span id="purchaseCount">{{ purchases|length }}</span> Purchases
@@ -83,7 +91,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="card-body p-0">
             <div class="table-responsive">
               <table id="multi-filter" class="table table-hover mb-0 custom-table">
@@ -92,15 +100,24 @@
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-calendar-alt header-icon"></i>
+                        <span class="header-text">Voucher No</span>
+                      </div>
+                    </th>
+
+                                        <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-calendar-alt header-icon"></i>
                         <span class="header-text">Date</span>
                       </div>
                     </th>
-                    <!-- <th class="table-header">
+
+                      <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-truck header-icon"></i>
-                        <span class="header-text">Supplier</span>
+                        <span class="header-text">Spot</span>
                       </div>
-                    </th> -->
+                    </th>
+
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-boxes header-icon"></i>
@@ -130,67 +147,72 @@
 
                 <tbody id="tableBody">
                   {% for purchase in purchases %}
-                  <tr class="table-row" data-searchable="{{ purchase.supplier|lower }} {{ purchase.date }} {{ purchase.total_amount }} {{ purchase.total_expense }}">
+                  <tr class="table-row"
+                    data-searchable="{{ purchase.supplier|lower }} {{ purchase.date }} {{ purchase.total_amount }} {{ purchase.total_expense }}">
+                    <td class="table-cell">
+                      <div class="id-badge">
+                        #{{ purchase.voucher_number}}
+                      </div>
+                    </td>
+
                     <td class="table-cell">
                       <div class="date-display">
                         <i class="fas fa-calendar-day me-2"></i>
-                        <span class="date-text">{{ purchase.date }}</span>
+                        <span class="date-text">{{ purchase.date|date:"d M Y" }}</span>
                       </div>
                     </td>
-                    
-                    <!-- <td class="table-cell">
+
+                    <td class="table-cell">
                       <div class="supplier-info">
                         <div class="supplier-avatar">
                           <i class="fas fa-building"></i>
                         </div>
                         <div class="supplier-details">
-                          <div class="supplier-name">{{ purchase.supplier }}</div>
-                          <div class="supplier-meta">Vendor</div>
+                          <div class="supplier-name">{{ purchase.spot }}</div>
                         </div>
                       </div>
-                    </td> -->
-                    
+                    </td>
+
+
+
                     <td class="table-cell">
                       <div class="quantity-badge">
                         <i class="fas fa-cubes quantity-icon"></i>
                         <span class="quantity-text">{{ purchase.total_quantity|floatformat:2 }}</span>
                       </div>
                     </td>
-                    
+
                     <td class="table-cell">
                       <div class="amount-display">
                         <span class="currency-symbol">₹</span>
                         <span class="amount-value">{{ purchase.total_amount|floatformat:2 }}</span>
                       </div>
                     </td>
-                    
+
                     <td class="table-cell">
                       <div class="expense-display">
                         <span class="currency-symbol">₹</span>
                         <span class="expense-value">{{ purchase.total_purchase_amount|floatformat:2 }}</span>
                       </div>
                     </td>
-                    
+
                     <td class="table-cell">
                       <div class="action-buttons">
-                        <a href="{% url 'adminapp:spot_purchase_detail' purchase.pk %}" 
-                           class="action-btn view-btn" 
-                           title="View Purchase">
+                        <a href="{% url 'adminapp:spot_purchase_detail' purchase.pk %}" class="action-btn view-btn"
+                          title="View Purchase">
                           <i class="fas fa-eye"></i>
                           <span>View</span>
                         </a>
-                        <a href="{% url 'adminapp:spot_purchase_edit' purchase.pk %}" 
-                           class="action-btn edit-btn" 
-                           title="Edit Purchase">
+                        <a href="{% url 'adminapp:spot_purchase_edit' purchase.pk %}" class="action-btn edit-btn"
+                          title="Edit Purchase">
                           <i class="fas fa-edit"></i>
                           <span>Edit</span>
                         </a>
-                        <form method="post" action="{% url 'adminapp:spot_purchase_delete' purchase.pk %}" style="display:inline;">
+                        <form method="post" action="{% url 'adminapp:spot_purchase_delete' purchase.pk %}"
+                          style="display:inline;">
                           {% csrf_token %}
-                          <button type="submit" 
-                                  class="action-btn delete-btn" 
-                                  title="Delete Purchase"
-                                  onclick="return confirm('Are you sure you want to delete this purchase? This action cannot be undone.')">
+                          <button type="submit" class="action-btn delete-btn" title="Delete Purchase"
+                            onclick="return confirm('Are you sure you want to delete this purchase? This action cannot be undone.')">
                             <i class="fas fa-trash-alt"></i>
                             <span>Delete</span>
                           </button>
@@ -205,14 +227,15 @@
                         <i class="fas fa-shopping-cart empty-state-icon"></i>
                         <h4>No Purchases Found</h4>
                         <p>There are no spot purchases to display yet.</p>
-                        <a href="{% url 'adminapp:spot_purchase_add' %}" class="add-new-btn">Create Your First Purchase</a>
+                        <a href="{% url 'adminapp:spot_purchase_add' %}" class="add-new-btn">Create Your First
+                          Purchase</a>
                       </div>
                     </td>
                   </tr>
                   {% endfor %}
                 </tbody>
               </table>
-              
+
               <!-- No Results Message -->
               <div id="noResults" class="no-results" style="display: none;">
                 <div class="no-results-content">
@@ -230,11 +253,21 @@
 </div>
 
 <style>
+    /* ID Badge */
+  .id-badge {
+    background: #e9ecef;
+    color: #495057;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-block;
+  }
   /* Card Styling */
   .card {
     border-radius: 20px;
     background: #ffffff;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   }
 
   /* Header Styling */
@@ -394,7 +427,7 @@
   .table-row:hover {
     background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
   }
 
   .table-cell {
@@ -408,8 +441,8 @@
   .date-display {
     color: #495057;
     font-weight: 600;
-    font-family: 'Monaco', 'Consolas', monospace;
-    font-size: 14px;
+    /* font-family: 'Monaco', 'Consolas', monospace; */
+    font-size: 15px;
   }
 
   /* Supplier Info */
@@ -612,44 +645,44 @@
       flex-direction: column;
       align-items: stretch !important;
     }
-    
-    .card-header .d-flex > .d-flex:first-child {
+
+    .card-header .d-flex>.d-flex:first-child {
       flex-direction: row !important;
       align-items: center !important;
       margin-bottom: 20px;
     }
-    
+
     .search-controls {
       min-width: auto;
       width: 100%;
       justify-content: space-between;
       margin-top: 0;
     }
-    
+
     .search-input {
       width: 200px;
     }
-    
+
     .card-title {
       font-size: 22px;
     }
-    
+
     .icon-wrapper {
       width: 50px;
       height: 50px;
       font-size: 20px;
     }
-    
+
     .action-buttons {
       flex-direction: column;
     }
-    
+
     .supplier-info {
       display: flex !important;
       flex-direction: row !important;
       align-items: center !important;
     }
-    
+
     .supplier-avatar {
       width: 40px !important;
       height: 40px !important;
@@ -658,45 +691,45 @@
       margin-bottom: 0 !important;
       flex-shrink: 0;
     }
-    
+
     .supplier-details {
       flex: 1;
     }
-    
+
     .supplier-name {
       font-size: 14px !important;
     }
-    
+
     .supplier-meta {
       font-size: 11px !important;
     }
   }
 
   @media (max-width: 576px) {
-    .card-header .d-flex > .d-flex:first-child {
+    .card-header .d-flex>.d-flex:first-child {
       flex-direction: row !important;
       align-items: center !important;
     }
-    
+
     .search-controls {
       flex-direction: column;
       gap: 15px !important;
     }
-    
+
     .search-input {
       width: 100%;
     }
-    
+
     .stats-badge {
       align-self: center;
     }
-    
+
     .supplier-info {
       display: flex !important;
       flex-direction: row !important;
       align-items: center !important;
     }
-    
+
     .supplier-avatar {
       width: 35px !important;
       height: 35px !important;
@@ -705,22 +738,22 @@
       margin-bottom: 0 !important;
       flex-shrink: 0;
     }
-    
+
     .supplier-name {
       font-size: 12px;
     }
-    
+
     .supplier-meta {
       font-size: 10px;
     }
-    
+
     .icon-wrapper {
       width: 45px;
       height: 45px;
       font-size: 18px;
       margin-right: 15px;
     }
-    
+
     .card-title {
       font-size: 20px;
     }
@@ -728,7 +761,7 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearSearch');
     const tableBody = document.getElementById('tableBody');
@@ -738,99 +771,99 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalCount = allRows.length;
 
     function updateCounter(visibleCount) {
-        purchaseCount.textContent = visibleCount;
+      purchaseCount.textContent = visibleCount;
     }
 
     function showClearButton(show) {
-        clearBtn.style.display = show ? 'block' : 'none';
+      clearBtn.style.display = show ? 'block' : 'none';
     }
 
     function filterTable() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        let visibleCount = 0;
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
 
-        if (searchTerm === '') {
-            // Show all rows
-            allRows.forEach(row => {
-                row.style.display = '';
-                visibleCount++;
-            });
-            noResults.style.display = 'none';
-            showClearButton(false);
+      if (searchTerm === '') {
+        // Show all rows
+        allRows.forEach(row => {
+          row.style.display = '';
+          visibleCount++;
+        });
+        noResults.style.display = 'none';
+        showClearButton(false);
+      } else {
+        // Filter rows
+        allRows.forEach(row => {
+          const searchableText = row.getAttribute('data-searchable');
+          if (searchableText && searchableText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        // Show/hide no results message
+        if (visibleCount === 0) {
+          noResults.style.display = 'block';
         } else {
-            // Filter rows
-            allRows.forEach(row => {
-                const searchableText = row.getAttribute('data-searchable');
-                if (searchableText && searchableText.includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Show/hide no results message
-            if (visibleCount === 0) {
-                noResults.style.display = 'block';
-            } else {
-                noResults.style.display = 'none';
-            }
-            
-            showClearButton(true);
+          noResults.style.display = 'none';
         }
 
-        updateCounter(visibleCount);
+        showClearButton(true);
+      }
+
+      updateCounter(visibleCount);
     }
 
     function clearSearch() {
-        searchInput.value = '';
-        filterTable();
-        searchInput.focus();
+      searchInput.value = '';
+      filterTable();
+      searchInput.focus();
     }
 
     // Enhanced delete confirmation
     function enhancedDeleteConfirm(event) {
-        const row = event.target.closest('tr');
-        const supplier = row.querySelector('.supplier-name').textContent.trim();
-        const date = row.querySelector('.date-text').textContent.trim();
-        const amount = row.querySelector('.amount-value').textContent.trim();
-        
-        const confirmMessage = `Are you sure you want to delete this purchase?\n\nSupplier: ${supplier}\nDate: ${date}\nTotal Amount: $${amount}\n\nThis action cannot be undone.`;
-        
-        return confirm(confirmMessage);
+      const row = event.target.closest('tr');
+      const supplier = row.querySelector('.supplier-name').textContent.trim();
+      const date = row.querySelector('.date-text').textContent.trim();
+      const amount = row.querySelector('.amount-value').textContent.trim();
+
+      const confirmMessage = `Are you sure you want to delete this purchase?\n\nSupplier: ${supplier}\nDate: ${date}\nTotal Amount: $${amount}\n\nThis action cannot be undone.`;
+
+      return confirm(confirmMessage);
     }
 
     // Event listeners
     searchInput.addEventListener('input', filterTable);
-    searchInput.addEventListener('keyup', function(e) {
-        if (e.key === 'Escape') {
-            clearSearch();
-        }
+    searchInput.addEventListener('keyup', function (e) {
+      if (e.key === 'Escape') {
+        clearSearch();
+      }
     });
-    
+
     clearBtn.addEventListener('click', clearSearch);
 
     // Add enhanced delete confirmation to all delete buttons
     document.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', enhancedDeleteConfirm);
+      btn.addEventListener('click', enhancedDeleteConfirm);
     });
 
     // Keyboard navigation
     allRows.forEach(row => {
-        row.setAttribute('tabindex', '0');
-        row.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                const viewLink = this.querySelector('.view-btn');
-                if (viewLink) {
-                    viewLink.click();
-                }
-            }
-        });
+      row.setAttribute('tabindex', '0');
+      row.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          const viewLink = this.querySelector('.view-btn');
+          if (viewLink) {
+            viewLink.click();
+          }
+        }
+      });
     });
 
     // Initialize
     updateCounter(totalCount);
-});
+  });
 </script>
 
 {% endblock %}

@@ -187,18 +187,18 @@
                   </div>
                 </td>
                 
-                <td class="table-cell">
-                  <div class="tariff-display">
-                    {% if obj.freezing_tariff %}
-                      <div class="tariff-badge">
-                        <i class="fas fa-snowflake"></i>
-                        ₹{{ obj.freezing_tariff }}
-                      </div>
-                    {% else %}
-                      <span class="no-data">-</span>
-                    {% endif %}
-                  </div>
-                </td>
+<td class="table-cell">
+  <div class="tariff-display">
+    {% if obj.total_tariff > 0 %}
+      <div class="tariff-badge">
+        <i class="fas fa-snowflake"></i>
+        ₹{{ obj.total_tariff }}
+      </div>
+    {% else %}
+      <span class="no-data">-</span>
+    {% endif %}
+  </div>
+</td>
                 
                 <td class="table-cell">
                   <div class="action-buttons">
@@ -439,8 +439,8 @@
   }
   /* Address Display */
   .contact-cell {
-    min-width: 300px;
-    max-width: 400px;
+    min-width: 200px;
+    max-width: 300px;
   }
 
   .address-display {
@@ -505,52 +505,75 @@
   }
 
   /* Email Display */
-  .email-display {
-    display: flex;
-    align-items: center;
-  }
+/* Email Display */
+.email-display {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(40, 167, 69, 0.05) 100%);
+  border: 2px solid rgba(40, 167, 69, 0.15);
+}
 
-  .email-icon {
-    color: #28a745;
-    margin-right: 8px;
-    font-size: 14px;
-  }
+.email-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  margin-right: 12px;
+}
 
-  .email-link {
-    color: #28a745;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 14px;
-  }
+.email-link {
+  color: #495057;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
 
-  .email-link:hover {
-    color: #1e7e34;
-    text-decoration: underline;
-  }
+.email-link:hover {
+  color: #28a745;
+  text-decoration: underline;
+}
 
   /* Phone Display */
-  .phone-display {
-    display: flex;
-    align-items: center;
-  }
+.phone-display {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
+  border: 2px solid rgba(0, 123, 255, 0.15);
+}
 
-  .phone-icon {
-    color: #007bff;
-    margin-right: 8px;
-    font-size: 14px;
-  }
+.phone-icon {
+  width: 35px;
+  height: 35px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  margin-right: 12px;
+}
 
-  .phone-link {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 14px;
-  }
+.phone-link {
+  color: #495057;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
 
-  .phone-link:hover {
-    color: #0056b3;
-    text-decoration: underline;
-  }
+.phone-link:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
 
   /* Tariff Display */
   .tariff-display {

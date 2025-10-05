@@ -87,7 +87,7 @@
         </li>
 
         <!-- Locations -->
-<!-- Locations -->
+
 <li class="nav-item">
   <a data-bs-toggle="collapse" href="#locations">
     <i class="fas fa-building"></i>
@@ -253,6 +253,7 @@
     </ul>
   </div>
 </li>
+
 
 <!-- Personnel -->
         <li class="nav-item">
@@ -849,6 +850,66 @@
           </div>
         </li>
 
+        <!-- Buyer -->
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#buyer">
+            <i class="fa-solid fa-user-tie"></i>
+            <p>Buyer</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="buyer">
+            <ul class="nav nav-collapse">
+              <li>
+                <a  href="{%url 'adminapp:buyer_list'%}">
+                  <span class="sub-item">
+                    <i class="fas fa-list"></i>
+                    List
+                  </span>
+                </a>
+              </li>
+
+              <li>
+                <a  href="{%url 'adminapp:buyer_create'%}">
+                  <span class="sub-item">
+                    <i class="fas fa-plus"></i>
+                    Create
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Shipment Destination -->
+        <li class="nav-item">
+          <a data-bs-toggle="collapse" href="#ship">
+            <i class="fa-solid fa-ship"></i>
+            <p>Destination</p>
+            <span class="caret"></span>
+          </a>
+          <div class="collapse" id="ship">
+            <ul class="nav nav-collapse">
+              <!-- Processing Centers with sub-menu -->
+              <li>
+                <a href="{% url 'adminapp:destination_list' %}">
+                  <span class="sub-item">
+                    <i class="fas fa-list"></i>
+                    List
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a href="{% url 'adminapp:destination_create' %}">
+                  <span class="sub-item">
+                    <i class="fas fa-plus"></i>
+                    Create
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
         <!-- Masters Dashboard -->
         <li class="nav-item">
           <a href="{% url 'adminapp:admin_dashboard' %}">
@@ -867,7 +928,7 @@
 
 
         <!-- Profile & Settings -->
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a data-bs-toggle="collapse" href="#profile">
             <i class="fas fa-user-circle"></i>
             <p>Profile & Settings</p>
@@ -901,12 +962,12 @@
               </li>
             </ul>
           </div>
-        </li>
+        </li> -->
 
         <!-- Profile & Settings -->
-<li class="nav-item">
+<!-- <li class="nav-item">
   <a data-bs-toggle="collapse" href="#report">
-    <i class="fas fa-chart-line"></i> <!-- General reports icon -->
+    <i class="fas fa-chart-line"></i> 
     <p>Reports</p>
     <span class="caret"></span>
   </a>
@@ -915,7 +976,7 @@
       <li>
         <a href="#">
           <span class="sub-item">
-            <i class="fas fa-shopping-cart"></i> <!-- Purchase -->
+            <i class="fas fa-shopping-cart"></i> 
             Purchase Report 
           </span>
         </a>
@@ -923,7 +984,7 @@
       <li>
         <a href="#">
           <span class="sub-item">
-            <i class="fas fa-snowflake"></i> <!-- Freezing -->
+            <i class="fas fa-snowflake"></i>
             Freezing Report 
           </span>
         </a>
@@ -931,14 +992,14 @@
       <li>
         <a href="#">
           <span class="sub-item">
-            <i class="fas fa-receipt"></i> <!-- Bill -->
+            <i class="fas fa-receipt"></i> 
             Bill Report 
           </span>
         </a>
       </li>
     </ul>
   </div>
-</li>
+</li> -->
 
 
         <!-- Logout -->

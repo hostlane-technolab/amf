@@ -22,7 +22,7 @@ urlpatterns = [
 
     path('login/', views.user_login, name='admin_login'),
     
-    path('logout/', views.admin_logout, name='admin_logout'),
+    path('', views.admin_logout, name='admin_logout'),
 
     path('create-user/', views.create_user_view, name='create_user'),
     path('users/edit/<uuid:pk>/', views.CustomUserUpdateView.as_view(), name='edit_user'),
@@ -392,5 +392,37 @@ urlpatterns = [
 
 
 
+
+    path('reports/spot-profit-loss/', views.spot_purchase_profit_loss_report, name='spot_profit_loss_report'),
+
+    path('spot-purchase-profit-loss/print/', views.spot_purchase_profit_loss_report_print, name='spot_purchase_profit_loss_report_print'),
+
+
+    # Added in 02/10/2025
+    
+     # Buyers
+    path("buyers/", views.buyer_list, name="buyer_list"),
+    path("buyers/create/", views.buyer_create, name="buyer_create"),
+    path("buyers/<int:pk>/update/", views.buyer_update, name="buyer_update"),
+    path("buyers/<int:pk>/delete/", views.buyer_delete, name="buyer_delete"),
+
+    # Shipment Destinations
+    path("destinations/", views.destination_list, name="destination_list"),
+    path("destinations/create/", views.destination_create, name="destination_create"),
+    path("destinations/<int:pk>/update/", views.destination_update, name="destination_update"),
+    path("destinations/<int:pk>/delete/", views.destination_delete, name="destination_delete"),
+
+
+
+
+
+    # Sales Entry URLs
+    path('sales-entry/', views.sales_entry_list, name='sales_entry_list'),
+    path('sales-entry/create/', views.create_sales_entry, name='sales_entry_create'),
+    path('sales-entry/<int:pk>/', views.sales_entry_detail, name='sales_entry_detail'),
+    path('sales-entry/<int:pk>/update/', views.update_sales_entry, name='sales_entry_update'),
+    path('sales-entry/<int:pk>/delete/', views.delete_sales_entry, name='sales_entry_delete'),
+    
+    path('sales/entry/<int:pk>/pdf/', views.sales_entry_invoice_pdf, name='sales_entry_invoice_pdf'),
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

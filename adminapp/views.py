@@ -668,16 +668,35 @@ class ItemGradeDeleteView(DeleteView):
     template_name = 'adminapp/confirm_delete.html'
     success_url = reverse_lazy('adminapp:item_grade_list')
 
+
+
+
+
 class FreezingCategoryCreateView(CreateView):
     model = FreezingCategory
     form_class = FreezingCategoryForm
     template_name = 'adminapp/forms/freezingcategory_form.html'
-    success_url = reverse_lazy('adminapp:freezing_category_create')
+    success_url = reverse_lazy('adminapp:freezing_category_list')
 
-class FreezingCategoryListView(ListView):
-    model = FreezingCategory
-    template_name = 'adminapp/list/freezingcategory_list.html'
-    context_object_name = 'freezing_categories'
+    def form_valid(self, form):
+        name = form.cleaned_data['name']
+        code = form.cleaned_data['code']
+
+        # Check if active record with same name or code exists
+        name_exists = FreezingCategory.objects.filter(name=name, is_active=True).exists()
+        code_exists = FreezingCategory.objects.filter(code=code, is_active=True).exists() if code else False
+        
+        if name_exists:
+            messages.error(self.request, f'An active category with name "{name}" already exists.')
+            return self.form_invalid(form)
+            
+        if code_exists:
+            messages.error(self.request, f'An active category with code "{code}" already exists.')
+            return self.form_invalid(form)
+
+        form.instance.is_active = True
+        messages.success(self.request, f'FreezingCategory "{name}" created successfully.')
+        return super().form_valid(form)
 
 class FreezingCategoryUpdateView(UpdateView):
     model = FreezingCategory
@@ -685,10 +704,76 @@ class FreezingCategoryUpdateView(UpdateView):
     template_name = 'adminapp/forms/freezingcategory_form.html'
     success_url = reverse_lazy('adminapp:freezing_category_list')
 
+    def get_queryset(self):
+        return FreezingCategory.objects.filter(is_active=True)
+
+    def form_valid(self, form):
+        old_category = self.get_object()
+        name = form.cleaned_data['name']
+        code = form.cleaned_data['code']
+        tariff = form.cleaned_data['tariff']
+
+        # Check if another active record with same name or code exists
+        name_exists = FreezingCategory.objects.filter(
+            name=name, is_active=True
+        ).exclude(pk=old_category.pk).exists()
+        
+        code_exists = FreezingCategory.objects.filter(
+            code=code, is_active=True
+        ).exclude(pk=old_category.pk).exists() if code else False
+        
+        if name_exists:
+            messages.error(self.request, f'An active category with name "{name}" already exists.')
+            return self.form_invalid(form)
+            
+        if code_exists:
+            messages.error(self.request, f'An active category with code "{code}" already exists.')
+            return self.form_invalid(form)
+
+        # Mark old record as inactive
+        old_category.is_active = False
+        old_category.save()
+
+        # Create new record
+        new_category = FreezingCategory.objects.create(
+            name=name,
+            code=code,
+            tariff=tariff,
+            is_active=True
+        )
+        
+        messages.success(self.request, f'FreezingCategory "{name}" updated successfully.')
+        return redirect(self.success_url)
+
 class FreezingCategoryDeleteView(DeleteView):
     model = FreezingCategory
     template_name = 'adminapp/confirm_delete.html'
     success_url = reverse_lazy('adminapp:freezing_category_list')
+
+    def get_queryset(self):
+        return FreezingCategory.objects.filter(is_active=True)
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        category_name = self.object.name
+        
+        # Only mark as inactive, don't delete
+        self.object.is_active = False
+        self.object.save()
+        
+        messages.success(request, f'FreezingCategory "{category_name}" deactivated.')
+        return redirect(self.success_url)
+
+class FreezingCategoryListView(ListView):
+    model = FreezingCategory
+    template_name = 'adminapp/list/freezingcategory_list.html'
+    context_object_name = 'freezing_categories'
+
+    def get_queryset(self):
+        return FreezingCategory.objects.filter(is_active=True).order_by('-created_at')
+
+
+
 
 class PackingUnitCreateView(CreateView):
     model = PackingUnit
@@ -809,11 +894,21 @@ class TenantCreateView(CreateView):
         return self.render_to_response(self.get_context_data(form=form))
 
 
+from django.db.models import Sum
+
 class TenantListView(ListView):
     model = Tenant
     template_name = 'adminapp/list/tenant_list.html'
     context_object_name = 'tenants'
+    
+    def get_queryset(self):
+        return Tenant.objects.annotate(
+            total_tariff=Sum('freezing_tariffs__tariff', default=0)
+        ).prefetch_related('freezing_tariffs')
 
+
+from django.contrib import messages
+from django.db import transaction
 
 class TenantUpdateView(UpdateView):
     model = Tenant
@@ -824,20 +919,73 @@ class TenantUpdateView(UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['formset'] = TenantFreezingTariffFormSet(self.request.POST, instance=self.object)
+            context['formset'] = TenantFreezingTariffFormSet(
+                self.request.POST, 
+                instance=self.object
+            )
         else:
-            context['formset'] = TenantFreezingTariffFormSet(instance=self.object)
+            context['formset'] = TenantFreezingTariffFormSet(
+                instance=self.object
+            )
         return context
 
-    def form_valid(self, form):
-        context = self.get_context_data()
-        formset = context['formset']
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        formset = TenantFreezingTariffFormSet(
+            self.request.POST, 
+            instance=self.object
+        )
+        
+        # Debugging
+        print("=" * 50)
+        print("Form valid:", form.is_valid())
+        if not form.is_valid():
+            print("Form errors:", form.errors)
+        
+        print("Formset valid:", formset.is_valid())
+        if not formset.is_valid():
+            print("Formset errors:", formset.errors)
+            for i, form_errors in enumerate(formset.errors):
+                if form_errors:
+                    print(f"Form {i} errors:", form_errors)
+        print("=" * 50)
+        
         if form.is_valid() and formset.is_valid():
-            tenant = form.save()
-            formset.instance = tenant
-            formset.save()
-            return redirect(self.success_url)
-        return self.render_to_response(self.get_context_data(form=form))
+            return self.form_valid(form, formset)
+        else:
+            return self.form_invalid(form, formset)
+
+    def form_valid(self, form, formset):
+        try:
+            with transaction.atomic():
+                # Save the tenant
+                self.object = form.save()
+                
+                # Save the formset - this will handle deletions
+                instances = formset.save(commit=False)
+                
+                # Save new/updated instances
+                for instance in instances:
+                    instance.tenant = self.object
+                    instance.save()
+                
+                # Delete marked instances
+                for obj in formset.deleted_objects:
+                    obj.delete()
+                
+                messages.success(self.request, 'Tenant updated successfully!')
+                return redirect(self.success_url)
+        except Exception as e:
+            print(f"Exception during save: {str(e)}")
+            messages.error(self.request, f'Error updating tenant: {str(e)}')
+            return self.form_invalid(form, formset)
+
+    def form_invalid(self, form, formset):
+        messages.error(self.request, 'Please correct the errors below.')
+        return self.render_to_response(
+            self.get_context_data(form=form, formset=formset)
+        )
 
 
 class TenantDeleteView(DeleteView):
@@ -893,16 +1041,71 @@ class PeelingOverheadDeleteView(DeleteView):
     template_name = 'adminapp/confirm_delete.html'
     success_url = reverse_lazy('adminapp:peeling_overhead_list')
 
+
+
 class ProcessingOverheadCreateView(CreateView):
     model = ProcessingOverhead
     form_class = ProcessingOverheadForm
     template_name = 'adminapp/forms/processingoverhead_form.html'
-    success_url = reverse_lazy('adminapp:processing_overhead_create')
+    success_url = reverse_lazy('adminapp:processing_overhead_list')
+
+    def form_valid(self, form):
+        # Get form data to check for duplicates (adjust field names as per your model)
+        name = form.cleaned_data.get('name')  # Adjust field name as per your ProcessingOverhead model
+        code = form.cleaned_data.get('code')  # Adjust field name as per your model
+        
+        # Check if active record with same name exists
+        if name:
+            active_by_name = ProcessingOverhead.objects.filter(name=name, is_active=True).first()
+            if active_by_name:
+                messages.error(self.request, f'An active processing overhead with name "{name}" already exists.')
+                return self.form_invalid(form)
+
+        # Check if active record with same code exists (if code field exists)
+        if code:
+            active_by_code = ProcessingOverhead.objects.filter(code=code, is_active=True).first()
+            if active_by_code:
+                messages.error(self.request, f'An active processing overhead with code "{code}" already exists.')
+                return self.form_invalid(form)
+
+        # Check for inactive records to reactivate
+        if name:
+            inactive_by_name = ProcessingOverhead.objects.filter(name=name, is_active=False).first()
+            if inactive_by_name:
+                # Reactivate existing inactive record
+                for field in form.cleaned_data:
+                    setattr(inactive_by_name, field, form.cleaned_data[field])
+                inactive_by_name.is_active = True
+                inactive_by_name.created_at = timezone.now()
+                inactive_by_name.save()
+                messages.success(self.request, f'ProcessingOverhead "{name}" has been reactivated and updated.')
+                return redirect(self.success_url)
+
+        if code:
+            inactive_by_code = ProcessingOverhead.objects.filter(code=code, is_active=False).first()
+            if inactive_by_code:
+                # Reactivate existing inactive record
+                for field in form.cleaned_data:
+                    setattr(inactive_by_code, field, form.cleaned_data[field])
+                inactive_by_code.is_active = True
+                inactive_by_code.created_at = timezone.now()
+                inactive_by_code.save()
+                messages.success(self.request, f'ProcessingOverhead with code "{code}" has been reactivated and updated.')
+                return redirect(self.success_url)
+
+        # Create new record
+        form.instance.is_active = True
+        messages.success(self.request, 'ProcessingOverhead created successfully.')
+        return super().form_valid(form)
 
 class ProcessingOverheadListView(ListView):
     model = ProcessingOverhead
     template_name = 'adminapp/list/processingoverhead_list.html'
     context_object_name = 'processing_overheads'
+
+    def get_queryset(self):
+        # Only show active records
+        return ProcessingOverhead.objects.filter(is_active=True).order_by('-created_at')
 
 class ProcessingOverheadUpdateView(UpdateView):
     model = ProcessingOverhead
@@ -910,10 +1113,74 @@ class ProcessingOverheadUpdateView(UpdateView):
     template_name = 'adminapp/forms/processingoverhead_form.html'
     success_url = reverse_lazy('adminapp:processing_overhead_list')
 
+    def get_queryset(self):
+        # Only allow updating active records
+        return ProcessingOverhead.objects.filter(is_active=True)
+
+    def form_valid(self, form):
+        # Get the old instance
+        old_overhead = self.get_object()
+        
+        # Get form data for duplicate checking
+        name = form.cleaned_data.get('name')
+        code = form.cleaned_data.get('code')
+        
+        # Check if another active record with same name exists (excluding current one)
+        if name:
+            name_exists = ProcessingOverhead.objects.filter(
+                name=name, is_active=True
+            ).exclude(pk=old_overhead.pk).exists()
+            
+            if name_exists:
+                messages.error(self.request, f'An active processing overhead with name "{name}" already exists.')
+                return self.form_invalid(form)
+
+        # Check if another active record with same code exists (excluding current one)
+        if code:
+            code_exists = ProcessingOverhead.objects.filter(
+                code=code, is_active=True
+            ).exclude(pk=old_overhead.pk).exists()
+            
+            if code_exists:
+                messages.error(self.request, f'An active processing overhead with code "{code}" already exists.')
+                return self.form_invalid(form)
+
+        # Mark old record as inactive (preserve history)
+        old_overhead.is_active = False
+        old_overhead.save()
+
+        # Create new record with updated values
+        new_overhead = ProcessingOverhead()
+        for field in form.cleaned_data:
+            setattr(new_overhead, field, form.cleaned_data[field])
+        new_overhead.is_active = True
+        new_overhead.save()
+        
+        messages.success(self.request, 'ProcessingOverhead updated successfully. Previous version preserved.')
+        return redirect(self.success_url)
+
 class ProcessingOverheadDeleteView(DeleteView):
     model = ProcessingOverhead
     template_name = 'adminapp/confirm_delete.html'
     success_url = reverse_lazy('adminapp:processing_overhead_list')
+
+    def get_queryset(self):
+        # Only allow deleting active records
+        return ProcessingOverhead.objects.filter(is_active=True)
+
+    def delete(self, request, *args, **kwargs):
+        # Override delete to just mark inactive (soft delete)
+        self.object = self.get_object()
+        overhead_name = getattr(self.object, 'name', f'ProcessingOverhead #{self.object.pk}')
+        
+        # Mark as inactive instead of deleting
+        self.object.is_active = False
+        self.object.save()
+        
+        messages.success(request, f'ProcessingOverhead "{overhead_name}" has been deactivated (preserved in database).')
+        return redirect(self.success_url)
+
+
 
 class ShipmentOverheadCreateView(CreateView):
     model = ShipmentOverhead
@@ -1207,7 +1474,7 @@ def local_purchase_create(request):
                 # Success message
                 messages.success(request, f'Local purchase created successfully. Total: {total_amount}')
                 
-                return redirect('adminapp:admin_dashboard')
+                return redirect('adminapp:local_purchase_list')
         else:
             # DEBUG: Print detailed errors
             print("=== FORM ERRORS ===")
@@ -1505,11 +1772,12 @@ def local_purchase_workout_summary(request):
 
 
 # function for Peelingshed 
-class PeelingShedSupplyListView(CustomPermissionMixin,ListView):
+class PeelingShedSupplyListView(CustomPermissionMixin, ListView):
     permission_required = 'adminapp.processing_view'
     model = PeelingShedSupply
     template_name = 'adminapp/purchases/peeling_shed_supply_list.html'
     context_object_name = 'supplies'
+    ordering = ['-date'] 
 
 class PeelingShedSupplyDeleteView(CustomPermissionMixin,DeleteView):
     permission_required = 'adminapp.processing_delete'
@@ -1777,56 +2045,155 @@ def update_peeling_shed_supply(request, pk):
     })
 
 @check_permission('processing_edit')
+def update_peeling_shed_supply(request, pk):
+    supply = get_object_or_404(PeelingShedSupply, pk=pk)
+    
+    if request.method == 'POST':
+        form = PeelingShedSupplyForm(request.POST, instance=supply)
+        formset = PeelingShedPeelingTypeFormSet(request.POST, instance=supply, prefix='form')
+
+        if form.is_valid() and formset.is_valid():
+            with transaction.atomic():
+                # Get the spot purchase item and new boxes received
+                spot_purchase_item = form.cleaned_data.get('spot_purchase_item')
+                new_boxes_received = float(form.cleaned_data.get('boxes_received_shed', 0))
+                
+                if spot_purchase_item:
+                    # Get total boxes from the spot purchase item
+                    total_boxes = float(spot_purchase_item.boxes or 0)
+                    
+                    # Calculate already used boxes from database (excluding current supply)
+                    used_boxes = float(PeelingShedSupply.objects.filter(
+                        spot_purchase_item=spot_purchase_item
+                    ).exclude(id=supply.id).aggregate(
+                        total_used=models.Sum('boxes_received_shed')
+                    )['total_used'] or 0)
+                    
+                    # Calculate available boxes (what's left for this update)
+                    available_boxes = total_boxes - used_boxes
+                    
+                    # Validate if new boxes received doesn't exceed available boxes
+                    if new_boxes_received > available_boxes:
+                        form.add_error('boxes_received_shed', 
+                            f'Cannot receive {new_boxes_received} boxes. '
+                            f'Already used by others: {used_boxes} boxes. '
+                            f'Total available: {total_boxes} boxes. '
+                            f'Maximum you can receive: {available_boxes} boxes.')
+                        
+                        return render(request, 'adminapp/purchases/update_peeling_shed_supply_form.html', {
+                            'form': form,
+                            'formset': formset,
+                            'is_update': True,
+                            'supply': supply,
+                        })
+                    
+                    # Calculate balance: Available boxes - current boxes being received
+                    balance_boxes = available_boxes - new_boxes_received
+                    
+                    # Ensure balance is not negative
+                    balance_boxes = max(0, balance_boxes)
+                    
+                    # Calculate quantity received
+                    avg_weight = float(spot_purchase_item.quantity or 0) / float(spot_purchase_item.boxes or 1) if spot_purchase_item.boxes else 0
+                    quantity_received = new_boxes_received * avg_weight
+                    
+                    # Set the calculated values
+                    form.instance.SpotPurchase_balance_boxes = int(balance_boxes)
+                    form.instance.quantity_received_shed = quantity_received
+                    form.instance.SpotPurchase_total_boxes = int(total_boxes)
+                    form.instance.SpotPurchase_quantity = float(spot_purchase_item.quantity or 0)
+                    form.instance.SpotPurchase_average_box_weight = avg_weight
+                
+                supply = form.save()
+                formset.save()
+                
+                messages.success(request, 
+                    f'Peeling Shed Supply updated successfully. '
+                    f'Boxes received: {int(new_boxes_received)}, '
+                    f'Remaining balance: {int(balance_boxes)}')
+                
+            return redirect('adminapp:peeling_shed_supply_detail', pk=supply.pk)
+        else:
+            print("Form Errors:", form.errors)
+            print("Formset Errors:", formset.errors)
+    else:
+        form = PeelingShedSupplyForm(instance=supply)
+        formset = PeelingShedPeelingTypeFormSet(instance=supply, prefix='form')
+        
+        # Pre-populate the calculation fields with existing data
+        if supply.spot_purchase_item:
+            spot_item = supply.spot_purchase_item
+            
+            # Calculate available boxes for current update (excluding this supply)
+            used_boxes = float(PeelingShedSupply.objects.filter(
+                spot_purchase_item=spot_item
+            ).exclude(id=supply.id).aggregate(
+                total_used=models.Sum('boxes_received_shed')
+            )['total_used'] or 0)
+            
+            total_boxes = float(spot_item.boxes or 0)
+            available_boxes = total_boxes - used_boxes
+            current_balance = max(0, available_boxes - float(supply.boxes_received_shed or 0))
+            
+            avg_weight = float(spot_item.quantity or 0) / float(spot_item.boxes or 1) if spot_item.boxes else 0
+            
+            # Set the initial form data for readonly fields
+            form.initial.update({
+                'SpotPurchase_total_boxes': int(total_boxes),
+                'SpotPurchase_quantity': float(spot_item.quantity or 0),
+                'SpotPurchase_average_box_weight': round(avg_weight, 2),
+                'SpotPurchase_balance_boxes': int(current_balance),
+                'quantity_received_shed': float(supply.quantity_received_shed or 0)
+            })
+
+    return render(request, 'adminapp/purchases/update_peeling_shed_supply_form.html', {
+        'form': form,
+        'formset': formset,
+        'is_update': True,
+        'supply': supply,
+    })
+
+
+# Add this AJAX endpoint if it doesn't exist
+@check_permission('processing_edit')
 def get_spot_purchase_item_details_for_update(request):
-    """
-    Get spot purchase item details for update form, excluding current supply from calculations
-    """
+    """Get spot purchase item details for update form with balance calculation"""
     item_id = request.GET.get('item_id')
     supply_id = request.GET.get('supply_id')
     
+    if not item_id:
+        return JsonResponse({'error': 'Item ID required'}, status=400)
+    
     try:
         item = SpotPurchaseItem.objects.get(id=item_id)
-        
-        # Calculate total boxes already used in previous peeling supplies (excluding current supply)
-        used_boxes_query = PeelingShedSupply.objects.filter(
-            spot_purchase_item=item
-        )
-        
-        # Exclude current supply from calculation if updating
-        if supply_id:
-            used_boxes_query = used_boxes_query.exclude(id=supply_id)
-        
-        used_boxes = used_boxes_query.aggregate(
-            total_used=models.Sum('boxes_received_shed')
-        )['total_used'] or 0
-        
-        # Calculate available balance
         total_boxes = float(item.boxes or 0)
+        quantity = float(item.quantity or 0)
+        avg_weight = quantity / total_boxes if total_boxes > 0 else 0
+        
+        # Calculate used boxes (excluding current supply if updating)
+        query = PeelingShedSupply.objects.filter(spot_purchase_item=item)
+        if supply_id:
+            query = query.exclude(id=supply_id)
+        
+        used_boxes = float(query.aggregate(
+            total_used=models.Sum('boxes_received_shed')
+        )['total_used'] or 0)
+        
         available_boxes = total_boxes - used_boxes
+        is_fully_used = available_boxes <= 0
         
-        # Calculate average weight
-        avg_weight = float(item.quantity) / float(item.boxes) if item.boxes else 0
-        
-        data = {
-            'total_boxes': total_boxes,
-            'quantity': float(item.quantity),
-            'average_weight': avg_weight,
-            'used_boxes': used_boxes,
-            'available_boxes': max(0, available_boxes),
-            'is_fully_used': available_boxes <= 0
-        }
-        
+        return JsonResponse({
+            'total_boxes': int(total_boxes),
+            'quantity': quantity,
+            'average_weight': round(avg_weight, 2),
+            'used_boxes': int(used_boxes),
+            'available_boxes': int(max(0, available_boxes)),
+            'is_fully_used': is_fully_used
+        })
     except SpotPurchaseItem.DoesNotExist:
-        data = {
-            'total_boxes': 0,
-            'quantity': 0,
-            'average_weight': 0,
-            'used_boxes': 0,
-            'available_boxes': 0,
-            'is_fully_used': True
-        }
-
-    return JsonResponse(data)
+        return JsonResponse({'error': 'Item not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 
@@ -1846,143 +2213,183 @@ def create_freezing_entry_spot(request):
             f.fields['shed'].queryset = Shed.objects.all()
 
         if form.is_valid() and formset.is_valid():
-            with transaction.atomic():
-                # First calculate totals
-                total_kg = Decimal(0)
-                total_slab = Decimal(0)
-                total_c_s = Decimal(0)
-                total_usd = Decimal(0)
-                total_inr = Decimal(0)
-                yield_percentages = []
-                stock_updates = []  # Store stock updates for later processing
+            try:
+                with transaction.atomic():
+                    # First calculate totals
+                    total_kg = Decimal(0)
+                    total_slab = Decimal(0)
+                    total_c_s = Decimal(0)
+                    total_usd = Decimal(0)
+                    total_inr = Decimal(0)
+                    yield_percentages = []
+                    stock_updates = []  # Store stock updates for later processing
 
-                # Process formset and collect stock data
-                for f in formset:
-                    if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
-                        slab = f.cleaned_data.get('slab_quantity') or Decimal(0)
-                        cs = f.cleaned_data.get('c_s_quantity') or Decimal(0)
-                        kg = f.cleaned_data.get('kg') or Decimal(0)
-                        usd = f.cleaned_data.get('usd_rate_item') or Decimal(0)
-                        inr = f.cleaned_data.get('usd_rate_item_to_inr') or Decimal(0)
-                        yield_percent = f.cleaned_data.get('yield_percentage')
+                    # Process formset and collect stock data
+                    for f in formset:
+                        if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
+                            slab = f.cleaned_data.get('slab_quantity') or Decimal(0)
+                            cs = f.cleaned_data.get('c_s_quantity') or Decimal(0)
+                            kg = f.cleaned_data.get('kg') or Decimal(0)
+                            usd = f.cleaned_data.get('usd_rate_item') or Decimal(0)
+                            inr = f.cleaned_data.get('usd_rate_item_to_inr') or Decimal(0)
+                            yield_percent = f.cleaned_data.get('yield_percentage')
 
-                        # Extract data from formset for stock creation
-                        store = f.cleaned_data.get('store')
-                        item = f.cleaned_data.get('item')
-                        item_quality = f.cleaned_data.get('item_quality')
-                        unit = f.cleaned_data.get('unit')  # Keep as PackingUnit FK instance
-                        glaze = f.cleaned_data.get('glaze')  # Keep as GlazePercentage FK instance
-                        brand = f.cleaned_data.get('brand')
-                        species = f.cleaned_data.get('species')  # Keep as Species FK instance
-                        grade = f.cleaned_data.get('grade')  # Keep as ItemGrade FK instance
-                        freezing_category = f.cleaned_data.get('freezing_category')
-                        
-                        # Extract additional fields for stock
-                        usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal(0)
-                        usd_rate_item = f.cleaned_data.get('usd_rate_item') or Decimal(0)
-                        usd_rate_item_to_inr = f.cleaned_data.get('usd_rate_item_to_inr') or Decimal(0)
-
-                        # Store stock update data for processing after main entry is saved
-                        if store and item and brand and freezing_category:
-                            stock_updates.append({
-                                'store': store,
-                                'item': item,
-                                'item_quality': item_quality,
-                                'unit': unit,  # Keep as FK instance
-                                'glaze': glaze,  # Keep as FK instance
-                                'brand': brand,
-                                'species': species,  # Keep as FK instance
-                                'grade': grade,  # Keep as FK instance
-                                'freezing_category': freezing_category,
-                                'cs': cs,
-                                'kg': kg,
-                                'usd_rate_per_kg': usd_rate_per_kg,
-                                'usd_rate_item': usd_rate_item,
-                                'usd_rate_item_to_inr': usd_rate_item_to_inr,
-                            })
-
-                        # Calculate totals
-                        total_slab += slab
-                        total_c_s += cs
-                        total_kg += kg
-                        total_usd += usd
-                        total_inr += inr
-                        if yield_percent is not None:
-                            yield_percentages.append(yield_percent)
-
-                # Create and save the main freezing entry first
-                freezing_entry = form.save(commit=False)
-                freezing_entry.total_slab = total_slab
-                freezing_entry.total_c_s = total_c_s
-                freezing_entry.total_kg = total_kg
-                freezing_entry.total_usd = total_usd
-                freezing_entry.total_inr = total_inr
-                freezing_entry.total_yield_percentage = (
-                    sum(yield_percentages) / len(yield_percentages) if yield_percentages else Decimal(0)
-                )
-                freezing_entry.save()
-
-                # Save formset with the saved instance
-                formset.instance = freezing_entry
-                formset.save()
-
-                # Now process stock updates with the saved freezing entry
-                for stock_data in stock_updates:
-                    try:
-                        # Prepare stock filter criteria using FK instances directly
-                        stock_filters = {
-                            'store': stock_data['store'],
-                            'item': stock_data['item'],
-                            'brand': stock_data['brand'],
-                            'item_quality': stock_data['item_quality'],
-                            'unit': stock_data['unit'],  # Use FK instance directly
-                            'glaze': stock_data['glaze'],  # Use FK instance directly
-                            'species': stock_data['species'],  # Use FK instance directly
-                            'item_grade': stock_data['grade'],  # Use FK instance directly (note: item_grade not grade)
-                            'freezing_category': stock_data['freezing_category'],
-                        }
-                        
-                        # Remove None values to avoid issues
-                        stock_filters = {k: v for k, v in stock_filters.items() if v is not None}
-
-                        # Try to find existing stock with same characteristics
-                        existing_stock = Stock.objects.filter(**stock_filters).first()
-                        
-                        if existing_stock:
-                            # Update existing stock
-                            existing_stock.cs_quantity += stock_data['cs']
-                            existing_stock.kg_quantity += stock_data['kg']
-                            existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
-                            existing_stock.usd_rate_item = stock_data['usd_rate_item']
-                            existing_stock.usd_rate_item_to_inr = stock_data['usd_rate_item_to_inr']
-                            existing_stock.save()
+                            # Extract data from formset for stock creation
+                            store = f.cleaned_data.get('store')
+                            item = f.cleaned_data.get('item')
+                            item_quality = f.cleaned_data.get('item_quality')
+                            unit = f.cleaned_data.get('unit')  # Keep as PackingUnit FK instance
+                            glaze = f.cleaned_data.get('glaze')  # Keep as GlazePercentage FK instance
+                            brand = f.cleaned_data.get('brand')
+                            species = f.cleaned_data.get('species')  # Keep as Species FK instance
+                            grade = f.cleaned_data.get('grade')  # Keep as ItemGrade FK instance
+                            freezing_category = f.cleaned_data.get('freezing_category')
                             
-                            print(f"Stock updated: {existing_stock}")
-                            
-                        else:
-                            # Create new stock entry - REMOVED 'category' field
-                            new_stock_data = {
-                                **stock_filters,
-                                'cs_quantity': stock_data['cs'],
-                                'kg_quantity': stock_data['kg'],
-                                'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
-                                'usd_rate_item': stock_data['usd_rate_item'],
-                                'usd_rate_item_to_inr': stock_data['usd_rate_item_to_inr'],
-                            }
-                            
-                            stock = Stock.objects.create(**new_stock_data)
-                            print(f"Stock created: {stock}")
+                            # Extract additional fields for stock
+                            usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal(0)
+                            usd_rate_item = f.cleaned_data.get('usd_rate_item') or Decimal(0)
+                            usd_rate_item_to_inr = f.cleaned_data.get('usd_rate_item_to_inr') or Decimal(0)
 
-                    except Exception as e:
-                        print(f"Error creating/updating stock: {e}")
-                        messages.error(request, f"Error updating stock for {stock_data['item'].name}: {str(e)}")
-                        # Continue processing other items instead of failing completely
+                            # Store stock update data for processing after main entry is saved
+                            if store and item and brand and freezing_category:
+                                stock_updates.append({
+                                    'store': store,
+                                    'item': item,
+                                    'item_quality': item_quality,
+                                    'unit': unit,  # Keep as FK instance
+                                    'glaze': glaze,  # Keep as FK instance
+                                    'brand': brand,
+                                    'species': species,  # Keep as FK instance
+                                    'grade': grade,  # Keep as FK instance
+                                    'freezing_category': freezing_category,
+                                    'cs': cs,
+                                    'kg': kg,
+                                    'usd_rate_per_kg': usd_rate_per_kg,
+                                    'usd_rate_item': usd_rate_item,
+                                    'usd_rate_item_to_inr': usd_rate_item_to_inr,
+                                })
 
-            messages.success(request, 'Freezing entry created successfully!')
-            return redirect('adminapp:freezing_entry_spot_list')
+                            # Calculate totals
+                            total_slab += slab
+                            total_c_s += cs
+                            total_kg += kg
+                            total_usd += usd
+                            total_inr += inr
+                            if yield_percent is not None:
+                                yield_percentages.append(yield_percent)
+
+                    # Create and save the main freezing entry first
+                    freezing_entry = form.save(commit=False)
+                    freezing_entry.total_slab = total_slab
+                    freezing_entry.total_c_s = total_c_s
+                    freezing_entry.total_kg = total_kg
+                    freezing_entry.total_usd = total_usd
+                    freezing_entry.total_inr = total_inr
+                    # Sum of all yield percentages instead of average
+                    freezing_entry.total_yield_percentage = sum(yield_percentages) if yield_percentages else Decimal(0)
+                    freezing_entry.save()
+
+                    # Save formset with the saved instance
+                    formset.instance = freezing_entry
+                    formset.save()
+
+                    # Now process stock updates with the saved freezing entry
+                    stock_errors = []
+                    for stock_data in stock_updates:
+                        try:
+                            # Prepare stock filter criteria using FK instances directly
+                            stock_filters = {}
+                            
+                            # Add each field only if it's not None
+                            if stock_data.get('store'):
+                                stock_filters['store'] = stock_data['store']
+                            if stock_data.get('item'):
+                                stock_filters['item'] = stock_data['item']
+                            if stock_data.get('brand'):
+                                stock_filters['brand'] = stock_data['brand']
+                            if stock_data.get('item_quality'):
+                                stock_filters['item_quality'] = stock_data['item_quality']
+                            if stock_data.get('unit'):
+                                stock_filters['unit'] = stock_data['unit']
+                            if stock_data.get('glaze'):
+                                stock_filters['glaze'] = stock_data['glaze']
+                            if stock_data.get('species'):
+                                stock_filters['species'] = stock_data['species']
+                            if stock_data.get('grade'):
+                                stock_filters['item_grade'] = stock_data['grade']  # Note: using item_grade for the field name
+                            if stock_data.get('freezing_category'):
+                                stock_filters['freezing_category'] = stock_data['freezing_category']
+                            
+                            # Debug: Print the filter criteria
+                            print(f"Looking for stock with filters: {stock_filters}")
+
+                            # First, try to update existing stock
+                            existing_stocks = Stock.objects.filter(**stock_filters)
+                            
+                            if existing_stocks.exists():
+                                # Update the first matching stock
+                                existing_stock = existing_stocks.first()
+                                existing_stock.cs_quantity += stock_data['cs']
+                                existing_stock.kg_quantity += stock_data['kg']
+                                existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                existing_stock.usd_rate_item = stock_data['usd_rate_item']
+                                existing_stock.usd_rate_item_to_inr = stock_data['usd_rate_item_to_inr']
+                                existing_stock.save()
+                                print(f"Existing stock updated: {existing_stock}")
+                            else:
+                                # Create new stock
+                                new_stock_data = {
+                                    **stock_filters,
+                                    'cs_quantity': stock_data['cs'],
+                                    'kg_quantity': stock_data['kg'],
+                                    'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
+                                    'usd_rate_item': stock_data['usd_rate_item'],
+                                    'usd_rate_item_to_inr': stock_data['usd_rate_item_to_inr'],
+                                }
+                                
+                                # Double-check before creating to avoid race conditions
+                                if not Stock.objects.filter(**stock_filters).exists():
+                                    stock = Stock.objects.create(**new_stock_data)
+                                    print(f"New stock created: {stock}")
+                                else:
+                                    # Stock was created by another process, update it instead
+                                    existing_stock = Stock.objects.filter(**stock_filters).first()
+                                    existing_stock.cs_quantity += stock_data['cs']
+                                    existing_stock.kg_quantity += stock_data['kg']
+                                    existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                    existing_stock.usd_rate_item = stock_data['usd_rate_item']
+                                    existing_stock.usd_rate_item_to_inr = stock_data['usd_rate_item_to_inr']
+                                    existing_stock.save()
+                                    print(f"Stock updated after race condition: {existing_stock}")
+
+                        except Exception as stock_error:
+                            error_msg = f"Error with stock for {stock_data.get('item', 'Unknown')}: {str(stock_error)}"
+                            print(error_msg)
+                            stock_errors.append(error_msg)
+                            # Continue processing other items
+                            continue
+
+                    # Add any stock errors as warning messages
+                    for error in stock_errors:
+                        messages.warning(request, error)
+
+                messages.success(request, 'Freezing entry created successfully!')
+                return redirect('adminapp:freezing_entry_spot_list')
+                
+            except Exception as e:
+                # Catch any other errors that might occur
+                print(f"Error in transaction: {e}")
+                import traceback
+                print(f"Full traceback: {traceback.format_exc()}")
+                messages.error(request, f'Error creating freezing entry: {str(e)}')
+                # Continue to render the form with errors
         else:
             print("Form Errors:", form.errors)
             print("Formset Errors:", formset.errors)
+            # Add specific error messages for better debugging
+            for i, form_errors in enumerate(formset.errors):
+                if form_errors:
+                    print(f"Formset form {i} errors: {form_errors}")
             messages.error(request, 'Please correct the errors below.')
     else:
         form = FreezingEntrySpotForm()
@@ -1990,6 +2397,11 @@ def create_freezing_entry_spot(request):
         form.fields['spot_supervisor'].queryset = PurchasingSupervisor.objects.none()
         formset = FreezingEntrySpotItemFormSet(prefix='form')
 
+        # Set initial querysets for formset forms
+        for f in formset.forms:
+            f.fields['shed'].queryset = Shed.objects.all()
+
+    # This return statement should always be reached
     return render(request, 'adminapp/freezing/freezing_entry_spot_create.html', {
         'form': form,
         'formset': formset,
@@ -2045,7 +2457,7 @@ def freezing_entry_spot_update(request, pk):
                 total_c_s = Decimal(0)
                 total_usd = Decimal(0)
                 total_inr = Decimal(0)
-                yield_percentages = []
+                total_yield_percentage = Decimal(0)  # Fixed: Initialize as Decimal(0)
                 stock_updates = []  # Store stock updates for later processing
 
                 # Process formset and create new stock entries
@@ -2056,7 +2468,7 @@ def freezing_entry_spot_update(request, pk):
                         kg = f.cleaned_data.get("kg") or Decimal(0)
                         usd = f.cleaned_data.get("usd_rate_item") or Decimal(0)
                         inr = f.cleaned_data.get("usd_rate_item_to_inr") or Decimal(0)
-                        yield_percent = f.cleaned_data.get("yield_percentage")
+                        yield_percent = f.cleaned_data.get("yield_percentage") or Decimal(0)  # Fixed: Handle None values
 
                         # Extract data from formset for stock updates
                         store = f.cleaned_data.get('store')
@@ -2093,14 +2505,13 @@ def freezing_entry_spot_update(request, pk):
                                 'usd_rate_item_to_inr': usd_rate_item_to_inr,
                             })
 
-                        # Calculate totals
+                        # Calculate totals - Fixed yield calculation
                         total_slab += slab
                         total_c_s += cs
                         total_kg += kg
                         total_usd += usd
                         total_inr += inr
-                        if yield_percent is not None:
-                            yield_percentages.append(yield_percent)
+                        total_yield_percentage += yield_percent  # Fixed: Add each yield percentage to total
 
                 # Assign recalculated totals
                 entry.total_slab = total_slab
@@ -2108,9 +2519,7 @@ def freezing_entry_spot_update(request, pk):
                 entry.total_kg = total_kg
                 entry.total_usd = total_usd
                 entry.total_inr = total_inr
-                entry.total_yield_percentage = (
-                    sum(yield_percentages) / len(yield_percentages) if yield_percentages else Decimal(0)
-                )
+                entry.total_yield_percentage = total_yield_percentage  # Fixed: Use the correct variable
 
                 entry.save()
                 formset.instance = entry
@@ -2213,7 +2622,6 @@ def delete_freezing_entry_spot(request, pk):
     
     return render(request, 'adminapp/confirm_delete.html', {'entry': entry})
 
-
 def get_spots_by_date(request):
     date = request.GET.get('date')
     spots = SpotPurchase.objects.filter(date=date).values('id', 'spot__location_name' , 'voucher_number')
@@ -2255,53 +2663,6 @@ def get_spot_details(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
-def get_sheds_by_date(request):
-    date_str = request.GET.get('date')  # Spot Purchase Date
-    if not date_str:
-        return JsonResponse({'error': 'Missing date'}, status=400)
-
-    # Convert string to Python date
-    try:
-        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-    except ValueError:
-        return JsonResponse({'error': 'Invalid date format'}, status=400)
-
-    # Fetch supplies for that spot purchase date
-    supplies = PeelingShedSupply.objects.filter(
-        spot_purchase__date=date_obj
-    ).select_related('shed', 'spot_purchase_item__item')
-
-    seen_pairs = set()
-    result = []
-
-    for supply in supplies:
-        shed = supply.shed
-        item = supply.spot_purchase_item.item
-        key = (shed.id, item.id)
-
-        if key not in seen_pairs:
-            seen_pairs.add(key)
-
-            # Yield calculation example
-            try:
-                total_qty = supply.spot_purchase_item.quantity  # adjust field name
-                qty_received = supply.quantity_received_shed
-                yield_percent = (qty_received / total_qty) * 100 if total_qty else 0
-            except:
-                yield_percent = 0
-
-            result.append({
-                'shed_id': shed.id,
-                'shed_name': str(shed),
-                'item_id': item.id,
-                'item_name': str(item),
-                'boxes_received_shed': supply.boxes_received_shed,
-                'quantity_received_shed': str(supply.quantity_received_shed),
-                'yield_percent': round(yield_percent, 2)
-            })
-
-    return JsonResponse({'sheds': result})
-
 def get_unit_details(request):
     unit_id = request.GET.get('unit_id')
     try:
@@ -2326,22 +2687,125 @@ def get_spot_purchase_items_by_date(request):
     if not date:
         return JsonResponse({"error": "Missing date"}, status=400)
 
+    # Get all spot purchase items for this date
     items = SpotPurchaseItem.objects.filter(
         purchase__date=date
-    ).select_related("item")
+    ).select_related("item", "purchase")
 
-    data = []
+    # Group by item and calculate total quantities
+    item_totals = {}
+    
     for item in items:
-        # ✅ print to terminal
-        print(f"Item: {item.item.name}, Quantity: {item.quantity}")
+        item_id = item.item.id
+        quantity = float(item.quantity)
+        
+        if item_id in item_totals:
+            item_totals[item_id]['total_quantity'] += quantity
+            item_totals[item_id]['purchase_count'] += 1
+        else:
+            item_totals[item_id] = {
+                'item_id': item_id,
+                'item_name': str(item.item),
+                'total_quantity': quantity,
+                'purchase_count': 1,
+                'voucher_numbers': [item.purchase.voucher_number] if hasattr(item.purchase, 'voucher_number') else []
+            }
 
+    # Convert to list format
+    data = []
+    for item_id, item_data in item_totals.items():
+        print(f"Item: {item_data['item_name']}, Total Quantity: {item_data['total_quantity']} (from {item_data['purchase_count']} purchases)")
+        
         data.append({
-            "id": item.id,
-            "name": str(item.item),
-            "quantity": str(item.quantity),
+            "id": item_id,  # Using item_id as id for consistency
+            "item_id": item_id,
+            "name": item_data['item_name'],
+            "quantity": str(item_data['total_quantity']),  # This is the TOTAL quantity for all purchases of this item on this date
+            "purchase_count": item_data['purchase_count'],
+            "voucher_numbers": item_data.get('voucher_numbers', [])
         })
 
+    print(f"Returning aggregated purchase data for date {date}: Total {len(data)} unique items")
     return JsonResponse({"items": data})
+
+def get_sheds_by_date(request):
+    date_str = request.GET.get('date')
+    spot_id = request.GET.get('spot_id')
+    
+    if not date_str:
+        return JsonResponse({'error': 'Missing date'}, status=400)
+
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date format'}, status=400)
+
+    # Build query - start with supplies for the date
+    supplies_query = PeelingShedSupply.objects.filter(
+        spot_purchase__date=date_obj
+    ).select_related(
+        'shed', 
+        'spot_purchase_item__item', 
+        'spot_purchase',
+        'spot_purchase_item'
+    )
+
+    # CRITICAL FIX: If specific spot purchase ID provided, filter by it ONLY
+    if spot_id:
+        supplies_query = supplies_query.filter(spot_purchase__id=spot_id)
+        print(f"FILTERED: Getting ONLY spot purchase ID: {spot_id} on date: {date_obj}")
+    else:
+        print(f"UNFILTERED: Getting ALL shed supplies for date: {date_obj}")
+
+    supplies = supplies_query.all()
+    
+    # DEBUG: Show actual query results
+    print(f"Query result count: {supplies.count()}")
+    for supply in supplies:
+        print(f"  - Supply from Spot Purchase ID: {supply.spot_purchase.id} ({supply.spot_purchase_item.quantity}kg)")
+
+    result = []
+
+    for supply in supplies:
+        shed = supply.shed
+        item = supply.spot_purchase_item.item
+        spot_purchase = supply.spot_purchase
+        spot_purchase_item = supply.spot_purchase_item
+
+        # Only process if this is the requested spot purchase (double check)
+        if spot_id and str(spot_purchase.id) != str(spot_id):
+            print(f"SKIPPING: Supply belongs to spot purchase {spot_purchase.id}, but requested {spot_id}")
+            continue
+            
+        print(f"PROCESSING: Spot Purchase ID {spot_purchase.id} - Shed '{shed}' + Item '{item}'")
+        
+        # Get the quantities
+        original_purchase_qty = spot_purchase_item.quantity
+        qty_received_shed = supply.quantity_received_shed
+        boxes_received = supply.boxes_received_shed
+        total_boxes = supply.SpotPurchase_total_boxes
+
+        print(f"  - Original purchase quantity: {original_purchase_qty}kg")
+        print(f"  - Quantity received at shed: {qty_received_shed}kg") 
+        print(f"  - Boxes received: {boxes_received}/{total_boxes}")
+
+        result.append({
+            'shed_id': shed.id,
+            'shed_name': str(shed),
+            'item_id': item.id,
+            'item_name': str(item),
+            'boxes_received_shed': boxes_received,
+            'quantity_received_shed': str(qty_received_shed),
+            'original_purchase_quantity': str(original_purchase_qty),
+            'spot_purchase_id': spot_purchase.id,
+            'spot_purchase_item_id': spot_purchase_item.id,
+            'voucher_number': getattr(spot_purchase, 'voucher_number', ''),
+            'total_boxes': total_boxes,
+            'boxes_balance': supply.SpotPurchase_balance_boxes,
+        })
+
+    print(f"FINAL: Returning {len(result)} records for spot_id={spot_id}")
+    return JsonResponse({'sheds': result})
 
 def reverse_stock_changes_for_spot_entry(freezing_entry):
     """
@@ -2458,158 +2922,236 @@ def create_freezing_entry_local(request):
         formset = FreezingEntryLocalItemFormSet(request.POST, prefix='form')
 
         if form.is_valid() and formset.is_valid():
-            with transaction.atomic():
-                # First calculate totals
-                total_kg = Decimal(0)
-                total_slab = Decimal(0)
-                total_c_s = Decimal(0)
-                total_usd = Decimal(0)
-                total_inr = Decimal(0)
-                stock_updates = []  # Store stock updates for later processing
+            try:
+                with transaction.atomic():
+                    # First calculate totals
+                    total_kg = Decimal(0)
+                    total_slab = Decimal(0)
+                    total_c_s = Decimal(0)
+                    total_usd = Decimal(0)
+                    total_inr = Decimal(0)
+                    stock_updates = []  # Store stock updates for later processing
 
-                # Get Dollar Rate
-                dollar_rate_to_inr = Decimal(0)
-                try:
-                    from .models import DollarRate
-                    dollar_obj = DollarRate.objects.latest("id")
-                    dollar_rate_to_inr = dollar_obj.rate
-                except:
-                    pass
-
-                # Process formset and collect stock data
-                for f in formset.forms:
-                    if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
-                        slab = f.cleaned_data.get('slab_quantity') or Decimal(0)
-                        cs = f.cleaned_data.get('c_s_quantity') or Decimal(0)
-                        kg = f.cleaned_data.get('kg') or Decimal(0)
-                        usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal(0)
-
-                        # Calculate USD and INR amounts
-                        usd_item = kg * usd_rate_per_kg
-                        inr_item = usd_item * dollar_rate_to_inr
-
-                        # Extract data from formset for stock creation
-                        store = f.cleaned_data.get('store')
-                        item = f.cleaned_data.get('item')
-                        item_quality = f.cleaned_data.get('item_quality')
-                        unit = f.cleaned_data.get('unit')  # Keep as PackingUnit FK instance
-                        glaze = f.cleaned_data.get('glaze')  # Keep as GlazePercentage FK instance
-                        brand = f.cleaned_data.get('brand')
-                        species = f.cleaned_data.get('species')  # Keep as Species FK instance
-                        grade = f.cleaned_data.get('grade')  # Keep as ItemGrade FK instance
-                        freezing_category = f.cleaned_data.get('freezing_category')  # Keep as FreezingCategory FK instance
-
-                        # Store stock update data for processing after main entry is saved
-                        if store and item and brand:
-                            stock_updates.append({
-                                'store': store,
-                                'item': item,
-                                'item_quality': item_quality,
-                                'unit': unit,  # Keep as FK instance
-                                'glaze': glaze,  # Keep as FK instance
-                                'brand': brand,
-                                'species': species,  # Keep as FK instance
-                                'grade': grade,  # Keep as FK instance
-                                'freezing_category': freezing_category,  # Keep as FK instance
-                                'cs': cs,
-                                'kg': kg,
-                                'usd_item': usd_item,
-                                'inr_item': inr_item,
-                                'usd_rate_per_kg': usd_rate_per_kg,
-                            })
-
-                        # Calculate totals
-                        total_slab += slab
-                        total_c_s += cs
-                        total_kg += kg
-                        total_usd += usd_item
-                        total_inr += inr_item
-
-                # Create and save the main freezing entry first
-                freezing_entry = form.save(commit=False)
-                freezing_entry.created_by = request.user
-                freezing_entry.total_slab = total_slab
-                freezing_entry.total_c_s = total_c_s
-                freezing_entry.total_kg = total_kg
-                freezing_entry.total_usd = total_usd
-                freezing_entry.total_inr = total_inr
-                freezing_entry.save()
-
-                # Save formset with calculations
-                for f in formset.forms:
-                    if f.cleaned_data and not f.cleaned_data.get("DELETE", False):
-                        item = f.save(commit=False)
-                        item.freezing_entry = freezing_entry
-
-                        # Auto-calc fields
-                        kg = f.cleaned_data.get("kg") or Decimal(0)
-                        usd_rate_per_kg = f.cleaned_data.get("usd_rate_per_kg") or Decimal(0)
-
-                        usd_item = kg * usd_rate_per_kg
-                        inr_item = usd_item * dollar_rate_to_inr
-
-                        item.usd_rate_item = usd_item
-                        item.usd_rate_item_to_inr = inr_item
-                        item.save()
-
-                # Now process stock updates with the saved freezing entry
-                for stock_data in stock_updates:
+                    # Get Dollar Rate - Check what models you have available
+                    dollar_rate_to_inr = Decimal(85)  # Temporary default - change this!
                     try:
-                        # Prepare stock filter criteria using FK instances directly (like in spot function)
-                        stock_filters = {
-                            'store': stock_data['store'],
-                            'item': stock_data['item'],
-                            'brand': stock_data['brand'],
-                            'item_quality': stock_data['item_quality'],
-                            'unit': stock_data['unit'],  # Use FK instance directly
-                            'glaze': stock_data['glaze'],  # Use FK instance directly
-                            'species': stock_data['species'],  # Use FK instance directly
-                            'item_grade': stock_data['grade'],  # Use FK instance directly (note: item_grade not grade)
-                            'freezing_category': stock_data['freezing_category'],  # Use FK instance directly
-                        }
+                        # Import all your models at the top of the file instead
+                        # Check your models.py to find the correct model name
+                        # Common names: Dollar, DollarRate, ExchangeRate, USDRate
                         
-                        # Remove None values to avoid issues
-                        stock_filters = {k: v for k, v in stock_filters.items() if v is not None}
-
-                        # Try to find existing stock with same characteristics
-                        existing_stock = Stock.objects.filter(**stock_filters).first()
+                        # Try to get from database - replace 'Dollar' with your actual model name
+                        from django.apps import apps
                         
-                        if existing_stock:
-                            # Update existing stock
-                            existing_stock.cs_quantity += stock_data['cs']
-                            existing_stock.kg_quantity += stock_data['kg']
-                            existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
-                            existing_stock.usd_rate_item = stock_data['usd_item']
-                            existing_stock.usd_rate_item_to_inr = stock_data['inr_item']
-                            existing_stock.save()
-                            
-                            print(f"Stock updated: {existing_stock}")
-                            
+                        # Try multiple possible model names
+                        for model_name in ['Dollar', 'DollarRate', 'ExchangeRate', 'USDRate', 'Currency']:
+                            try:
+                                DollarModel = apps.get_model('adminapp', model_name)
+                                dollar_obj = DollarModel.objects.latest("id")
+                                dollar_rate_to_inr = dollar_obj.rate
+                                print(f"Dollar rate loaded from {model_name}: {dollar_rate_to_inr}")
+                                break
+                            except LookupError:
+                                continue
                         else:
-                            # Create new stock entry (removed non-existent fields)
-                            new_stock_data = {
-                                **stock_filters,
-                                'cs_quantity': stock_data['cs'],
-                                'kg_quantity': stock_data['kg'],
-                                'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
-                                'usd_rate_item': stock_data['usd_item'],
-                                'usd_rate_item_to_inr': stock_data['inr_item'],
-                            }
+                            print("No dollar rate model found, using default")
                             
-                            stock = Stock.objects.create(**new_stock_data)
-                            print(f"Stock created: {stock}")
-
                     except Exception as e:
-                        print(f"Error creating/updating stock: {e}")
-                        messages.error(request, f"Error updating stock for {stock_data['item'].name}: {str(e)}")
-                        # Continue processing other items instead of failing completely
+                        print(f"Error loading dollar rate: {e}")
+                        print(f"Using default rate: {dollar_rate_to_inr}")
 
-                messages.success(request, "Freezing Entry created successfully ✅")
-                return redirect("adminapp:freezing_entry_local_list")
+                    # Process formset and collect stock data
+                    for f in formset.forms:
+                        if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
+                            slab = f.cleaned_data.get('slab_quantity') or Decimal(0)
+                            cs = f.cleaned_data.get('c_s_quantity') or Decimal(0)
+                            kg = f.cleaned_data.get('kg') or Decimal(0)
+                            usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal(0)
+
+                            # Calculate USD and INR amounts
+                            usd_item = kg * usd_rate_per_kg
+                            inr_item = usd_item * dollar_rate_to_inr
+
+                            print(f"Calculating: kg={kg}, usd_rate={usd_rate_per_kg}, usd_item={usd_item}, inr_item={inr_item}")
+
+                            # Extract data from formset for stock creation
+                            store = f.cleaned_data.get('store')
+                            item = f.cleaned_data.get('item')
+                            item_quality = f.cleaned_data.get('item_quality')
+                            unit = f.cleaned_data.get('unit')
+                            glaze = f.cleaned_data.get('glaze')
+                            brand = f.cleaned_data.get('brand')
+                            species = f.cleaned_data.get('species')
+                            grade = f.cleaned_data.get('grade')
+                            freezing_category = f.cleaned_data.get('freezing_category')
+
+                            # Store stock update data for processing after main entry is saved
+                            if store and item and brand and freezing_category:
+                                stock_updates.append({
+                                    'store': store,
+                                    'item': item,
+                                    'item_quality': item_quality,
+                                    'unit': unit,
+                                    'glaze': glaze,
+                                    'brand': brand,
+                                    'species': species,
+                                    'grade': grade,
+                                    'freezing_category': freezing_category,
+                                    'cs': cs,
+                                    'kg': kg,
+                                    'usd_item': usd_item,
+                                    'inr_item': inr_item,
+                                    'usd_rate_per_kg': usd_rate_per_kg,
+                                })
+
+                            # Calculate totals
+                            total_slab += slab
+                            total_c_s += cs
+                            total_kg += kg
+                            total_usd += usd_item
+                            total_inr += inr_item
+
+                    print(f"Totals calculated: slab={total_slab}, cs={total_c_s}, kg={total_kg}, usd={total_usd}, inr={total_inr}")
+
+                    # Create and save the main freezing entry first
+                    freezing_entry = form.save(commit=False)
+                    freezing_entry.created_by = request.user
+                    freezing_entry.total_slab = total_slab
+                    freezing_entry.total_c_s = total_c_s
+                    freezing_entry.total_kg = total_kg
+                    freezing_entry.total_usd = total_usd
+                    freezing_entry.total_inr = total_inr
+                    freezing_entry.save()
+
+                    print(f"Freezing entry saved with total_inr: {freezing_entry.total_inr}")
+
+                    # Save formset with calculations
+                    for f in formset.forms:
+                        if f.cleaned_data and not f.cleaned_data.get("DELETE", False):
+                            item = f.save(commit=False)
+                            item.freezing_entry = freezing_entry
+
+                            # Auto-calc fields
+                            kg = f.cleaned_data.get("kg") or Decimal(0)
+                            usd_rate_per_kg = f.cleaned_data.get("usd_rate_per_kg") or Decimal(0)
+
+                            usd_item = kg * usd_rate_per_kg
+                            inr_item = usd_item * dollar_rate_to_inr
+
+                            item.usd_rate_item = usd_item
+                            item.usd_rate_item_to_inr = inr_item
+                            item.save()
+
+                    # Now process stock updates with the saved freezing entry
+                    stock_errors = []
+                    for stock_data in stock_updates:
+                        try:
+                            # Prepare stock filter criteria
+                            stock_filters = {}
+                            
+                            # Add each field only if it's not None
+                            if stock_data.get('store'):
+                                stock_filters['store'] = stock_data['store']
+                            if stock_data.get('item'):
+                                stock_filters['item'] = stock_data['item']
+                            if stock_data.get('brand'):
+                                stock_filters['brand'] = stock_data['brand']
+                            if stock_data.get('item_quality'):
+                                stock_filters['item_quality'] = stock_data['item_quality']
+                            if stock_data.get('unit'):
+                                stock_filters['unit'] = stock_data['unit']
+                            if stock_data.get('glaze'):
+                                stock_filters['glaze'] = stock_data['glaze']
+                            if stock_data.get('species'):
+                                stock_filters['species'] = stock_data['species']
+                            if stock_data.get('grade'):
+                                stock_filters['item_grade'] = stock_data['grade']
+                            if stock_data.get('freezing_category'):
+                                stock_filters['freezing_category'] = stock_data['freezing_category']
+                            
+                            print(f"Looking for stock with filters: {stock_filters}")
+
+                            # Try to find existing stock
+                            existing_stock = None
+                            try:
+                                existing_stock = Stock.objects.get(**stock_filters)
+                                print(f"Found exact match: {existing_stock}")
+                            except Stock.DoesNotExist:
+                                print("No exact match found")
+                            except Stock.MultipleObjectsReturned:
+                                existing_stock = Stock.objects.filter(**stock_filters).first()
+                                print(f"Multiple matches found, using first: {existing_stock}")
+                            
+                            if existing_stock:
+                                # Update existing stock
+                                existing_stock.cs_quantity += stock_data['cs']
+                                existing_stock.kg_quantity += stock_data['kg']
+                                existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                existing_stock.usd_rate_item = stock_data['usd_item']
+                                existing_stock.usd_rate_item_to_inr = stock_data['inr_item']
+                                existing_stock.save()
+                                print(f"Stock updated successfully: {existing_stock}")
+                            else:
+                                # Try to create new stock with retry logic
+                                max_retries = 3
+                                for attempt in range(max_retries):
+                                    try:
+                                        # Double-check if stock exists
+                                        if Stock.objects.filter(**stock_filters).exists():
+                                            existing_stock = Stock.objects.filter(**stock_filters).first()
+                                            existing_stock.cs_quantity += stock_data['cs']
+                                            existing_stock.kg_quantity += stock_data['kg']
+                                            existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                            existing_stock.usd_rate_item = stock_data['usd_item']
+                                            existing_stock.usd_rate_item_to_inr = stock_data['inr_item']
+                                            existing_stock.save()
+                                            print(f"Stock updated on retry {attempt + 1}: {existing_stock}")
+                                            break
+                                        else:
+                                            # Create new stock
+                                            new_stock_data = {
+                                                **stock_filters,
+                                                'cs_quantity': stock_data['cs'],
+                                                'kg_quantity': stock_data['kg'],
+                                                'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
+                                                'usd_rate_item': stock_data['usd_item'],
+                                                'usd_rate_item_to_inr': stock_data['inr_item'],
+                                            }
+                                            stock = Stock.objects.create(**new_stock_data)
+                                            print(f"New stock created on attempt {attempt + 1}: {stock}")
+                                            break
+                                    except IntegrityError as ie:
+                                        print(f"IntegrityError on attempt {attempt + 1}: {ie}")
+                                        if attempt == max_retries - 1:
+                                            raise  # Re-raise on final attempt
+                                        import time
+                                        time.sleep(0.1)
+                                        continue
+
+                        except Exception as stock_error:
+                            error_msg = f"Error with stock for {stock_data.get('item', 'Unknown')}: {str(stock_error)}"
+                            print(error_msg)
+                            stock_errors.append(error_msg)
+                            continue
+
+                    # Add any stock errors as warning messages
+                    for error in stock_errors:
+                        messages.warning(request, error)
+
+                    messages.success(request, "Freezing Entry created successfully ✅")
+                    return redirect("adminapp:freezing_entry_local_list")
+
+            except Exception as e:
+                # Catch any other errors that might occur
+                print(f"Error in transaction: {e}")
+                import traceback
+                print(f"Full traceback: {traceback.format_exc()}")
+                messages.error(request, f'Error creating freezing entry: {str(e)}')
+                # Continue to render the form with errors
 
         else:
             print("Form Errors:", form.errors)
             print("Formset Errors:", [f.errors for f in formset.forms])
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = FreezingEntryLocalForm()
         formset = FreezingEntryLocalItemFormSet(prefix='form')
@@ -2687,176 +3229,243 @@ def freezing_entry_local_update(request, pk):
         )
         
         if form.is_valid() and formset.is_valid():
-            with transaction.atomic():
-                # First, reverse all stock changes from this specific entry
-                reverse_stock_changes_for_local_entry(freezing_entry)
+            try:
+                with transaction.atomic():
+                    # First, reverse all stock changes from this specific entry
+                    reverse_stock_changes_for_local_entry(freezing_entry)
 
-                # Initialize totals (matching create function)
-                total_kg = Decimal('0')
-                total_slab = Decimal('0')
-                total_c_s = Decimal('0')
-                total_usd = Decimal('0')
-                total_inr = Decimal('0')
-                stock_updates = []
+                    # Initialize totals
+                    total_kg = Decimal('0')
+                    total_slab = Decimal('0')
+                    total_c_s = Decimal('0')
+                    total_usd = Decimal('0')
+                    total_inr = Decimal('0')
+                    stock_updates = []
 
-                # Get Dollar Rate (matching create function)
-                dollar_rate_to_inr = Decimal('0')
-                try:
-                    from .models import DollarRate
-                    dollar_obj = DollarRate.objects.latest("id")
-                    dollar_rate_to_inr = Decimal(str(dollar_obj.rate))
-                    print(f"Dollar rate retrieved: {dollar_rate_to_inr}")
-                except Exception as e:
-                    print(f"Error getting dollar rate: {e}")
-                    pass
-
-                # Save formset to get access to deleted_objects
-                instances = formset.save(commit=False)
-                
-                # Handle deletions
-                for obj in formset.deleted_objects:
-                    obj.delete()
-
-                # Process formset and collect stock data (matching create function logic)
-                for f in formset.forms:
-                    if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
-                        # Get values directly from cleaned_data (like create function)
-                        slab = f.cleaned_data.get('slab_quantity') or Decimal('0')
-                        cs = f.cleaned_data.get('c_s_quantity') or Decimal('0')
-                        kg = f.cleaned_data.get('kg') or Decimal('0')
-                        usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal('0')
-
-                        # Calculate USD and INR amounts (matching create function)
-                        usd_item = kg * usd_rate_per_kg
-                        inr_item = usd_item * dollar_rate_to_inr
-
-                        # Extract data from formset for stock creation (matching create function)
-                        store = f.cleaned_data.get('store')
-                        item = f.cleaned_data.get('item')
-                        item_quality = f.cleaned_data.get('item_quality')
-                        unit = f.cleaned_data.get('unit')
-                        glaze = f.cleaned_data.get('glaze')
-                        brand = f.cleaned_data.get('brand')
-                        species = f.cleaned_data.get('species')
-                        grade = f.cleaned_data.get('grade')
-                        freezing_category = f.cleaned_data.get('freezing_category')
-
-                        # Store stock update data for processing after main entry is saved
-                        if store and item and brand:
-                            stock_updates.append({
-                                'store': store,
-                                'item': item,
-                                'item_quality': item_quality,
-                                'unit': unit,
-                                'glaze': glaze,
-                                'brand': brand,
-                                'species': species,
-                                'grade': grade,
-                                'freezing_category': freezing_category,
-                                'cs': cs,
-                                'kg': kg,
-                                'usd_item': usd_item,
-                                'inr_item': inr_item,
-                                'usd_rate_per_kg': usd_rate_per_kg,
-                                'form_instance': f,
-                                'calculated_values': {
-                                    'usd_rate_item': usd_item,
-                                    'usd_rate_item_to_inr': inr_item,
-                                }
-                            })
-
-                        # Calculate totals (matching create function)
-                        total_slab += slab
-                        total_c_s += cs
-                        total_kg += kg
-                        total_usd += usd_item
-                        total_inr += inr_item
-
-                        print(f"Processing form: slab={slab}, cs={cs}, kg={kg}, usd={usd_item}, inr={inr_item}")
-
-                # Update the main freezing entry with totals (like create function)
-                entry = form.save(commit=False)
-                entry.total_slab = total_slab
-                entry.total_c_s = total_c_s
-                entry.total_kg = total_kg
-                entry.total_usd = total_usd
-                entry.total_inr = total_inr
-                entry.save()
-
-                # Save formset instances with calculated values (matching create function)
-                for instance in instances:
-                    # Find the corresponding calculated values
-                    for stock_update in stock_updates:
-                        if stock_update['form_instance'].instance == instance:
-                            calc_vals = stock_update['calculated_values']
-                            instance.usd_rate_item = calc_vals['usd_rate_item']
-                            instance.usd_rate_item_to_inr = calc_vals['usd_rate_item_to_inr']
-                            break
-                    
-                    instance.freezing_entry = freezing_entry
-                    instance.save()
-
-                # Now process stock updates (matching create function logic)
-                for stock_data in stock_updates:
+                    # Get Dollar Rate - using the same method as create function
+                    dollar_rate_to_inr = Decimal(85)  # Default fallback
                     try:
-                        # Prepare stock filter criteria using FK instances directly
-                        stock_filters = {
-                            'store': stock_data['store'],
-                            'item': stock_data['item'],
-                            'brand': stock_data['brand'],
-                            'item_quality': stock_data['item_quality'],
-                            'unit': stock_data['unit'],
-                            'glaze': stock_data['glaze'],
-                            'species': stock_data['species'],
-                            'item_grade': stock_data['grade'],  # Note: item_grade not grade
-                            'freezing_category': stock_data['freezing_category'],
-                        }
+                        from django.apps import apps
                         
-                        # Remove None values
-                        stock_filters = {k: v for k, v in stock_filters.items() if v is not None}
-
-                        # Try to find existing stock with same characteristics
-                        existing_stock = Stock.objects.filter(**stock_filters).first()
-                        
-                        if existing_stock:
-                            # Update existing stock (matching create function)
-                            existing_stock.cs_quantity += stock_data['cs']
-                            existing_stock.kg_quantity += stock_data['kg']
-                            existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
-                            existing_stock.usd_rate_item = stock_data['usd_item']
-                            existing_stock.usd_rate_item_to_inr = stock_data['inr_item']
-                            existing_stock.save()
-                            
-                            print(f"Stock updated: {existing_stock}")
-                            
+                        # Try multiple possible model names
+                        for model_name in ['Dollar', 'DollarRate', 'ExchangeRate', 'USDRate', 'Currency']:
+                            try:
+                                DollarModel = apps.get_model('adminapp', model_name)
+                                dollar_obj = DollarModel.objects.latest("id")
+                                dollar_rate_to_inr = Decimal(str(dollar_obj.rate))
+                                print(f"Dollar rate loaded from {model_name}: {dollar_rate_to_inr}")
+                                break
+                            except LookupError:
+                                continue
                         else:
-                            # Create new stock entry (matching create function)
-                            new_stock_data = {
-                                **stock_filters,
-                                'cs_quantity': stock_data['cs'],
-                                'kg_quantity': stock_data['kg'],
-                                'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
-                                'usd_rate_item': stock_data['usd_item'],
-                                'usd_rate_item_to_inr': stock_data['inr_item'],
-                            }
+                            print("No dollar rate model found, using default")
                             
-                            stock = Stock.objects.create(**new_stock_data)
-                            print(f"Stock created: {stock}")
-
                     except Exception as e:
-                        print(f"Error creating/updating stock: {e}")
-                        messages.error(request, f"Error updating stock for {stock_data['item'].name}: {str(e)}")
-                        # Continue processing other items instead of failing completely
+                        print(f"Error loading dollar rate: {e}")
+                        print(f"Using default rate: {dollar_rate_to_inr}")
 
-                # Debug output for final totals
-                print(f"Final totals - Slab: {total_slab}, C/S: {total_c_s}, KG: {total_kg}, USD: {total_usd}, INR: {total_inr}")
+                    # Save formset to get access to deleted_objects
+                    instances = formset.save(commit=False)
+                    
+                    # Handle deletions
+                    for obj in formset.deleted_objects:
+                        obj.delete()
 
-                messages.success(request, "Freezing Entry updated successfully ✅")
-                return redirect("adminapp:freezing_entry_local_list")
+                    # Process formset and collect stock data
+                    for f in formset.forms:
+                        if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
+                            # Get values directly from cleaned_data
+                            slab = f.cleaned_data.get('slab_quantity') or Decimal('0')
+                            cs = f.cleaned_data.get('c_s_quantity') or Decimal('0')
+                            kg = f.cleaned_data.get('kg') or Decimal('0')
+                            usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal('0')
+
+                            # Calculate USD and INR amounts
+                            usd_item = kg * usd_rate_per_kg
+                            inr_item = usd_item * dollar_rate_to_inr
+
+                            print(f"Calculating: kg={kg}, usd_rate={usd_rate_per_kg}, usd_item={usd_item}, inr_item={inr_item}")
+
+                            # Extract data from formset for stock creation
+                            store = f.cleaned_data.get('store')
+                            item = f.cleaned_data.get('item')
+                            item_quality = f.cleaned_data.get('item_quality')
+                            unit = f.cleaned_data.get('unit')
+                            glaze = f.cleaned_data.get('glaze')
+                            brand = f.cleaned_data.get('brand')
+                            species = f.cleaned_data.get('species')
+                            grade = f.cleaned_data.get('grade')
+                            freezing_category = f.cleaned_data.get('freezing_category')
+
+                            # Store stock update data for processing after main entry is saved
+                            if store and item and brand and freezing_category:
+                                stock_updates.append({
+                                    'store': store,
+                                    'item': item,
+                                    'item_quality': item_quality,
+                                    'unit': unit,
+                                    'glaze': glaze,
+                                    'brand': brand,
+                                    'species': species,
+                                    'grade': grade,
+                                    'freezing_category': freezing_category,
+                                    'cs': cs,
+                                    'kg': kg,
+                                    'usd_item': usd_item,
+                                    'inr_item': inr_item,
+                                    'usd_rate_per_kg': usd_rate_per_kg,
+                                    'form_instance': f,
+                                    'calculated_values': {
+                                        'usd_rate_item': usd_item,
+                                        'usd_rate_item_to_inr': inr_item,
+                                    }
+                                })
+
+                            # Calculate totals
+                            total_slab += slab
+                            total_c_s += cs
+                            total_kg += kg
+                            total_usd += usd_item
+                            total_inr += inr_item
+
+                    print(f"Totals calculated: slab={total_slab}, cs={total_c_s}, kg={total_kg}, usd={total_usd}, inr={total_inr}")
+
+                    # Update the main freezing entry with totals
+                    entry = form.save(commit=False)
+                    entry.total_slab = total_slab
+                    entry.total_c_s = total_c_s
+                    entry.total_kg = total_kg
+                    entry.total_usd = total_usd
+                    entry.total_inr = total_inr
+                    entry.save()
+
+                    print(f"Freezing entry updated with total_inr: {entry.total_inr}")
+
+                    # Save formset instances with calculated values
+                    for instance in instances:
+                        # Find the corresponding calculated values
+                        for stock_update in stock_updates:
+                            if stock_update['form_instance'].instance == instance:
+                                calc_vals = stock_update['calculated_values']
+                                instance.usd_rate_item = calc_vals['usd_rate_item']
+                                instance.usd_rate_item_to_inr = calc_vals['usd_rate_item_to_inr']
+                                break
+                        
+                        instance.freezing_entry = freezing_entry
+                        instance.save()
+
+                    # Now process stock updates with improved error handling
+                    stock_errors = []
+                    for stock_data in stock_updates:
+                        try:
+                            # Prepare stock filter criteria
+                            stock_filters = {}
+                            
+                            # Add each field only if it's not None
+                            if stock_data.get('store'):
+                                stock_filters['store'] = stock_data['store']
+                            if stock_data.get('item'):
+                                stock_filters['item'] = stock_data['item']
+                            if stock_data.get('brand'):
+                                stock_filters['brand'] = stock_data['brand']
+                            if stock_data.get('item_quality'):
+                                stock_filters['item_quality'] = stock_data['item_quality']
+                            if stock_data.get('unit'):
+                                stock_filters['unit'] = stock_data['unit']
+                            if stock_data.get('glaze'):
+                                stock_filters['glaze'] = stock_data['glaze']
+                            if stock_data.get('species'):
+                                stock_filters['species'] = stock_data['species']
+                            if stock_data.get('grade'):
+                                stock_filters['item_grade'] = stock_data['grade']
+                            if stock_data.get('freezing_category'):
+                                stock_filters['freezing_category'] = stock_data['freezing_category']
+                            
+                            print(f"Looking for stock with filters: {stock_filters}")
+
+                            # Try to find existing stock
+                            existing_stock = None
+                            try:
+                                existing_stock = Stock.objects.get(**stock_filters)
+                                print(f"Found exact match: {existing_stock}")
+                            except Stock.DoesNotExist:
+                                print("No exact match found")
+                            except Stock.MultipleObjectsReturned:
+                                existing_stock = Stock.objects.filter(**stock_filters).first()
+                                print(f"Multiple matches found, using first: {existing_stock}")
+                            
+                            if existing_stock:
+                                # Update existing stock
+                                existing_stock.cs_quantity += stock_data['cs']
+                                existing_stock.kg_quantity += stock_data['kg']
+                                existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                existing_stock.usd_rate_item = stock_data['usd_item']
+                                existing_stock.usd_rate_item_to_inr = stock_data['inr_item']
+                                existing_stock.save()
+                                print(f"Stock updated successfully: {existing_stock}")
+                            else:
+                                # Try to create new stock with retry logic
+                                max_retries = 3
+                                for attempt in range(max_retries):
+                                    try:
+                                        # Double-check if stock exists
+                                        if Stock.objects.filter(**stock_filters).exists():
+                                            existing_stock = Stock.objects.filter(**stock_filters).first()
+                                            existing_stock.cs_quantity += stock_data['cs']
+                                            existing_stock.kg_quantity += stock_data['kg']
+                                            existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                            existing_stock.usd_rate_item = stock_data['usd_item']
+                                            existing_stock.usd_rate_item_to_inr = stock_data['inr_item']
+                                            existing_stock.save()
+                                            print(f"Stock updated on retry {attempt + 1}: {existing_stock}")
+                                            break
+                                        else:
+                                            # Create new stock
+                                            new_stock_data = {
+                                                **stock_filters,
+                                                'cs_quantity': stock_data['cs'],
+                                                'kg_quantity': stock_data['kg'],
+                                                'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
+                                                'usd_rate_item': stock_data['usd_item'],
+                                                'usd_rate_item_to_inr': stock_data['inr_item'],
+                                            }
+                                            stock = Stock.objects.create(**new_stock_data)
+                                            print(f"New stock created on attempt {attempt + 1}: {stock}")
+                                            break
+                                    except IntegrityError as ie:
+                                        print(f"IntegrityError on attempt {attempt + 1}: {ie}")
+                                        if attempt == max_retries - 1:
+                                            raise  # Re-raise on final attempt
+                                        import time
+                                        time.sleep(0.1)
+                                        continue
+
+                        except Exception as stock_error:
+                            error_msg = f"Error with stock for {stock_data.get('item', 'Unknown')}: {str(stock_error)}"
+                            print(error_msg)
+                            stock_errors.append(error_msg)
+                            continue
+
+                    # Add any stock errors as warning messages
+                    for error in stock_errors:
+                        messages.warning(request, error)
+
+                    messages.success(request, "Freezing Entry updated successfully ✅")
+                    return redirect("adminapp:freezing_entry_local_list")
+
+            except Exception as e:
+                # Catch any other errors that might occur
+                print(f"Error in transaction: {e}")
+                import traceback
+                print(f"Full traceback: {traceback.format_exc()}")
+                messages.error(request, f'Error updating freezing entry: {str(e)}')
+                # Continue to render the form with errors
+
         else:
             print("Form Errors:", form.errors)
             print("Formset Errors:", [f.errors for f in formset.forms if f.errors])
             print("Formset Non Form Errors:", formset.non_form_errors())
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = FreezingEntryLocalForm(instance=freezing_entry)
         formset = FreezingEntryLocalItemFormSet(
@@ -2868,7 +3477,6 @@ def freezing_entry_local_update(request, pk):
         "adminapp/freezing/freezing_entry_local_update.html",
         {"form": form, "formset": formset, "entry": freezing_entry},
     )
-
 
 
 def get_parties_by_date(request):
@@ -3486,7 +4094,7 @@ def get_dollar_rate_pre_workout(request):
     return JsonResponse({'error': 'Settings not found'}, status=404)
 
 
-# SPOT PURCHASE REPORT - FIXED VERSION
+# SPOT PURCHASE REPORT - COMPLETE FIXED VERSION
 @check_permission('reports_view')
 def spot_purchase_report(request):
     items = Item.objects.all()
@@ -3495,17 +4103,17 @@ def spot_purchase_report(request):
     categories = ItemCategory.objects.all()
 
     queryset = SpotPurchaseItem.objects.select_related(
-        "purchase", "item", "purchase__spot", "purchase__agent"
+        "purchase", "item", "purchase__spot", "purchase__agent", "item__category"
     )
 
-    # ✅ Multi-select filters
+    # Multi-select filters
     selected_items = request.GET.getlist("items")
     selected_spots = request.GET.getlist("spots")
     selected_agents = request.GET.getlist("agents")
     selected_categories = request.GET.getlist("categories")
     date_filter = request.GET.get("date_filter")
 
-    # ✅ Date range filter
+    # Date range filter
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
@@ -3518,7 +4126,7 @@ def spot_purchase_report(request):
     if selected_categories:
         queryset = queryset.filter(item__category__id__in=selected_categories)
 
-    # ✅ Quick date filter
+    # Quick date filter
     if date_filter == "week":
         queryset = queryset.filter(purchase__date__gte=now().date() - timedelta(days=7))
     elif date_filter == "month":
@@ -3526,7 +4134,7 @@ def spot_purchase_report(request):
     elif date_filter == "year":
         queryset = queryset.filter(purchase__date__year=now().year)
 
-    # ✅ Custom date range
+    # Custom date range
     if start_date and end_date:
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -3535,7 +4143,8 @@ def spot_purchase_report(request):
         except:
             pass
 
-    # ✅ Group & summary
+    # Enhanced summary with ALL calculations including boxes and purchase amounts
+    # NOTE: We need to calculate purchase amounts at the item level, not aggregate from purchase level
     summary = (
         queryset.values(
             "item__name",
@@ -3543,68 +4152,220 @@ def spot_purchase_report(request):
             "purchase__spot__location_name",
             "purchase__agent__name",
             "purchase__date",
+            "purchase__voucher_number",
         )
         .annotate(
-            total_quantity=Sum("quantity"),
-            total_amount=Sum("amount"),
-            avg_rate=Sum(F("amount"), output_field=FloatField()) / Sum(F("quantity"), output_field=FloatField()),
+            total_quantity=Coalesce(Sum("quantity"), 0, output_field=DecimalField()),
+            total_boxes=Coalesce(Sum("boxes"), 0, output_field=DecimalField()),
+            total_amount=Coalesce(Sum("amount"), 0, output_field=DecimalField()),
+            total_rate_sum=Coalesce(Sum("total_rate"), 0, output_field=DecimalField()),
+            avg_rate=Coalesce(
+                Sum(F("amount"), output_field=FloatField()) / 
+                Sum(F("quantity"), output_field=FloatField()),
+                0,
+                output_field=FloatField()
+            ),
+            record_count=Count("id"),
         )
-        .order_by("purchase__date")
+        .order_by("purchase__date", "item__name")
     )
 
-    # ✅ Check if print/export requested
+    # Convert to list and calculate purchase amounts with expenses per item
+    summary_list = list(summary)
+    
+    # Get all unique purchase IDs from the filtered data
+    purchase_ids = queryset.values_list('purchase_id', flat=True).distinct()
+    
+    # Get expense data for these purchases
+    from django.db.models import Case, When, Value
+    expense_data = {}
+    for purchase_id in purchase_ids:
+        try:
+            purchase = SpotPurchase.objects.get(id=purchase_id)
+            # Get the total expense for this purchase
+            try:
+                total_expense = purchase.expense.total_expense
+            except:
+                total_expense = 0
+            
+            expense_data[purchase_id] = {
+                'total_expense': total_expense,
+                'total_quantity': purchase.total_quantity,
+                'total_amount': purchase.total_amount,
+            }
+        except:
+            pass
+    
+    # Now calculate purchase amounts for each summary row
+    for row in summary_list:
+        # Find the purchase for this row
+        purchase_matches = SpotPurchase.objects.filter(
+            date=row['purchase__date'],
+            voucher_number=row['purchase__voucher_number']
+        ).first()
+        
+        if purchase_matches and purchase_matches.id in expense_data:
+            purchase_data = expense_data[purchase_matches.id]
+            
+            # Calculate this item's share of expenses proportionally
+            if purchase_data['total_quantity'] > 0:
+                item_quantity = float(row['total_quantity'])
+                total_purchase_qty = float(purchase_data['total_quantity'])
+                expense_share = float(purchase_data['total_expense']) * (item_quantity / total_purchase_qty)
+                
+                # Purchase amount = item amount + expense share
+                row['purchase_amount'] = float(row['total_amount']) + expense_share
+                
+                # Purchase amount per kg
+                if item_quantity > 0:
+                    row['purchase_amount_per_kg'] = row['purchase_amount'] / item_quantity
+                else:
+                    row['purchase_amount_per_kg'] = 0
+            else:
+                row['purchase_amount'] = float(row['total_amount'])
+                row['purchase_amount_per_kg'] = 0
+        else:
+            # No expenses found, purchase amount = total amount
+            row['purchase_amount'] = float(row['total_amount'])
+            if float(row['total_quantity']) > 0:
+                row['purchase_amount_per_kg'] = row['purchase_amount'] / float(row['total_quantity'])
+            else:
+                row['purchase_amount_per_kg'] = 0
+
+    # Calculate grand totals from the enhanced list
+    grand_totals = {
+        'grand_total_quantity': sum(float(row['total_quantity']) for row in summary_list),
+        'grand_total_boxes': sum(float(row['total_boxes']) for row in summary_list),
+        'grand_total_amount': sum(float(row['total_amount']) for row in summary_list),
+        'grand_purchase_amount': sum(row['purchase_amount'] for row in summary_list),
+        'total_records': len(summary_list),
+    }
+
+    # Calculate overall average rates
+    if grand_totals['grand_total_quantity'] > 0:
+        grand_totals['grand_avg_rate'] = float(grand_totals['grand_total_amount']) / float(grand_totals['grand_total_quantity'])
+        grand_totals['grand_purchase_amount_per_kg'] = float(grand_totals['grand_purchase_amount']) / float(grand_totals['grand_total_quantity'])
+    else:
+        grand_totals['grand_avg_rate'] = 0
+        grand_totals['grand_purchase_amount_per_kg'] = 0
+    
+    # Use summary_list instead of summary queryset
+    summary = summary_list
+
+    # Check if print/export requested
     action = request.GET.get("action")
-    print_mode = request.GET.get("print")  # Check for print parameter
+    print_mode = request.GET.get("print")
 
     # Handle print request
     if action == "print" or print_mode == "1":
         return render(
             request,
             "adminapp/report/spot_purchase_report_print.html",
-            {"summary": summary, "start_date": start_date, "end_date": end_date},
+            {
+                "summary": summary,
+                "grand_totals": grand_totals,
+                "start_date": start_date,
+                "end_date": end_date,
+            },
         )
 
+    # Handle CSV export
     if action == "csv":
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="spot_purchase_report.csv"'
         writer = csv.writer(response)
-        writer.writerow(["Date", "Item", "Category", "Spot", "Agent", "Quantity", "Amount", "Avg Rate"])
+        writer.writerow([
+            "Date", "Voucher", "Item", "Category", "Spot", "Agent", 
+            "Total Boxes", "Total Quantity", "Total Amount", "Avg Rate",
+            "Purchase Amount (with Expenses)", "Purchase Amount Per Kg"
+        ])
         for row in summary:
             writer.writerow([
                 row["purchase__date"],
+                row["purchase__voucher_number"],
                 row["item__name"],
                 row["item__category__name"],
                 row["purchase__spot__location_name"],
                 row["purchase__agent__name"],
+                row["total_boxes"],
                 row["total_quantity"],
                 row["total_amount"],
                 round(row["avg_rate"], 2) if row["avg_rate"] else 0,
+                round(row["purchase_amount"], 2),
+                round(row["purchase_amount_per_kg"], 2),
             ])
+        # Add grand totals row
+        writer.writerow([])
+        writer.writerow([
+            "GRAND TOTALS", "", "", "", "", "",
+            grand_totals['grand_total_boxes'],
+            grand_totals['grand_total_quantity'],
+            grand_totals['grand_total_amount'],
+            round(grand_totals['grand_avg_rate'], 2),
+            grand_totals['grand_purchase_amount'],
+            round(grand_totals['grand_purchase_amount_per_kg'], 2),
+        ])
         return response
 
+    # Handle Excel export
     if action == "excel":
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
         worksheet = workbook.add_worksheet("Report")
 
-        headers = ["Date", "Item", "Category", "Spot", "Agent", "Quantity", "Amount", "Avg Rate"]
+        # Add formats
+        header_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#4f46e5',
+            'font_color': 'white',
+            'border': 1
+        })
+        total_format = workbook.add_format({
+            'bold': True,
+            'bg_color': '#f59e0b',
+            'border': 1
+        })
+        number_format = workbook.add_format({'num_format': '#,##0.00'})
+
+        headers = [
+            "Date", "Voucher", "Item", "Category", "Spot", "Agent", 
+            "Total Boxes", "Total Quantity", "Total Amount", "Avg Rate",
+            "Purchase Amount (with Expenses)", "Purchase Amount Per Kg"
+        ]
         for col, header in enumerate(headers):
-            worksheet.write(0, col, header)
+            worksheet.write(0, col, header, header_format)
 
         for row_idx, row in enumerate(summary, start=1):
             worksheet.write(row_idx, 0, str(row["purchase__date"]))
-            worksheet.write(row_idx, 1, row["item__name"])
-            worksheet.write(row_idx, 2, row["item__category__name"])
-            worksheet.write(row_idx, 3, row["purchase__spot__location_name"])
-            worksheet.write(row_idx, 4, row["purchase__agent__name"])
-            worksheet.write(row_idx, 5, row["total_quantity"])
-            worksheet.write(row_idx, 6, row["total_amount"])
-            worksheet.write(row_idx, 7, round(row["avg_rate"], 2) if row["avg_rate"] else 0)
+            worksheet.write(row_idx, 1, row["purchase__voucher_number"])
+            worksheet.write(row_idx, 2, row["item__name"])
+            worksheet.write(row_idx, 3, row["item__category__name"])
+            worksheet.write(row_idx, 4, row["purchase__spot__location_name"])
+            worksheet.write(row_idx, 5, row["purchase__agent__name"])
+            worksheet.write(row_idx, 6, float(row["total_boxes"]), number_format)
+            worksheet.write(row_idx, 7, float(row["total_quantity"]), number_format)
+            worksheet.write(row_idx, 8, float(row["total_amount"]), number_format)
+            worksheet.write(row_idx, 9, round(row["avg_rate"], 2) if row["avg_rate"] else 0, number_format)
+            worksheet.write(row_idx, 10, round(row["purchase_amount"], 2), number_format)
+            worksheet.write(row_idx, 11, round(row["purchase_amount_per_kg"], 2), number_format)
+
+        # Add grand totals
+        last_row = len(summary) + 2
+        worksheet.write(last_row, 0, "GRAND TOTALS", total_format)
+        worksheet.write(last_row, 6, float(grand_totals['grand_total_boxes']), total_format)
+        worksheet.write(last_row, 7, float(grand_totals['grand_total_quantity']), total_format)
+        worksheet.write(last_row, 8, float(grand_totals['grand_total_amount']), total_format)
+        worksheet.write(last_row, 9, round(grand_totals['grand_avg_rate'], 2), total_format)
+        worksheet.write(last_row, 10, float(grand_totals['grand_purchase_amount']), total_format)
+        worksheet.write(last_row, 11, round(grand_totals['grand_purchase_amount_per_kg'], 2), total_format)
 
         workbook.close()
         output.seek(0)
 
-        response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response = HttpResponse(
+            output.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
         response["Content-Disposition"] = 'attachment; filename="spot_purchase_report.xlsx"'
         return response
 
@@ -3613,6 +4374,7 @@ def spot_purchase_report(request):
         "adminapp/report/spot_purchase_report.html",
         {
             "summary": summary,
+            "grand_totals": grand_totals,
             "items": items,
             "spots": spots,
             "agents": agents,
@@ -3630,13 +4392,8 @@ def spot_purchase_report(request):
 @check_permission('reports_export')
 def spot_purchase_report_print(request):
     """Separate view specifically for print format"""
-    items = Item.objects.all()
-    spots = PurchasingSpot.objects.all()
-    agents = PurchasingAgent.objects.all()
-    categories = ItemCategory.objects.all()
-
     queryset = SpotPurchaseItem.objects.select_related(
-        "purchase", "item", "purchase__spot", "purchase__agent"
+        "purchase", "item", "purchase__spot", "purchase__agent", "item__category"
     )
 
     # Apply the same filters as main view
@@ -3672,6 +4429,7 @@ def spot_purchase_report_print(request):
         except:
             pass
 
+    # Enhanced summary with ALL calculations
     summary = (
         queryset.values(
             "item__name",
@@ -3679,26 +4437,49 @@ def spot_purchase_report_print(request):
             "purchase__spot__location_name",
             "purchase__agent__name",
             "purchase__date",
+            "purchase__voucher_number",
         )
         .annotate(
-            total_quantity=Sum("quantity"),
-            total_amount=Sum("amount"),
-            avg_rate=Sum(F("amount"), output_field=FloatField()) / Sum(F("quantity"), output_field=FloatField()),
+            total_quantity=Coalesce(Sum("quantity"), 0, output_field=DecimalField()),
+            total_boxes=Coalesce(Sum("boxes"), 0, output_field=DecimalField()),
+            total_amount=Coalesce(Sum("amount"), 0, output_field=DecimalField()),
+            # Get the purchase amount (amount + expenses) from the purchase model
+            purchase_amount=Coalesce(Sum(F("purchase__total_purchase_amount")), 0, output_field=DecimalField()),
+            purchase_amount_per_kg=Coalesce(Sum(F("purchase__total_purchase_amount_per_kg")), 0, output_field=DecimalField()),
+            avg_rate=Coalesce(
+                Sum(F("amount"), output_field=FloatField()) / 
+                Sum(F("quantity"), output_field=FloatField()),
+                0,
+                output_field=FloatField()
+            ),
         )
-        .order_by("purchase__date")
+        .order_by("purchase__date", "item__name")
     )
+
+    # Calculate grand totals
+    grand_totals = summary.aggregate(
+        grand_total_quantity=Coalesce(Sum("total_quantity"), 0, output_field=DecimalField()),
+        grand_total_boxes=Coalesce(Sum("total_boxes"), 0, output_field=DecimalField()),
+        grand_total_amount=Coalesce(Sum("total_amount"), 0, output_field=DecimalField()),
+        grand_purchase_amount=Coalesce(Sum("purchase_amount"), 0, output_field=DecimalField()),
+        grand_purchase_amount_per_kg=Coalesce(Sum("purchase_amount_per_kg"), 0, output_field=DecimalField()),
+    )
+
+    if grand_totals['grand_total_quantity'] > 0:
+        grand_totals['grand_avg_rate'] = float(grand_totals['grand_total_amount']) / float(grand_totals['grand_total_quantity'])
+        grand_totals['grand_purchase_amount_per_kg'] = float(grand_totals['grand_purchase_amount']) / float(grand_totals['grand_total_quantity'])
+    else:
+        grand_totals['grand_avg_rate'] = 0
+        grand_totals['grand_purchase_amount_per_kg'] = 0
 
     return render(
         request,
         "adminapp/report/spot_purchase_report_print.html",
         {
             "summary": summary,
+            "grand_totals": grand_totals,
             "start_date": start_date,
             "end_date": end_date,
-            "selected_items": selected_items,
-            "selected_spots": selected_spots,
-            "selected_agents": selected_agents,
-            "selected_categories": selected_categories,
         },
     )
 
@@ -3717,7 +4498,7 @@ def local_purchase_report(request):
     ).distinct()
     
     categories = ItemCategory.objects.filter(
-        id_in=LocalPurchaseItem.objects.values_list('item_category_id', flat=True).distinct()
+        id__in=LocalPurchaseItem.objects.values_list('item__category_id', flat=True).distinct()
     ).distinct()
     
     species = Species.objects.filter(
@@ -3731,7 +4512,7 @@ def local_purchase_report(request):
 
     # ✅ FIXED: Added item_quality to select_related
     queryset = LocalPurchaseItem.objects.select_related(
-        "purchase", "item", "grade", "item_category", "species", "item_quality", "purchase_party_name"
+        "purchase", "item", "grade", "item__category", "species", "item_quality", "purchase__party_name"
     )
 
     # ✅ Multi-select filters
@@ -3751,34 +4532,34 @@ def local_purchase_report(request):
     party_search = request.GET.get("party_search", "").strip()
 
     if selected_items:
-        queryset = queryset.filter(item_id_in=selected_items)
+        queryset = queryset.filter(item__id__in=selected_items)
     if selected_grades:
-        queryset = queryset.filter(grade_id_in=selected_grades)
+        queryset = queryset.filter(grade__id__in=selected_grades)
     if selected_categories:
-        queryset = queryset.filter(item_categoryid_in=selected_categories)
+        queryset = queryset.filter(item__category__id__in=selected_categories)
     if selected_species:
-        queryset = queryset.filter(species_id_in=selected_species)
+        queryset = queryset.filter(species__id__in=selected_species)
     if selected_qualities:  # ✅ ADD: Quality filter
-        queryset = queryset.filter(item_quality_id_in=selected_qualities)
+        queryset = queryset.filter(item_quality__id__in=selected_qualities)
     if selected_parties:
-        queryset = queryset.filter(purchase_party_nameid_in=selected_parties)
+        queryset = queryset.filter(purchase__party_name__id__in=selected_parties)
     if party_search:
-        queryset = queryset.filter(purchase_party_nameparty_icontains=party_search)
+        queryset = queryset.filter(purchase__party_name__party__icontains=party_search)
 
     # ✅ Quick date filter
     if date_filter == "week":
-        queryset = queryset.filter(purchase_date_gte=now().date() - timedelta(days=7))
+        queryset = queryset.filter(purchase__date__gte=now().date() - timedelta(days=7))
     elif date_filter == "month":
-        queryset = queryset.filter(purchase_date_month=now().month)
+        queryset = queryset.filter(purchase__date__month=now().month)
     elif date_filter == "year":
-        queryset = queryset.filter(purchase_date_year=now().year)
+        queryset = queryset.filter(purchase__date__year=now().year)
 
     # ✅ Custom date range
     if start_date and end_date:
         try:
             start = datetime.strptime(start_date, "%Y-%m-%d").date()
             end = datetime.strptime(end_date, "%Y-%m-%d").date()
-            queryset = queryset.filter(purchase_date_range=[start, end])
+            queryset = queryset.filter(purchase__date__range=[start, end])
         except:
             pass
 
@@ -3786,13 +4567,13 @@ def local_purchase_report(request):
     summary = (
         queryset.values(
             "item__name",
-            "item_category_name",
+            "item__category__name",
             "species__name",
             "grade__grade",
             "item_quality__quality",  # ✅ ADD: Quality field
-            "purchase_party_name_party",
-            "purchase_party_name_district",
-            "purchase_party_name_state",
+            "purchase__party_name__party",
+            "purchase__party_name__district",
+            "purchase__party_name__state",
             "purchase__voucher_number",
             "purchase__date",
         )
@@ -3835,13 +4616,13 @@ def local_purchase_report(request):
             writer.writerow([
                 row["purchase__date"],
                 row["purchase__voucher_number"],
-                row["purchase_party_name_party"],
-                row["purchase_party_name_district"] or "N/A",
-                row["purchase_party_name_state"] or "N/A",
+                row["purchase__party_name__party"],
+                row["purchase__party_name__district"] or "N/A",
+                row["purchase__party_name__state"] or "N/A",
                 row["item__name"],
                 row["item_quality__quality"] or "N/A",  # ✅ ADD: Quality data
                 row["grade__grade"] or "N/A",
-                row["item_category_name"],
+                row["item__category__name"],
                 row["species__name"] or "N/A",
                 row["total_quantity"],
                 row["total_amount"],
@@ -3862,13 +4643,13 @@ def local_purchase_report(request):
         for row_idx, row in enumerate(summary, start=1):
             worksheet.write(row_idx, 0, str(row["purchase__date"]))
             worksheet.write(row_idx, 1, row["purchase__voucher_number"])
-            worksheet.write(row_idx, 2, row["purchase_party_name_party"])
-            worksheet.write(row_idx, 3, row["purchase_party_name_district"] or "N/A")
-            worksheet.write(row_idx, 4, row["purchase_party_name_state"] or "N/A")
+            worksheet.write(row_idx, 2, row["purchase__party_name__party"])
+            worksheet.write(row_idx, 3, row["purchase__party_name__district"] or "N/A")
+            worksheet.write(row_idx, 4, row["purchase__party_name__state"] or "N/A")
             worksheet.write(row_idx, 5, row["item__name"])
             worksheet.write(row_idx, 6, row["item_quality__quality"] or "N/A")  # ✅ ADD: Quality data
             worksheet.write(row_idx, 7, row["grade__grade"] or "N/A")
-            worksheet.write(row_idx, 8, row["item_category_name"])
+            worksheet.write(row_idx, 8, row["item__category__name"])
             worksheet.write(row_idx, 9, row["species__name"] or "N/A")
             worksheet.write(row_idx, 10, row["total_quantity"])
             worksheet.write(row_idx, 11, row["total_amount"])
@@ -3918,7 +4699,7 @@ def local_purchase_report_print(request):
     ).distinct()
     
     categories = ItemCategory.objects.filter(
-        id_in=LocalPurchaseItem.objects.values_list('item_category_id', flat=True).distinct()
+        id__in=LocalPurchaseItem.objects.values_list('item__category_id', flat=True).distinct()
     ).distinct()
     
     species = Species.objects.filter(
@@ -3927,7 +4708,7 @@ def local_purchase_report_print(request):
 
     # ✅ FIXED: Added item_quality to select_related
     queryset = LocalPurchaseItem.objects.select_related(
-        "purchase", "item", "grade", "item_category", "species", "item_quality", "purchase_party_name"
+        "purchase", "item", "grade", "item__category", "species", "item_quality", "purchase__party_name"
     )
 
     # Apply the same filters as main view
@@ -3943,111 +4724,6 @@ def local_purchase_report_print(request):
     party_search = request.GET.get("party_search", "").strip()
 
     if selected_items:
-        queryset = queryset.filter(item_id_in=selected_items)
-    if selected_grades:
-        queryset = queryset.filter(grade_id_in=selected_grades)
-    if selected_categories:
-        queryset = queryset.filter(item_categoryid_in=selected_categories)
-    if selected_species:
-        queryset = queryset.filter(species_id_in=selected_species)
-    if selected_qualities:  # ✅ ADD: Quality filter
-        queryset = queryset.filter(item_quality_id_in=selected_qualities)
-    if selected_parties:
-        queryset = queryset.filter(purchase_party_nameid_in=selected_parties)
-    if party_search:
-        queryset = queryset.filter(purchase_party_nameparty_icontains=party_search)
-
-    if date_filter == "week":
-        queryset = queryset.filter(purchase_date_gte=now().date() - timedelta(days=7))
-    elif date_filter == "month":
-        queryset = queryset.filter(purchase_date_month=now().month)
-    elif date_filter == "year":
-        queryset = queryset.filter(purchase_date_year=now().year)
-
-    if start_date and end_date:
-        try:
-            start = datetime.strptime(start_date, "%Y-%m-%d").date()
-            end = datetime.strptime(end_date, "%Y-%m-%d").date()
-            queryset = queryset.filter(purchase_date_range=[start, end])
-        except:
-            pass
-
-    # ✅ FIXED: Added quality field to summary
-    summary = (
-        queryset.values(
-            "item__name",
-            "item_category_name",
-            "species__name",
-            "grade__grade",
-            "item_quality__quality",  # ✅ ADD: Quality field
-            "purchase_party_name_party",
-            "purchase_party_name_district",
-            "purchase_party_name_state",
-            "purchase__voucher_number",
-            "purchase__date",
-        )
-        .annotate(
-            total_quantity=Sum("quantity"),
-            total_amount=Sum("amount"),
-            avg_rate=Sum(F("amount"), output_field=FloatField()) / Sum(F("quantity"), output_field=FloatField()),
-        )
-        .order_by("purchase__date")
-    )
-
-    return render(
-        request,
-        "adminapp/report/local_purchase_report_print.html",
-        {
-            "summary": summary,
-            "start_date": start_date,
-            "end_date": end_date,
-            "selected_items": selected_items,
-            "selected_grades": selected_grades,
-            "selected_categories": selected_categories,
-            "selected_species": selected_species,
-            "selected_parties": selected_parties,
-            "selected_qualities": selected_qualities,  # ✅ ADD: Pass selected qualities
-            "party_search": party_search,
-        },
-    )
-
-    
-@check_permission('report_export')
-def local_purchase_report_print(request):
-    """Separate view specifically for print format"""
-    # ✅ Only get data that exists in LocalPurchaseItem
-    items = Item.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('item_id', flat=True).distinct()
-    ).distinct()
-    
-    grades = ItemGrade.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('grade_id', flat=True).distinct()
-    ).distinct()
-    
-    categories = ItemCategory.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('item__category_id', flat=True).distinct()
-    ).distinct()
-    
-    species = Species.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('species_id', flat=True).distinct()
-    ).distinct()
-
-    queryset = LocalPurchaseItem.objects.select_related(
-        "purchase", "item", "grade", "item__category", "species", "purchase__party_name"  # ✅ Added party_name relation
-    )
-
-    # Apply the same filters as main view
-    selected_items = request.GET.getlist("items")
-    selected_grades = request.GET.getlist("grades")
-    selected_categories = request.GET.getlist("categories")
-    selected_parties = request.GET.getlist("parties")  # ✅ Added this
-    selected_species = request.GET.getlist("species")
-    date_filter = request.GET.get("date_filter")
-    start_date = request.GET.get("start_date")
-    end_date = request.GET.get("end_date")
-    party_search = request.GET.get("party_search", "").strip()
-
-    if selected_items:
         queryset = queryset.filter(item__id__in=selected_items)
     if selected_grades:
         queryset = queryset.filter(grade__id__in=selected_grades)
@@ -4055,9 +4731,11 @@ def local_purchase_report_print(request):
         queryset = queryset.filter(item__category__id__in=selected_categories)
     if selected_species:
         queryset = queryset.filter(species__id__in=selected_species)
-    if selected_parties:  # ✅ Fixed party filter
+    if selected_qualities:  # ✅ ADD: Quality filter
+        queryset = queryset.filter(item_quality__id__in=selected_qualities)
+    if selected_parties:
         queryset = queryset.filter(purchase__party_name__id__in=selected_parties)
-    if party_search:  # ✅ Fixed party search
+    if party_search:
         queryset = queryset.filter(purchase__party_name__party__icontains=party_search)
 
     if date_filter == "week":
@@ -4075,14 +4753,15 @@ def local_purchase_report_print(request):
         except:
             pass
 
-    # ✅ FIXED party access in summary
+    # ✅ FIXED: Added quality field to summary
     summary = (
         queryset.values(
             "item__name",
             "item__category__name",
             "species__name",
             "grade__grade",
-            "purchase__party_name__party",  # ✅ FIXED
+            "item_quality__quality",  # ✅ ADD: Quality field
+            "purchase__party_name__party",
             "purchase__party_name__district",
             "purchase__party_name__state",
             "purchase__voucher_number",
@@ -4107,7 +4786,8 @@ def local_purchase_report_print(request):
             "selected_grades": selected_grades,
             "selected_categories": selected_categories,
             "selected_species": selected_species,
-            "selected_parties": selected_parties,  # ✅ Added this
+            "selected_parties": selected_parties,
+            "selected_qualities": selected_qualities,  # ✅ ADD: Pass selected qualities
             "party_search": party_search,
         },
     )
@@ -4444,31 +5124,10 @@ def peeling_shed_supply_report_print(request):
 
 
 
-
 # FREEZING REPORT
-@check_permission('report_view')
+@check_permission('reports_view')
 def freezing_report(request):
-    # First, let's check what fields actually exist on the models
-    from django.db import connection
-    
-    # Check FreezingEntrySpotItem fields
-    try:
-        spot_item_fields = [field.name for field in FreezingEntrySpotItem._meta.fields]
-        print("FreezingEntrySpotItem fields:", spot_item_fields)
-        
-        local_item_fields = [field.name for field in FreezingEntryLocalItem._meta.fields]
-        print("FreezingEntryLocalItem fields:", local_item_fields)
-        
-        # Check foreign key relationships
-        spot_fk_fields = [field.name for field in FreezingEntrySpotItem._meta.fields if field.get_internal_type() == 'ForeignKey']
-        print("FreezingEntrySpotItem FK fields:", spot_fk_fields)
-        
-        local_fk_fields = [field.name for field in FreezingEntryLocalItem._meta.fields if field.get_internal_type() == 'ForeignKey']
-        print("FreezingEntryLocalItem FK fields:", local_fk_fields)
-        
-    except Exception as e:
-        print("Error checking fields:", str(e))
-
+    # Get all master data
     items = Item.objects.all()
     grades = ItemGrade.objects.all()
     categories = ItemCategory.objects.all()
@@ -4478,15 +5137,15 @@ def freezing_report(request):
     processing_centers = ProcessingCenter.objects.all()
     stores = Store.objects.all()
     
-    # Check if models exist and get units/glazes
+    # Get units and glazes
     try:
         units = PackingUnit.objects.all()
-    except NameError:
+    except:
         units = []
     
     try:
         glazes = GlazePercentage.objects.all()
-    except NameError:
+    except:
         glazes = []
 
     # Get filter parameters
@@ -4506,102 +5165,74 @@ def freezing_report(request):
     end_date = request.GET.get("end_date")
     freezing_status = request.GET.get("freezing_status")
     voucher_search = request.GET.get("voucher_search", "").strip()
-    entry_type = request.GET.get("entry_type", "all")  # all, spot, local
+    entry_type = request.GET.get("entry_type", "all")
     section_by = request.GET.get("section_by", "category")
 
-    # SAFE: Start with minimal select_related and build up
-    spot_queryset = FreezingEntrySpotItem.objects.select_related("freezing_entry", "item", "item__category")
-    local_queryset = FreezingEntryLocalItem.objects.select_related("freezing_entry", "item", "item__category")
+    # Start with minimal select_related
+    spot_queryset = FreezingEntrySpotItem.objects.select_related(
+        "freezing_entry", "item", "item__category", "item_quality"
+    )
+    local_queryset = FreezingEntryLocalItem.objects.select_related(
+        "freezing_entry", "item", "item__category", "item_quality"
+    )
 
-    # Check what other relationships exist and add them safely
+    # Add optional relationships
     try:
-        # Test if grade field exists
         test_spot = FreezingEntrySpotItem.objects.first()
-        if test_spot and hasattr(test_spot, 'grade'):
-            spot_queryset = spot_queryset.select_related("grade")
-            local_queryset = local_queryset.select_related("grade")
-            print("Added grade to select_related")
+        if test_spot:
+            if hasattr(test_spot, 'grade'):
+                spot_queryset = spot_queryset.select_related("grade")
+                local_queryset = local_queryset.select_related("grade")
+            if hasattr(test_spot, 'species'):
+                spot_queryset = spot_queryset.select_related("species")
+                local_queryset = local_queryset.select_related("species")
+            if hasattr(test_spot, 'brand'):
+                spot_queryset = spot_queryset.select_related("brand")
+                local_queryset = local_queryset.select_related("brand")
+            if hasattr(test_spot, 'freezing_category'):
+                spot_queryset = spot_queryset.select_related("freezing_category")
+                local_queryset = local_queryset.select_related("freezing_category")
+            if hasattr(test_spot, 'processing_center'):
+                spot_queryset = spot_queryset.select_related("processing_center")
+                local_queryset = local_queryset.select_related("processing_center")
+            if hasattr(test_spot, 'store'):
+                spot_queryset = spot_queryset.select_related("store")
+                local_queryset = local_queryset.select_related("store")
+            if hasattr(test_spot, 'unit'):
+                spot_queryset = spot_queryset.select_related("unit")
+                local_queryset = local_queryset.select_related("unit")
+            if hasattr(test_spot, 'glaze'):
+                spot_queryset = spot_queryset.select_related("glaze")
+                local_queryset = local_queryset.select_related("glaze")
     except:
-        print("No grade field found")
+        pass
 
-    try:
-        # Test if species field exists
-        if test_spot and hasattr(test_spot, 'species'):
-            spot_queryset = spot_queryset.select_related("species")
-            local_queryset = local_queryset.select_related("species")
-            print("Added species to select_related")
-    except:
-        print("No direct species field found")
-
-    try:
-        # Test if brand field exists
-        if test_spot and hasattr(test_spot, 'brand'):
-            spot_queryset = spot_queryset.select_related("brand")
-            local_queryset = local_queryset.select_related("brand")
-            print("Added brand to select_related")
-    except:
-        print("No brand field found")
-
-    try:
-        # Test if freezing_category field exists
-        if test_spot and hasattr(test_spot, 'freezing_category'):
-            spot_queryset = spot_queryset.select_related("freezing_category")
-            local_queryset = local_queryset.select_related("freezing_category")
-            print("Added freezing_category to select_related")
-    except:
-        print("No freezing_category field found")
-
-    try:
-        # Test if processing_center field exists
-        if test_spot and hasattr(test_spot, 'processing_center'):
-            spot_queryset = spot_queryset.select_related("processing_center")
-            local_queryset = local_queryset.select_related("processing_center")
-            print("Added processing_center to select_related")
-    except:
-        print("No processing_center field found")
-
-    try:
-        # Test if store field exists
-        if test_spot and hasattr(test_spot, 'store'):
-            spot_queryset = spot_queryset.select_related("store")
-            local_queryset = local_queryset.select_related("store")
-            print("Added store to select_related")
-    except:
-        print("No store field found")
-
-    # Apply filters with safe field checks
-    def apply_filters(queryset, is_spot=True):
-        # Item filters
+    # Apply filters
+    def apply_filters(queryset):
         if selected_items:
             queryset = queryset.filter(item__id__in=selected_items)
         
-        # Check if grade field exists before filtering
         test_item = queryset.first()
-        if test_item and hasattr(test_item, 'grade') and selected_grades:
-            queryset = queryset.filter(grade__id__in=selected_grades)
+        if test_item:
+            if hasattr(test_item, 'grade') and selected_grades:
+                queryset = queryset.filter(grade__id__in=selected_grades)
+            if hasattr(test_item, 'species') and selected_species:
+                queryset = queryset.filter(species__id__in=selected_species)
+            if hasattr(test_item, 'brand') and selected_brands:
+                queryset = queryset.filter(brand__id__in=selected_brands)
+            if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
+                queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
+            if hasattr(test_item, 'processing_center') and selected_processing_centers:
+                queryset = queryset.filter(processing_center__id__in=selected_processing_centers)
+            if hasattr(test_item, 'store') and selected_stores:
+                queryset = queryset.filter(store__id__in=selected_stores)
+            if hasattr(test_item, 'unit') and selected_units:
+                queryset = queryset.filter(unit__id__in=selected_units)
+            if hasattr(test_item, 'glaze') and selected_glazes:
+                queryset = queryset.filter(glaze__id__in=selected_glazes)
         
         if selected_categories:
             queryset = queryset.filter(item__category__id__in=selected_categories)
-        
-        # Check if species field exists before filtering
-        if test_item and hasattr(test_item, 'species') and selected_species:
-            queryset = queryset.filter(species__id__in=selected_species)
-        
-        # Check other fields similarly
-        if test_item and hasattr(test_item, 'brand') and selected_brands:
-            queryset = queryset.filter(brand__id__in=selected_brands)
-        if test_item and hasattr(test_item, 'freezing_category') and selected_freezing_categories:
-            queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
-        if test_item and hasattr(test_item, 'processing_center') and selected_processing_centers:
-            queryset = queryset.filter(processing_center__id__in=selected_processing_centers)
-        if test_item and hasattr(test_item, 'store') and selected_stores:
-            queryset = queryset.filter(store__id__in=selected_stores)
-        if test_item and hasattr(test_item, 'unit') and selected_units:
-            queryset = queryset.filter(unit__id__in=selected_units)
-        if test_item and hasattr(test_item, 'glaze') and selected_glazes:
-            queryset = queryset.filter(glaze__id__in=selected_glazes)
-            
-        # Status and voucher filters
         if freezing_status:
             queryset = queryset.filter(freezing_entry__freezing_status=freezing_status)
         if voucher_search:
@@ -4643,11 +5274,10 @@ def freezing_report(request):
 
         return queryset
 
-    # Apply filters
-    spot_queryset = apply_filters(spot_queryset, True)
-    local_queryset = apply_filters(local_queryset, False)
+    spot_queryset = apply_filters(spot_queryset)
+    local_queryset = apply_filters(local_queryset)
 
-    # Process data safely
+    # Process data
     all_data = []
 
     if entry_type in ['all', 'spot']:
@@ -4656,46 +5286,21 @@ def freezing_report(request):
                 'id': item.id,
                 'item__name': item.item.name if item.item else None,
                 'item__category__name': item.item.category.name if item.item and item.item.category else None,
+                'item_quality__quality': item.item_quality.quality if hasattr(item, 'item_quality') and item.item_quality else None,
                 'freezing_entry__voucher_number': item.freezing_entry.voucher_number if item.freezing_entry else None,
                 'freezing_entry__freezing_date': item.freezing_entry.freezing_date if item.freezing_entry else None,
                 'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
                 'entry_type': 'spot',
-                'item_count': 1
-            }
-            
-            # Add optional fields safely
-            if hasattr(item, 'species') and item.species:
-                data_row['item__species__name'] = item.species.name
-            else:
-                data_row['item__species__name'] = None
-                
-            if hasattr(item, 'grade') and item.grade:
-                data_row['grade__grade'] = item.grade.grade
-            else:
-                data_row['grade__grade'] = None
-                
-            if hasattr(item, 'brand') and item.brand:
-                data_row['brand__name'] = item.brand.name
-            else:
-                data_row['brand__name'] = None
-                
-            if hasattr(item, 'freezing_category') and item.freezing_category:
-                data_row['freezing_category__name'] = item.freezing_category.name
-            else:
-                data_row['freezing_category__name'] = None
-                
-            if hasattr(item, 'processing_center') and item.processing_center:
-                data_row['processing_center__name'] = item.processing_center.name
-            else:
-                data_row['processing_center__name'] = None
-                
-            if hasattr(item, 'store') and item.store:
-                data_row['store__name'] = item.store.name
-            else:
-                data_row['store__name'] = None
-
-            # Add numeric fields
-            data_row.update({
+                'item_count': 1,
+                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
+                'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
+                'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
+                'store__name': item.store.name if hasattr(item, 'store') and item.store else None,
+                'unit__description': item.unit.description if hasattr(item, 'unit') and item.unit else None,
+                'unit__unit_code': item.unit.unit_code if hasattr(item, 'unit') and item.unit else None,
+                'glaze__percentage': item.glaze.percentage if hasattr(item, 'glaze') and item.glaze else None,
                 'total_kg': float(getattr(item, 'kg', 0) or 0),
                 'total_slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
                 'total_c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
@@ -4703,21 +5308,7 @@ def freezing_report(request):
                 'total_inr_amount': float(getattr(item, 'usd_rate_item_to_inr', 0) or 0),
                 'avg_usd_rate_per_kg': float(getattr(item, 'usd_rate_per_kg', 0) or 0),
                 'avg_yield_percentage': float(getattr(item, 'yield_percentage', 0) or 0),
-            })
-            
-            # Add unit and glaze fields if they exist
-            if hasattr(item, 'unit') and item.unit:
-                data_row['unit__description'] = item.unit.description
-                data_row['unit__unit_code'] = item.unit.unit_code
-            else:
-                data_row['unit__description'] = None
-                data_row['unit__unit_code'] = None
-                
-            if hasattr(item, 'glaze') and item.glaze:
-                data_row['glaze__percentage'] = item.glaze.percentage
-            else:
-                data_row['glaze__percentage'] = None
-                
+            }
             all_data.append(data_row)
 
     if entry_type in ['all', 'local']:
@@ -4726,71 +5317,32 @@ def freezing_report(request):
                 'id': item.id,
                 'item__name': item.item.name if item.item else None,
                 'item__category__name': item.item.category.name if item.item and item.item.category else None,
+                'item_quality__quality': item.item_quality.quality if hasattr(item, 'item_quality') and item.item_quality else None,
                 'freezing_entry__voucher_number': item.freezing_entry.voucher_number if item.freezing_entry else None,
                 'freezing_entry__freezing_date': item.freezing_entry.freezing_date if item.freezing_entry else None,
                 'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
                 'entry_type': 'local',
-                'item_count': 1
-            }
-            
-            # Add optional fields safely (same as spot)
-            if hasattr(item, 'species') and item.species:
-                data_row['item__species__name'] = item.species.name
-            else:
-                data_row['item__species__name'] = None
-                
-            if hasattr(item, 'grade') and item.grade:
-                data_row['grade__grade'] = item.grade.grade
-            else:
-                data_row['grade__grade'] = None
-                
-            if hasattr(item, 'brand') and item.brand:
-                data_row['brand__name'] = item.brand.name
-            else:
-                data_row['brand__name'] = None
-                
-            if hasattr(item, 'freezing_category') and item.freezing_category:
-                data_row['freezing_category__name'] = item.freezing_category.name
-            else:
-                data_row['freezing_category__name'] = None
-                
-            if hasattr(item, 'processing_center') and item.processing_center:
-                data_row['processing_center__name'] = item.processing_center.name
-            else:
-                data_row['processing_center__name'] = None
-                
-            if hasattr(item, 'store') and item.store:
-                data_row['store__name'] = item.store.name
-            else:
-                data_row['store__name'] = None
-
-            # Add numeric fields
-            data_row.update({
+                'item_count': 1,
+                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
+                'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
+                'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
+                'store__name': item.store.name if hasattr(item, 'store') and item.store else None,
+                'unit__description': item.unit.description if hasattr(item, 'unit') and item.unit else None,
+                'unit__unit_code': item.unit.unit_code if hasattr(item, 'unit') and item.unit else None,
+                'glaze__percentage': item.glaze.percentage if hasattr(item, 'glaze') and item.glaze else None,
                 'total_kg': float(getattr(item, 'kg', 0) or 0),
                 'total_slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
                 'total_c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
                 'total_usd_amount': float(getattr(item, 'usd_rate_item', 0) or 0),
                 'total_inr_amount': float(getattr(item, 'usd_rate_item_to_inr', 0) or 0),
                 'avg_usd_rate_per_kg': float(getattr(item, 'usd_rate_per_kg', 0) or 0),
-                'avg_yield_percentage': None,  # Local entries don't have yield percentage
-            })
-            
-            # Add unit and glaze fields if they exist
-            if hasattr(item, 'unit') and item.unit:
-                data_row['unit__description'] = item.unit.description
-                data_row['unit__unit_code'] = item.unit.unit_code
-            else:
-                data_row['unit__description'] = None
-                data_row['unit__unit_code'] = None
-                
-            if hasattr(item, 'glaze') and item.glaze:
-                data_row['glaze__percentage'] = item.glaze.percentage
-            else:
-                data_row['glaze__percentage'] = None
-                
+                'avg_yield_percentage': None,
+            }
             all_data.append(data_row)
 
-    # Sectioning logic (rest of the original code remains the same)
+    # Sectioning logic
     sectioned_data = {}
     
     for item in all_data:
@@ -4804,10 +5356,7 @@ def freezing_report(request):
             section_key = item.get("store__name") or "No Store"
         elif section_by == "month":
             date_obj = item.get("freezing_entry__freezing_date")
-            if date_obj:
-                section_key = f"{date_obj.strftime('%B %Y')}"
-            else:
-                section_key = "No Date"
+            section_key = f"{date_obj.strftime('%B %Y')}" if date_obj else "No Date"
         elif section_by == "species":
             section_key = item.get("item__species__name") or "No Species"
         elif section_by == "grade":
@@ -4842,7 +5391,6 @@ def freezing_report(request):
         
         sectioned_data[section_key]['items'].append(item)
         
-        # Calculate section totals
         totals = sectioned_data[section_key]['totals']
         totals['total_kg'] += float(item.get('total_kg') or 0)
         totals['total_slab_quantity'] += float(item.get('total_slab_quantity') or 0)
@@ -4882,7 +5430,7 @@ def freezing_report(request):
         spot_vouchers = list(FreezingEntrySpot.objects.values_list('voucher_number', flat=True).distinct())
         local_vouchers = list(FreezingEntryLocal.objects.values_list('voucher_number', flat=True).distinct())
         all_vouchers = sorted(set(spot_vouchers + local_vouchers))
-    except Exception as e:
+    except:
         all_vouchers = []
 
     return render(
@@ -4922,159 +5470,283 @@ def freezing_report(request):
         },
     )
 
-@check_permission('report_export')
+@check_permission('reports_export')
 def freezing_report_print(request):
     """Separate view specifically for print format"""
-    items = Item.objects.all()
-    grades = ItemGrade.objects.all()
-    categories = ItemCategory.objects.all()
-    species = Species.objects.all()
-    brands = ItemBrand.objects.all()
-    freezing_categories = FreezingCategory.objects.all()
-
-    # Get filter parameters (same as main view)
+    
+    # Get filter parameters
     selected_items = request.GET.getlist("items")
     selected_grades = request.GET.getlist("grades")
     selected_categories = request.GET.getlist("categories")
     selected_species = request.GET.getlist("species")
     selected_brands = request.GET.getlist("brands")
     selected_freezing_categories = request.GET.getlist("freezing_categories")
+    selected_processing_centers = request.GET.getlist("processing_centers")
+    selected_stores = request.GET.getlist("stores")
+    selected_units = request.GET.getlist("units")
+    selected_glazes = request.GET.getlist("glazes")
+    
     date_filter = request.GET.get("date_filter")
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
     freezing_status = request.GET.get("freezing_status")
     voucher_search = request.GET.get("voucher_search", "").strip()
     entry_type = request.GET.get("entry_type", "all")
+    section_by = request.GET.get("section_by", "category")
 
-    # Base querysets
+    # Start with minimal select_related
     spot_queryset = FreezingEntrySpotItem.objects.select_related(
-        "freezing_entry", "item", "grade", "item__category", "item__species",
-        "brand", "freezing_category"
+        "freezing_entry", "item", "item__category", "item_quality"
     )
-    
     local_queryset = FreezingEntryLocalItem.objects.select_related(
-        "freezing_entry", "item", "grade", "item__category", "item__species",
-        "brand", "freezing_category"
+        "freezing_entry", "item", "item__category", "item_quality"
     )
 
-    # Apply same filters as main view
+    # Add optional relationships
+    try:
+        test_spot = FreezingEntrySpotItem.objects.first()
+        if test_spot:
+            if hasattr(test_spot, 'grade'):
+                spot_queryset = spot_queryset.select_related("grade")
+                local_queryset = local_queryset.select_related("grade")
+            if hasattr(test_spot, 'species'):
+                spot_queryset = spot_queryset.select_related("species")
+                local_queryset = local_queryset.select_related("species")
+            if hasattr(test_spot, 'brand'):
+                spot_queryset = spot_queryset.select_related("brand")
+                local_queryset = local_queryset.select_related("brand")
+            if hasattr(test_spot, 'freezing_category'):
+                spot_queryset = spot_queryset.select_related("freezing_category")
+                local_queryset = local_queryset.select_related("freezing_category")
+            if hasattr(test_spot, 'processing_center'):
+                spot_queryset = spot_queryset.select_related("processing_center")
+                local_queryset = local_queryset.select_related("processing_center")
+            if hasattr(test_spot, 'store'):
+                spot_queryset = spot_queryset.select_related("store")
+                local_queryset = local_queryset.select_related("store")
+    except:
+        pass
+
+    # Apply filters (same function as main view)
     def apply_filters(queryset):
         if selected_items:
             queryset = queryset.filter(item__id__in=selected_items)
-        if selected_grades:
-            queryset = queryset.filter(grade__id__in=selected_grades)
+        
+        test_item = queryset.first()
+        if test_item:
+            if hasattr(test_item, 'grade') and selected_grades:
+                queryset = queryset.filter(grade__id__in=selected_grades)
+            if hasattr(test_item, 'species') and selected_species:
+                queryset = queryset.filter(species__id__in=selected_species)
+            if hasattr(test_item, 'brand') and selected_brands:
+                queryset = queryset.filter(brand__id__in=selected_brands)
+            if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
+                queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
+            if hasattr(test_item, 'processing_center') and selected_processing_centers:
+                queryset = queryset.filter(processing_center__id__in=selected_processing_centers)
+            if hasattr(test_item, 'store') and selected_stores:
+                queryset = queryset.filter(store__id__in=selected_stores)
+            if hasattr(test_item, 'unit') and selected_units:
+                queryset = queryset.filter(unit__id__in=selected_units)
+            if hasattr(test_item, 'glaze') and selected_glazes:
+                queryset = queryset.filter(glaze__id__in=selected_glazes)
+        
         if selected_categories:
             queryset = queryset.filter(item__category__id__in=selected_categories)
-        if selected_species:
-            queryset = queryset.filter(item__species__id__in=selected_species)
-        if selected_brands:
-            queryset = queryset.filter(brand__id__in=selected_brands)
-        if selected_freezing_categories:
-            queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
         if freezing_status:
             queryset = queryset.filter(freezing_entry__freezing_status=freezing_status)
         if voucher_search:
             queryset = queryset.filter(freezing_entry__voucher_number__icontains=voucher_search)
 
-        if date_filter == "week":
-            queryset = queryset.filter(freezing_entry__freezing_date__gte=now().date() - timedelta(days=7))
+        # Date filters
+        today = now().date()
+        if date_filter == "today":
+            queryset = queryset.filter(freezing_entry__freezing_date=today)
+        elif date_filter == "week":
+            week_start = today - timedelta(days=today.weekday())
+            queryset = queryset.filter(freezing_entry__freezing_date__gte=week_start)
         elif date_filter == "month":
-            queryset = queryset.filter(freezing_entry__freezing_date__month=now().month)
+            queryset = queryset.filter(
+                freezing_entry__freezing_date__year=today.year,
+                freezing_entry__freezing_date__month=today.month
+            )
+        elif date_filter == "quarter":
+            quarter_start_month = ((today.month - 1) // 3) * 3 + 1
+            quarter_start = today.replace(month=quarter_start_month, day=1)
+            queryset = queryset.filter(freezing_entry__freezing_date__gte=quarter_start)
         elif date_filter == "year":
-            queryset = queryset.filter(freezing_entry__freezing_date__year=now().year)
-
-        if start_date and end_date:
+            queryset = queryset.filter(freezing_entry__freezing_date__year=today.year)
+        elif date_filter == "custom" and start_date and end_date:
             try:
                 start = datetime.strptime(start_date, "%Y-%m-%d").date()
                 end = datetime.strptime(end_date, "%Y-%m-%d").date()
                 queryset = queryset.filter(freezing_entry__freezing_date__range=[start, end])
-            except:
+            except ValueError:
+                pass
+
+        if start_date and end_date and not date_filter:
+            try:
+                start = datetime.strptime(start_date, "%Y-%m-%d").date()
+                end = datetime.strptime(end_date, "%Y-%m-%d").date()
+                queryset = queryset.filter(freezing_entry__freezing_date__range=[start, end])
+            except ValueError:
                 pass
 
         return queryset
 
-    # Apply filters
     spot_queryset = apply_filters(spot_queryset)
     local_queryset = apply_filters(local_queryset)
 
-    summary_data = []
+    # Process data (same as main view)
+    all_data = []
 
-    # Process entries based on type filter
     if entry_type in ['all', 'spot']:
-        spot_summary = (
-            spot_queryset.values(
-                "item__name",
-                "item__category__name",
-                "item__species__name",
-                "grade__grade",
-                "brand__name",
-                "freezing_category__name",
-                "freezing_entry__voucher_number",
-                "freezing_entry__freezing_date",
-                "freezing_entry__freezing_status",
-            )
-            .annotate(
-                total_kg=Sum("kg"),
-                total_slab_quantity=Sum("slab_quantity"),
-                total_c_s_quantity=Sum("c_s_quantity"),
-                total_usd_amount=Sum("usd_rate_item"),
-                total_inr_amount=Sum("usd_rate_item_to_inr"),
-                avg_usd_rate_per_kg=Avg("usd_rate_per_kg"),
-                avg_yield_percentage=Avg("yield_percentage"),
-                entry_type=Value('Spot', output_field=CharField()),
-            )
-            .order_by("freezing_entry__freezing_date")
-        )
-        summary_data.extend(list(spot_summary))
+        for item in spot_queryset:
+            data_row = {
+                'id': item.id,
+                'item__name': item.item.name if item.item else None,
+                'item__category__name': item.item.category.name if item.item and item.item.category else None,
+                'item_quality__quality': item.item_quality.quality if hasattr(item, 'item_quality') and item.item_quality else None,
+                'freezing_entry__voucher_number': item.freezing_entry.voucher_number if item.freezing_entry else None,
+                'freezing_entry__freezing_date': item.freezing_entry.freezing_date if item.freezing_entry else None,
+                'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
+                'entry_type': 'spot',
+                'item_count': 1,
+                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
+                'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
+                'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
+                'store__name': item.store.name if hasattr(item, 'store') and item.store else None,
+                'total_kg': float(getattr(item, 'kg', 0) or 0),
+                'total_slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
+                'total_c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
+                'total_usd_amount': float(getattr(item, 'usd_rate_item', 0) or 0),
+                'total_inr_amount': float(getattr(item, 'usd_rate_item_to_inr', 0) or 0),
+                'avg_usd_rate_per_kg': float(getattr(item, 'usd_rate_per_kg', 0) or 0),
+                'avg_yield_percentage': float(getattr(item, 'yield_percentage', 0) or 0),
+            }
+            all_data.append(data_row)
 
     if entry_type in ['all', 'local']:
-        local_summary = (
-            local_queryset.values(
-                "item__name",
-                "item__category__name",
-                "item__species__name",
-                "grade__grade",
-                "brand__name",
-                "freezing_category__name",
-                "freezing_entry__voucher_number",
-                "freezing_entry__freezing_date",
-                "freezing_entry__freezing_status",
-            )
-            .annotate(
-                total_kg=Sum("kg"),
-                total_slab_quantity=Sum("slab_quantity"),
-                total_c_s_quantity=Sum("c_s_quantity"),
-                total_usd_amount=Sum("usd_rate_item"),
-                total_inr_amount=Sum("usd_rate_item_to_inr"),
-                avg_usd_rate_per_kg=Avg("usd_rate_per_kg"),
-                avg_yield_percentage=Value(None, output_field=DecimalField()),
-                entry_type=Value('Local', output_field=CharField()),
-            )
-            .order_by("freezing_entry__freezing_date")
-        )
-        summary_data.extend(list(local_summary))
+        for item in local_queryset:
+            data_row = {
+                'id': item.id,
+                'item__name': item.item.name if item.item else None,
+                'item__category__name': item.item.category.name if item.item and item.item.category else None,
+                'item_quality__quality': item.item_quality.quality if hasattr(item, 'item_quality') and item.item_quality else None,
+                'freezing_entry__voucher_number': item.freezing_entry.voucher_number if item.freezing_entry else None,
+                'freezing_entry__freezing_date': item.freezing_entry.freezing_date if item.freezing_entry else None,
+                'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
+                'entry_type': 'local',
+                'item_count': 1,
+                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
+                'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
+                'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
+                'store__name': item.store.name if hasattr(item, 'store') and item.store else None,
+                'total_kg': float(getattr(item, 'kg', 0) or 0),
+                'total_slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
+                'total_c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
+                'total_usd_amount': float(getattr(item, 'usd_rate_item', 0) or 0),
+                'total_inr_amount': float(getattr(item, 'usd_rate_item_to_inr', 0) or 0),
+                'avg_usd_rate_per_kg': float(getattr(item, 'usd_rate_per_kg', 0) or 0),
+                'avg_yield_percentage': None,
+            }
+            all_data.append(data_row)
 
-    # Sort combined data by date
-    summary_data = sorted(summary_data, key=lambda x: x['freezing_entry__freezing_date'])
+    # Sectioning logic (same as main view)
+    sectioned_data = {}
+    
+    for item in all_data:
+        if section_by == "category":
+            section_key = item.get("item__category__name") or "Uncategorized"
+        elif section_by == "brand":
+            section_key = item.get("brand__name") or "No Brand"
+        elif section_by == "processing_center":
+            section_key = item.get("processing_center__name") or "No Processing Center"
+        elif section_by == "store":
+            section_key = item.get("store__name") or "No Store"
+        elif section_by == "month":
+            date_obj = item.get("freezing_entry__freezing_date")
+            section_key = f"{date_obj.strftime('%B %Y')}" if date_obj else "No Date"
+        elif section_by == "species":
+            section_key = item.get("item__species__name") or "No Species"
+        elif section_by == "grade":
+            section_key = item.get("grade__grade") or "No Grade"
+        elif section_by == "item":
+            section_key = item.get("item__name") or "No Item"
+        elif section_by == "entry_type":
+            section_key = item.get("entry_type", "Unknown").title()
+        elif section_by == "status":
+            section_key = item.get("freezing_entry__freezing_status", "Unknown").title()
+        else:
+            section_key = "All Items"
+            
+        if section_key not in sectioned_data:
+            sectioned_data[section_key] = {
+                'items': [],
+                'totals': {
+                    'total_kg': 0,
+                    'total_slab_quantity': 0,
+                    'total_c_s_quantity': 0,
+                    'total_usd_amount': 0,
+                    'total_inr_amount': 0,
+                    'count': 0,
+                    'item_count': 0
+                }
+            }
+        
+        sectioned_data[section_key]['items'].append(item)
+        
+        totals = sectioned_data[section_key]['totals']
+        totals['total_kg'] += float(item.get('total_kg') or 0)
+        totals['total_slab_quantity'] += float(item.get('total_slab_quantity') or 0)
+        totals['total_c_s_quantity'] += float(item.get('total_c_s_quantity') or 0)
+        totals['total_usd_amount'] += float(item.get('total_usd_amount') or 0)
+        totals['total_inr_amount'] += float(item.get('total_inr_amount') or 0)
+        totals['count'] += 1
+        totals['item_count'] += int(item.get('item_count') or 0)
+
+    sectioned_data = dict(sorted(sectioned_data.items()))
+
+    # Calculate grand totals
+    grand_totals = {
+        'total_kg': 0,
+        'total_slab_quantity': 0,
+        'total_c_s_quantity': 0,
+        'total_usd_amount': 0,
+        'total_inr_amount': 0,
+        'count': 0,
+        'item_count': 0,
+        'avg_kg_per_entry': 0,
+        'avg_usd_per_kg': 0
+    }
+    
+    for section in sectioned_data.values():
+        for key in ['total_kg', 'total_slab_quantity', 'total_c_s_quantity', 
+                   'total_usd_amount', 'total_inr_amount', 'count', 'item_count']:
+            grand_totals[key] += section['totals'][key]
+
+    if grand_totals['count'] > 0:
+        grand_totals['avg_kg_per_entry'] = grand_totals['total_kg'] / grand_totals['count']
+    if grand_totals['total_kg'] > 0:
+        grand_totals['avg_usd_per_kg'] = grand_totals['total_usd_amount'] / grand_totals['total_kg']
 
     return render(
         request,
         "adminapp/report/freezing_report_print.html",
         {
-            "summary": summary_data,
+            "sectioned_data": sectioned_data,
+            "grand_totals": grand_totals,
             "start_date": start_date,
             "end_date": end_date,
             "entry_type": entry_type,
-            "selected_items": selected_items,
-            "selected_grades": selected_grades,
-            "selected_categories": selected_categories,
-            "selected_species": selected_species,
-            "selected_brands": selected_brands,
-            "selected_freezing_categories": selected_freezing_categories,
-            "freezing_status": freezing_status,
-            "voucher_search": voucher_search,
+            "section_by": section_by,
+            "date_filter": date_filter,
         },
-    )
+    ) 
 
 
 
@@ -9126,7 +9798,7 @@ def localpurchase_party_statement_pdf(request, party_id):
 
 
 # --- Peeling Shed Voucher --- fix
-@check_permission('voucher_add')
+
 def create_peeling_shed_voucher(request):
     """Enhanced create voucher view with better calculation handling"""
     if request.method == 'POST':
@@ -9206,7 +9878,6 @@ def get_sheds_with_freezing():
         freezing_shed_items__freezing_entry__freezing_status='complete'
     ).distinct().order_by('name')
 
-@check_permission('voucher_view')
 def get_cumulative_amounts_for_shed(shed, exclude_voucher=None):
     """
     Get cumulative receipts and payments from all vouchers for this shed
@@ -9338,7 +10009,6 @@ def calculate_shed_base_amount(shed):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-@check_permission('voucher_view')
 def get_shed_calculation_preview(request):
     """
     Enhanced AJAX view to preview calculation for selected shed with complete financial summary
@@ -9425,7 +10095,6 @@ def get_shed_calculation_preview(request):
         logger.error(f"Error in get_shed_calculation_preview: {str(e)}")
         return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
 
-@check_permission('voucher_view')
 def get_balance_status(balance):
     """
     Get human-readable balance status
@@ -9453,7 +10122,6 @@ def get_balance_status(balance):
             'class': 'text-success'
         }
 
-@check_permission('voucher_edit')
 def update_peeling_shed_voucher(request, voucher_id):
     """
     Enhanced update view that recalculates amounts correctly
@@ -9534,7 +10202,6 @@ def update_peeling_shed_voucher(request, voucher_id):
     
     return render(request, 'adminapp/vouchers/peelingshedvoucher_form.html', context)
 
-@check_permission('voucher_view')
 def peeling_shed_voucher_detail(request, voucher_id):
     """
     Enhanced detail view showing complete calculation breakdown
@@ -9576,14 +10243,12 @@ def peeling_shed_voucher_detail(request, voucher_id):
     
     return render(request, 'adminapp/vouchers/peelingshedvoucher_detail.html', context)
 
-class PeelingShedVoucherListView(CustomPermissionMixin,ListView):
-    permission_required = 'adminapp.voucher_view'
+class PeelingShedVoucherListView(ListView):
     model = PeelingShedVoucher
     template_name = "adminapp/vouchers/peelingshedvoucher_list.html"
     context_object_name = "vouchers"
     ordering = ["-date", "-id"]
 
-@check_permission('voucher_view')
 def peeling_shed_voucher_list_with_summary(request):
     """Enhanced list view with transaction summary and filtering"""
     
@@ -9701,7 +10366,6 @@ def peeling_shed_voucher_list_with_summary(request):
     
     return render(request, "adminapp/vouchers/peelingshedvoucher_list_summary.html", context)
 
-@check_permission('voucher_view')
 def peeling_shed_voucher_summary_pdf(request):
     """Generate PDF summary report for Peeling Shed Vouchers"""
     
@@ -9803,7 +10467,6 @@ def peeling_shed_voucher_summary_pdf(request):
     
     return response
 
-@check_permission('voucher_view')
 def shed_statement_pdf(request, shed_id):
     """Generate PDF statement for specific shed"""
     
@@ -10395,18 +11058,21 @@ def tenant_statement_pdf(request, tenant_id):
 
 # ADMIN WORKINGS
 
+from django.shortcuts import render
+from django.db.models import Q, Sum, Count
+from django.db.models.functions import TruncMonth
+from datetime import datetime, timedelta
+from collections import defaultdict
+import json
+
 def admin_dashboard(request):
     # Count incomplete freezing entries from both spot and local freezing
-    # Assuming 'Incomplete' or 'Pending' status indicates incomplete freezing
-    
-    # Count incomplete spot freezing entries
     incomplete_spot_freezing = FreezingEntrySpot.objects.filter(
         Q(freezing_status__iexact='Incomplete') | 
         Q(freezing_status__iexact='Pending') |
         Q(freezing_status__iexact='In Progress')
     ).count()
     
-    # Count incomplete local freezing entries  
     incomplete_local_freezing = FreezingEntryLocal.objects.filter(
         Q(freezing_status__iexact='Incomplete') |
         Q(freezing_status__iexact='Pending') |
@@ -10416,26 +11082,121 @@ def admin_dashboard(request):
     # Total incomplete freezing count
     incomplete_freezing_count = incomplete_spot_freezing + incomplete_local_freezing
     
-    # ADD THIS: Total freezing entries (needed for template calculation)
+    # Total freezing entries
     total_freezing_entries = FreezingEntrySpot.objects.count() + FreezingEntryLocal.objects.count()
     
-    # Calculate completed entries (recommended approach)
+    # Calculate completed entries
     completed_today = total_freezing_entries - incomplete_freezing_count
     
-    # You can also get other dashboard statistics here
-    total_subscribers = 1303  # This seems to be hardcoded in your template
+    # ============ CHART DATA FOR SPOT FREEZING ============
+    
+    # Get current date and last 12 months
+    today = datetime.now()
+    twelve_months_ago = today - timedelta(days=365)
+    
+    # Monthly spot freezing data (last 12 months)
+    monthly_data = FreezingEntrySpot.objects.filter(
+        freezing_date__gte=twelve_months_ago
+    ).annotate(
+        month=TruncMonth('freezing_date')
+    ).values('month').annotate(
+        total_entries=Count('id'),
+        complete_entries=Count('id', filter=Q(freezing_status__iexact='complete')),
+        incomplete_entries=Count('id', filter=~Q(freezing_status__iexact='complete')),
+        total_kg=Sum('total_kg'),
+        total_usd=Sum('total_usd')
+    ).order_by('month')
+    
+    # Prepare chart data
+    chart_labels = []
+    chart_complete = []
+    chart_incomplete = []
+    chart_kg = []
+    chart_usd = []
+    
+    for data in monthly_data:
+        month_name = data['month'].strftime('%b %Y')
+        chart_labels.append(month_name)
+        chart_complete.append(data['complete_entries'])
+        chart_incomplete.append(data['incomplete_entries'])
+        chart_kg.append(float(data['total_kg'] or 0))
+        chart_usd.append(float(data['total_usd'] or 0))
+    
+    # Weekly data for last 8 weeks (SQLite-compatible approach)
+    eight_weeks_ago = today - timedelta(weeks=8)
+    weekly_entries_raw = FreezingEntrySpot.objects.filter(
+        freezing_date__gte=eight_weeks_ago
+    ).values('freezing_date', 'total_kg').order_by('freezing_date')
+    
+    # Group by date manually
+    daily_data = defaultdict(lambda: {'entries': 0, 'kg': 0})
+    for entry in weekly_entries_raw:
+        date_str = entry['freezing_date'].strftime('%Y-%m-%d')
+        daily_data[date_str]['entries'] += 1
+        daily_data[date_str]['kg'] += float(entry['total_kg'] or 0)
+    
+    # Sort and prepare data
+    weekly_labels = []
+    weekly_entries = []
+    weekly_kg = []
+    for date_str in sorted(daily_data.keys()):
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        weekly_labels.append(date_obj.strftime('%d %b'))
+        weekly_entries.append(daily_data[date_str]['entries'])
+        weekly_kg.append(daily_data[date_str]['kg'])
+    
+    # Status distribution for pie chart
+    status_distribution = FreezingEntrySpot.objects.values('freezing_status').annotate(
+        count=Count('id')
+    )
+    
+    status_labels = []
+    status_counts = []
+    for status in status_distribution:
+        status_labels.append(status['freezing_status'].title())
+        status_counts.append(status['count'])
+    
+    # Top 5 items by quantity
+    top_items = FreezingEntrySpotItem.objects.values(
+        'item__name'
+    ).annotate(
+        total_kg=Sum('kg')
+    ).order_by('-total_kg')[:5]
+    
+    top_item_names = [item['item__name'] for item in top_items]
+    top_item_kg = [float(item['total_kg']) for item in top_items]
+    
+    # Other dashboard statistics
+    total_subscribers = 1303
     total_sales = 1345
     total_orders = 576
     
     context = {
         'incomplete_freezing_count': incomplete_freezing_count,
-        'total_freezing_entries': total_freezing_entries,  # ADD THIS
-        'completed_today': completed_today,  # ADD THIS
+        'total_freezing_entries': total_freezing_entries,
+        'completed_today': completed_today,
         'incomplete_spot_freezing': incomplete_spot_freezing,
         'incomplete_local_freezing': incomplete_local_freezing,
         'total_subscribers': total_subscribers,
         'total_sales': total_sales,
         'total_orders': total_orders,
+        
+        # Chart data - convert to JSON for JavaScript
+        'chart_labels': json.dumps(chart_labels),
+        'chart_complete': json.dumps(chart_complete),
+        'chart_incomplete': json.dumps(chart_incomplete),
+        'chart_kg': json.dumps(chart_kg),
+        'chart_usd': json.dumps(chart_usd),
+        
+        'weekly_labels': json.dumps(weekly_labels),
+        'weekly_entries': json.dumps(weekly_entries),
+        'weekly_kg': json.dumps(weekly_kg),
+        
+        'status_labels': json.dumps(status_labels),
+        'status_counts': json.dumps(status_counts),
+        
+        'top_item_names': json.dumps(top_item_names),
+        'top_item_kg': json.dumps(top_item_kg),
     }
     
     return render(request, 'adminapp/dashboard.html', context)
@@ -10637,7 +11398,7 @@ def delete_stock(request, pk):
         item_name = stock.item.name
         stock.delete()
         messages.success(request, f'Stock for {item_name} deleted successfully!')
-        return redirect('adminapp:stock_list')
+        return redirect('adminapp:list')
     
     context = {
         'stock': stock
@@ -10694,3 +11455,1236 @@ def stock_search_ajax(request):
             return JsonResponse({'results': results})
     
     return JsonResponse({'results': []})
+
+
+
+
+
+
+
+def spot_purchase_profit_loss_report(request):
+    """
+    Generate profit/loss report for spot purchases with filters and date range
+    """
+    from datetime import datetime, timedelta
+    from django.db.models import Q, Sum, Count
+    from decimal import Decimal
+    from django.http import JsonResponse
+    from django.shortcuts import render
+    
+    # Get filter parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    quick_filter = request.GET.get('quick_filter', '')
+    selected_spots = request.GET.getlist('spots')
+    selected_agents = request.GET.getlist('agents')
+    selected_supervisors = request.GET.getlist('supervisors')
+    profit_filter = request.GET.get('profit_filter', 'all')  # all, profit, loss
+    format_type = request.GET.get('format', 'html')  # html, json, print
+    
+    # Calculate dates based on quick filter or use today as default
+    today = datetime.now().date()
+    
+    if quick_filter:
+        start_date_obj, end_date_obj = calculate_quick_filter_dates(quick_filter, today)
+        start_date = start_date_obj.strftime('%Y-%m-%d')
+        end_date = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        # Default to today if no dates specified
+        if not start_date:
+            start_date = today.strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = today.strftime('%Y-%m-%d')
+        
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            error_msg = 'Invalid date format. Use YYYY-MM-DD'
+            if format_type == 'json':
+                return JsonResponse({'error': error_msg})
+            else:
+                context = {'error': error_msg, 'report_data': []}
+                return render(request, 'spot_purchase_profit_loss_report.html', context)
+    
+    try:
+        # Base query for spot purchases within date range
+        spot_purchases = SpotPurchase.objects.filter(
+            date__range=[start_date_obj, end_date_obj]
+        ).prefetch_related('items', 'expense', 'agent', 'supervisor', 'spot')
+        
+        # Apply filters
+        if selected_spots:
+            spot_purchases = spot_purchases.filter(spot__id__in=selected_spots)
+        if selected_agents:
+            spot_purchases = spot_purchases.filter(agent__id__in=selected_agents)
+        if selected_supervisors:
+            spot_purchases = spot_purchases.filter(supervisor__id__in=selected_supervisors)
+        
+        if not spot_purchases.exists():
+            message = f'No spot purchases found for the selected criteria'
+            if format_type == 'json':
+                return JsonResponse({'message': message, 'total_purchases': 0})
+            else:
+                context = {
+                    'message': message, 
+                    'report_data': [],
+                    'quick_filter': quick_filter,
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'selected_spots': selected_spots,
+                    'selected_agents': selected_agents,
+                    'selected_supervisors': selected_supervisors,
+                    'profit_filter': profit_filter,
+                    'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
+                }
+                return render(request, 'spot_purchase_profit_loss_report.html', context)
+        
+        # Get processing overhead total (active records only)
+        processing_overhead_total = ProcessingOverhead.objects.filter(
+            is_active=True
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        # Calculate profit/loss for each purchase
+        report_data = []
+        summary = {
+            'total_purchases': 0,
+            'total_purchase_amount': Decimal('0.00'),
+            'total_peeling_expenses': Decimal('0.00'),
+            'total_processing_overhead': Decimal('0.00'),
+            'total_freezing_tariff': Decimal('0.00'),
+            'total_cost': Decimal('0.00'),
+            'total_revenue': Decimal('0.00'),
+            'total_profit_loss': Decimal('0.00'),
+            'profit_count': 0,
+            'loss_count': 0,
+            'break_even_count': 0
+        }
+        
+        for purchase in spot_purchases:
+            # Get purchase cost
+            purchase_cost = purchase.total_purchase_amount or Decimal('0.00')
+            
+            # Calculate peeling expenses
+            peeling_cost = Decimal('0.00')
+            freezing_entries = FreezingEntrySpot.objects.filter(
+                spot=purchase
+            ).prefetch_related('items__shed', 'items__item', 'items__peeling_type')
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    if item.shed and item.peeling_type:
+                        try:
+                            shed_item = ShedItem.objects.get(
+                                shed=item.shed,
+                                item=item.item,
+                                item_type=item.peeling_type
+                            )
+                            peeling_cost += item.kg * shed_item.amount
+                        except ShedItem.DoesNotExist:
+                            continue
+            
+            # Calculate freezing revenue and collect total kg for processing overhead
+            freezing_revenue = Decimal('0.00')
+            total_kg = Decimal('0.00')
+            total_freezing_tariff = Decimal('0.00')
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
+                    freezing_revenue += item_revenue
+                    total_kg += item.kg or Decimal('0.00')
+                    
+                    # Calculate freezing category tariff
+                    if item.freezing_category and item.freezing_category.tariff:
+                        tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
+                        total_freezing_tariff += tariff_cost
+            
+            # Calculate processing overhead for this purchase
+            processing_overhead_amount = total_kg * processing_overhead_total
+            
+            # Calculate total cost including new overheads
+            total_cost = purchase_cost + peeling_cost + processing_overhead_amount + total_freezing_tariff
+            
+            # Calculate profit/loss
+            profit_loss = freezing_revenue - total_cost
+            
+            # Calculate profit percentage
+            if total_cost > 0:
+                profit_percentage = (profit_loss / total_cost * 100)
+            else:
+                profit_percentage = 0
+            
+            # Determine profit status
+            if profit_loss > 0:
+                profit_status = 'Profit'
+                summary['profit_count'] += 1
+            elif profit_loss < 0:
+                profit_status = 'Loss'
+                summary['loss_count'] += 1
+            else:
+                profit_status = 'Break Even'
+                summary['break_even_count'] += 1
+            
+            purchase_data = {
+                'id': purchase.id,
+                'date': purchase.date,
+                'voucher_number': purchase.voucher_number,
+                'spot_name': purchase.spot.location_name if purchase.spot else 'N/A',
+                'agent_name': purchase.agent.name if purchase.agent else 'N/A',
+                'supervisor_name': purchase.supervisor.name if purchase.supervisor else 'N/A',
+                'purchase_amount': float(purchase_cost),
+                'peeling_expenses': float(peeling_cost),
+                'processing_overhead': float(processing_overhead_amount),
+                'freezing_tariff': float(total_freezing_tariff),
+                'total_cost': float(total_cost),
+                'freezing_revenue': float(freezing_revenue),
+                'profit_loss': float(profit_loss),
+                'profit_percentage': float(profit_percentage),
+                'profit_status': profit_status,
+                'freezing_entries_count': freezing_entries.count(),
+                'total_items': sum(entry.items.count() for entry in freezing_entries),
+                'total_kg': float(total_kg)
+            }
+            
+            # Apply profit filter
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
+            
+            report_data.append(purchase_data)
+            
+            # Update summary
+            summary['total_purchase_amount'] += purchase_cost
+            summary['total_peeling_expenses'] += peeling_cost
+            summary['total_processing_overhead'] += processing_overhead_amount
+            summary['total_freezing_tariff'] += total_freezing_tariff
+            summary['total_cost'] += total_cost
+            summary['total_revenue'] += freezing_revenue
+            summary['total_profit_loss'] += profit_loss
+        
+        # Calculate final summary
+        summary['total_purchases'] = len(report_data)
+        if summary['total_cost'] > 0:
+            summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
+        else:
+            summary['overall_profit_margin'] = 0
+        
+        # Convert Decimal to float for JSON serialization
+        for key in ['total_purchase_amount', 'total_peeling_expenses', 'total_processing_overhead', 
+                   'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
+            summary[key] = float(summary[key])
+        
+        # Add processing overhead info to summary
+        summary['processing_overhead_rate'] = float(processing_overhead_total)
+        
+        # Sort by date (newest first)
+        report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Return based on format
+        if format_type == 'json':
+            return JsonResponse({
+                'success': True,
+                'date_range': {'start': start_date, 'end': end_date},
+                'summary': summary,
+                'data': report_data,
+                'filters': {
+                    'spots': selected_spots,
+                    'agents': selected_agents,
+                    'supervisors': selected_supervisors,
+                    'profit_filter': profit_filter,
+                    'quick_filter': quick_filter
+                }
+            })
+        
+        # Get filter options for template
+        spots = PurchasingSpot.objects.all().order_by('location_name')
+        agents = PurchasingAgent.objects.all().order_by('name')
+        supervisors = PurchasingSupervisor.objects.all().order_by('name')
+        
+        context = {
+            'report_data': report_data,
+            'summary': summary,
+            'quick_filter': quick_filter,
+            'start_date': start_date,
+            'end_date': end_date,
+            'spots': spots,
+            'agents': agents,
+            'supervisors': supervisors,
+            'selected_spots': selected_spots,
+            'selected_agents': selected_agents,
+            'selected_supervisors': selected_supervisors,
+            'profit_filter': profit_filter,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+            'is_print': format_type == 'print'
+        }
+        
+        template = 'spot_purchase_profit_loss_report_print.html' if format_type == 'print' else 'spot_purchase_profit_loss_report.html'
+        return render(request, template, context)
+        
+    except Exception as e:
+        error_msg = f'An error occurred: {str(e)}'
+        if format_type == 'json':
+            return JsonResponse({'error': error_msg})
+        else:
+            context = {
+                'error': error_msg, 
+                'report_data': [],
+                'quick_filter': quick_filter,
+                'start_date': start_date,
+                'end_date': end_date,
+                'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
+            }
+            return render(request, 'spot_purchase_profit_loss_report.html', context)
+
+
+def spot_purchase_profit_loss_report_print(request):
+    """
+    Generate print-optimized profit/loss report for spot purchases
+    This view inherits all filters from the main report view
+    """
+    from datetime import datetime, timedelta
+    from django.db.models import Q, Sum, Count, Prefetch
+    from decimal import Decimal
+    from django.http import JsonResponse
+    from django.shortcuts import render
+    import calendar
+    
+    # Get filter parameters - same as main view
+    quick_filter = request.GET.get('quick_filter', '')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    selected_spots = request.GET.getlist('spots')
+    selected_agents = request.GET.getlist('agents')
+    selected_supervisors = request.GET.getlist('supervisors')
+    profit_filter = request.GET.get('profit_filter', 'all')
+    
+    # Calculate dates based on quick filter or use today as default
+    today = datetime.now().date()
+    
+    if quick_filter:
+        start_date_obj, end_date_obj = calculate_quick_filter_dates(quick_filter, today)
+        start_date = start_date_obj.strftime('%Y-%m-%d')
+        end_date = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        # Default to today if no dates specified
+        if not start_date:
+            start_date = today.strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = today.strftime('%Y-%m-%d')
+        
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            error_msg = 'Invalid date format. Use YYYY-MM-DD'
+            context = {
+                'error': error_msg, 
+                'report_data': [],
+                'summary': {},
+                'quick_filter': quick_filter,
+                'start_date': start_date,
+                'end_date': end_date,
+                'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
+            }
+            return render(request, 'spot_purchase_profit_loss_report_print.html', context)
+
+    try:
+        # Base query for spot purchases within date range with all related data
+        spot_purchases = SpotPurchase.objects.filter(
+            date__range=[start_date_obj, end_date_obj]
+        ).prefetch_related(
+            'items__item', 
+            'expense', 
+            'agent', 
+            'supervisor', 
+            'spot'
+        ).select_related('spot', 'agent', 'supervisor')
+        
+        # Apply filters - same as main view
+        if selected_spots:
+            spot_purchases = spot_purchases.filter(spot__id__in=selected_spots)
+        if selected_agents:
+            spot_purchases = spot_purchases.filter(agent__id__in=selected_agents)
+        if selected_supervisors:
+            spot_purchases = spot_purchases.filter(supervisor__id__in=selected_supervisors)
+        
+        if not spot_purchases.exists():
+            message = f'No spot purchases found for the selected criteria'
+            context = {
+                'message': message, 
+                'report_data': [],
+                'summary': {},
+                'quick_filter': quick_filter,
+                'start_date': start_date,
+                'end_date': end_date,
+                'selected_spots': selected_spots,
+                'selected_agents': selected_agents,
+                'selected_supervisors': selected_supervisors,
+                'profit_filter': profit_filter,
+                'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+            }
+            return render(request, 'spot_purchase_profit_loss_report_print.html', context)
+        
+        # Get processing overhead total (active records only)
+        try:
+            processing_overhead_total = ProcessingOverhead.objects.filter(
+                is_active=True
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        except:
+            processing_overhead_total = Decimal('0.00')
+        
+        # Calculate profit/loss for each purchase with detailed breakdown
+        report_data = []
+        summary = {
+            'total_purchases': 0,
+            'total_purchase_amount': Decimal('0.00'),
+            'total_peeling_expenses': Decimal('0.00'),
+            'total_processing_overhead': Decimal('0.00'),
+            'total_freezing_tariff': Decimal('0.00'),
+            'total_cost': Decimal('0.00'),
+            'total_revenue': Decimal('0.00'),
+            'total_profit_loss': Decimal('0.00'),
+            'profit_count': 0,
+            'loss_count': 0,
+            'break_even_count': 0
+        }
+        
+        for purchase in spot_purchases:
+            # Get purchase cost
+            purchase_cost = purchase.total_purchase_amount or Decimal('0.00')
+            
+            # Calculate peeling expenses with detailed breakdown
+            peeling_cost = Decimal('0.00')
+            peeling_breakdown = []
+            
+            # Get freezing entries for this spot purchase
+            try:
+                freezing_entries = FreezingEntrySpot.objects.filter(
+                    spot=purchase
+                ).prefetch_related(
+                    'items__shed',
+                    'items__item',
+                    'items__item_quality',
+                    'items__species',
+                    'items__peeling_type',
+                    'items__grade__species',
+                    'items__processing_center',
+                    'items__store',
+                    'items__unit',
+                    'items__glaze',
+                    'items__freezing_category',
+                    'items__brand'
+                )
+            except:
+                freezing_entries = []
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    if item.shed and item.peeling_type:
+                        try:
+                            shed_item = ShedItem.objects.get(
+                                shed=item.shed,
+                                item=item.item,
+                                item_type=item.peeling_type
+                            )
+                            item_peeling_cost = (item.kg or Decimal('0.00')) * shed_item.amount
+                            peeling_cost += item_peeling_cost
+                            
+                            # Add to peeling breakdown
+                            peeling_breakdown.append({
+                                'shed_name': item.shed.name,
+                                'item_type': item.peeling_type.name,
+                                'quantity': float(item.kg or 0),
+                                'rate': float(shed_item.amount),
+                                'amount': float(item_peeling_cost)
+                            })
+                        except ShedItem.DoesNotExist:
+                            continue
+                        except Exception:
+                            continue
+            
+            # Calculate freezing revenue and collect freezing items details
+            freezing_revenue = Decimal('0.00')
+            freezing_items = []
+            total_kg = Decimal('0.00')
+            total_freezing_tariff = Decimal('0.00')
+            freezing_tariff_breakdown = []
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    try:
+                        item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
+                        freezing_revenue += item_revenue
+                        total_kg += item.kg or Decimal('0.00')
+                        
+                        # Calculate freezing category tariff
+                        item_tariff_cost = Decimal('0.00')
+                        if item.freezing_category and hasattr(item.freezing_category, 'tariff') and item.freezing_category.tariff:
+                            item_tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
+                            total_freezing_tariff += item_tariff_cost
+                            
+                            # Add to tariff breakdown
+                            existing_category = next((t for t in freezing_tariff_breakdown if t['category_name'] == item.freezing_category.name), None)
+                            if existing_category:
+                                existing_category['quantity'] += float(item.kg or 0)
+                                existing_category['amount'] += float(item_tariff_cost)
+                            else:
+                                freezing_tariff_breakdown.append({
+                                    'category_name': item.freezing_category.name,
+                                    'tariff_rate': float(item.freezing_category.tariff),
+                                    'quantity': float(item.kg or 0),
+                                    'amount': float(item_tariff_cost),
+                                    'kg': float(item.kg or 0)  # Add kg field for template compatibility
+                                })
+                        
+                        # Add to freezing items details
+                        freezing_items.append({
+                            'item_name': item.item.name if item.item else 'N/A',
+                            'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
+                            'species': item.species.name if item.species else 'N/A',
+                            'peeling_type': item.peeling_type.name if item.peeling_type else 'N/A',
+                            'shed_name': item.shed.name if item.shed else 'N/A',
+                            'processing_center': item.processing_center.name if item.processing_center else 'N/A',
+                            'store': item.store.name if item.store else 'N/A',
+                            'freezing_category': item.freezing_category.name if item.freezing_category else 'N/A',
+                            'kg': float(item.kg or 0),
+                            'usd_rate_per_kg': float(item.usd_rate_per_kg or 0),
+                            'usd_rate_item': float(item.usd_rate_item or 0),
+                            'usd_rate_item_to_inr': float(item.usd_rate_item_to_inr or 0),
+                            'yield_percentage': float(item.yield_percentage or 0),
+                            'slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
+                            'c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
+                            'unit': item.unit.unit_code if item.unit else 'N/A',
+                            'glaze': f"{item.glaze.percentage}%" if item.glaze else 'N/A',
+                            'brand': item.brand.name if item.brand else 'N/A',
+                            'grade': f"{item.grade.species.name} - {item.grade.grade}" if item.grade and item.grade.species else 'N/A',
+                            'tariff_cost': float(item_tariff_cost)
+                        })
+                    except Exception as e:
+                        continue
+            
+            # Calculate processing overhead for this purchase
+            processing_overhead_amount = total_kg * processing_overhead_total
+            
+            # Calculate total cost including new overheads
+            total_cost = purchase_cost + peeling_cost + processing_overhead_amount + total_freezing_tariff
+            
+            # Calculate profit/loss
+            profit_loss = freezing_revenue - total_cost
+            
+            # Calculate profit percentage
+            if total_cost > 0:
+                profit_percentage = (profit_loss / total_cost * 100)
+            else:
+                profit_percentage = Decimal('0.00')
+            
+            # Determine profit status
+            if profit_loss > 0:
+                profit_status = 'Profit'
+                summary['profit_count'] += 1
+            elif profit_loss < 0:
+                profit_status = 'Loss'
+                summary['loss_count'] += 1
+            else:
+                profit_status = 'Break Even'
+                summary['break_even_count'] += 1
+            
+            # Get purchase items details
+            purchase_items = []
+            for item in purchase.items.all():
+                purchase_items.append({
+                    'item_name': item.item.name if item.item else 'N/A',
+                    'quantity': float(item.quantity or 0),
+                    'boxes': float(item.boxes or 0),
+                    'rate': float(item.rate or 0),
+                    'total_rate': float(item.total_rate or 0),
+                    'amount': float(item.amount or 0)
+                })
+            
+            # Get expense details
+            expense_details = {}
+            if hasattr(purchase, 'expense') and purchase.expense:
+                expense = purchase.expense
+                expense_details = {
+                    'ice_expense': float(expense.ice_expense or 0),
+                    'vehicle_rent': float(expense.vehicle_rent or 0),
+                    'loading_and_unloading': float(expense.loading_and_unloading or 0),
+                    'peeling_charge': float(expense.peeling_charge or 0),
+                    'other_expense': float(expense.other_expense or 0),
+                    'total_expense': float(expense.total_expense or 0)
+                }
+            
+            purchase_data = {
+                'id': purchase.id,
+                'date': purchase.date,
+                'voucher_number': purchase.voucher_number or '',
+                'spot_name': purchase.spot.location_name if purchase.spot else 'N/A',
+                'agent_name': purchase.agent.name if purchase.agent else 'N/A',
+                'supervisor_name': purchase.supervisor.name if purchase.supervisor else 'N/A',
+                'purchase_amount': float(purchase_cost),
+                'peeling_expenses': float(peeling_cost),
+                'processing_overhead': float(processing_overhead_amount),
+                'freezing_tariff': float(total_freezing_tariff),
+                'total_cost': float(total_cost),
+                'freezing_revenue': float(freezing_revenue),
+                'profit_loss': float(profit_loss),
+                'profit_percentage': float(profit_percentage),
+                'profit_status': profit_status,
+                'freezing_entries_count': len(freezing_entries),
+                'total_items': sum(entry.items.count() for entry in freezing_entries) if freezing_entries else 0,
+                'total_kg_processed': float(total_kg),  # Changed to match template
+                
+                # Detailed breakdowns for print report
+                'purchase_items': purchase_items,
+                'expense_details': expense_details,
+                'peeling_breakdown': peeling_breakdown,
+                'freezing_items': freezing_items,
+                'freezing_tariff_breakdown': freezing_tariff_breakdown,
+                'processing_overhead_rate': float(processing_overhead_total)
+            }
+            
+            # Apply profit filter - same as main view
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
+            
+            report_data.append(purchase_data)
+            
+            # Update summary
+            summary['total_purchase_amount'] += purchase_cost
+            summary['total_peeling_expenses'] += peeling_cost
+            summary['total_processing_overhead'] += processing_overhead_amount
+            summary['total_freezing_tariff'] += total_freezing_tariff
+            summary['total_cost'] += total_cost
+            summary['total_revenue'] += freezing_revenue
+            summary['total_profit_loss'] += profit_loss
+        
+        # Calculate final summary
+        summary['total_purchases'] = len(report_data)
+        if summary['total_cost'] > 0:
+            summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
+        else:
+            summary['overall_profit_margin'] = 0.0
+        
+        # Convert Decimal to float for template
+        for key in ['total_purchase_amount', 'total_peeling_expenses', 'total_processing_overhead',
+                   'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
+            summary[key] = float(summary[key])
+        
+        # Add processing overhead info to summary
+        summary['processing_overhead_rate'] = float(processing_overhead_total)
+        
+        # Sort by date (newest first)
+        report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        context = {
+            'report_data': report_data,
+            'summary': summary,
+            'quick_filter': quick_filter,
+            'start_date': start_date,
+            'end_date': end_date,
+            'selected_spots': selected_spots,
+            'selected_agents': selected_agents,
+            'selected_supervisors': selected_supervisors,
+            'profit_filter': profit_filter,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+        }
+        
+        return render(request, 'spot_purchase_profit_loss_report_print.html', context)
+        
+    except Exception as e:
+        error_msg = f'An error occurred: {str(e)}'
+        context = {
+            'error': error_msg, 
+            'report_data': [],
+            'summary': {},
+            'quick_filter': quick_filter,
+            'start_date': start_date,
+            'end_date': end_date,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+        }
+        return render(request, 'spot_purchase_profit_loss_report_print.html', context)
+
+
+def calculate_quick_filter_dates(quick_filter, base_date):
+    """
+    Helper function to calculate date ranges for quick filters
+    """
+    from datetime import timedelta
+    import calendar
+    
+    if quick_filter == 'today':
+        return base_date, base_date
+    elif quick_filter == 'yesterday':
+        yesterday = base_date - timedelta(days=1)
+        return yesterday, yesterday
+    elif quick_filter == 'this_week':
+        days_since_monday = base_date.weekday()
+        start_date = base_date - timedelta(days=days_since_monday)
+        return start_date, base_date
+    elif quick_filter == 'last_week':
+        days_since_monday = base_date.weekday()
+        last_monday = base_date - timedelta(days=days_since_monday + 7)
+        last_sunday = last_monday + timedelta(days=6)
+        return last_monday, last_sunday
+    elif quick_filter == 'this_month':
+        start_date = base_date.replace(day=1)
+        return start_date, base_date
+    elif quick_filter == 'last_month':
+        if base_date.month == 1:
+            last_month = base_date.replace(year=base_date.year-1, month=12, day=1)
+        else:
+            last_month = base_date.replace(month=base_date.month-1, day=1)
+        _, last_day = calendar.monthrange(last_month.year, last_month.month)
+        start_date = last_month
+        end_date = last_month.replace(day=last_day)
+        return start_date, end_date
+    elif quick_filter == 'this_quarter':
+        quarter_start_month = ((base_date.month - 1) // 3) * 3 + 1
+        start_date = base_date.replace(month=quarter_start_month, day=1)
+        return start_date, base_date
+    elif quick_filter == 'last_quarter':
+        current_quarter_start = ((base_date.month - 1) // 3) * 3 + 1
+        if current_quarter_start == 1:
+            last_quarter_start = base_date.replace(year=base_date.year-1, month=10, day=1)
+            last_quarter_end = base_date.replace(year=base_date.year-1, month=12, day=31)
+        else:
+            last_quarter_start = base_date.replace(month=current_quarter_start-3, day=1)
+            last_quarter_end_month = current_quarter_start - 1
+            _, last_day = calendar.monthrange(base_date.year, last_quarter_end_month)
+            last_quarter_end = base_date.replace(month=last_quarter_end_month, day=last_day)
+        return last_quarter_start, last_quarter_end
+    elif quick_filter == 'this_year':
+        start_date = base_date.replace(month=1, day=1)
+        return start_date, base_date
+    elif quick_filter == 'last_year':
+        start_date = base_date.replace(year=base_date.year-1, month=1, day=1)
+        end_date = base_date.replace(year=base_date.year-1, month=12, day=31)
+        return start_date, end_date
+    else:
+        # Default to today
+        return base_date, base_date
+
+
+def get_date_range_text(quick_filter, start_date, end_date):
+    """Helper function to generate human-readable date range text"""
+    if quick_filter:
+        filter_names = {
+            'today': 'Today',
+            'yesterday': 'Yesterday', 
+            'this_week': 'This Week',
+            'last_week': 'Last Week',
+            'this_month': 'This Month',
+            'last_month': 'Last Month',
+            'this_quarter': 'This Quarter',
+            'last_quarter': 'Last Quarter',
+            'this_year': 'This Year',
+            'last_year': 'Last Year'
+        }
+        return filter_names.get(quick_filter, f"{start_date} to {end_date}")
+    else:
+        return f"{start_date} to {end_date}"
+    
+# Added in 02/10/2025
+    
+# ---------------- Buyer CRUD ----------------
+
+def buyer_list(request):
+    buyers = Buyer.objects.all().order_by("name")
+    return render(request, "adminapp/Buyer/buyer_list.html", {"buyers": buyers})
+
+
+def buyer_create(request):
+    if request.method == "POST":
+        form = BuyerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Buyer created successfully!")
+            return redirect("adminapp:buyer_list")
+    else:
+        form = BuyerForm()
+    return render(request, "adminapp/Buyer/buyer_form.html", {"form": form, "title": "Create Buyer"})
+
+
+def buyer_update(request, pk):
+    buyer = get_object_or_404(Buyer, pk=pk)
+    if request.method == "POST":
+        form = BuyerForm(request.POST, instance=buyer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Buyer updated successfully!")
+            return redirect("adminapp:buyer_list")
+    else:
+        form = BuyerForm(instance=buyer)
+    return render(request, "adminapp/Buyer/buyer_form.html", {"form": form, "title": "Update Buyer"})
+
+
+def buyer_delete(request, pk):
+    buyer = get_object_or_404(Buyer, pk=pk)
+    if request.method == "POST":
+        buyer.delete()
+        messages.success(request, "Buyer deleted successfully!")
+        return redirect("adminapp:buyer_list")
+    return render(request, "adminapp/confirm_delete.html", {"buyer": buyer})
+
+
+# ---------------- Shipment Destination CRUD ----------------
+
+def destination_list(request):
+    destinations = ShipmentDestination.objects.all().order_by("country")
+    return render(request, "adminapp/Shipment/destination_list.html", {"destinations": destinations})
+
+
+def destination_create(request):
+    if request.method == "POST":
+        form = ShipmentDestinationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Shipment Destination created successfully!")
+            return redirect("adminapp:destination_list")
+    else:
+        form = ShipmentDestinationForm()
+    return render(request, "adminapp/Shipment/destination_form.html", {"form": form, "title": "Create Destination"})
+
+
+def destination_update(request, pk):
+    destination = get_object_or_404(ShipmentDestination, pk=pk)
+    if request.method == "POST":
+        form = ShipmentDestinationForm(request.POST, instance=destination)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Shipment Destination updated successfully!")
+            return redirect("adminapp:destination_list")
+    else:
+        form = ShipmentDestinationForm(instance=destination)
+    return render(request, "adminapp/Shipment/destination_form.html", {"form": form, "title": "Update Destination"})
+
+
+def destination_delete(request, pk):
+    destination = get_object_or_404(ShipmentDestination, pk=pk)
+    if request.method == "POST":
+        destination.delete()
+        messages.success(request, "Shipment Destination deleted successfully!")
+        return redirect("adminapp:destination_list")
+    return render(request, "adminapp/confirm_delete.html", {"destination": destination})
+
+
+
+
+
+# ---------------- Sales Entry CRUD ----------------
+
+
+
+def create_sales_entry(request):
+    if request.method == "POST":
+        form = SalesEntryForm(request.POST)
+        formset = SalesEntryItemFormSet(request.POST)
+        
+        # Debug: Print form errors
+        print("=" * 50)
+        print("FORM VALIDATION")
+        print("=" * 50)
+        print(f"Form is valid: {form.is_valid()}")
+        if not form.is_valid():
+            print("Form Errors:")
+            print(form.errors)
+            print(form.non_field_errors())
+        
+        print(f"\nFormset is valid: {formset.is_valid()}")
+        if not formset.is_valid():
+            print("Formset Errors:")
+            print(formset.errors)
+            print(formset.non_form_errors())
+        print("=" * 50)
+
+        if form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    # Save the sales entry
+                    sales_entry = form.save()
+                    print(f"Sales Entry saved: {sales_entry.invoice_no}")
+                    
+                    # Process each item in the formset
+                    items = formset.save(commit=False)
+                    
+                    if not items:
+                        messages.warning(request, "Please add at least one item to the sales entry.")
+                        sales_entry.delete()  # Rollback the sales entry
+                        raise ValueError("No items in formset")
+                    
+                    for item in items:
+                        item.sales_entry = sales_entry
+                        item.save()
+                        print(f"Item saved: {item.species} - Cartons: {item.cartons}, Qty: {item.quantity}")
+                        
+                        # Deduct from stock
+                        deduct_stock_for_sales_item(item)
+                    
+                    # Delete removed items
+                    for obj in formset.deleted_objects:
+                        obj.delete()
+                    
+                    messages.success(request, f"Sales entry {sales_entry.invoice_no} created successfully!")
+                    return redirect("adminapp:sales_entry_list")
+                    
+            except ValueError as e:
+                messages.error(request, f"Stock error: {str(e)}")
+                logger.error(f"Stock error in create_sales_entry: {str(e)}")
+            except Exception as e:
+                messages.error(request, f"Error creating sales entry: {str(e)}")
+                logger.error(f"Error in create_sales_entry: {str(e)}", exc_info=True)
+        else:
+            # Show specific error messages
+            if not form.is_valid():
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
+            
+            if not formset.is_valid():
+                for i, form_errors in enumerate(formset.errors):
+                    if form_errors:
+                        messages.error(request, f"Item {i+1}: {form_errors}")
+                if formset.non_form_errors():
+                    for error in formset.non_form_errors():
+                        messages.error(request, f"Formset error: {error}")
+    else:
+        form = SalesEntryForm()
+        formset = SalesEntryItemFormSet()
+
+    return render(request, "adminapp/sales/sales_entry_form.html", {
+        "form": form,
+        "formset": formset,
+        "action": "Create",
+    })
+
+
+def deduct_stock_for_sales_item(sales_item):
+    """
+    Deduct stock quantities based on sales entry item.
+    """
+    sales_entry = sales_item.sales_entry
+    
+    # Build filter dynamically to handle None values
+    filter_kwargs = {
+        'item': sales_entry.item,
+        'species': sales_item.species,
+        'item_grade': sales_item.grade,
+    }
+    
+    # Add optional fields only if they exist
+    if sales_entry.brand:
+        filter_kwargs['brand'] = sales_entry.brand
+    if sales_entry.item_quality:
+        filter_kwargs['item_quality'] = sales_entry.item_quality
+    if sales_entry.unit:
+        filter_kwargs['unit'] = sales_entry.unit
+    if sales_entry.glaze:
+        filter_kwargs['glaze'] = sales_entry.glaze
+    if sales_entry.freezing_category:
+        filter_kwargs['freezing_category'] = sales_entry.freezing_category
+    
+    try:
+        # Find matching stock record
+        stock_qs = Stock.objects.filter(**filter_kwargs)
+        
+        if not stock_qs.exists():
+            # Try to find partial match and show what's available
+            # Get available stocks without using .name (in case models don't have name field)
+            available_stocks = Stock.objects.filter(
+                item=sales_entry.item
+            ).select_related('item', 'species', 'item_grade')[:5]
+            
+            error_msg = f"No stock found for: {sales_entry.item}"
+            if sales_item.species:
+                error_msg += f" - {sales_item.species}"
+            if sales_item.grade:
+                error_msg += f" - {sales_item.grade}"
+            
+            if available_stocks:
+                error_msg += f"\n\nAvailable stocks for {sales_entry.item}:"
+                for stock in available_stocks:
+                    species_str = str(stock.species) if stock.species else 'N/A'
+                    grade_str = str(stock.item_grade) if stock.item_grade else 'N/A'
+                    error_msg += f"\n- {species_str} {grade_str}: {stock.cs_quantity} cartons, {stock.kg_quantity} kg"
+            
+            raise ValueError(error_msg)
+        
+        stock = stock_qs.first()
+        
+        # Check if sufficient stock exists
+        if stock.cs_quantity < sales_item.cartons:
+            raise ValueError(
+                f"Insufficient carton stock for {sales_entry.item} - {sales_item.species if sales_item.species else 'N/A'}. "
+                f"Available: {stock.cs_quantity}, Required: {sales_item.cartons}"
+            )
+        
+        if stock.kg_quantity < sales_item.quantity:
+            raise ValueError(
+                f"Insufficient kg stock for {sales_entry.item} - {sales_item.species if sales_item.species else 'N/A'}. "
+                f"Available: {stock.kg_quantity}, Required: {sales_item.quantity}"
+            )
+        
+        # Deduct quantities
+        old_cs = stock.cs_quantity
+        old_kg = stock.kg_quantity
+        
+        stock.cs_quantity -= sales_item.cartons
+        stock.kg_quantity -= sales_item.quantity
+        stock.save()
+        
+        print(f"Stock deducted: {sales_entry.item}")
+        print(f"  Cartons: {old_cs} -> {stock.cs_quantity} (deducted {sales_item.cartons})")
+        print(f"  KG: {old_kg} -> {stock.kg_quantity} (deducted {sales_item.quantity})")
+        
+    except Stock.DoesNotExist:
+        raise ValueError(
+            f"No stock found matching: {sales_entry.item} - "
+            f"{sales_item.species if sales_item.species else 'N/A'}"
+        )
+
+
+def update_sales_entry(request, pk):
+    """
+    Update existing sales entry - restores old stock and deducts new stock.
+    """
+    sales_entry = get_object_or_404(SalesEntry, pk=pk)
+    
+    if request.method == "POST":
+        form = SalesEntryForm(request.POST, instance=sales_entry)
+        formset = SalesEntryItemFormSet(request.POST, instance=sales_entry)
+
+        if form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    # First, restore stock from old items
+                    old_items = sales_entry.items.all()
+                    for old_item in old_items:
+                        restore_stock_for_sales_item(old_item)
+                    
+                    # Save the updated entry
+                    sales_entry = form.save()
+                    
+                    # Process new/updated items
+                    items = formset.save(commit=False)
+                    for item in items:
+                        item.sales_entry = sales_entry
+                        item.save()
+                        deduct_stock_for_sales_item(item)
+                    
+                    # Handle deleted items (already restored above)
+                    for obj in formset.deleted_objects:
+                        obj.delete()
+                    
+                    messages.success(request, f"Sales entry {sales_entry.invoice_no} updated successfully!")
+                    return redirect("adminapp:sales_entry_detail", pk=pk)
+                    
+            except ValueError as e:
+                messages.error(request, f"Stock error: {str(e)}")
+            except Exception as e:
+                messages.error(request, f"Error updating sales entry: {str(e)}")
+                logger.error(f"Error in update_sales_entry: {str(e)}", exc_info=True)
+        else:
+            messages.error(request, "Please correct the errors in the form.")
+    else:
+        form = SalesEntryForm(instance=sales_entry)
+        formset = SalesEntryItemFormSet(instance=sales_entry)
+
+    return render(request, "adminapp/sales/sales_entry_form.html", {
+        "form": form,
+        "formset": formset,
+        "action": "Update",
+        "sales_entry": sales_entry,
+    })
+
+
+def restore_stock_for_sales_item(sales_item):
+    """
+    Restore stock quantities when sales entry is updated or deleted.
+    """
+    sales_entry = sales_item.sales_entry
+    
+    filter_kwargs = {
+        'item': sales_entry.item,
+        'species': sales_item.species,
+        'item_grade': sales_item.grade,
+    }
+    
+    if sales_entry.brand:
+        filter_kwargs['brand'] = sales_entry.brand
+    if sales_entry.item_quality:
+        filter_kwargs['item_quality'] = sales_entry.item_quality
+    if sales_entry.unit:
+        filter_kwargs['unit'] = sales_entry.unit
+    if sales_entry.glaze:
+        filter_kwargs['glaze'] = sales_entry.glaze
+    if sales_entry.freezing_category:
+        filter_kwargs['freezing_category'] = sales_entry.freezing_category
+    
+    try:
+        stock = Stock.objects.filter(**filter_kwargs).first()
+        
+        if stock:
+            stock.cs_quantity += sales_item.cartons
+            stock.kg_quantity += sales_item.quantity
+            stock.save()
+            print(f"Stock restored: {sales_entry.item} - Cartons: {sales_item.cartons}, KG: {sales_item.quantity}")
+        
+    except Exception as e:
+        logger.error(f"Error restoring stock: {str(e)}")
+
+
+def delete_sales_entry(request, pk):
+    """
+    Delete sales entry and restore stock.
+    """
+    sales_entry = get_object_or_404(SalesEntry, pk=pk)
+    
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                # Restore stock for all items
+                for item in sales_entry.items.all():
+                    restore_stock_for_sales_item(item)
+                
+                invoice_no = sales_entry.invoice_no
+                # Delete the sales entry
+                sales_entry.delete()
+                
+                messages.success(request, f"Sales entry {invoice_no} deleted and stock restored!")
+                return redirect("adminapp:sales_entry_list")
+                
+        except Exception as e:
+            messages.error(request, f"Error deleting sales entry: {str(e)}")
+            logger.error(f"Error in delete_sales_entry: {str(e)}", exc_info=True)
+    
+    return render(request, "adminapp/sales/sales_entry_confirm_delete.html", {
+        "sales_entry": sales_entry,
+    })
+
+
+def sales_entry_list(request):
+    """
+    List all sales entries with search and filter.
+    """
+    sales_entries = SalesEntry.objects.all().select_related(
+        'buyer', 'item', 'brand'
+    ).prefetch_related('items').order_by('-date')
+    
+    # Search functionality
+    search_query = request.GET.get('search', '')
+    if search_query:
+        sales_entries = sales_entries.filter(
+            Q(voucher_no__icontains=search_query) |
+            Q(invoice_no__icontains=search_query) |
+            Q(buyer__name__icontains=search_query) |
+            Q(buyer_order_no__icontains=search_query)
+        )
+    
+    # Status filter
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        sales_entries = sales_entries.filter(status=status_filter)
+    
+    # Date range filter
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    if date_from:
+        sales_entries = sales_entries.filter(date__gte=date_from)
+    if date_to:
+        sales_entries = sales_entries.filter(date__lte=date_to)
+    
+    # Pagination
+    paginator = Paginator(sales_entries, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'date_from': date_from,
+        'date_to': date_to,
+        'status_choices': SalesEntry.STATUS_CHOICES,
+    }
+    
+    return render(request, "adminapp/sales/sales_entry_list.html", context)
+
+
+def confirm_sales_entry(request, pk):
+    """
+    Change sales entry status to confirmed.
+    """
+    sales_entry = get_object_or_404(SalesEntry, pk=pk)
+    
+    if request.method == "POST":
+        sales_entry.status = 'confirmed'
+        sales_entry.save()
+        messages.success(request, f"Sales entry {sales_entry.invoice_no} confirmed!")
+        return redirect("adminapp:sales_entry_detail", pk=pk)
+    
+    return redirect("adminapp:sales_entry_detail", pk=pk)
+
+
+
+
+
+
+
+from xhtml2pdf import pisa
+from io import BytesIO
+
+def sales_entry_detail(request, pk):
+    """
+    Display detailed view of a sales entry.
+    """
+    sales_entry = get_object_or_404(
+        SalesEntry.objects.select_related(
+            'buyer', 'item', 'brand', 'unit', 'glaze', 'freezing_category', 'item_quality'
+        ).prefetch_related('items__species', 'items__peeling_type', 'items__grade'),
+        pk=pk
+    )
+    
+    return render(request, "adminapp/sales/sales_entry_detail.html", {
+        "sales_entry": sales_entry,
+    })
+
+
+def sales_entry_invoice_pdf(request, pk):
+    """
+    Generate and download PDF invoice for a sales entry.
+    """
+    sales_entry = get_object_or_404(
+        SalesEntry.objects.select_related(
+            'buyer', 'item', 'brand', 'unit', 'glaze', 'freezing_category', 'item_quality'
+        ).prefetch_related('items__species', 'items__peeling_type', 'items__grade'),
+        pk=pk
+    )
+    
+    # Prepare context
+    context = {
+        'sales_entry': sales_entry,
+        'company_name': 'AM FISHERIES',  # You can make this dynamic
+    }
+    
+    # Get template
+    template = get_template('adminapp/sales/sales_entry_invoice_pdf.html')
+    html = template.render(context)
+    
+    # Create PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        # Return PDF as download
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        filename = f"Invoice_{sales_entry.invoice_no}_{sales_entry.date.strftime('%Y%m%d')}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    
+    return HttpResponse('Error generating PDF', status=400)
+
+

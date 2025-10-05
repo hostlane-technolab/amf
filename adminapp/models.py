@@ -280,9 +280,12 @@ class ItemGrade(BaseModel):
         return f"{self.species} - {self.grade}"
     
 class FreezingCategory(BaseModel):
-    name = models.CharField(max_length=100,unique=True)
-    code = models.CharField(null=True,blank=True,unique=True,max_length=100)
+    name = models.CharField(max_length=100)
+    code = models.CharField(null=True,blank=True,max_length=100)
     tariff = models.PositiveIntegerField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now) 
+
 
     def __str__(self):
         return f"{self.name}"
@@ -344,6 +347,8 @@ class TenantFreezingTariff(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name="freezing_tariffs")
     category = models.ForeignKey(FreezingCategory, on_delete=models.CASCADE, related_name="tenant_tariffs")
     tariff = models.PositiveIntegerField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now) 
 
     class Meta:
         unique_together = ("tenant", "category")  # one tariff per tenant-category
@@ -361,8 +366,11 @@ class PeelingOverhead(BaseModel):
 
 class ProcessingOverhead(BaseModel):
     category_name = models.CharField(max_length=100)
-    freezing_expense = models.DecimalField(max_digits=100, decimal_places=2)
-    other_expense = models.DecimalField(max_digits=100, decimal_places=2)
+    amount = models.DecimalField(max_digits=100, decimal_places=2)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)  # ✅ uses current datetime
+
+
 
 class ShipmentOverhead(BaseModel):
     documentation_charges = models.DecimalField(max_digits=100, decimal_places=2)
@@ -1134,6 +1142,152 @@ class TenantVoucher(models.Model):
     def __str__(self):
         return f"Tenant Voucher {self.voucher_no} - {self.tenant.name}"
 
+
+# sale data base models
+
+
+
+
+from django.db import models
+from django.utils import timezone
+from decimal import Decimal
+
+
+class Buyer(BaseModel):
+    """Buyer/Consignee Information"""
+    name = models.CharField(max_length=200)
+    address = models.TextField()
+    country = models.CharField(max_length=100)
+    contact_person = models.CharField(max_length=150, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.country}"
+
+
+class ShipmentDestination(BaseModel):
+    """Port and Destination Information"""
+    country = models.CharField(max_length=100)
+    port_of_loading = models.CharField(max_length=150)
+    port_of_discharge = models.CharField(max_length=150)
+    final_destination = models.CharField(max_length=150, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.port_of_loading} to {self.port_of_discharge}"
+
+
+
+
+class SalesEntry(BaseModel):
+    """Main Sales/Shipment Entry (Commercial Invoice)"""
+    
+    # Invoice Details
+    voucher_no = models.CharField(max_length=50, unique=True)
+    date = models.DateField(default=timezone.now)
+    invoice_no = models.CharField(max_length=50, unique=True)
+    hs_code = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Buyer Information
+    buyer = models.ForeignKey(Buyer, on_delete=models.CASCADE, related_name='sales_entries')
+    buyer_order_no = models.CharField(max_length=100, blank=True, null=True)
+    purchase_order_date = models.DateField(blank=True, null=True)
+    
+    # Exporter Information
+    exporter_name = models.CharField(max_length=200, default="AM FISHERIES")
+    exporter_address = models.TextField(blank=True, null=True)
+    exporter_iec_code = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Shipping Details
+    exporters_ref_no = models.CharField(max_length=100, blank=True, null=True)
+    steamer_line_no = models.CharField(max_length=100, blank=True, null=True)
+    customs_seal_no = models.CharField(max_length=100, blank=True, null=True)
+    container_no = models.CharField(max_length=100, blank=True, null=True)
+    rex_reg_no = models.CharField(max_length=100, blank=True, null=True)
+    narrative = models.TextField(blank=True, null=True)
+    
+    # Port/Destination (simplified)
+    country_of_origin = models.CharField(max_length=100, default="COCHIN, INDIA")
+    country_of_destination = models.CharField(max_length=100)  # Port of Discharge
+    
+    # Tax/Financial
+    gstin_number = models.CharField(max_length=50, blank=True, null=True)
+    igst_number = models.CharField(max_length=50, blank=True, null=True)
+    
+    # Totals
+    total_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount_usd = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_taxable_value = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_tax_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    total_amount_after_tax = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    
+    # Additional
+    processed_by = models.TextField(blank=True, null=True)
+    declaration_text = models.TextField(blank=True, null=True)
+    bank_details = models.TextField(blank=True, null=True)
+
+
+    # products
+    item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='sales_entries_items')
+    item_quality = models.ForeignKey('ItemQuality', on_delete=models.CASCADE, null=True, blank=True , default=None)
+    unit = models.ForeignKey('PackingUnit', on_delete=models.CASCADE)
+    glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
+    freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
+    brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE, null=True, blank=True , default=None)
+
+
+
+    
+    # Status
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('confirmed', 'Confirmed'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class SalesEntryItem(BaseModel):
+    """
+    Individual Items in Sales Entry
+    Only fields highlighted in yellow from the invoice
+    """
+    
+    sales_entry = models.ForeignKey(
+        SalesEntry, 
+        on_delete=models.CASCADE, 
+        related_name='items'
+    )
+    
+    # Core Item Information (Yellow highlighted fields only)
+  
+    species = models.ForeignKey(Species, on_delete=models.CASCADE)
+    peeling_type = models.ForeignKey(ItemType, on_delete=models.SET_NULL, null=True, blank=True)
+    grade = models.ForeignKey(ItemGrade, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Quantities (Yellow highlighted)
+    cartons = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)  # This is "Quantity" in invoice
+    
+    # Pricing (Yellow highlighted)
+    price_usd_per_kg = models.DecimalField(max_digits=10, decimal_places=2)
+    amount_usd = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    
+    # Tax (Yellow highlighted)
+    taxable_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=5.00)
+    tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    
+    # Stock Reference (for inventory tracking)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 

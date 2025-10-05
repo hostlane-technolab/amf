@@ -202,6 +202,7 @@ class ItemGradeForm(forms.ModelForm):
 class FreezingCategoryForm(forms.ModelForm):
     class Meta:
         model = FreezingCategory
+        exclude = ['created_at','is_active']
         fields = '__all__'
 
 class PackingUnitForm(forms.ModelForm):
@@ -237,17 +238,34 @@ class TenantForm(forms.ModelForm):
         model = Tenant
         fields = '__all__'
 
+# In your forms.py or views.py
+from django.forms import inlineformset_factory
+from django import forms
+
 class TenantFreezingTariffForm(forms.ModelForm):
     class Meta:
         model = TenantFreezingTariff
         fields = ['category', 'tariff']
+        widgets = {
+            'category': forms.Select(attrs={
+                'class': 'form-control',
+            }),
+            'tariff': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter tariff amount',
+                'min': '0',
+            }),
+        }
 
 TenantFreezingTariffFormSet = inlineformset_factory(
     Tenant,
     TenantFreezingTariff,
     form=TenantFreezingTariffForm,
+    fields=['category', 'tariff'],
     extra=1,
-    can_delete=True
+    can_delete=True,
+    validate_min=False,
+    validate_max=False,
 )
 
 
@@ -265,6 +283,7 @@ class PeelingOverheadForm(forms.ModelForm):
 class ProcessingOverheadForm(forms.ModelForm):
     class Meta:
         model = ProcessingOverhead
+        exclude = ['created_at','is_active']
         fields = '__all__'
 
 class ShipmentOverheadForm(forms.ModelForm):
@@ -461,6 +480,11 @@ class FreezingEntrySpotItemForm(forms.ModelForm):
             'yield_percentage': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
 FreezingEntrySpotItemFormSet = inlineformset_factory(
     FreezingEntrySpot,
     FreezingEntrySpotItem,
@@ -521,6 +545,12 @@ class FreezingEntryLocalItemForm(forms.ModelForm):
         # Ensure item_quality shows qualities, not item names
         self.fields['item_quality'].queryset = ItemQuality.objects.all().select_related('item')
         self.fields['item_quality'].label_from_instance = lambda obj: f"{obj.quality} ({obj.item.name})"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
 
 FreezingEntryLocalItemFormSet = inlineformset_factory(
     FreezingEntryLocal,
@@ -644,6 +674,14 @@ class FreezingEntryTenantItemForm(forms.ModelForm):
             'kg': forms.NumberInput(attrs={'class': 'form-control kg'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
+
+
+
 FreezingEntryTenantItemFormSet = inlineformset_factory(
     FreezingEntryTenant,
     FreezingEntryTenantItem,
@@ -713,6 +751,12 @@ class ReturnTenantItemForm(forms.ModelForm):
         # Make original_item optional but helpful
         self.fields['original_item'].required = False
         self.fields['original_item'].help_text = "Link to original stock lot (optional)"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
 
 ReturnTenantItemFormSet = inlineformset_factory(
     ReturnTenant,
@@ -816,6 +860,12 @@ class StoreTransferItemForm(forms.ModelForm):
             "cs_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
             "kg_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
 
 StoreTransferItemFormSet = inlineformset_factory(
     StoreTransfer,
@@ -1125,6 +1175,335 @@ class StockForm(forms.ModelForm):
                 )
         
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
+
+# Added in 02/10/2025
+
+class BuyerForm(forms.ModelForm):
+    """Form for creating/editing Buyer"""
+    
+    class Meta:
+        model = Buyer
+        fields = [
+            'name', 'address', 'country', 'contact_person', 
+            'email', 'phone', 'is_active'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter buyer name'
+            }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Enter complete address'
+            }),
+            'country': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., JAPAN'
+            }),
+            'contact_person': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Contact person name'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'buyer@example.com'
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '+81-xxx-xxxx-xxxx'
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+        }
+
+class ShipmentDestinationForm(forms.ModelForm):
+    """Form for creating/editing Shipment Destination"""
+    
+    class Meta:
+        model = ShipmentDestination
+        fields = ['country', 'port_of_loading', 'port_of_discharge', 'final_destination']
+        widgets = {
+            'country': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Country'
+            }),
+            'port_of_loading': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., COCHIN, INDIA'
+            }),
+            'port_of_discharge': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., NAGOYA, JAPAN'
+            }),
+            'final_destination': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Final destination (if different)'
+            }),
+        }
+
+
+
+# sales Entry Forms 
+
+class SalesEntryForm(forms.ModelForm):
+    """Form for SalesEntry (Commercial Invoice)"""
+    
+    class Meta:
+        model = SalesEntry
+        fields = [
+            'voucher_no', 'date', 'invoice_no', 'hs_code',
+            'buyer', 'buyer_order_no', 'purchase_order_date',
+            'exporter_name', 'exporter_address', 'exporter_iec_code',
+            'exporters_ref_no', 'steamer_line_no', 'customs_seal_no',
+            'container_no', 'rex_reg_no', 'narrative',
+            'country_of_origin', 'country_of_destination',
+            'gstin_number', 'igst_number',
+            'item', 'item_quality', 'unit', 'glaze', 'freezing_category', 'brand',
+            'processed_by', 'declaration_text', 'bank_details',
+            'status'
+        ]
+        widgets = {
+            'voucher_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter voucher number'
+            }),
+            'date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'invoice_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter invoice number'
+            }),
+            'hs_code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'HS Code'
+            }),
+            'buyer': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'buyer_order_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Buyer order number'
+            }),
+            'purchase_order_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'exporter_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Exporter name'
+            }),
+            'exporter_address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Exporter address'
+            }),
+            'exporter_iec_code': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'IEC Code'
+            }),
+            'exporters_ref_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Exporters reference number'
+            }),
+            'steamer_line_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Steamer line number'
+            }),
+            'customs_seal_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Customs seal number'
+            }),
+            'container_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Container number'
+            }),
+            'rex_reg_no': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'REX registration number'
+            }),
+            'narrative': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Additional notes'
+            }),
+            'country_of_origin': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Country of origin'
+            }),
+            'country_of_destination': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Country of destination'
+            }),
+            'gstin_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'GSTIN number'
+            }),
+            'igst_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'IGST number'
+            }),
+            'item': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'item_quality': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'unit': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'glaze': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'freezing_category': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'brand': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'processed_by': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Processed by'
+            }),
+            'declaration_text': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Declaration text'
+            }),
+            'bank_details': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Bank details'
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+        }
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Validate unique voucher_no
+        voucher_no = cleaned_data.get('voucher_no')
+        invoice_no = cleaned_data.get('invoice_no')
+        
+        # Check for duplicates (excluding current instance in update)
+        if voucher_no:
+            qs = SalesEntry.objects.filter(voucher_no=voucher_no)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError({
+                    'voucher_no': 'This voucher number already exists.'
+                })
+        
+        if invoice_no:
+            qs = SalesEntry.objects.filter(invoice_no=invoice_no)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError({
+                    'invoice_no': 'This invoice number already exists.'
+                })
+        
+        return cleaned_data
+
+class SalesEntryItemForm(forms.ModelForm):
+    """Form for SalesEntryItem (Line items in invoice)"""
+    
+    class Meta:
+        model = SalesEntryItem
+        fields = [
+       
+            'species','peeling_type','grade','cartons','quantity','price_usd_per_kg',
+            'amount_usd','taxable_value','tax_rate','tax_amount','total_amount' 
+
+        ]
+
+        widgets = {
+            'species': forms.Select(attrs={
+                'class': 'form-control form-select'
+            }),
+            'peeling_type': forms.Select(attrs={
+                'class': 'form-control form-select'
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'form-control form-select'
+            }),
+            'cartons': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Number of cartons'
+            }),
+            'quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Quantity (kg)'
+            }),
+            'price_usd_per_kg': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Price per kg (USD)'
+            }),
+            'tax_rate': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Tax rate (%)',
+                'value': '5.00'
+            }),
+            'tax_amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Tax amount',
+          
+            }),
+            'total_amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Total amount',
+   
+            }),
+            'amount_usd': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Amount (USD)',
+   
+            }),
+            'taxable_value': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01',
+                'placeholder': 'Taxable value',
+   
+            }),
+
+         
+
+        }
+   
+SalesEntryItemFormSet = inlineformset_factory(
+    SalesEntry,
+    SalesEntryItem,
+    form=SalesEntryItemForm,
+    extra=1,  # Number of empty forms to display
+    can_delete=True,
+
+)
+
+
+
+
+
+
 
 
 

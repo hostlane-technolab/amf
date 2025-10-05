@@ -1,28 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Report</title>
-</head>
-<body>
+{% extends 'admin_base.html' %}
+{% block title %} Stock Report {% endblock %}
+{% block content %}
+
+    
     <!-- Load required libraries from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        @page {
-            size: A4 portrait;
-            margin: 15mm;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+y
+        .outer {
             padding: 20px;
             font-family: Arial, sans-serif;
             font-size: 14px;
@@ -563,12 +550,551 @@
         }
     </style>
 
-    <!-- Filter Form -->
-    <div class="filter-form">
+    <!-- Replace the existing .filter-form section in your stock report template -->
+
+<style>
+    /* Enhanced Filter Styles - matching spot purchase design exactly */
+    .filter-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+        max-width: 1400px;
+        margin: 0 auto 30px auto;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        padding: 24px 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        animation: float 25s infinite linear;
+    }
+
+    @keyframes float {
+        0% { transform: rotate(0deg) translate(0, 0); }
+        100% { transform: rotate(360deg) translate(0, 0); }
+    }
+
+    .card-header h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 32px;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .filter-section {
+        background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        padding: 24px;
+        border: 2px solid transparent;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .filter-section:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        transform: translateY(-3px);
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+    }
+
+    .filter-section:hover::before {
+        opacity: 1;
+    }
+
+    .filter-section > label:first-child {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 16px;
+        font-size: 1.05rem;
+    }
+
+    .selected-count {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        min-width: 24px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        0% { opacity: 0; transform: scale(0.8) translateX(10px); }
+        100% { opacity: 1; transform: scale(1) translateX(0); }
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        margin-bottom: 16px;
+        background: white;
+        font-weight: 500;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .search-box::placeholder {
+        color: #94a3b8;
+    }
+
+    .options-container {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .options-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .options-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .options-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-radius: 3px;
+    }
+
+    .option-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .option-item:last-child {
+        border-bottom: none;
+    }
+
+    .option-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        transition: width 0.3s ease;
+    }
+
+    .option-item:hover {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+        padding-left: 20px;
+    }
+
+    .option-item:hover::before {
+        width: 4px;
+    }
+
+    .option-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #4f46e5;
+        cursor: pointer;
+    }
+
+    .option-item label {
+        cursor: pointer;
+        flex: 1;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .option-item:hover label {
+        color: #4f46e5;
+        font-weight: 600;
+    }
+
+    /* Single select dropdowns and inputs */
+    .filter-section select:not([multiple]),
+    .filter-section input[type="text"] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        background: white;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .filter-section select:not([multiple]):focus,
+    .filter-section input[type="text"]:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .filter-section input[type="text"]::placeholder {
+        color: #94a3b8;
+    }
+
+    .filter-section select:not([multiple]) {
+        cursor: pointer;
+    }
+
+    /* Special styling for checkbox groups */
+    .checkbox-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .checkbox-item:hover {
+        border-color: #4f46e5;
+        background: rgba(79, 70, 229, 0.05);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #4f46e5;
+        cursor: pointer;
+    }
+
+    .checkbox-item label {
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .checkbox-item:hover label {
+        color: #4f46e5;
+    }
+
+    /* Filter Buttons */
+    .filter-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 16px 24px;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex: 1;
+        min-width: 140px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-btn:hover::before {
+        left: 100%;
+    }
+
+    .filter-btn:active {
+        transform: translateY(-1px);
+    }
+
+    .filter-btn.primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+    }
+
+    .filter-btn.secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .filter-btn.export {
+        background: linear-gradient(135deg, #059669, #0891b2);
+        color: white;
+    }
+
+    /* Page Header Styling */
+    .outer {
+        min-height: 100vh;
+        padding: 20px;
+        color: #1e293b;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+        border-radius: 20px;
+        padding: 24px 32px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border: 2px solid #f1f3f7;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .align-items-center {
+        align-items: center;
+    }
+
+    .justify-content-between {
+        justify-content: space-between;
+    }
+
+    .flex-wrap {
+        flex-wrap: wrap;
+    }
+
+    .mb-3 {
+        margin-bottom: 1rem;
+    }
+
+    .mb-md-0 {
+        margin-bottom: 0;
+    }
+
+    .me-4 {
+        margin-right: 1.5rem;
+    }
+
+    .mb-0 {
+        margin-bottom: 0;
+    }
+
+    .fw-bold {
+        font-weight: bold;
+    }
+
+    .text-muted {
+        color: #6c757d;
+    }
+
+    .fs-6 {
+        font-size: 1rem;
+    }
+
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+    }
+
+    .card-title {
+        font-size: 26px;
+        color: #2c3e50;
+        letter-spacing: -0.5px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 20px;
+        }
+        
+        .filters-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .filter-buttons {
+            flex-direction: column;
+        }
+        
+        .filter-btn {
+            min-width: auto;
+        }
+
+        .checkbox-group {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .page-header .d-flex {
+            flex-direction: column;
+            align-items: stretch !important;
+        }
+        
+        .page-header .d-flex > .d-flex:first-child {
+            flex-direction: row !important;
+            align-items: center !important;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 22px;
+        }
+        
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .page-header {
+            padding: 20px;
+        }
+        
+        .icon-wrapper {
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+        }
+    }
+
+    /* Print styles - hide filter completely */
+    @media print {
+        .filter-card {
+            display: none !important;
+            visibility: hidden !important;
+        }
+    }
+</style>
+
+<!-- Page Header for Stock Report -->
+<div class="outer" style="margin-top: 5rem;">
+    <div class="container">
+        <div class="page-header">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                <div class="d-flex align-items-center mb-3 mb-md-0">
+                    <div class="icon-wrapper me-4">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0 fw-bold">Comprehensive Stock Report</h3>
+                        <p class="text-muted mb-0 fs-6">Detailed inventory breakdown by {{ section_by|title }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- Enhanced Filter Form -->
+<div class="filter-card">
+    <div class="card-header">
+        <h3>🔍 Advanced Filters</h3>
+    </div>
+    
+    <div class="card-body">
         <form method="GET" id="filterForm">
-            <div class="filter-grid">
-                <div class="filter-group">
-                    <label for="section_by">Section By:</label>
+            <div class="filters-grid">
+                <!-- Section By -->
+                <div class="filter-section">
+                    <label>Section By:</label>
                     <select name="section_by" id="section_by">
                         <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
                         <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
@@ -592,8 +1118,9 @@
                     </select>
                 </div>
 
-                <div class="filter-group">
-                    <label for="source_type">Source Type:</label>
+                <!-- Source Type -->
+                <div class="filter-section">
+                    <label>Source Type:</label>
                     <select name="source_type" id="source_type">
                         <option value="all" {% if source_type == 'all' %}selected{% endif %}>All Sources</option>
                         <option value="spot" {% if source_type == 'spot' %}selected{% endif %}>Spot</option>
@@ -601,154 +1128,176 @@
                     </select>
                 </div>
 
-                <div class="filter-group">
-                    <label for="items">Items:</label>
-                    <select name="items" id="items" multiple>
-                        <option value="">All Items</option>
+                <!-- Items -->
+                <div class="filter-section">
+                    <label>Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
+                    <div class="options-container" id="itemsContainer">
                         {% for item in items %}
-                        <option value="{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}selected{% endif %}>
-                            {{ item.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="items" value="{{ item.id }}" id="item_{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}checked{% endif %}>
+                                <label for="item_{{ item.id }}">{{ item.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label for="categories">Categories:</label>
-                    <select name="categories" id="categories" multiple>
-                        <option value="">All Categories</option>
+                <!-- Categories -->
+                <div class="filter-section">
+                    <label>Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
+                    <div class="options-container" id="categoriesContainer">
                         {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}selected{% endif %}>
-                            {{ category.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="categories" value="{{ category.id }}" id="category_{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                <label for="category_{{ category.id }}">{{ category.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label for="stores">Stores:</label>
-                    <select name="stores" id="stores" multiple>
-                        <option value="">All Stores</option>
+                <!-- Stores -->
+                <div class="filter-section">
+                    <label>Stores: <span id="storesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search stores..." id="storesSearch">
+                    <div class="options-container" id="storesContainer">
                         {% for store in stores %}
-                        <option value="{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}selected{% endif %}>
-                            {{ store.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="stores" value="{{ store.id }}" id="store_{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}checked{% endif %}>
+                                <label for="store_{{ store.id }}">{{ store.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
 
-                <div class="filter-group">
-                    <label for="brands">Brands:</label>
-                    <select name="brands" id="brands" multiple>
-                        <option value="">All Brands</option>
+                <!-- Brands -->
+                <div class="filter-section">
+                    <label>Brands: <span id="brandsCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search brands..." id="brandsSearch">
+                    <div class="options-container" id="brandsContainer">
                         {% for brand in brands %}
-                        <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}selected{% endif %}>
-                            {{ brand.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="brands" value="{{ brand.id }}" id="brand_{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                <label for="brand_{{ brand.id }}">{{ brand.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
 
                 {% if species %}
-                <div class="filter-group">
-                    <label for="species">Species:</label>
-                    <select name="species" id="species" multiple>
-                        <option value="">All Species</option>
+                <!-- Species -->
+                <div class="filter-section">
+                    <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
+                    <div class="options-container" id="speciesContainer">
                         {% for spec in species %}
-                        <option value="{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}selected{% endif %}>
-                            {{ spec.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="species" value="{{ spec.id }}" id="species_{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}checked{% endif %}>
+                                <label for="species_{{ spec.id }}">{{ spec.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if item_grades %}
-                <div class="filter-group">
-                    <label for="item_grades">Grades:</label>
-                    <select name="item_grades" id="item_grades" multiple>
-                        <option value="">All Grades</option>
+                <!-- Item Grades -->
+                <div class="filter-section">
+                    <label>Grades: <span id="itemGradesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search grades..." id="itemGradesSearch">
+                    <div class="options-container" id="itemGradesContainer">
                         {% for grade in item_grades %}
-                        <option value="{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_item_grades %}selected{% endif %}>
-                            {{ grade.grade }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="item_grades" value="{{ grade.id }}" id="item_grade_{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_item_grades %}checked{% endif %}>
+                                <label for="item_grade_{{ grade.id }}">{{ grade.grade }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if units %}
-                <div class="filter-group">
-                    <label for="units">Units:</label>
-                    <select name="units" id="units" multiple>
-                        <option value="">All Units</option>
+                <!-- Units -->
+                <div class="filter-section">
+                    <label>Units: <span id="unitsCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search units..." id="unitsSearch">
+                    <div class="options-container" id="unitsContainer">
                         {% for unit in units %}
-                        <option value="{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}selected{% endif %}>
-                            {{ unit.description }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="units" value="{{ unit.id }}" id="unit_{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}checked{% endif %}>
+                                <label for="unit_{{ unit.id }}">{{ unit.description }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if glazes %}
-                <div class="filter-group">
-                    <label for="glazes">Glazes:</label>
-                    <select name="glazes" id="glazes" multiple>
-                        <option value="">All Glazes</option>
+                <!-- Glazes -->
+                <div class="filter-section">
+                    <label>Glazes: <span id="glazesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search glazes..." id="glazesSearch">
+                    <div class="options-container" id="glazesContainer">
                         {% for glaze in glazes %}
-                        <option value="{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}selected{% endif %}>
-                            {% if glaze.percentage %}{{ glaze.percentage }}%{% else %}{{ glaze.name }}{% endif %}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="glazes" value="{{ glaze.id }}" id="glaze_{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}checked{% endif %}>
+                                <label for="glaze_{{ glaze.id }}">{% if glaze.percentage %}{{ glaze.percentage }}%{% else %}{{ glaze.name }}{% endif %}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if item_qualities %}
-                <div class="filter-group">
-                    <label for="item_qualities">Qualities:</label>
-                    <select name="item_qualities" id="item_qualities" multiple>
-                        <option value="">All Qualities</option>
+                <!-- Item Qualities -->
+                <div class="filter-section">
+                    <label>Qualities: <span id="itemQualitiesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search qualities..." id="itemQualitiesSearch">
+                    <div class="options-container" id="itemQualitiesContainer">
                         {% for quality in item_qualities %}
-                        <option value="{{ quality.id }}" {% if quality.id|stringformat:"s" in selected_item_qualities %}selected{% endif %}>
-                            {{ quality.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="item_qualities" value="{{ quality.id }}" id="item_quality_{{ quality.id }}" {% if quality.id|stringformat:"s" in selected_item_qualities %}checked{% endif %}>
+                                <label for="item_quality_{{ quality.id }}">{{ quality.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
                 {% endif %}
 
                 {% if freezing_categories %}
-                <div class="filter-group">
-                    <label for="freezing_categories">Freezing Categories:</label>
-                    <select name="freezing_categories" id="freezing_categories" multiple>
-                        <option value="">All Freezing Categories</option>
+                <!-- Freezing Categories -->
+                <div class="filter-section">
+                    <label>Freezing Categories: <span id="freezingCategoriesCount" class="selected-count" style="display: none;">0</span></label>
+                    <input type="text" class="search-box" placeholder="Search freezing categories..." id="freezingCategoriesSearch">
+                    <div class="options-container" id="freezingCategoriesContainer">
                         {% for freezing_cat in freezing_categories %}
-                        <option value="{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}selected{% endif %}>
-                            {{ freezing_cat.name }}
-                        </option>
+                            <div class="option-item">
+                                <input type="checkbox" name="freezing_categories" value="{{ freezing_cat.id }}" id="freezing_cat_{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}checked{% endif %}>
+                                <label for="freezing_cat_{{ freezing_cat.id }}">{{ freezing_cat.name }}</label>
+                            </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
                 {% endif %}
 
-                <div class="filter-group">
-                    <label for="search">Search:</label>
+                <!-- Search -->
+                <div class="filter-section">
+                    <label>Search:</label>
                     <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Search items, brands, stores...">
                 </div>
 
-                <div class="filter-group">
-                    <label for="stock_filters">Stock Filters:</label>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <label style="display: flex; align-items: center; font-weight: normal;">
-                            <input type="checkbox" name="low_stock" value="true" {% if low_stock == 'true' %}checked{% endif %} style="margin-right: 5px;">
-                            Low Stock
-                        </label>
-                        <label style="display: flex; align-items: center; font-weight: normal;">
-                            <input type="checkbox" name="zero_stock" value="true" {% if zero_stock == 'true' %}checked{% endif %} style="margin-right: 5px;">
-                            Zero Stock
-                        </label>
+                <!-- Stock Filters -->
+                <div class="filter-section">
+                    <label>Stock Filters:</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="low_stock" value="true" id="low_stock" {% if low_stock == 'true' %}checked{% endif %}>
+                            <label for="low_stock">Low Stock</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="zero_stock" value="true" id="zero_stock" {% if zero_stock == 'true' %}checked{% endif %}>
+                            <label for="zero_stock">Zero Stock</label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -761,18 +1310,107 @@
             </div>
         </form>
     </div>
+</div>
 
-    <!-- Active Filters Display -->
-    {% if request.GET %}
-    <div class="active-filters">
-        <strong>Active Filters:</strong>
-        {% if section_by %}<span class="filter-tag">Section: {{ section_by|title }}</span>{% endif %}
-        {% if source_type != 'all' %}<span class="filter-tag">Source: {{ source_type|title }}</span>{% endif %}
-        {% if low_stock == 'true' %}<span class="filter-tag">Low Stock</span>{% endif %}
-        {% if zero_stock == 'true' %}<span class="filter-tag">Zero Stock</span>{% endif %}
-        {% if search_query %}<span class="filter-tag">Search: {{ search_query }}</span>{% endif %}
-    </div>
-    {% endif %}
+<script>
+    // Search functionality for each filter section - keeping all original functionality
+    function setupSearch(searchId, containerId, countId) {
+        const searchInput = document.getElementById(searchId);
+        const container = document.getElementById(containerId);
+        const countSpan = document.getElementById(countId);
+        
+        if (!searchInput || !container || !countSpan) return;
+        
+        const options = container.querySelectorAll('.option-item');
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            options.forEach(option => {
+                const label = option.querySelector('label').textContent.toLowerCase();
+                if (label.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+
+        // Count selected items
+        function updateCount() {
+            const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+            const count = checkedBoxes.length;
+            if (count > 0) {
+                countSpan.textContent = count;
+                countSpan.style.display = 'inline-block';
+            } else {
+                countSpan.style.display = 'none';
+            }
+        }
+
+        // Add event listeners to checkboxes
+        options.forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', updateCount);
+            }
+        });
+
+        // Click anywhere on option item to toggle checkbox
+        options.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        });
+
+        // Initial count update
+        updateCount();
+    }
+
+    // Setup all functionality when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup search for all filter sections
+        setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
+        setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
+        setupSearch('storesSearch', 'storesContainer', 'storesCount');
+        setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
+        
+        // Setup conditional sections
+        if (document.getElementById('speciesSearch')) {
+            setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
+        }
+        if (document.getElementById('itemGradesSearch')) {
+            setupSearch('itemGradesSearch', 'itemGradesContainer', 'itemGradesCount');
+        }
+        if (document.getElementById('unitsSearch')) {
+            setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
+        }
+        if (document.getElementById('glazesSearch')) {
+            setupSearch('glazesSearch', 'glazesContainer', 'glazesCount');
+        }
+        if (document.getElementById('itemQualitiesSearch')) {
+            setupSearch('itemQualitiesSearch', 'itemQualitiesContainer', 'itemQualitiesCount');
+        }
+        if (document.getElementById('freezingCategoriesSearch')) {
+            setupSearch('freezingCategoriesSearch', 'freezingCategoriesContainer', 'freezingCategoriesCount');
+        }
+    });
+
+    // Auto-submit form when section_by changes - preserving original functionality
+    document.getElementById('section_by').addEventListener('change', function() {
+        setTimeout(() => {
+            document.getElementById('filterForm').submit();
+        }, 500);
+    });
+
+</div>
+</script>
 
     <!-- Report Header -->
     <div class="report-header">
@@ -831,7 +1469,9 @@
             <strong>Section Summary:</strong> 
             {{ section_data.items|length }} items | 
             CS: {{ section_data.totals.total_cs_quantity|floatformat:2 }} | 
-            KG: {{ section_data.totals.total_kg_quantity|floatformat:2 }} 
+            KG: {{ section_data.totals.total_kg_quantity|floatformat:2 }} | 
+            USD: ${{ section_data.totals.total_usd_rate_item|floatformat:2 }} | 
+            INR: ₹{{ section_data.totals.total_usd_rate_item_to_inr|floatformat:2 }}
             {% if section_data.totals.low_stock_count > 0 %} | Low Stock: {{ section_data.totals.low_stock_count }}{% endif %}
             {% if section_data.totals.zero_stock_count > 0 %} | Out of Stock: {{ section_data.totals.zero_stock_count }}{% endif %}
         </div>
@@ -863,8 +1503,9 @@
                     {% endif %}
                     <th>CS QTY</th>
                     <th>KG QTY</th>
-              
-
+                    <th>USD/KG</th>
+                    <th>USD AMT</th>
+                    <th>INR AMT</th>
                     <th>STATUS</th>
                 </tr>
             </thead>
@@ -895,7 +1536,9 @@
                     {% endif %}
                     <td class="number-col">{{ item.total_cs_quantity|floatformat:2 }}</td>
                     <td class="number-col">{{ item.total_kg_quantity|floatformat:2 }}</td>
- 
+                    <td class="number-col">${{ item.total_usd_rate_per_kg|floatformat:2 }}</td>
+                    <td class="number-col">${{ item.total_usd_rate_item|floatformat:2 }}</td>
+                    <td class="number-col">₹{{ item.total_usd_rate_item_to_inr|floatformat:2 }}</td>
                     <td class="center-col">
                         <span class="stock-status {% if item.stock_status == 'In Stock' %}in-stock{% elif item.stock_status == 'Low Stock' %}low-stock{% else %}out-of-stock{% endif %}">
                             {{ item.stock_status }}
@@ -918,7 +1561,10 @@
                     <td class="number-col"><strong></strong></td>
                     <td class="number-col"><strong>{{ section_data.totals.total_cs_quantity|floatformat:2 }}</strong></td>
                     <td class="number-col"><strong>{{ section_data.totals.total_kg_quantity|floatformat:2 }}</strong></td>
-                    <td class="number-col center-col"><strong>-</strong></td>
+                    <td class="number-col"><strong>-</strong></td>
+                    <td class="number-col"><strong>${{ section_data.totals.total_usd_rate_item|floatformat:2 }}</strong></td>
+                    <td class="number-col"><strong>₹{{ section_data.totals.total_usd_rate_item_to_inr|floatformat:2 }}</strong></td>
+                    <td class="center-col"><strong>-</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -943,7 +1589,14 @@
                     <td class="label-col">TOTAL KG QUANTITY</td>
                     <td>{{ grand_totals.total_kg_quantity|floatformat:2 }}</td>
                 </tr>
-              
+                <tr>
+                    <td class="label-col">TOTAL USD AMOUNT</td>
+                    <td>${{ grand_totals.total_usd_rate_item|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td class="label-col">TOTAL INR AMOUNT</td>
+                    <td>₹{{ grand_totals.total_usd_rate_item_to_inr|floatformat:2 }}</td>
+                </tr>
                 <tr>
                     <td class="label-col">TOTAL STOCK ITEMS</td>
                     <td>{{ grand_totals.count }}</td>
@@ -973,6 +1626,10 @@
                 </tr>
                 {% endif %}
                 {% if grand_totals.avg_usd_rate_per_kg %}
+                <tr>
+                    <td class="label-col">AVERAGE USD RATE PER KG</td>
+                    <td>${{ grand_totals.avg_usd_rate_per_kg|floatformat:2 }}</td>
+                </tr>
                 {% endif %}
             </table>
         </div>
@@ -1423,5 +2080,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Stock Report loaded successfully');
 });
 </script>
-</body>
-</html>
+
+
+{%endblock%}

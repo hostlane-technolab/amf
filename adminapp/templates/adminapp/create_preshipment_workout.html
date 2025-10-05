@@ -3,401 +3,360 @@
 
 {% block content %}
 <div class="container">
-    <!-- Page Header -->
+
+<div class="page-inner">
     <div class="page-header">
-        <h3>
-            <i class="fas fa-ship"></i>
-            Pre-Shipment WorkOut & Summary
-        </h3>
-
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Pre-Shipment WorkOut & Summary</h3>
+      <ul class="breadcrumbs mb-3">
+        <li class="nav-home">
+          <a href="#">
+            <i class="icon-home"></i>
+          </a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Pre-Shipment WorkOut List</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="{%url 'adminapp:create_preshipment_workout'%}">Create</a>
+        </li>
+      </ul>
     </div>
-
-    <!-- Freezing Workout Summary Section -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <div class="header-content">
-                <div class="header-info">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-snowflake"></i>
-                    </div>
-                    <div class="header-text">
-                        <h3>Freezing Workout Summary</h3>
-                        <p>Filter and view workout summaries by various parameters</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Filter Form -->
-        <form method="get" class="p-4">
-            <div class="table-responsive">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Freezing Category</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-filter header-icon"></i>Actions</div></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="table-row">
-                            <td>
-                                <select name="item" id="item" class="form-select">
-                                    <option value="">All Items</option>
-                                    {% for obj in items %}
-                                        <option value="{{ obj.id }}" {% if request.GET.item == obj.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ obj.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="unit" id="unit" class="form-select">
-                                    <option value="">All Units</option>
-                                    {% for obj in units %}
-                                        <option value="{{ obj.id }}" {% if request.GET.unit == obj.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ obj.unit_code }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="glaze" id="glaze" class="form-select">
-                                    <option value="">All Glaze</option>
-                                    {% for obj in glazes %}
-                                        <option value="{{ obj.id }}" {% if request.GET.glaze == obj.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ obj.percentage }}%
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="category" id="category" class="form-select">
-                                    <option value="">All Categories</option>
-                                    {% for obj in categories %}
-                                        <option value="{{ obj.id }}" {% if request.GET.category == obj.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ obj.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <select name="brand" id="brand" class="form-select">
-                                    <option value="">All Brands</option>
-                                    {% for obj in brands %}
-                                        <option value="{{ obj.id }}" {% if request.GET.brand == obj.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ obj.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>
-                                <button type="submit" class="action-btn view-btn">
-                                    <i class="fas fa-filter"></i> Apply Filters
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </form>
-
-        <!-- Summary Results -->
-        {% if combined_summary %}
-
-
-            <div class="table-responsive">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling Type</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Unit</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-layer-group header-icon"></i>Slab</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>C/S</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>KG</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>USD</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>INR</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-percentage header-icon"></i>Yield %</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-chart-line header-icon"></i>USD/KG</div></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in combined_summary %}
-                            <tr class="table-row">
-                                <td>
-                                    <div class="company-info">
-                                        <div class="company-avatar">
-                                            <i class="fas fa-box"></i>
-                                        </div>
-                                        <div class="company-details">
-                                            <div class="company-name">{{ row.item_name }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><span class="badge badge-primary">{{ row.grade_name }}</span></td>
-                                <td>{{ row.species_name }}</td>
-                                <td>{{ row.peeling_type_name }}</td>
-                                <td><span class="badge badge-success">{{ row.brand_name }}</span></td>
-                                <td>{{ row.glaze_percentage }}%</td>
-                                <td>{{ row.unit_code }}</td>
-                                <td><span class="badge badge-warning">{{ row.freezing_category_name }}</span></td>
-                                <td class="weight-display">{{ row.total_slab }}</td>
-                                <td class="weight-display">{{ row.total_c_s }}</td>
-                                <td class="weight-display">{{ row.total_kg }}<span class="weight-unit">KG</span></td>
-                                <td class="weight-display">${{ row.total_usd|floatformat:2 }}</td>
-                                <td class="weight-display">₹{{ row.total_inr|floatformat:2 }}</td>
-                                <td class="weight-display">{{ row.avg_yield|floatformat:2 }}%</td>
-                                <td class="weight-display">${{ row.avg_usd_per_kg|floatformat:2 }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i class="fas fa-search"></i>
-                </div>
-                <h4>No Results Found</h4>
-                <p>No items found for the selected filters. Try adjusting your filter criteria.</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Create Pre-Shipment WorkOut Section -->
-    <div class="card">
-        <div class="card-header">
-            <div class="header-content">
-                <div class="header-info">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-plus-circle"></i>
-                    </div>
-                    <div class="header-text">
-                        <h3>Create Pre-Shipment WorkOut</h3>
-                        <p>Add new workout entries with detailed calculations</p>
-                    </div>
-                </div>
-                <div class="controls-section">
-                    <a href="{% url 'adminapp:preshipment_workout_list' %}" class="action-btn view-btn">
-                        <i class="fas fa-list"></i> View All WorkOuts
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <form method="post" class="p-4">
-            {% csrf_token %}
-
-            <!-- Main Workout Form -->
-            <div class="table-responsive mb-4">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="table-row">
-                            <td>
-                                <select id="id_item" name="item" class="form-select">
-                                    <option value="">Select Item</option>
-                                    {% for obj in items %}
-                                        <option value="{{ obj.id }}"
-                                            {% if workout_form.item.value == obj.id|stringformat:"s" %}selected{% endif %}>
-                                            {{ obj.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </td>
-                            <td>{{ workout_form.unit }}</td>
-                            <td>{{ workout_form.glaze }}</td>
-                            <td>{{ workout_form.category }}</td>
-                            <td>{{ workout_form.brand }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Items Formset -->
-            {{ formset.management_form }}
-            <div class="table-responsive">
-                <table id="formset-table" class="modern-table">
-                    <thead>
-                        <tr>
-                            <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-boxes header-icon"></i>Cartons</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>Quantity</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>$ KG</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-calculator header-icon"></i>$ Item</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>₹ Item</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-hand-holding-usd header-icon"></i>$ KG-Get</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-coins header-icon"></i>$ Item-Get</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-money-bill header-icon"></i>₹ Item-Get</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-arrow-up header-icon"></i>Profit</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-arrow-down header-icon"></i>Loss</div></th>
-                            <th><div class="header-content-table"><i class="fas fa-cogs header-icon"></i>Actions</div></th>
-                        </tr>
-                    </thead>
-                    <tbody id="formset-body">
-                        {% for form in formset %}
-                            <tr class="form-row table-row">
-                                <td>{{ form.species }}</td>
-                                <td>{{ form.peeling_type }}</td>
-                                <td>{{ form.grade }}</td>
-                                <td>{{ form.cartons }}</td>
-                                <td>{{ form.quantity }}</td>
-                                <td>{{ form.usd_rate_per_kg }}</td>
-                                <td>{{ form.usd_rate_item }}</td>
-                                <td>{{ form.usd_rate_item_to_inr }}</td>
-                                <td>{{ form.usd_rate_per_kg_get }}</td>
-                                <td>{{ form.usd_rate_item_get }}</td>
-                                <td>{{ form.usd_rate_item_to_inr_get }}</td>
-                                <td>
-                                    <input type="hidden" name="{{ form.profit.name }}" class="profit">
-                                    <span class="profit-display status-completed"></span>
-                                </td>
-                                <td>
-                                    <input type="hidden" name="{{ form.loss.name }}" class="loss">
-                                    <span class="loss-display status-returned"></span>
-                                </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button type="button" class="action-btn delete-btn remove-row">
-                                            <i class="fas fa-trash"></i> Remove
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="text-center mt-4">
-                <div class="action-buttons">
-                    <button type="button" id="add-row" class="add-new-btn">
-                        <i class="fas fa-plus"></i> Add More Rows
-                    </button>
-                    <button type="submit" class="action-btn edit-btn">
-                        <i class="fas fa-save"></i> Save WorkOut
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <!-- Hidden empty form template -->
-    <table style="display:none;">
-        <tbody>
-            <tr id="empty-form" class="form-row table-row">
-                <td>{{ formset.empty_form.species }}</td>
-                <td>{{ formset.empty_form.peeling_type }}</td>
-                <td>{{ formset.empty_form.grade }}</td>
-                <td>{{ formset.empty_form.cartons }}</td>
-                <td>{{ formset.empty_form.quantity }}</td>
-                <td>{{ formset.empty_form.usd_rate_per_kg }}</td>
-                <td>{{ formset.empty_form.usd_rate_item }}</td>
-                <td>{{ formset.empty_form.usd_rate_item_to_inr }}</td>
-                <td>{{ formset.empty_form.usd_rate_per_kg_get }}</td>
-                <td>{{ formset.empty_form.usd_rate_item_get }}</td>
-                <td>{{ formset.empty_form.usd_rate_item_to_inr_get }}</td>
-                <td>
-                    <input type="hidden" name="{{ formset.empty_form.profit.name }}" class="profit">
-                    <span class="profit-display status-completed"></span>
-                </td>
-                <td>
-                    <input type="hidden" name="{{ formset.empty_form.loss.name }}" class="loss">
-                    <span class="loss-display status-returned"></span>
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button type="button" class="action-btn delete-btn remove-row">
-                            <i class="fas fa-trash"></i> Remove
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+      
+  
+      <!-- Freezing Workout Summary Section -->
+      <div class="card mb-4">
+          <div class="card-header">
+              <div class="header-content">
+                  <div class="header-info">
+                      <div class="icon-wrapper">
+                          <i class="fas fa-snowflake"></i>
+                      </div>
+                      <div class="header-text">
+                          <h3 class="card-title mb-0 fw-bold">Freezing Workout Summary</h3>
+                          <p>Filter and view workout summaries by various parameters</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+  
+          <!-- Filter Form -->
+          <form method="get" class="p-4">
+              <div class="table-responsive">
+                  <table class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Freezing Category</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-filter header-icon"></i>Actions</div></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr class="table-row">
+                              <td>
+                                  <select name="item" id="item" class="form-select">
+                                      <option value="">All Items</option>
+                                      {% for obj in items %}
+                                          <option value="{{ obj.id }}" {% if request.GET.item == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="unit" id="unit" class="form-select">
+                                      <option value="">All Units</option>
+                                      {% for obj in units %}
+                                          <option value="{{ obj.id }}" {% if request.GET.unit == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.unit_code }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="glaze" id="glaze" class="form-select">
+                                      <option value="">All Glaze</option>
+                                      {% for obj in glazes %}
+                                          <option value="{{ obj.id }}" {% if request.GET.glaze == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.percentage }}%
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="category" id="category" class="form-select">
+                                      <option value="">All Categories</option>
+                                      {% for obj in categories %}
+                                          <option value="{{ obj.id }}" {% if request.GET.category == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <select name="brand" id="brand" class="form-select">
+                                      <option value="">All Brands</option>
+                                      {% for obj in brands %}
+                                          <option value="{{ obj.id }}" {% if request.GET.brand == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>
+                                  <button type="submit" class="action-btn view-btn">
+                                      <i class="fas fa-filter"></i> Apply Filters
+                                  </button>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </form>
+  
+          <!-- Summary Results -->
+          {% if combined_summary %}
+  
+  
+              <div class="table-responsive">
+                  <table class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling Type</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Unit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-layer-group header-icon"></i>Slab</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>C/S</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>KG</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>USD</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>INR</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percentage header-icon"></i>Yield %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-chart-line header-icon"></i>USD/KG</div></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          {% for row in combined_summary %}
+                              <tr class="table-row">
+                                  <td>
+                                      <div class="company-info">
+                                          <div class="company-avatar">
+                                              <i class="fas fa-box"></i>
+                                          </div>
+                                          <div class="company-details">
+                                              <div class="company-name">{{ row.item_name }}</div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  <td><span class="badge badge-primary">{{ row.grade_name }}</span></td>
+                                  <td>{{ row.species_name }}</td>
+                                  <td>{{ row.peeling_type_name }}</td>
+                                  <td><span class="badge badge-success">{{ row.brand_name }}</span></td>
+                                  <td>{{ row.glaze_percentage }}%</td>
+                                  <td>{{ row.unit_code }}</td>
+                                  <td><span class="badge badge-warning">{{ row.freezing_category_name }}</span></td>
+                                  <td class="weight-display">{{ row.total_slab }}</td>
+                                  <td class="weight-display">{{ row.total_c_s }}</td>
+                                  <td class="weight-display">{{ row.total_kg }}<span class="weight-unit">KG</span></td>
+                                  <td class="weight-display">${{ row.total_usd|floatformat:2 }}</td>
+                                  <td class="weight-display">₹{{ row.total_inr|floatformat:2 }}</td>
+                                  <td class="weight-display">{{ row.avg_yield|floatformat:2 }}%</td>
+                                  <td class="weight-display">${{ row.avg_usd_per_kg|floatformat:2 }}</td>
+                              </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+          {% else %}
+              <div class="empty-state">
+                  <div class="empty-state-icon">
+                      <i class="fas fa-search"></i>
+                  </div>
+                  <h4>No Results Found</h4>
+                  <p>No items found for the selected filters. Try adjusting your filter criteria.</p>
+              </div>
+          {% endif %}
+      </div>
+  
+      <!-- Create Pre-Shipment WorkOut Section -->
+      <div class="card">
+          <div class="card-header">
+              <div class="header-content">
+                  <div class="header-info">
+                      <div class="icon-wrapper">
+                          <i class="fas fa-plus-circle"></i>
+                      </div>
+                      <div class="header-text">
+                          <h3 class="mb-0 fw-bold card-title">Create Pre-Shipment WorkOut</h3>
+                          <p>Add new workout entries with detailed calculations</p>
+                      </div>
+                  </div>
+                  <div class="controls-section">
+                      <a href="{% url 'adminapp:preshipment_workout_list' %}" class="action-btn view-btn">
+                          <i class="fas fa-list"></i> View All WorkOuts
+                      </a>
+                  </div>
+              </div>
+          </div>
+  
+          <form method="post" class="p-4">
+              {% csrf_token %}
+  
+              <!-- Main Workout Form -->
+              <div class="table-responsive mb-4">
+                  <table class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <tr class="table-row">
+                              <td>
+                                  <select id="id_item" name="item" class="form-select">
+                                      <option value="">Select Item</option>
+                                      {% for obj in items %}
+                                          <option value="{{ obj.id }}"
+                                              {% if workout_form.item.value == obj.id|stringformat:"s" %}selected{% endif %}>
+                                              {{ obj.name }}
+                                          </option>
+                                      {% endfor %}
+                                  </select>
+                              </td>
+                              <td>{{ workout_form.unit }}</td>
+                              <td>{{ workout_form.glaze }}</td>
+                              <td>{{ workout_form.category }}</td>
+                              <td>{{ workout_form.brand }}</td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+  
+              <!-- Items Formset -->
+              {{ formset.management_form }}
+              <div class="table-responsive">
+                  <table id="formset-table" class="modern-table">
+                      <thead>
+                          <tr>
+                              <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-boxes header-icon"></i>Cartons</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>Quantity</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>$ KG</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-calculator header-icon"></i>$ Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>₹ Item</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-hand-holding-usd header-icon"></i>$ KG-Get</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-coins header-icon"></i>$ Item-Get</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-money-bill header-icon"></i>₹ Item-Get</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-arrow-up header-icon"></i>Profit</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-arrow-down header-icon"></i>Loss</div></th>
+                              <th><div class="header-content-table"><i class="fas fa-cogs header-icon"></i>Actions</div></th>
+                          </tr>
+                      </thead>
+                      <tbody id="formset-body">
+                          {% for form in formset %}
+                              <tr class="form-row table-row">
+                                  <td>{{ form.species }}</td>
+                                  <td>{{ form.peeling_type }}</td>
+                                  <td>{{ form.grade }}</td>
+                                  <td>{{ form.cartons }}</td>
+                                  <td>{{ form.quantity }}</td>
+                                  <td>{{ form.usd_rate_per_kg }}</td>
+                                  <td>{{ form.usd_rate_item }}</td>
+                                  <td>{{ form.usd_rate_item_to_inr }}</td>
+                                  <td>{{ form.usd_rate_per_kg_get }}</td>
+                                  <td>{{ form.usd_rate_item_get }}</td>
+                                  <td>{{ form.usd_rate_item_to_inr_get }}</td>
+                                  <td>
+                                      <input type="hidden" name="{{ form.profit.name }}" class="profit">
+                                      <span class="profit-display status-completed"></span>
+                                  </td>
+                                  <td>
+                                      <input type="hidden" name="{{ form.loss.name }}" class="loss">
+                                      <span class="loss-display status-returned"></span>
+                                  </td>
+                                  <td>
+                                      <div class="action-buttons">
+                                          <button type="button" class="action-btn delete-btn remove-row">
+                                              <i class="fas fa-trash"></i> Remove
+                                          </button>
+                                      </div>
+                                  </td>
+                              </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+  
+              <!-- Action Buttons -->
+              <div class="text-center mt-4">
+                  <div class="action-buttons">
+                      <button type="button" id="add-row" class="add-new-btn">
+                          <i class="fas fa-plus"></i> Add More Rows
+                      </button>
+                      <button type="submit" class="action-btn edit-btn">
+                          <i class="fas fa-save"></i> Save WorkOut
+                      </button>
+                  </div>
+              </div>
+          </form>
+      </div>
+  
+      <!-- Hidden empty form template -->
+      <table style="display:none;">
+          <tbody>
+              <tr id="empty-form" class="form-row table-row">
+                  <td>{{ formset.empty_form.species }}</td>
+                  <td>{{ formset.empty_form.peeling_type }}</td>
+                  <td>{{ formset.empty_form.grade }}</td>
+                  <td>{{ formset.empty_form.cartons }}</td>
+                  <td>{{ formset.empty_form.quantity }}</td>
+                  <td>{{ formset.empty_form.usd_rate_per_kg }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item_to_inr }}</td>
+                  <td>{{ formset.empty_form.usd_rate_per_kg_get }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item_get }}</td>
+                  <td>{{ formset.empty_form.usd_rate_item_to_inr_get }}</td>
+                  <td>
+                      <input type="hidden" name="{{ formset.empty_form.profit.name }}" class="profit">
+                      <span class="profit-display status-completed"></span>
+                  </td>
+                  <td>
+                      <input type="hidden" name="{{ formset.empty_form.loss.name }}" class="loss">
+                      <span class="loss-display status-returned"></span>
+                  </td>
+                  <td>
+                      <div class="action-buttons">
+                          <button type="button" class="action-btn delete-btn remove-row">
+                              <i class="fas fa-trash"></i> Remove
+                          </button>
+                      </div>
+                  </td>
+              </tr>
+          </tbody>
+      </table>
+</div>
 </div>
 
 
 <style>
-  /* Main Container */
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-
-  /* Page Header */
-  .page-header {
-    margin-bottom: 30px;
-  }
-
-  .page-header h3 {
-    color: #2c3e50;
-    font-size: 25px;
-    /* font-weight: 700; */
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-left: 1rem;
-  }
-
-  .page-header h3 i {
-    color: #e74c3c;
-    font-size: 30px;
-  }
-
-  /* Breadcrumbs */
-  .breadcrumbs {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #6c757d;
-  }
-
-  .breadcrumbs li {
-    display: flex;
-    align-items: center;
-  }
-
-  .breadcrumbs a {
-    color: #e74c3c;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-
-  .breadcrumbs a:hover {
-    color: #c0392b;
-  }
-
-  .separator {
-    margin: 0 5px;
-    color: #dee2e6;
-  }
-
   /* Card Styling */
   .card {
     border-radius: 20px;
@@ -964,6 +923,8 @@
     }
   }
 </style>
+
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const addButton = document.getElementById("add-row");

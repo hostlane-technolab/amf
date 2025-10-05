@@ -2,25 +2,10 @@
 {% block title %} Local Purchase Create {% endblock %}
 {% block content %}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-<!-- date -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    flatpickr(".datepicker", {
-        dateFormat: "d/m/Y",
-        defaultDate: "today"
-    });
-});
-</script>
-
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Purchase Management</h3>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-3">Purchase Management</h3>
       <ul class="breadcrumbs mb-3">
         <li class="nav-home">
           <a href="#">
@@ -31,362 +16,313 @@ document.addEventListener("DOMContentLoaded", function() {
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="{% url 'adminapp:local_purchase_list' %}">Purchases List</a>
+          <a href="{% url 'adminapp:local_purchase_list' %}">Purchases</a>
         </li>
         <li class="separator">
           <i class="icon-arrow-right"></i>
         </li>
         <li class="nav-item">
-          <a href="">Create</a>
+          <a href="#">Add Purchase</a>
         </li>
-
-
       </ul>
     </div>
 
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card border-0 shadow-lg">
-          <div class="card-header bg-white border-0 py-4">
-            <div class="d-flex align-items-center justify-content-between flex-wrap">
-              <div class="d-flex align-items-center mb-3 mb-md-0">
-                <div class="icon-wrapper me-4">
-                  <i class="fas fa-plus-circle"></i>
-                </div>
-                <div>
-                  <h3 class="card-title mb-0 fw-bold">Create Local Purchase</h3>
-                  <p class="text-muted mb-0 fs-6">Add new local purchase transaction</p>
-                </div>
-              </div>
-              
-              <div class="header-actions d-flex align-items-center gap-3">
-                <a href="{% url 'adminapp:local_purchase_list' %}" class="btn-secondary">
-                  <i class="fas fa-list me-2"></i>View All Purchases
-                </a>
-              </div>
+    <form method="post" class="purchase-form">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <!-- Purchase Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Purchase Details</h3>
+              <p class="text-muted mb-0">Enter basic purchase information</p>
             </div>
           </div>
-
-          <div class="card-body">
-            <form method="post" class="purchase-form">
-              {% csrf_token %}
-              
-              <!-- Purchase Details Section -->
-              <div class="form-section mb-5">
-                <div class="section-header mb-4">
-                  <h5 class="section-title">
-                    <i class="fas fa-info-circle me-2"></i>Purchase Details
-                  </h5>
-                </div>
-                
-                <div class="form-grid">
-                  {% for field in form %}
-                    <div class="form-group">
-                      <label class="form-label">{{ field.label }}</label>
-                      {{ field }}
-                      {% if field.errors %}
-                        <div class="field-error">{{ field.errors }}</div>
-                      {% endif %}
-                    </div>
-                  {% endfor %}
+        </div>
+        
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            {% for field in form %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-group">
+                  <label class="form-label">{{ field.label }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-tag input-icon"></i>
+                    {{ field }}
+                  </div>
+                  {% if field.errors %}
+                    <div class="validation-error">{{ field.errors }}</div>
+                  {% endif %}
                 </div>
               </div>
-
-              <!-- Items Section -->
-              <div class="form-section">
-                <div class="section-header mb-4">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <h5 class="section-title mb-0">
-                      <i class="fas fa-boxes me-2"></i>Purchase Items
-                    </h5>
-                    <button type="button" id="purchase-add-more" class="btn-add-item">
-                      <i class="fas fa-plus me-2"></i>Add Item
-                    </button>
-                  </div>
-                </div>
-
-                <div id="purchase-formset-container">
-                  {{ formset.management_form }}
-                  <div class="items-table-wrapper">
-                    <table class="items-table">
-                      <thead>
-                        <tr>
-                          <th>
-                            <div class="header-content">
-                              <i class="fas fa-tag header-icon"></i>
-                              <span class="header-text">Item</span>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="header-content">
-                              <i class="fas fa-folder header-icon"></i>
-                              <span class="header-text">Item sub</span>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="header-content">
-                              <i class="fas fa-fish header-icon"></i>
-                              <span class="header-text">Species</span>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="header-content">
-                              <i class="fas fa-cogs header-icon"></i>
-                              <span class="header-text">Type</span>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="header-content">
-                              <i class="fas fa-star header-icon"></i>
-                              <span class="header-text">Grade</span>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="header-content">
-                              <i class="fas fa-cubes header-icon"></i>
-                              <span class="header-text">Quantity</span>
-                            </div>
-                          </th>
-                          <th>
-                            <div class="header-content">
-                              <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
-                              <span class="header-text">Rate</span>
-                            </div>
-                          </th>
-                          <th class="text-center">
-                            <div class="header-content justify-content-center">
-                              <i class="fas fa-tools header-icon"></i>
-                              <span class="header-text">Action</span>
-                            </div>
-                          </th>
-                          <th class="text-center">
-                            <div class="header-content justify-content-center">
-                              <i class="fas fa-trash-alt header-icon"></i>
-                              <span class="header-text">DELETE</span>
-                            </div>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody id="purchase-formset-body">
-                        {% for form in formset %}
-                          <tr class="item-row">
-                            {% for field in form.visible_fields %}
-                              <td class="item-cell">
-                                {{ field }}
-                                {% if field.errors %}
-                                  <div class="field-error">{{ field.errors }}</div>
-                                {% endif %}
-                              </td>
-                            {% endfor %}
-                            <td class="item-cell text-center">
-                              <button type="button" class="delete-item-btn">
-                                <i class="fas fa-trash-alt"></i>
-                              </button>
-                            </td>
-                          </tr>
-                        {% endfor %}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <!-- Totals Section -->
-                <div class="totals-section">
-                  <div class="totals-grid">
-                    <div class="total-item">
-                      <div class="total-icon">
-                        <i class="fas fa-cubes"></i>
-                      </div>
-                      <div class="total-details">
-                        <span class="total-label">Total Quantity</span>
-                        <span class="total-value" id="purchase-total-quantity">0.00</span>
-                      </div>
-                    </div>
-                    
-                    <div class="total-item">
-                      <div class="total-icon">
-                        <i class="fa-solid fa-indian-rupee-sign"></i>
-                      </div>
-                      <div class="total-details">
-                        <span class="total-label">Total Amount</span>
-                        <span class="total-value amount-value">₹<span id="purchase-total-amount">0.00</span></span>
-                      </div>
-                    </div>
-                    
-                    <div class="total-item">
-                      <div class="total-icon">
-                        <i class="fas fa-box"></i>
-                      </div>
-                      <div class="total-details">
-                        <span class="total-label">Total Items</span>
-                        <span class="total-value" id="purchase-total-items">0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="form-actions">
-                  <button type="submit" class="btn-primary">
-                    <i class="fas fa-save me-2"></i>Save Purchase
-                  </button>
-                  <a href="{% url 'adminapp:local_purchase_list' %}" class="btn-secondary">
-                    <i class="fas fa-times me-2"></i>Cancel
-                  </a>
-                </div>
-              </div>
-            </form>
+            {% endfor %}
           </div>
         </div>
       </div>
+
+      <!-- Purchase Items Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4">
+                <i class="fas fa-boxes"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Purchase Items</h4>
+                <p class="text-muted mb-0">Add items to your purchase</p>
+              </div>
+            </div>
+            <button type="button" id="add-more-items" class="add-btn">
+              <i class="fas fa-plus me-2"></i>Add Item
+            </button>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tag header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-folder header-icon"></i>
+                      <span class="header-text">Item Sub</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-fish header-icon"></i>
+                      <span class="header-text">Species</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-cogs header-icon"></i>
+                      <span class="header-text">Type</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-star header-icon"></i>
+                      <span class="header-text">Grade</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-weight-hanging header-icon"></i>
+                      <span class="header-text">Quantity</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Rate</span>
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <i class="fas fa-tools header-icon"></i>
+                      <span class="header-text">Action</span>
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <i class="fas fa-trash header-icon"></i>
+                      <span class="header-text">Delete</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="item-container">
+                {% for form in formset %}
+                  <tr class="item-row table-row">
+                    {% for field in form.visible_fields %}
+                      <td class="table-cell">
+                        {{ field.as_widget }}
+                        {% if field.errors %}
+                          <div class="validation-error">{{ field.errors }}</div>
+                        {% endif %}
+                      </td>
+                    {% endfor %}
+                    <td class="table-cell text-center">
+                      <button type="button" class="action-btn delete-btn">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Summary</h4>
+              <p class="text-muted mb-0">Overview of purchase totals</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="totals-grid">
+            <div class="total-item">
+              <div class="total-icon">
+                <i class="fas fa-cubes"></i>
+              </div>
+              <div class="total-details">
+                <span class="total-label">Total Quantity</span>
+                <span class="total-value" id="quantity-total">0.00</span>
+              </div>
+            </div>
+            
+            <div class="total-item">
+              <div class="total-icon">
+                <i class="fas fa-rupee-sign"></i>
+              </div>
+              <div class="total-details">
+                <span class="total-label">Total Amount</span>
+                <span class="total-value amount-value">₹<span id="amount-total">0.00</span></span>
+              </div>
+            </div>
+            
+            <div class="total-item">
+              <div class="total-icon">
+                <i class="fas fa-box"></i>
+              </div>
+              <div class="total-details">
+                <span class="total-label">Total Items</span>
+                <span class="total-value" id="items-count">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+<div class="form-actions">
+  <div class="row">
+    <div class="col-lg-6 mb-3">
+      <button type="submit" class="submit-btn">
+        <i class="fas fa-save me-2"></i>Save
+      </button>
     </div>
+    <div class="col-lg-6 mb-3">
+      <a href="{% url 'adminapp:local_purchase_list' %}" class="cancel-btn">
+        <i class="fas fa-times me-2"></i>Cancel
+      </a>
+    </div>
+  </div>
+</div>
+    </form>
   </div>
 </div>
 
 <!-- Hidden empty form template -->
-<template id="purchase-empty-form-template">
-  {% with formset.empty_form as form %}
-    {% for field in form.visible_fields %}
-      <td class="item-cell">
-        {{ field }}
-      </td>
-    {% endfor %}
-    <td class="item-cell text-center">
-      <button type="button" class="delete-item-btn">
+<template id="row-template">
+  <tr class="item-row table-row">
+    {% with formset.empty_form as form %}
+      {% for field in form.visible_fields %}
+        <td class="table-cell">
+          {{ field.as_widget }}
+        </td>
+      {% endfor %}
+    {% endwith %}
+    <td class="table-cell text-center">
+      <button type="button" class="action-btn delete-btn">
         <i class="fas fa-trash-alt"></i>
+        <span>Delete</span>
       </button>
     </td>
-  {% endwith %}
+  </tr>
 </template>
 
 <style>
-  /* Card Styling */
-  .card {
-    border-radius: 20px;
-    background: #ffffff;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-  }
+small.unit {
+  font-size: 0.8rem;        
+  font-weight: 600;        
+  color: #2c3e50;     
+  text-transform: uppercase;
+  letter-spacing: 0.5px;   
+  margin-left: 4px;         
+}
 
-  /* Header Styling */
-  .card-header {
-    border-radius: 20px 20px 0 0;
-    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
-    border-bottom: 2px solid #f1f3f7;
-  }
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
 
-  .icon-wrapper {
-    width: 60px;
-    height: 60px;
-    background: #28a745;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
-  }
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
 
-  .card-title {
-    font-size: 26px;
-    color: #2c3e50;
-    letter-spacing: -0.5px;
-  }
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
 
-  /* Button Styling */
-  .btn-primary {
-    background: #28a745;
-    color: white;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
-  }
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
 
-  .btn-primary:hover {
-    background: #218838;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-  }
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
 
-  .btn-secondary {
-    background: #6c757d;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-    cursor: pointer;
-  }
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
 
-  .btn-secondary:hover {
-    background: #5a6268;
-    color: white;
-    transform: translateY(-2px);
-    text-decoration: none;
-  }
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
 
-  .btn-add-item {
-    background: #007bff;
-    color: white;
-    padding: 10px 16px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-  }
-
-  .btn-add-item:hover {
-    background: #0056b3;
-    transform: translateY(-2px);
-  }
-
-  /* Form Section Styling */
-  .form-section {
-    margin-bottom: 2rem;
-  }
-
-  .section-header {
-    border-bottom: 2px solid #f1f3f7;
-    padding-bottom: 15px;
-  }
-
-  .section-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-  }
-
-  /* Form Grid */
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
 
 .form-label {
   font-weight: 600;
@@ -397,276 +333,363 @@ document.addEventListener("DOMContentLoaded", function() {
   letter-spacing: 0.5px;
 }
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 12px 16px;
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    background: #ffffff;
-  }
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
 
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #28a745;
-    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
-  }
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
 
-  .field-error {
-    color: #dc3545;
-    font-size: 12px;
-    margin-top: 4px;
-    font-weight: 500;
-  }
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
 
-  /* Items Table Styling */
-  .items-table-wrapper {
-    background: white;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border: 2px solid #f1f3f7;
-  }
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
 
-  .items-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 0;
-  }
+/* Add Button */
+.add-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
 
-  .items-table thead th {
-    background: #f8f9fd;
-    padding: 20px 15px;
-    font-weight: 700;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 13px;
-    border: none;
-    border-bottom: 2px solid #f1f3f7;
-  }
+.add-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
 
-  .header-content {
-    display: flex;
-    align-items: center;
-  }
+/* Table Styling */
+.modern-table, .summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
 
-  .header-icon {
-    color: #6c757d;
-    margin-right: 8px;
-    font-size: 14px;
-  }
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
 
-  .item-row {
-    transition: all 0.3s ease;
-    border: none;
-  }
+.header-content {
+  display: flex;
+  align-items: center;
+}
 
-  .item-row:hover {
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
-  }
+.header-icon {
+  color: #6c757d;
+  margin-right: 10px;
+  font-size: 14px;
+}
 
-  .item-row:nth-child(even) {
-    background: rgba(248, 249, 253, 0.5);
-  }
+/* Table Rows */
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
 
-  .item-row:nth-child(even):hover {
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
-  }
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
 
-  .item-cell {
-    padding: 15px;
-    border: none;
-    border-bottom: 1px solid #f1f3f7;
-    vertical-align: middle;
-  }
+.table-cell {
+  padding-bottom: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
 
-  .item-cell input,
-  .item-cell select {
-    width: 100%;
-    min-width: 120px;
-    padding: 10px 12px;
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
+.table-cell input, .table-cell select {
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
 
-  .item-cell input:focus,
-  .item-cell select:focus {
-    outline: none;
-    border-color: #28a745;
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-  }
+/* Action Buttons */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  background: none;
+  cursor: pointer;
+}
 
-  /* Delete Button */
-  .delete-item-btn {
-    background: rgba(220, 53, 69, 0.1);
-    color: #dc3545;
-    border: 2px solid rgba(220, 53, 69, 0.2);
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 14px;
-  }
+.delete-btn {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border-color: rgba(220, 53, 69, 0.2);
+}
 
-  .delete-item-btn:hover {
-    background: #dc3545;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-  }
+.delete-btn:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
 
-  /* Totals Section */
-  .totals-section {
-    margin-top: 30px;
-    padding: 25px;
-    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
-    border-radius: 15px;
-    border: 2px solid #e9ecef;
-  }
+.action-btn i {
+  margin-right: 6px;
+  font-size: 12px;
+}
 
-  .totals-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-  }
+/* Totals Grid Styling */
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
 
-  .total-item {
-    display: flex;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    border: 2px solid #f1f3f7;
-    transition: all 0.3s ease;
-  }
+.total-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  border: 2px solid #f1f3f7;
+  transition: all 0.3s ease;
+}
 
-  .total-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  }
+.total-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
 
-  .total-icon {
+.total-icon {
+  width: 50px;
+  height: 50px;
+  background: #28a745;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.total-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.total-label {
+  font-size: 13px;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.total-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.amount-value {
+  color: #28a745;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.form-actions .row {
+  width: 100%;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .add-btn {
+    align-self: center;
+    margin-top: 15px;
+  }
+  
+  .icon-wrapper {
     width: 50px;
     height: 50px;
-    background: #28a745;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
     font-size: 20px;
     margin-right: 15px;
-    flex-shrink: 0;
   }
-
-  .total-details {
-    display: flex;
-    flex-direction: column;
+  
+  .card-title {
+    font-size: 20px;
   }
-
-  .total-label {
-    font-size: 13px;
-    color: #6c757d;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .total-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: #2c3e50;
-    /* font-family: 'Monaco', 'Consolas', monospace; */
-  }
-
-  .amount-value {
-    color: #28a745;
-  }
-
-  /* Form Actions */
+  
   .form-actions {
-    margin-top: 30px;
-    padding-top: 25px;
-    border-top: 2px solid #f1f3f7;
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: center;
   }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
 
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .form-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .totals-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .items-table-wrapper {
-      overflow-x: auto;
-    }
-    
-    .form-actions {
-      justify-content: center;
-      flex-direction: column;
-    }
-    
-    .card-header .d-flex {
-      flex-direction: column;
-      align-items: stretch !important;
-    }
-    
-    .card-header .d-flex > .d-flex:first-child {
-      flex-direction: row !important;
-      align-items: center !important;
-      margin-bottom: 20px;
-    }
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
   }
-
-  @media (max-width: 576px) {
-    .icon-wrapper {
-      width: 50px;
-      height: 50px;
-      font-size: 20px;
-    }
-    
-    .card-title {
-      font-size: 22px;
-    }
-    
-    .section-title {
-      font-size: 18px;
-    }
-    
-    .item-cell input,
-    .item-cell select {
-      min-width: 100px;
-      font-size: 12px;
-    }
+  
+  .card-header {
+    padding: 20px;
   }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+}
 </style>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-function purchaseCalculateTotals() {
+// Date picker initialization
+document.addEventListener("DOMContentLoaded", function() {
+    flatpickr(".datepicker, input[name*='date']", {
+        dateFormat: "d/m/Y",
+        defaultDate: "today"
+    });
+});
+
+// Calculate totals
+function calculatePurchaseTotals() {
     let totalAmount = 0;
     let totalQuantity = 0;
     let totalItems = 0;
 
-    const formRows = document.querySelectorAll('.item-row');
+    const itemRows = document.querySelectorAll('.item-row');
 
-    formRows.forEach(row => {
+    itemRows.forEach(row => {
         const quantityInput = row.querySelector('input[name$="-quantity"]');
         const rateInput = row.querySelector('input[name$="-rate"]');
 
@@ -680,53 +703,119 @@ function purchaseCalculateTotals() {
         }
     });
 
-    document.getElementById('purchase-total-quantity').textContent = totalQuantity.toFixed(2);
-    document.getElementById('purchase-total-amount').textContent = totalAmount.toFixed(2);
-    document.getElementById('purchase-total-items').textContent = totalItems;
+    document.getElementById('quantity-total').textContent = totalQuantity.toFixed(2);
+    document.getElementById('amount-total').textContent = totalAmount.toFixed(2);
+    document.getElementById('items-count').textContent = totalItems;
 }
 
-// Auto-calculate when user edits quantity/rate
+// Update totals on input change
 document.addEventListener('input', function (e) {
-    if (e.target.name?.includes('-quantity') || e.target.name?.includes('-rate')) {
-        purchaseCalculateTotals();
+    if (e.target.name && (e.target.name.includes('quantity') || e.target.name.includes('rate'))) {
+        calculatePurchaseTotals();
     }
 });
 
-// Handle Add More
-document.getElementById("purchase-add-more").addEventListener("click", function () {
-    const totalForms = document.getElementById("id_form-TOTAL_FORMS");
-    const currentIndex = parseInt(totalForms.value);
-    const template = document.getElementById("purchase-empty-form-template").innerHTML;
-
-    const newFormHtml = template.replace(/__prefix__/g, currentIndex);
-
-    const tbody = document.getElementById("purchase-formset-body");
-    const tr = document.createElement('tr');
-    tr.className = 'item-row';
-    tr.innerHTML = newFormHtml;
-    tbody.appendChild(tr);
-
-    totalForms.value = currentIndex + 1;
-
-    purchaseCalculateTotals();
-});
-
-// Handle Delete Row
+// Add delete button handler
 document.addEventListener('click', function (e) {
-    if (e.target.closest('.delete-item-btn')) {
-        const row = e.target.closest('.item-row');
+    if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+        const button = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
+        const row = button.closest('.item-row');
         if (row) {
-            if (confirm('Are you sure you want to remove this item?')) {
+            if (document.querySelectorAll('.item-row').length > 1) {
                 row.remove();
-                purchaseCalculateTotals();
+                updateFormCount(-1);
+                calculatePurchaseTotals();
+            } else {
+                alert("At least one item is required.");
             }
         }
     }
 });
 
-// Initial total calculation
+// Add more button functionality
+document.getElementById('add-more-items').addEventListener('click', function () {
+    const container = document.getElementById('item-container');
+    const totalFormsInput = container.closest('form').querySelector('input[name$="-TOTAL_FORMS"]');
+    const formCount = parseInt(totalFormsInput.value);
+
+    const template = document.getElementById('row-template').innerHTML;
+    const newFormHtml = template.replace(/__prefix__/g, formCount);
+
+    const tbody = document.querySelector('#item-container');
+    tbody.insertAdjacentHTML('beforeend', newFormHtml);
+    totalFormsInput.value = formCount + 1;
+
+    calculatePurchaseTotals();
+});
+
+// Helper to update TOTAL_FORMS when deleting
+function updateFormCount(change) {
+    const container = document.getElementById('item-container');
+    const totalFormsInput = container.closest('form').querySelector('input[name$="-TOTAL_FORMS"]');
+    const currentValue = parseInt(totalFormsInput.value);
+    totalFormsInput.value = currentValue + change;
+}
+
+// Call on page load
 document.addEventListener('DOMContentLoaded', function() {
-    purchaseCalculateTotals();
+    calculatePurchaseTotals();
+});
+
+// F1 key shortcut for adding more items
+document.addEventListener('keydown', function(e) {
+    if (e.keyCode === 112 || e.which === 112) {
+        e.preventDefault();
+        document.getElementById('add-more-items').click();
+        return false;
+    }
+    
+    // Delete key shortcut for removing focused item
+    if (e.key === "Delete") {
+        let activeElement = document.activeElement;
+        let row = activeElement.closest('.item-row');
+        if (row) {
+            e.preventDefault();
+            if (document.querySelectorAll('.item-row').length > 1) {
+                row.remove();
+                updateFormCount(-1);
+                calculatePurchaseTotals();
+            } else {
+                alert("At least one item is required.");
+            }
+        }
+    }
+});
+
+// Arrow key navigation for form fields
+document.addEventListener('keydown', function(e) {
+    if (e.target.matches('input, select, textarea')) {
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]):visible, select:visible, textarea:visible'));
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Left arrow key
+        if (e.keyCode === 37 || e.which === 37) {
+            if (e.target.tagName === 'SELECT' || 
+                (e.target.tagName === 'INPUT' && e.target.selectionStart === 0)) {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    activeElements[currentIndex - 1].focus();
+                }
+                return false;
+            }
+        }
+        
+        // Right arrow key
+        if (e.keyCode === 39 || e.which === 39) {
+            if (e.target.tagName === 'SELECT' || 
+                (e.target.tagName === 'INPUT' && e.target.selectionStart === e.target.value.length)) {
+                e.preventDefault();
+                if (currentIndex < activeElements.length - 1) {
+                    activeElements[currentIndex + 1].focus();
+                }
+                return false;
+            }
+        }
+    }
 });
 </script>
 
@@ -736,8 +825,6 @@ $(document).on("change", "select[name$='-species']", function () {
     var speciesId = $(this).val();
     var $currentRow = $(this).closest(".item-row");
     var $gradeSelect = $currentRow.find("select[name$='-grade']");
-    
-    console.log("Species changed:", speciesId); // Debug log
 
     if (speciesId) {
         $.ajax({
@@ -745,10 +832,8 @@ $(document).on("change", "select[name$='-species']", function () {
             data: { "species_id": speciesId },
             dataType: "json",
             success: function (data) {
-                console.log("Grades received:", data); // Debug log
                 $gradeSelect.empty();
                 $gradeSelect.append($("<option>", { value: "", text: "---------" }));
-
                 $.each(data.grades, function (index, grade) {
                     $gradeSelect.append($("<option>", {
                         value: grade.id,
@@ -777,27 +862,21 @@ $(document).on("change", "select[name$='-item']", function () {
     var $speciesSelect = $currentRow.find("select[name$='-species']");
     var $typeSelect = $currentRow.find("select[name$='-type']");
     var $gradeSelect = $currentRow.find("select[name$='-grade']");
-    
-    console.log("Item changed:", itemId); // Debug log
 
     if (itemId) {
-        // Load Species for this item
+        // Load Species
         $.ajax({
             url: "{% url 'adminapp:get_species_for_item' %}",
             data: { "item_id": itemId },
             dataType: "json",
             success: function (response) {
-                console.log("Species received:", response); // Debug log
                 $speciesSelect.empty();
                 $speciesSelect.append('<option value="">---------</option>');
-                
                 if (response.species && response.species.length > 0) {
                     $.each(response.species, function (index, species) {
                         $speciesSelect.append('<option value="' + species.id + '">' + species.name + '</option>');
                     });
                 }
-                
-                // Clear dependent dropdowns
                 $gradeSelect.empty().append('<option value="">---------</option>');
             },
             error: function(xhr, status, error) {
@@ -805,16 +884,14 @@ $(document).on("change", "select[name$='-item']", function () {
             }
         });
 
-        // Load Types (Peeling Types) for this item
+        // Load Types
         $.ajax({
             url: "{% url 'adminapp:get_peeling_for_item' %}",
             data: { "item_id": itemId },
             dataType: "json", 
             success: function (response) {
-                console.log("Types received:", response); // Debug log
                 $typeSelect.empty();
                 $typeSelect.append('<option value="">---------</option>');
-                
                 if (response.peeling_types && response.peeling_types.length > 0) {
                     $.each(response.peeling_types, function (index, peeling) {
                         $typeSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
@@ -826,34 +903,10 @@ $(document).on("change", "select[name$='-item']", function () {
             }
         });
     } else {
-        // Clear all dependent dropdowns when no item is selected
         $speciesSelect.empty().append('<option value="">---------</option>');
         $typeSelect.empty().append('<option value="">---------</option>');
         $gradeSelect.empty().append('<option value="">---------</option>');
     }
-});
-</script>
-
-<!-- Debug script -->
-<script>
-$(document).ready(function() {
-    console.log("=== DEBUGGING PURCHASE FORM ===");
-    console.log("jQuery loaded:", typeof $ !== 'undefined');
-    console.log("Form rows found:", $('.item-row').length);
-    
-    // Check for select fields
-    $('select').each(function(index) {
-        console.log(`Select ${index}:`, {
-            name: $(this).attr('name'),
-            id: $(this).attr('id'),
-            class: $(this).attr('class')
-        });
-    });
-    
-    console.log("Item selects found:", $('select[name*="item"]').length);
-    console.log("Species selects found:", $('select[name*="species"]').length);
-    console.log("Type selects found:", $('select[name*="type"]').length);
-    console.log("Grade selects found:", $('select[name*="grade"]').length);
 });
 </script>
 

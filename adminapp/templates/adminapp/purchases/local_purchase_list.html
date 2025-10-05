@@ -5,8 +5,8 @@
 <style>
   .custom-table th:nth-child(1),
   .custom-table td:nth-child(1) {
-    width: 20%;
-    min-width: 200px;
+    width: 15%;
+    min-width: 150px;
   }
   .custom-table th:nth-child(2),
   .custom-table td:nth-child(2),
@@ -22,7 +22,7 @@
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 class="fw-bold mb-3">Purchase Management</h3>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Purchase Management</h3>
       <ul class="breadcrumbs mb-3">
         <li class="nav-home">
           <a href="#">
@@ -89,18 +89,24 @@
               <table id="multi-filter" class="table table-hover mb-0 custom-table">
                 <thead>
                   <tr>
+                      <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-calendar-alt header-icon"></i>
+                        <span class="header-text">Voucher No</span>
+                      </div>
+                    </th>
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-calendar-alt header-icon"></i>
                         <span class="header-text">Date</span>
                       </div>
                     </th>
-                    <!-- <th class="table-header">
+                    <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-truck header-icon"></i>
-                        <span class="header-text">Supplier</span>
+                        <span class="header-text">PARTY AGENT</span>
                       </div>
-                    </th> -->
+                    </th>
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-boxes header-icon"></i>
@@ -131,24 +137,29 @@
                 <tbody id="tableBody">
                   {% for purchase in purchases %}
                   <tr class="table-row" data-searchable="{{ purchase.supplier|lower }} {{ purchase.date }} {{ purchase.total_amount }} {{ purchase.total_expense }}">
+                                        <td class="table-cell">
+                      <div class="id-badge">
+                        #{{ purchase.voucher_number}}
+                      </div>
+                    </td>
                     <td class="table-cell">
                       <div class="date-display">
                         <i class="fas fa-calendar-day me-2"></i>
-                        <span class="date-text">{{ purchase.date }}</span>
+                        <span class="date-text">{{ purchase.date|date:"d M Y" }}</span>
+
                       </div>
                     </td>
                     
-                    <!-- <td class="table-cell">
+                    <td class="table-cell">
                       <div class="supplier-info">
                         <div class="supplier-avatar">
                           <i class="fas fa-building"></i>
                         </div>
                         <div class="supplier-details">
-                          <div class="supplier-name">{{ purchase.supplier }}</div>
-                          <div class="supplier-meta">Vendor</div>
+                          <div class="supplier-name">{{ purchase.party_name }}</div>
                         </div>
                       </div>
-                    </td> -->
+                    </td>
                     
                     <td class="table-cell">
                       <div class="quantity-badge">
@@ -205,7 +216,7 @@
                         <i class="fas fa-shopping-cart empty-state-icon"></i>
                         <h4>No Purchases Found</h4>
                         <p>There are no spot purchases to display yet.</p>
-                        <a href="{% url 'adminapp:spot_purchase_add' %}" class="add-new-btn">Create Your First Purchase</a>
+                        <a href="{% url 'adminapp:local_purchase_create' %}" class="add-new-btn">Create Your First Purchase</a>
                       </div>
                     </td>
                   </tr>
@@ -230,6 +241,16 @@
 </div>
 
 <style>
+      /* ID Badge */
+  .id-badge {
+    background: #e9ecef;
+    color: #495057;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    display: inline-block;
+  }
   /* Card Styling */
   .card {
     border-radius: 20px;
@@ -408,7 +429,7 @@
   .date-display {
     color: #495057;
     font-weight: 600;
-    font-family: 'Monaco', 'Consolas', monospace;
+    /* font-family: 'Monaco', 'Consolas', monospace; */
     font-size: 14px;
   }
 

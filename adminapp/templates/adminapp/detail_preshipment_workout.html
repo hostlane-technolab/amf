@@ -4,7 +4,7 @@
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 class="fw-bold mb-3">Pre-Shipment Management</h3>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Pre-Shipment WorkOut Details</h3>
       <ul class="breadcrumbs mb-3">
         <li class="nav-home">
           <a href="#">
@@ -53,10 +53,15 @@
 
         <!-- Basic Information Card -->
         <div class="card border-0 shadow-lg mb-4">
-          <div class="card-header bg-gradient-primary text-white py-3">
+          <div class="card-header border-0 py-3">
             <div class="d-flex align-items-center">
-              <i class="fas fa-info-circle me-3 fs-5"></i>
-              <h5 class="mb-0 fw-bold">Basic Information</h5>
+              <div class="icon-wrapper me-4" style="background: #007bff;">
+                <i class="fas fa-info-circle"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Basic Information</h4>
+                <p class="text-muted mb-0">Essential workout details</p>
+              </div>
             </div>
           </div>
           <div class="card-body p-4">
@@ -100,10 +105,15 @@
 
         <!-- Product Details Card -->
         <div class="card border-0 shadow-lg mb-4">
-          <div class="card-header bg-gradient-success text-white py-3">
+          <div class="card-header border-0 py-3">
             <div class="d-flex align-items-center">
-              <i class="fas fa-box me-3 fs-5"></i>
-              <h5 class="mb-0 fw-bold">Product Details</h5>
+              <div class="icon-wrapper me-4" style="background: #28a745;">
+                <i class="fas fa-box"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Product Details</h4>
+                <p class="text-muted mb-0">Product specifications and details</p>
+              </div>
             </div>
           </div>
           <div class="card-body p-4">
@@ -152,10 +162,15 @@
 
         <!-- Items Table Card -->
         <div class="card border-0 shadow-lg mb-4">
-          <div class="card-header bg-gradient-info text-white py-3">
+          <div class="card-header border-0 py-3">
             <div class="d-flex align-items-center">
-              <i class="fas fa-list me-3 fs-5"></i>
-              <h5 class="mb-0 fw-bold">Items Details</h5>
+              <div class="icon-wrapper me-4" style="background: #17a2b8;">
+                <i class="fas fa-list"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Items Details</h4>
+                <p class="text-muted mb-0">Detailed breakdown of all items</p>
+              </div>
             </div>
           </div>
           <div class="card-body p-0">
@@ -231,10 +246,15 @@
 
         <!-- Summary Card -->
         <div class="card border-0 shadow-lg mb-4">
-          <div class="card-header bg-gradient-warning text-white py-3">
+          <div class="card-header border-0 py-3">
             <div class="d-flex align-items-center">
-              <i class="fas fa-chart-line me-3 fs-5"></i>
-              <h5 class="mb-0 fw-bold">Financial Summary</h5>
+              <div class="icon-wrapper me-4" style="background: #ffc107;">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Financial Summary</h4>
+                <p class="text-muted mb-0">Overview of summary totals</p>
+              </div>
             </div>
           </div>
           <div class="card-body p-4">
@@ -346,51 +366,44 @@
 </div>
 
 <style>
-/* Card Styling */
+/* Card Styling from Peeling Shed Supply Detail */
 .card {
   border-radius: 20px;
   background: #ffffff;
   box-shadow: 0 10px 40px rgba(0,0,0,0.08);
 }
 
-/* Header Styling */
+/* Card Header Styling - Updated to match Peeling Shed Supply Detail */
 .card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
   border-radius: 20px 20px 0 0;
-}
-
-.bg-gradient-primary {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-}
-
-.bg-gradient-success {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-}
-
-.bg-gradient-info {
-  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-}
-
-.bg-gradient-warning {
-  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
 }
 
 .icon-wrapper {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  background: #28a745;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 24px;
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
 }
 
 .card-title {
   font-size: 26px;
   color: #2c3e50;
   letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
 }
 
 /* Action Controls */

@@ -10,8 +10,6 @@
         }
 
         .outer {
-            /* font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; */
-            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
             min-height: 100vh;
             padding: 20px;
             color: #1e293b;
@@ -21,8 +19,6 @@
             max-width: 1400px;
             margin: 0 auto;
         }
-
-    
 
         .filter-card {
             background: rgba(255, 255, 255, 0.95);
@@ -343,7 +339,6 @@
             transform: translateY(-1px);
         }
 
-        /* Table Styles */
         .table-card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -490,7 +485,6 @@
             font-weight: 600;
         }
 
-        /* Summary Stats */
         .summary-stats {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(15px);
@@ -531,7 +525,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 0;
         }
 
@@ -580,7 +574,18 @@
             color: #dc2626;
         }
 
-        /* Responsive Design */
+        .grand-total-row {
+            background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+            font-weight: 700 !important;
+            font-size: 1rem !important;
+        }
+
+        .grand-total-row td {
+            color: #92400e !important;
+            font-weight: 700 !important;
+            border-top: 3px solid #f59e0b;
+        }
+
         @media (max-width: 768px) {
             .card-body {
                 padding: 20px;
@@ -648,529 +653,372 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .page-header {
+            background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+            border-radius: 20px;
+            padding: 24px 32px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: 2px solid #f1f3f7;
+        }
+        
+        .icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+        
+        .card-title {
+            font-size: 26px;
+            color: #2c3e50;
+            letter-spacing: -0.5px;
+        }
     </style>
 
-<div class="outer">
-        <div class="container">
-    <!-- Replace the existing page-header div with this -->
-    <div class="page-header">
-        <div class="d-flex align-items-center justify-content-between flex-wrap">
-            <div class="d-flex align-items-center mb-3 mb-md-0">
-                <div class="icon-wrapper me-4">
-                    <i class="fas fa-chart-bar"></i>
+<div class="outer" style="margin-top: 5rem;">
+    <div class="container">
+        <div class="page-header">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                <div class="d-flex align-items-center mb-3 mb-md-0">
+                    <div class="icon-wrapper me-4">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div>
+                        <h3 class="card-title mb-0 fw-bold">Spot Purchase Workout Summary</h3>
+                        <p class="text-muted mb-0 fs-6">Comprehensive purchase analysis and reporting dashboard</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="card-title mb-0 fw-bold">Spot Purchase Workout Summary</h3>
-                    <p class="text-muted mb-0 fs-6">Comprehensive purchase analysis and reporting dashboard</p>
+            </div>
+        </div>
+
+        <div class="filter-card">
+            <div class="card-header">
+                <h3>🔍 Advanced Filters</h3>
+            </div>
+            
+            <div class="card-body">
+                <form method="get" id="filterForm">
+                    <div class="filters-grid">
+                        <div class="filter-section">
+                            <label style="font-size: 1.1rem !important;">Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
+                            <div class="options-container" id="itemsContainer">
+                                {% for i in items %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="items" value="{{ i.id }}" id="item_{{ i.id }}" {% if i.id|stringformat:"s" in selected_items %}checked{% endif %}>
+                                        <label for="item_{{ i.id }}">{{ i.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <label style="font-size: 1.1rem !important;">Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
+                            <div class="options-container" id="categoriesContainer">
+                                {% for c in categories %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="categories" value="{{ c.id }}" id="category_{{ c.id }}" {% if c.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                        <label for="category_{{ c.id }}">{{ c.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <label style="font-size: 1.1rem !important;">Spots: <span id="spotsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search spots..." id="spotsSearch">
+                            <div class="options-container" id="spotsContainer">
+                                {% for s in spots %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="spots" value="{{ s.id }}" id="spot_{{ s.id }}" {% if s.id|stringformat:"s" in selected_spots %}checked{% endif %}>
+                                        <label for="spot_{{ s.id }}">{{ s.location_name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <label style="font-size: 1.1rem !important;">Agents: <span id="agentsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search agents..." id="agentsSearch">
+                            <div class="options-container" id="agentsContainer">
+                                {% for a in agents %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="agents" value="{{ a.id }}" id="agent_{{ a.id }}" {% if a.id|stringformat:"s" in selected_agents %}checked{% endif %}>
+                                        <label for="agent_{{ a.id }}">{{ a.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="date-section">
+                        <div class="date-group">
+                            <label style="font-size: 1.1rem !important;">Quick Date:</label>
+                            <select name="date_filter">
+                                <option value="">All</option>
+                                <option value="week" {% if date_filter == "week" %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == "month" %}selected{% endif %}>This Month</option>
+                                <option value="year" {% if date_filter == "year" %}selected{% endif %}>This Year</option>
+                            </select>
+                        </div>
+
+                        <div class="date-group">
+                            <label style="font-size: 1.1rem !important;">Date Range:</label>
+                            <div class="date-range-group">
+                                <input type="date" name="start_date" value="{{ start_date }}">
+                                <span class="date-separator">to</span>
+                                <input type="date" name="end_date" value="{{ end_date }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="apply-button">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="summary-stats">
+            <div class="stats-header">
+                <h3>📈 Quick Statistics</h3>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Records</div>
+                    <div class="stat-value">{{ summary|length }}</div>
+                    <div style="font-size: 1rem;" class="stat-change positive">Active</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Boxes</div>
+                    <div class="stat-value">{{ grand_totals.grand_total_boxes|floatformat:0|default:"0" }}</div>
+                    <div style="font-size: 1rem;" class="stat-change">Boxes</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Quantity</div>
+                    <div class="stat-value">{{ grand_totals.grand_total_quantity|floatformat:2|default:"0" }}</div>
+                    <div style="font-size: 1rem;" class="stat-change">Units</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Purchase Amount</div>
+                    <div class="stat-value">₹{{ grand_totals.grand_purchase_amount|floatformat:2|default:"0.00" }}</div>
+                    <div style="font-size: 1rem;" class="stat-change">With Expenses</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Purchase Rate/Kg</div>
+                    <div class="stat-value">₹{{ grand_totals.grand_purchase_amount_per_kg|floatformat:2|default:"0.00" }}</div>
+                    <div style="font-size: 1rem;" class="stat-change">With Expenses</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <h3>📈 Purchase Summary Data</h3>
+                <div class="export-buttons">
+                    <a href="#" id="printLink" class="export-btn print-btn">
+                        🖨️ Print
+                    </a>
+                    <a href="#" id="csvLink" class="export-btn csv-btn">
+                        📊 CSV
+                    </a>
+                    <a href="#" id="excelLink" class="export-btn excel-btn">
+                        📋 Excel
+                    </a>
                 </div>
             </div>
             
-    
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Voucher</th>
+                            <th>Item</th>
+                            <th>Spot</th>
+                            <th>Agent</th>
+                            <th>Total Boxes</th>
+                            <th>Total Quantity</th>
+                            <th>Total Amount</th>
+                            <th>Average Rate</th>
+                            <th>Purchase Amount</th>
+                            <th>Purchase Rate/Kg</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in summary %}
+                        <tr>
+                            <td>{{ row.purchase__date }}</td>
+                            <td>{{ row.purchase__voucher_number }}</td>
+                            <td>{{ row.item__name }}</td>
+                            <td>{{ row.purchase__spot__location_name }}</td>
+                            <td>{{ row.purchase__agent__name }}</td>
+                            <td>{{ row.total_boxes|floatformat:0 }}</td>
+                            <td>{{ row.total_quantity|floatformat:2 }}</td>
+                            <td>₹{{ row.total_amount|floatformat:2 }}</td>
+                            <td>₹{{ row.avg_rate|floatformat:2 }}</td>
+                            <td>₹{{ row.purchase_amount|floatformat:2 }}</td>
+                            <td>₹{{ row.purchase_amount_per_kg|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr class="empty-state">
+                            <td colspan="11">🔍 No records found matching your criteria</td>
+                        </tr>
+                        {% endfor %}
+                        {% if summary %}
+                        <tr class="grand-total-row">
+                            <td colspan="5" style="text-align: right; font-weight: 700;">GRAND TOTALS:</td>
+                            <td>{{ grand_totals.grand_total_boxes|floatformat:0 }}</td>
+                            <td>{{ grand_totals.grand_total_quantity|floatformat:2 }}</td>
+                            <td>₹{{ grand_totals.grand_total_amount|floatformat:2 }}</td>
+                            <td>₹{{ grand_totals.grand_avg_rate|floatformat:2 }}</td>
+                            <td>₹{{ grand_totals.grand_purchase_amount|floatformat:2 }}</td>
+                            <td>₹{{ grand_totals.grand_purchase_amount_per_kg|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    
-    <style>
-    /* Page Header Styling */
-    .page-header {
-        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
-        border-radius: 20px;
-        padding: 24px 32px;
-        margin-bottom: 40px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-        border: 2px solid #f1f3f7;
-    }
-    
-    .icon-wrapper {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 24px;
-        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
-    }
-    
-    .card-title {
-        font-size: 26px;
-        color: #2c3e50;
-        letter-spacing: -0.5px;
-    }
-    
-    .stats-badge .badge {
-        border-radius: 12px;
-        font-weight: 600;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s ease;
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .page-header .d-flex {
-            flex-direction: column;
-            align-items: stretch !important;
-        }
-        
-        .page-header .d-flex > .d-flex:first-child {
-            flex-direction: row !important;
-            align-items: center !important;
-            margin-bottom: 20px;
-        }
-        
-        .stats-badge {
-            align-self: center;
-        }
-        
-        .card-title {
-            font-size: 22px;
-        }
-        
-        .icon-wrapper {
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .page-header {
-            padding: 20px;
-        }
-        
-        .icon-wrapper {
-            width: 45px;
-            height: 45px;
-            font-size: 18px;
-            margin-right: 15px;
-        }
-        
-        .card-title {
-            font-size: 20px;
-        }
-    }
-    </style>
-    
-            <div class="filter-card">
-                <div class="card-header">
-                    <h3>🔍 Advanced Filters</h3>
-                </div>
-                
-                <div class="card-body">
-                    <form method="get" id="filterForm">
-                        <div class="filters-grid">
-                            <div class="filter-section">
-                                <label style="font-size: 1.1rem !important;">Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
-                                <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
-                                <div class="options-container" id="itemsContainer">
-                                    {% for i in items %}
-                                        <div class="option-item">
-                                            <input type="checkbox" name="items" value="{{ i.id }}" id="item_{{ i.id }}" {% if i.id|stringformat:"s" in selected_items %}checked{% endif %}>
-                                            <label for="item_{{ i.id }}">{{ i.name }}</label>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-    
-                            <div class="filter-section">
-                                <label style="font-size: 1.1rem !important;">Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
-                                <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
-                                <div class="options-container" id="categoriesContainer">
-                                    {% for c in categories %}
-                                        <div class="option-item">
-                                            <input type="checkbox" name="categories" value="{{ c.id }}" id="category_{{ c.id }}" {% if c.id|stringformat:"s" in selected_categories %}checked{% endif %}>
-                                            <label for="category_{{ c.id }}">{{ c.name }}</label>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-    
-                            <div class="filter-section">
-                                <label style="font-size: 1.1rem !important;">Spots: <span id="spotsCount" class="selected-count" style="display: none;">0</span></label>
-                                <input type="text" class="search-box" placeholder="Search spots..." id="spotsSearch">
-                                <div class="options-container" id="spotsContainer">
-                                    {% for s in spots %}
-                                        <div class="option-item">
-                                            <input type="checkbox" name="spots" value="{{ s.id }}" id="spot_{{ s.id }}" {% if s.id|stringformat:"s" in selected_spots %}checked{% endif %}>
-                                            <label for="spot_{{ s.id }}">{{ s.location_name }}</label>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-    
-                            <div class="filter-section">
-                                <label style="font-size: 1.1rem !important;">Agents: <span id="agentsCount" class="selected-count" style="display: none;">0</span></label>
-                                <input type="text" class="search-box" placeholder="Search agents..." id="agentsSearch">
-                                <div class="options-container" id="agentsContainer">
-                                    {% for a in agents %}
-                                        <div class="option-item">
-                                            <input type="checkbox" name="agents" value="{{ a.id }}" id="agent_{{ a.id }}" {% if a.id|stringformat:"s" in selected_agents %}checked{% endif %}>
-                                            <label for="agent_{{ a.id }}">{{ a.name }}</label>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-    
-                        <div class="date-section">
-                            <div class="date-group">
-                                <label style="font-size: 1.1rem !important;">Quick Date:</label>
-                                <select name="date_filter">
-                                    <option value="">All</option>
-                                    <option value="week" {% if date_filter == "week" %}selected{% endif %}>This Week</option>
-                                    <option value="month" {% if date_filter == "month" %}selected{% endif %}>This Month</option>
-                                    <option value="year" {% if date_filter == "year" %}selected{% endif %}>This Year</option>
-                                </select>
-                            </div>
-    
-                            <div class="date-group">
-                                <label style="font-size: 1.1rem !important;">Date Range:</label>
-                                <div class="date-range-group">
-                                    <input type="date" name="start_date" value="{{ start_date }}">
-                                    <span class="date-separator">to</span>
-                                    <input type="date" name="end_date" value="{{ end_date }}">
-                                </div>
-                            </div>
-                        </div>
-    
-                        <button type="submit" class="apply-button">Apply Filters</button>
-                    </form>
-                </div>
-            </div>
-    
-            <!-- Summary Statistics -->
-            <div class="summary-stats">
-                <div class="stats-header">
-                    <h3>📈 Quick Statistics</h3>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-label">Total Records</div>
-                        <div class="stat-value" id="totalRecords">{{ summary|length }}</div>
-                        <div style="font-size: 1rem;" class="stat-change positive">Active</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Total Quantity</div>
-                        <div class="stat-value" id="totalQuantity">0</div>
-                        <div style="font-size: 1rem;" class="stat-change">Units</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Total Amount</div>
-                        <div class="stat-value" id="totalAmount">₹0.00</div>
-                        <div style="font-size: 1rem;"class="stat-change">Revenue</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">Average Rate</div>
-                        <div class="stat-value" id="avgRate">₹0.00</div>
-                        <div style="font-size: 1rem;"class="stat-change">Per Unit</div>
-                    </div>
-                </div>
-            </div>
-    
-            <div class="table-card">
-                <div class="table-header">
-                    <h3>📈 Purchase Summary Data</h3>
-                    <div class="export-buttons">
-                        <a href="#" id="printLink" class="export-btn print-btn">
-                            🖨️ Print
-                        </a>
-                        <a href="#" id="csvLink" class="export-btn csv-btn">
-                            📊 CSV
-                        </a>
-                        <a href="#" id="excelLink" class="export-btn excel-btn">
-                            📋 Excel
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Item</th>
-
-                                <th>Spot</th>
-                                <th>Agent</th>
-                                <th>Total Quantity</th>
-                                <th>Total Amount</th>
-                                <th>Average Rate</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in summary %}
-                            <tr>
-                                <td>{{ row.purchase__date }}</td>
-                                <td>{{ row.item__name }}</td>
-
-                                <td>{{ row.purchase__spot__location_name }}</td>
-                                <td>{{ row.purchase__agent__name }}</td>
-                                <td>{{ row.total_quantity }}</td>
-                                <td>₹{{ row.total_amount|floatformat:2 }}</td>
-                                <td>₹{{ row.avg_rate|floatformat:2 }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr class="empty-state">
-                                <td colspan="8">🔍 No records found matching your criteria</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 </div>
 
-    <script>
-        // Search functionality for each filter section
-        function setupSearch(searchId, containerId, countId) {
-            const searchInput = document.getElementById(searchId);
-            const container = document.getElementById(containerId);
-            const countSpan = document.getElementById(countId);
-            
-            if (!searchInput || !container || !countSpan) return;
-            
-            const options = container.querySelectorAll('.option-item');
+<script>
+    function setupSearch(searchId, containerId, countId) {
+        const searchInput = document.getElementById(searchId);
+        const container = document.getElementById(containerId);
+        const countSpan = document.getElementById(countId);
+        
+        if (!searchInput || !container || !countSpan) return;
+        
+        const options = container.querySelectorAll('.option-item');
 
-            // Search functionality
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                options.forEach(option => {
-                    const label = option.querySelector('label').textContent.toLowerCase();
-                    if (label.includes(searchTerm)) {
-                        option.style.display = 'flex';
-                    } else {
-                        option.style.display = 'none';
-                    }
-                });
-            });
-
-            // Count selected items
-            function updateCount() {
-                const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
-                const count = checkedBoxes.length;
-                if (count > 0) {
-                    countSpan.textContent = count;
-                    countSpan.style.display = 'inline-block';
-                } else {
-                    countSpan.style.display = 'none';
-                }
-            }
-
-            // Add event listeners to checkboxes
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
             options.forEach(option => {
-                const checkbox = option.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.addEventListener('change', updateCount);
+                const label = option.querySelector('label').textContent.toLowerCase();
+                if (label.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
                 }
-            });
-
-            // Click anywhere on option item to toggle checkbox
-            options.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    if (e.target.type !== 'checkbox') {
-                        const checkbox = this.querySelector('input[type="checkbox"]');
-                        if (checkbox) {
-                            checkbox.checked = !checkbox.checked;
-                            checkbox.dispatchEvent(new Event('change'));
-                        }
-                    }
-                });
-            });
-
-            // Initial count update
-            updateCount();
-        }
-
-        // Function to get current filter parameters
-        function getCurrentFilters() {
-            const form = document.getElementById('filterForm');
-            const formData = new FormData(form);
-            const urlParams = new URLSearchParams();
-            
-            // Add all form parameters to the URL
-            for (let [key, value] of formData.entries()) {
-                urlParams.append(key, value);
-            }
-            
-            return urlParams.toString();
-        }
-
-        // Function to build URLs with current filters
-        function buildExportUrl(action) {
-            const baseUrl = window.location.pathname;
-            const filterParams = getCurrentFilters();
-            const actionParam = filterParams ? `action=${action}&${filterParams}` : `action=${action}`;
-            return `${baseUrl}?${actionParam}`;
-        }
-
-        // Function to build print URL
-        function buildPrintUrl() {
-            const baseUrl = window.location.pathname.replace(/\/$/, ''); // Remove trailing slash
-            const filterParams = getCurrentFilters();
-            const printUrl = filterParams ? 
-                `${baseUrl}/print/?${filterParams}` : 
-                `${baseUrl}/print/`;
-            return printUrl;
-        }
-
-        // Update all export links when filters change
-        function updateExportLinks() {
-            const printLink = document.getElementById('printLink');
-            const csvLink = document.getElementById('csvLink');
-            const excelLink = document.getElementById('excelLink');
-            
-            if (printLink) printLink.href = buildPrintUrl();
-            if (csvLink) csvLink.href = buildExportUrl('csv');
-            if (excelLink) excelLink.href = buildExportUrl('excel');
-        }
-
-        // Calculate and display summary statistics
-        function updateSummaryStats() {
-            const rows = document.querySelectorAll('table tbody tr:not(.empty-state)');
-            let totalQuantity = 0;
-            let totalAmount = 0;
-            let validRows = 0;
-
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length >= 8) {
-                    // Parse quantity from 6th column (index 5)
-                    const quantity = parseFloat(cells[5].textContent) || 0;
-                    // Parse amount from 7th column (index 6), removing ₹ symbol
-                    const amount = parseFloat(cells[6].textContent.replace('₹', '').replace(',', '')) || 0;
-                    
-                    totalQuantity += quantity;
-                    totalAmount += amount;
-                    validRows++;
-                }
-            });
-
-            const avgRate = validRows > 0 && totalQuantity > 0 ? totalAmount / totalQuantity : 0;
-
-            // Update the summary statistics
-            document.getElementById('totalQuantity').textContent = totalQuantity.toLocaleString();
-            document.getElementById('totalAmount').textContent = '₹' + totalAmount.toLocaleString('en-IN', {
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2
-            });
-            document.getElementById('avgRate').textContent = '₹' + avgRate.toLocaleString('en-IN', {
-                minimumFractionDigits: 2, 
-                maximumFractionDigits: 2
-            });
-        }
-
-        // Print link click handler
-        function handlePrintClick(e) {
-            e.preventDefault();
-            const printUrl = buildPrintUrl();
-            window.open(printUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-        }
-
-        // Setup all functionality when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            // Setup search for all filter sections
-            setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
-            setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
-            setupSearch('spotsSearch', 'spotsContainer', 'spotsCount');
-            setupSearch('agentsSearch', 'agentsContainer', 'agentsCount');
-
-            // Update export links initially
-            updateExportLinks();
-            
-            // Update summary statistics
-            updateSummaryStats();
-
-            // Update export links whenever any form element changes
-            const form = document.getElementById('filterForm');
-            if (form) {
-                form.addEventListener('change', updateExportLinks);
-            }
-
-            // Add click handler for print button
-            const printLink = document.getElementById('printLink');
-            if (printLink) {
-                printLink.addEventListener('click', handlePrintClick);
-            }
-
-            // Optional: Add loading states for export buttons
-            const exportButtons = document.querySelectorAll('.export-btn:not(.print-btn)');
-            exportButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                    const originalText = this.innerHTML;
-                    this.innerHTML = this.innerHTML.replace(/📊|📋/, '⏳');
-                    this.style.opacity = '0.7';
-                    
-                    // Reset after 2 seconds
-                    setTimeout(() => {
-                        this.innerHTML = originalText;
-                        this.style.opacity = '1';
-                    }, 2000);
-                });
             });
         });
-    </script>
 
+        function updateCount() {
+            const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+            const count = checkedBoxes.length;
+            if (count > 0) {
+                countSpan.textContent = count;
+                countSpan.style.display = 'inline-block';
+            } else {
+                countSpan.style.display = 'none';
+            }
+        }
 
-<script>
-    // Updated JavaScript for your main HTML template
-// Replace the existing JavaScript section in your main template
+        options.forEach(option => {
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', updateCount);
+            }
+        });
 
-// Function to build print URL using same URL with print parameter
-function buildPrintUrl() {
-    const baseUrl = window.location.pathname; // Keep current URL
-    const filterParams = getCurrentFilters();
-    const printParam = filterParams ? `print=1&${filterParams}` : 'print=1';
-    return `${baseUrl}?${printParam}`;
-}
+        options.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                }
+            });
+        });
 
-// Alternative: If you want to use action=print instead
-function buildPrintUrlAlternative() {
-    const baseUrl = window.location.pathname;
-    const filterParams = getCurrentFilters();
-    const printParam = filterParams ? `action=print&${filterParams}` : 'action=print';
-    return `${baseUrl}?${printParam}`;
-}
-
-// Function to get current filter parameters (keep existing)
-function getCurrentFilters() {
-    const form = document.getElementById('filterForm');
-    const formData = new FormData(form);
-    const urlParams = new URLSearchParams();
-    
-    // Add all form parameters to the URL
-    for (let [key, value] of formData.entries()) {
-        urlParams.append(key, value);
+        updateCount();
     }
-    
-    return urlParams.toString();
-}
 
-// Print link click handler (updated)
-function handlePrintClick(e) {
-    e.preventDefault();
-    const printUrl = buildPrintUrl(); // or buildPrintUrlAlternative()
-    console.log('Print URL:', printUrl); // Debug: check the URL being generated
-    window.open(printUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-}
+    function getCurrentFilters() {
+        const form = document.getElementById('filterForm');
+        const formData = new FormData(form);
+        const urlParams = new URLSearchParams();
+        
+        for (let [key, value] of formData.entries()) {
+            urlParams.append(key, value);
+        }
+        
+        return urlParams.toString();
+    }
 
-// The rest of your existing JavaScript functions remain the same...
+    function buildExportUrl(action) {
+        const baseUrl = window.location.pathname;
+        const filterParams = getCurrentFilters();
+        const actionParam = filterParams ? `action=${action}&${filterParams}` : `action=${action}`;
+        return `${baseUrl}?${actionParam}`;
+    }
 
-// Update all export links when filters change
-function updateExportLinks() {
-    const printLink = document.getElementById('printLink');
-    const csvLink = document.getElementById('csvLink');
-    const excelLink = document.getElementById('excelLink');
-    
-    if (printLink) printLink.href = buildPrintUrl(); // Updated this line
-    if (csvLink) csvLink.href = buildExportUrl('csv');
-    if (excelLink) excelLink.href = buildExportUrl('excel');
-}
+    function buildPrintUrl() {
+        const baseUrl = window.location.pathname;
+        const filterParams = getCurrentFilters();
+        const printParam = filterParams ? `print=1&${filterParams}` : 'print=1';
+        return `${baseUrl}?${printParam}`;
+    }
 
-// ... rest of your existing JavaScript code ...
+    function updateExportLinks() {
+        const printLink = document.getElementById('printLink');
+        const csvLink = document.getElementById('csvLink');
+        const excelLink = document.getElementById('excelLink');
+        
+        if (printLink) printLink.href = buildPrintUrl();
+        if (csvLink) csvLink.href = buildExportUrl('csv');
+        if (excelLink) excelLink.href = buildExportUrl('excel');
+    }
+
+    function handlePrintClick(e) {
+        e.preventDefault();
+        const printUrl = buildPrintUrl();
+        window.open(printUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
+        setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
+        setupSearch('spotsSearch', 'spotsContainer', 'spotsCount');
+        setupSearch('agentsSearch', 'agentsContainer', 'agentsCount');
+
+        updateExportLinks();
+
+        const form = document.getElementById('filterForm');
+        if (form) {
+            form.addEventListener('change', updateExportLinks);
+        }
+
+        const printLink = document.getElementById('printLink');
+        if (printLink) {
+            printLink.addEventListener('click', handlePrintClick);
+        }
+
+        const exportButtons = document.querySelectorAll('.export-btn:not(.print-btn)');
+        exportButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const originalText = this.innerHTML;
+                this.innerHTML = this.innerHTML.replace(/📊|📋/, '⏳');
+                this.style.opacity = '0.7';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalText;
+                    this.style.opacity = '1';
+                }, 2000);
+            });
+        });
+    });
 </script>
 
-
-
-{%endblock%}
+{% endblock %}

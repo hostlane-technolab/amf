@@ -5,13 +5,13 @@
 <style>
   .custom-table th:nth-child(1),
   .custom-table td:nth-child(1) {
-    width: 35%;
-    min-width: 200px;
+    width: 15%;
+    min-width: 100px;
   }
   .custom-table th:nth-child(2),
   .custom-table td:nth-child(2) {
-    width: 12%;
-    min-width: 100px;
+    width: 30%;
+    min-width: 180px;
   }
   .custom-table th:nth-child(3),
   .custom-table td:nth-child(3) {
@@ -35,7 +35,7 @@
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 class="fw-bold mb-3">Processing Operations</h3>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-4">Processing Operations</h3>
       <ul class="breadcrumbs mb-3">
         <li class="nav-home">
           <a href="#">
@@ -102,18 +102,19 @@
               <table id="multi-filter" class="table table-hover mb-0 custom-table">
                 <thead>
                   <tr>
+                                        <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-receipt header-icon"></i>
+                        <span class="header-text">Voucher</span>
+                      </div>
+                    </th>
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-calendar-alt header-icon"></i>
                         <span class="header-text">Date</span>
                       </div>
                     </th>
-                    <th class="table-header">
-                      <div class="header-content">
-                        <i class="fas fa-receipt header-icon"></i>
-                        <span class="header-text">Voucher #</span>
-                      </div>
-                    </th>
+
                     <th class="table-header">
                       <div class="header-content">
                         <i class="fas fa-shopping-cart header-icon"></i>
@@ -149,19 +150,19 @@
 
                 <tbody id="tableBody">
                   {% for supply in supplies %}
-                  <tr class="table-row" data-searchable="{{ supply.voucher_number|lower }} {{ supply.spot_purchase|lower }} {{ supply.shed|lower }} {{ supply.date }} {{ supply.total_amount }} {{ supply.total_quantity }}">
+                  <tr class="table-row" data-searchable="{{ supply.voucher_number|lower }} {{ supply.spot_purchase.spot|lower }} {{ supply.shed|lower }} {{ supply.date }} {{ supply.total_amount }} {{ supply.total_quantity }}">
+                                        <td class="table-cell">
+                      <div class="voucher-display">
+                        <span class="voucher-badge">{{ supply.voucher_number }}</span>
+                      </div>
+                    </td>
                     <td class="table-cell">
                       <div class="date-display">
                         <i class="fas fa-calendar-day me-2"></i>
                         <span class="date-text">{{ supply.date }}</span>
                       </div>
                     </td>
-                    
-                    <td class="table-cell">
-                      <div class="voucher-display">
-                        <span class="voucher-badge">{{ supply.voucher_number }}</span>
-                      </div>
-                    </td>
+                  
                     
                     <td class="table-cell">
                       <div class="purchase-info">
@@ -169,7 +170,7 @@
                           <i class="fas fa-shopping-bag"></i>
                         </div>
                         <div class="purchase-details">
-                          <div class="purchase-name">{{ supply.spot_purchase }}</div>
+                          <div class="purchase-name">{{ supply.spot_purchase.spot }}</div>
                           <div class="purchase-meta">Purchase Order</div>
                         </div>
                       </div>
@@ -437,7 +438,7 @@
   .date-display {
     color: #495057;
     font-weight: 600;
-    font-family: 'Monaco', 'Consolas', monospace;
+    /* font-family: 'Monaco', 'Consolas', monospace; */
     font-size: 14px;
   }
 

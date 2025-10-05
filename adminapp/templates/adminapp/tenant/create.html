@@ -5,30 +5,429 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
+<style>
+  /* Page Header Styles */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    /* margin-bottom: 3rem;
+    padding: 20px 0; */
+}
+
+.page-header-left {
+    flex: 1;
+}
+
+.page-header-right {
+    margin-left: 20px;
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Header Actions */
+.header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Header Buttons */
+.header-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    white-space: nowrap;
+    min-height: 44px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 4px 15px rgba(0,0,0,0.1),
+        0 2px 4px rgba(0,0,0,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.header-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.header-btn:hover::before {
+    left: 100%;
+}
+
+.header-btn i {
+    margin-right: 10px;
+    font-size: 16px;
+    transition: transform 0.3s ease;
+}
+
+.header-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        0 8px 25px rgba(0,0,0,0.15),
+        0 4px 8px rgba(0,0,0,0.08),
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    text-decoration: none;
+}
+
+.header-btn:hover i {
+    transform: scale(1.1);
+}
+
+/* Button Color Variants */
+.btn-secondary {
+    background: #8E9AAF;
+    color: white;
+    box-shadow: 
+        0 4px 15px rgba(142, 154, 175, 0.3),
+        0 2px 4px rgba(142, 154, 175, 0.2);
+}
+
+.btn-secondary:hover {
+    background: #7A8599;
+    color: white;
+}
+
+.btn-info {
+    background: #50C9CE;
+    color: white;
+    box-shadow: 
+        0 4px 15px rgba(80, 201, 206, 0.3),
+        0 2px 4px rgba(80, 201, 206, 0.2);
+}
+
+.btn-info:hover {
+    background: #3FB4B9;
+    color: white;
+}
+
+.btn-warning {
+    background: #FFB84D;
+    color: #ffffff;
+    box-shadow: 
+        0 4px 15px rgba(255, 184, 77, 0.3),
+        0 2px 4px rgba(255, 184, 77, 0.2);
+}
+
+.btn-warning:hover {
+    background: #FF9F33;
+    color: #ffffff;
+}
+
+.btn-success {
+    background: #58D68D;
+    color: white;
+    box-shadow: 
+        0 4px 15px rgba(88, 214, 141, 0.3),
+        0 2px 4px rgba(88, 214, 141, 0.2);
+}
+
+.btn-success:hover {
+    background: #45B576;
+    color: white;
+}
+
+/* Responsive Header */
+@media (max-width: 991px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .page-header-right {
+        margin-left: 0;
+        margin-top: 20px;
+    }
+    
+    .header-actions {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .header-btn {
+        width: 100%;
+        justify-content: center;
+        min-width: 200px;
+    }
+}
+  /* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  /* Container adjustments */
+  .container {
+    padding: 10px;
+  }
+  
+  .page-inner {
+    padding: 10px;
+  }
+  
+  /* Header adjustments */
+  .page-header h3 {
+    font-size: 1.5rem !important;
+  }
+  
+  .breadcrumbs {
+    font-size: 12px;
+  }
+  
+  /* Card adjustments */
+  .form-card {
+    border-radius: 12px;
+    margin-bottom: 20px !important;
+  }
+  
+  .card-header {
+    padding: 15px !important;
+    flex-direction: column;
+  }
+  
+  .card-header .d-flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  
+  .icon-wrapper {
+    width: 45px !important;
+    height: 45px !important;
+    font-size: 18px !important;
+    margin-right: 12px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .card-title {
+    font-size: 18px !important;
+  }
+  
+  .card-header p {
+    font-size: 12px !important;
+  }
+  
+  /* Add button mobile */
+  .add-btn {
+    width: 50%;
+    margin-top: 15px;
+    justify-content: center;
+  }
+  
+  /* Basic Entry Table - Stack vertically */
+  .basic-entry-table {
+    display: block;
+    width: 100%;
+  }
+  
+  .basic-entry-table thead {
+    display: none;
+  }
+  
+  .basic-entry-table tbody,
+  .basic-entry-table tr,
+  .basic-entry-table td {
+    display: block;
+    width: 100%;
+  }
+  
+  .basic-entry-table tr {
+    margin-bottom: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f8f9fd;
+  }
+  
+  .basic-entry-table td {
+    border: none !important;
+    padding: 10px 0 !important;
+    position: relative;
+    padding-left: 0 !important;
+  }
+  
+  .basic-entry-table td:before {
+    content: attr(data-label);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 5px;
+    color: #495057;
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+  
+  /* Items table - Make scrollable horizontally */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px 10px !important;
+  }
+  
+  .modern-table {
+    min-width: 1200px; /* Force horizontal scroll */
+    table-layout: auto;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    font-size: 11px !important;
+    padding: 8px 6px !important;
+    min-width: 80px;
+  }
+  
+  .table-header {
+    padding: 12px 8px !important;
+  }
+  
+  .header-icon {
+    font-size: 10px !important;
+    margin-right: 4px !important;
+  }
+  
+  .header-text {
+    font-size: 10px !important;
+  }
+  
+  /* Form inputs mobile */
+  .table-cell input,
+  .table-cell select {
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+  }
+  
+  /* Action buttons mobile */
+  .action-btn {
+    padding: 6px 12px !important;
+    font-size: 11px !important;
+  }
+  
+  .action-btn i {
+    font-size: 11px !important;
+  }
+  
+  .action-btn span {
+    display: none;
+  }
+  
+  /* Form actions mobile */
+  .form-actions {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  
+  .submit-btn,
+  .cancel-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Card body mobile */
+  .card-body {
+    padding: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small devices */
+  .page-header h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  .card-title {
+    font-size: 16px !important;
+  }
+  
+  .icon-wrapper {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 16px !important;
+  }
+  
+  .modern-table th,
+  .modern-table td {
+    font-size: 10px !important;
+    padding: 6px 4px !important;
+    min-width: 70px;
+  }
+  
+  .submit-btn,
+  .cancel-btn {
+    font-size: 13px !important;
+  }
+}
+
+/* Add data labels for basic entry table on mobile */
+@media (max-width: 768px) {
+  .basic-entry-table tr td:nth-child(1):before { content: "Freezing Date"; }
+  .basic-entry-table tr td:nth-child(2):before { content: "Voucher Number"; }
+  .basic-entry-table tr td:nth-child(3):before { content: "Tenant Name"; }
+  .basic-entry-table tr td:nth-child(4):before { content: "Total Slab"; }
+  .basic-entry-table tr td:nth-child(5):before { content: "Total C/S"; }
+  .basic-entry-table tr td:nth-child(6):before { content: "Total KG"; }
+  .basic-entry-table tr td:nth-child(7):before { content: "Freezing Status"; }
+}
+
+/* Horizontal scroll indicator */
+@media (max-width: 768px) {
+  .table-responsive:after {
+    content: "← Scroll horizontally to see all columns →";
+    display: block;
+    text-align: center;
+    color: #6c757d;
+    font-size: 11px;
+    padding: 10px;
+    font-style: italic;
+  }
+}
+
+</style>
+
 <div class="container">
   <div class="page-inner">
+<div class="page-header">
     <div class="page-header">
-      <h3 style="font-size: 2rem;" class="fw-bold mb-4">{% if form.instance.pk %}Update Tenant Freezing{% else %}Create Tenant Freezing{% endif %}</h3>
-      <ul class="breadcrumbs mb-3">
-        <li class="nav-home">
-          <a href="#">
-            <i class="icon-home"></i>
-          </a>
-        </li>
-        <li class="separator">
-          <i class="icon-arrow-right"></i>
-        </li>
-        <li class="nav-item">
-          <a href="#">Tenant Freezing</a>
-        </li>
-        <li class="separator">
-          <i class="icon-arrow-right"></i>
-        </li>
-        <li class="nav-item">
-          <a href="#">{% if form.instance.pk %}Update{% else %}Create{% endif %}</a>
-        </li>
-      </ul>
+        <h3 style="font-size: 2rem;" class="fw-semibold mb-4">{% if form.instance.pk %}Update Tenant Freezing{% else %}Create Tenant Freezing{% endif %}</h3>
+                            <ul class="breadcrumbs mb-3">
+                        <li class="nav-home">
+                            <a href="#">
+                                <i class="icon-home"></i>
+                            </a>
+                        </li>
+                        <li class="separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#">Spot Freezing Entries</a>
+                        </li>
+                        <li class="separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#">Create</a>
+                        </li>
+                    </ul>
     </div>
+</div>
 
     <form method="post" class="tenant-freezing-form">
       {% csrf_token %}
@@ -36,7 +435,39 @@
         {{ formset.management_form }}
       </div>
 
-      <!-- Freezing Details Card -->
+      <style>
+        /* Basic Entry Table */
+        .basic-entry-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+
+ 
+        .basic-entry-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f1f3f7;
+        }
+
+        .basic-entry-table th {
+            background: #f8f9fd;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            padding: 10px;
+        }
+
+        .basic-entry-table input,
+        .basic-entry-table select {
+            padding-left: 15px !important;
+        }
+
+      </style>
+
+<!-- Freezing Details Card -->
       <div class="form-card mb-4">
         <div class="card-header">
           <div class="d-flex align-items-center">
@@ -50,102 +481,76 @@
           </div>
         </div>
         
-        <div class="form-card" style="padding: 20px;">
-          <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ form.freezing_date.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-calendar-alt input-icon"></i>
-                  {{ form.freezing_date }}
-                </div>
-                {% if form.freezing_date.errors %}
-                  <div class="validation-error">{{ form.freezing_date.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ form.voucher_number.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-hashtag input-icon"></i>
-                  {{ form.voucher_number }}
-                </div>
-                {% if form.voucher_number.errors %}
-                  <div class="validation-error">{{ form.voucher_number.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ form.tenant_company_name.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-building input-icon"></i>
-                  {{ form.tenant_company_name }}
-                </div>
-                {% if form.tenant_company_name.errors %}
-                  <div class="validation-error">{{ form.tenant_company_name.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-              <div class="form-group">
-                <label class="form-label">{{ form.total_slab.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-layer-group input-icon"></i>
-                  {{ form.total_slab }}
-                </div>
-                {% if form.total_slab.errors %}
-                  <div class="validation-error">{{ form.total_slab.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-              <div class="form-group">
-                <label class="form-label">{{ form.total_c_s.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-cubes input-icon"></i>
-                  {{ form.total_c_s }}
-                </div>
-                {% if form.total_c_s.errors %}
-                  <div class="validation-error">{{ form.total_c_s.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-              <div class="form-group">
-                <label class="form-label">{{ form.total_kg.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-weight input-icon"></i>
-                  {{ form.total_kg }}
-                </div>
-                {% if form.total_kg.errors %}
-                  <div class="validation-error">{{ form.total_kg.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-3">
-              <div class="form-group">
-                <label class="form-label">{{ form.freezing_status.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-toggle-on input-icon"></i>
-                  {{ form.freezing_status }}
-                </div>
-                {% if form.freezing_status.errors %}
-                  <div class="validation-error">{{ form.freezing_status.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
+        <div class="">
+          <table class="basic-entry-table">
+            <thead>
+              <tr>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-calendar-alt header-icon"></i>
+                    <span>Freezing Date</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-hashtag header-icon"></i>
+                    <span>Voucher Number</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-building header-icon"></i>
+                    <span>Tenant Name</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-layer-group header-icon"></i>
+                    <span>Total Slab</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-cubes header-icon"></i>
+                    <span>Total C/S</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-weight header-icon"></i>
+                    <span>Total KG</span>
+                  </div>
+                </th>
+                <th>
+                  <div class="header-content">
+                    <i class="fas fa-toggle-on header-icon"></i>
+                    <span>Freezing Status</span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ form.freezing_date }} {{ form.freezing_date.errors }}</td>
+                <td>{{ form.voucher_number }} {{ form.voucher_number.errors }}</td>
+                <td>{{ form.tenant_company_name }} {{ form.tenant_company_name.errors }}</td>
+                <td>{{ form.total_slab }} {{ form.total_slab.errors }}</td>
+                <td>{{ form.total_c_s }} {{ form.total_c_s.errors }}</td>
+                <td>{{ form.total_kg }} {{ form.total_kg.errors }}</td>
+                <td>{{ form.freezing_status }} {{ form.freezing_status.errors }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
-
+      <style>
+        @media (min-width: 992px) {
+  .form-card .row .col-lg-2 {
+    flex: 0 0 14.285%;
+    max-width: 14.285%;
+  }
+}
+      </style>
       <!-- Items Card -->
       <div class="form-card mb-4">
         <div class="card-header">
@@ -173,18 +578,21 @@
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-industry header-icon"></i>
-                      <span class="header-text">Processing Center</span>
+                      <a href="{% url 'adminapp:processing_center_create' %}" target="_blank">
+                      <span class="header-text">PR Center</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-store header-icon"></i>
+                      <a href="{% url 'adminapp:store_create' %}" target="_blank">
                       <span class="header-text">Store</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-tag header-icon"></i>
+                      <a href="{% url 'adminapp:item_create' %}" target="_blank">
                       <span class="header-text">Item</span>
                     </div>
                   </th>
@@ -197,36 +605,42 @@
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-ruler header-icon"></i>
+                      <a href="{% url 'adminapp:packing_unit_create' %}" target="_blank">
                       <span class="header-text">Unit</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-sparkles header-icon"></i>
+                      <a href="{% url 'adminapp:glaze_percentage_create' %}" target="_blank">
                       <span class="header-text">Glaze</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-list header-icon"></i>
+                      <a href="{% url 'adminapp:freezing_category_create' %}" target="_blank">
                       <span class="header-text">Category</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-trademark header-icon"></i>
+                      <a href="{% url 'adminapp:item_brand_create' %}" target="_blank">
                       <span class="header-text">Brand</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-fish header-icon"></i>
+                       <a href="{% url 'adminapp:species_create' %}" target="_blank">
                       <span class="header-text">Species</span>
                     </div>
                   </th>
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-certificate header-icon"></i>
+                       <a href="{% url 'adminapp:item_grade_create' %}" target="_blank">
                       <span class="header-text">Grade</span>
                     </div>
                   </th>
@@ -378,7 +792,7 @@
 
 /* Base Styles */
 .tenant-freezing-form {
-  margin-top: 2rem;
+  margin-top: -2rem;
 }
 
 /* Card Styling */
@@ -498,12 +912,63 @@
   box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
 }
 
-/* Table Styling */
 .modern-table {
+  table-layout: fixed;
   width: 100%;
-  margin: 0;
-  font-size: 14px;
 }
+
+/* Adjust column widths proportionally */
+.modern-table th,
+.modern-table td {
+  /* padding: 12px 8px !important; */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px !important;
+}
+
+/* Specific column width allocations */
+.modern-table th:nth-child(1),
+.modern-table td:nth-child(1) { width: 9%; } /* Processing Center */
+
+.modern-table th:nth-child(2),
+.modern-table td:nth-child(2) { width: 7%; } /* Store */
+
+.modern-table th:nth-child(3),
+.modern-table td:nth-child(3) { width: 8%; } /* Item */
+
+.modern-table th:nth-child(4),
+.modern-table td:nth-child(4) { width: 7%; } /* Quality */
+
+.modern-table th:nth-child(5),
+.modern-table td:nth-child(5) { width: 6%; } /* Unit */
+
+.modern-table th:nth-child(6),
+.modern-table td:nth-child(6) { width: 6%; } /* Glaze */
+
+.modern-table th:nth-child(7),
+.modern-table td:nth-child(7) { width: 8%; } /* Category */
+
+.modern-table th:nth-child(8),
+.modern-table td:nth-child(8) { width: 7%; } /* Brand */
+
+.modern-table th:nth-child(9),
+.modern-table td:nth-child(9) { width: 8%; } /* Species */
+
+.modern-table th:nth-child(10),
+.modern-table td:nth-child(10) { width: 6%; } /* Grade */
+
+.modern-table th:nth-child(11),
+.modern-table td:nth-child(11) { width: 7%; } /* Slab Qty */
+
+.modern-table th:nth-child(12),
+.modern-table td:nth-child(12) { width: 7%; } /* CS Qty */
+
+.modern-table th:nth-child(13),
+.modern-table td:nth-child(13) { width: 6%; } /* KG */
+
+.modern-table th:nth-child(14),
+.modern-table td:nth-child(14) { width: 8%; } /* Action */
 
 .table-header {
   background: #f8f9fd;
@@ -521,10 +986,13 @@
   align-items: center;
 }
 
+/* Smaller header icons and text */
 .header-icon {
-  color: #6c757d;
-  margin-right: 10px;
-  font-size: 14px;
+  font-size: 11px !important;
+  margin-right: 6px !important;
+}
+.header-text {
+  font-size: 11px !important;
 }
 
 /* Table Rows */
@@ -539,20 +1007,21 @@
   box-shadow: 0 4px 15px rgba(0,0,0,0.03);
 }
 
-.table-cell {
-  padding: 20px;
-  border: none;
-  border-bottom: 1px solid #f1f3f7;
-  vertical-align: middle;
-}
+        .table-cell {
+            /* padding: 15px; */
+            border: none;
+            border-bottom: 1px solid #f1f3f7;
+            vertical-align: middle;
+        }
 
-.table-cell input, .table-cell select {
-  padding: 10px 12px !important;
-  margin: 0 !important;
-  border: 2px solid #e9ecef !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-}
+        .table-cell input, .table-cell select {
+            padding: 10px 12px !important;
+            margin: 0 !important;
+            border: 2px solid #e9ecef !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            padding-left: 12px !important;
+        }
 
 /* Action Buttons */
 .action-btn {
@@ -649,6 +1118,11 @@
 /* Hidden class */
 .hidden {
   display: none;
+}
+.table-responsive {
+  padding-bottom: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
 
 /* Responsive Design */

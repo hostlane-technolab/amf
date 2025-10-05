@@ -1,0 +1,357 @@
+
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Sales Entry - {{ sales_entry.invoice_no }}{% endblock %}
+
+{% block content %}
+<div class="mt-5 p-4"></div>
+<div class="container-fluid py-4">
+    <!-- Header Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Sales Entry Details</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'adminapp:sales_entry_list' %}">Sales Entries</a></li>
+                    <li class="breadcrumb-item active">{{ sales_entry.invoice_no }}</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group">
+            <a href="{% url 'adminapp:sales_entry_update' sales_entry.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a href="{% url 'adminapp:sales_entry_invoice_pdf' sales_entry.pk %}" target="_blank" class="btn btn-secondary">
+                <i class="fas fa-file-pdf"></i> Download PDF
+            </a>
+
+            <a href="{% url 'adminapp:sales_entry_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Commercial Invoice Card -->
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <!-- Invoice Header -->
+            <div class="text-center border-bottom pb-3 mb-4">
+                <h3 class="text-uppercase fw-bold mb-2">Commercial Invoice</h3>
+                <div class="text-muted">
+                    {{ sales_entry.get_status_display }}
+                </div>
+            </div>
+
+            <!-- Invoice Basic Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th style="width: 40%;">Invoice No:</th>
+                            <td><strong>{{ sales_entry.invoice_no }}</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Voucher No:</th>
+                            <td>{{ sales_entry.voucher_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date:</th>
+                            <td>{{ sales_entry.date|date:"d M, Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>HS Code:</th>
+                            <td>{{ sales_entry.hs_code|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th style="width: 45%;">Buyer Order No:</th>
+                            <td>{{ sales_entry.buyer_order_no|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>PO Date:</th>
+                            <td>{{ sales_entry.purchase_order_date|date:"d M, Y"|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>REX Reg No:</th>
+                            <td>{{ sales_entry.rex_reg_no|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Exporter & Buyer Info -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-header bg-primary text-white py-2">
+                            <strong>Exporter Details</strong>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-2">{{ sales_entry.exporter_name }}</h6>
+                            <p class="mb-1 small">{{ sales_entry.exporter_address|default:"—"|linebreaks }}</p>
+                            {% if sales_entry.exporter_iec_code %}
+                            <p class="mb-0 small"><strong>IEC Code:</strong> {{ sales_entry.exporter_iec_code }}</p>
+                            {% endif %}
+                            {% if sales_entry.gstin_number %}
+                            <p class="mb-0 small"><strong>GSTIN:</strong> {{ sales_entry.gstin_number }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-light">
+                        <div class="card-header bg-success text-white py-2">
+                            <strong>Buyer Details</strong>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-2">{{ sales_entry.buyer.company_name }}</h6>
+                            <p class="mb-1 small">{{ sales_entry.buyer.address|linebreaks }}</p>
+                            {% if sales_entry.buyer.contact_person %}
+                            <p class="mb-0 small"><strong>Contact:</strong> {{ sales_entry.buyer.contact_person }}</p>
+                            {% endif %}
+                            {% if sales_entry.buyer.email %}
+                            <p class="mb-0 small"><strong>Email:</strong> {{ sales_entry.buyer.email }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Information Card -->
+            <div class="card bg-light mb-4">
+                <div class="card-header bg-info text-white py-2">
+                    <strong>Product Information</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p class="mb-1"><strong>Item:</strong></p>
+                            <p class="text-muted">{{ sales_entry.item.name }}</p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1"><strong>Item Sub:</strong></p>
+                            <p class="text-muted">{{ sales_entry.item_quality.name|default:"—" }}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <p class="mb-1"><strong>Unit:</strong></p>
+                            <p class="text-muted">{{ sales_entry.unit.name }}</p>
+                        </div>
+                        <div class="col-md-2">
+                            <p class="mb-1"><strong>Glaze:</strong></p>
+                            <p class="text-muted">{{ sales_entry.glaze.percentage }}%</p>
+                        </div>
+                        <div class="col-md-2">
+                            <p class="mb-1"><strong>Brand:</strong></p>
+                            <p class="text-muted">{{ sales_entry.brand.name|default:"—" }}</p>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            <p class="mb-1"><strong>Freezing Category:</strong></p>
+                            <p class="text-muted">{{ sales_entry.freezing_category.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Details -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3">Shipping Information</h6>
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th style="width: 50%;">Country of Origin:</th>
+                            <td>{{ sales_entry.country_of_origin }}</td>
+                        </tr>
+                        <tr>
+                            <th>Country of Destination:</th>
+                            <td>{{ sales_entry.country_of_destination }}</td>
+                        </tr>
+                        <tr>
+                            <th>Exporter's Ref No:</th>
+                            <td>{{ sales_entry.exporters_ref_no|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Steamer Line No:</th>
+                            <td>{{ sales_entry.steamer_line_no|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3">Container Details</h6>
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                            <th style="width: 50%;">Container No:</th>
+                            <td>{{ sales_entry.container_no|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Customs Seal No:</th>
+                            <td>{{ sales_entry.customs_seal_no|default:"—" }}</td>
+                        </tr>
+                        <tr>
+                            <th>IGST Number:</th>
+                            <td>{{ sales_entry.igst_number|default:"—" }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="mb-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">Invoice Items</h6>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 5%;">#</th>
+                                <th style="width: 20%;">Description</th>
+                                <th style="width: 12%;">Species</th>
+                                <th style="width: 10%;">Grade</th>
+                                <th class="text-end" style="width: 8%;">Cartons</th>
+                                <th class="text-end" style="width: 10%;">Quantity (KG)</th>
+                                <th class="text-end" style="width: 10%;">Price/KG (USD)</th>
+                                <th class="text-end" style="width: 12%;">Amount (USD)</th>
+                                <th class="text-end" style="width: 8%;">Tax Rate</th>
+                                <th class="text-end" style="width: 12%;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in sales_entry.items.all %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <strong>{{ item.species.name }}</strong>
+                                    {% if item.peeling_type %}
+                                    <br><small class="text-muted">{{ item.peeling_type.name }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.species.name }}</td>
+                                <td>{{ item.grade.name|default:"—" }}</td>
+                                <td class="text-end">{{ item.cartons|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.quantity|floatformat:2 }}</td>
+                                <td class="text-end">${{ item.price_usd_per_kg|floatformat:2 }}</td>
+                                <td class="text-end">${{ item.amount_usd|floatformat:2 }}</td>
+                                <td class="text-end">{{ item.tax_rate }}%</td>
+                                <td class="text-end"><strong>${{ item.total_amount|floatformat:2 }}</strong></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="10" class="text-center text-muted py-4">
+                                    No items in this sales entry
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="4" class="text-end">Totals:</th>
+                                <th class="text-end">{{ sales_entry.items.all|length }} items</th>
+                                <th class="text-end">{{ sales_entry.total_quantity|floatformat:2 }} KG</th>
+                                <th></th>
+                                <th class="text-end">${{ sales_entry.total_amount_usd|floatformat:2 }}</th>
+                                <th></th>
+                                <th class="text-end"><strong>${{ sales_entry.total_amount_after_tax|floatformat:2 }}</strong></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Financial Summary -->
+            <div class="row mb-4">
+                <div class="col-md-8"></div>
+                <div class="col-md-4">
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Subtotal (USD):</th>
+                            <td class="text-end">${{ sales_entry.total_amount_usd|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Taxable Value:</th>
+                            <td class="text-end">${{ sales_entry.total_taxable_value|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tax Amount:</th>
+                            <td class="text-end">${{ sales_entry.total_tax_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <th>Grand Total (USD):</th>
+                            <th class="text-end fs-5">${{ sales_entry.total_amount_after_tax|floatformat:2 }}</th>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Narrative and Additional Info -->
+            {% if sales_entry.narrative %}
+            <div class="mb-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">Narrative</h6>
+                <p class="text-muted">{{ sales_entry.narrative|linebreaks }}</p>
+            </div>
+            {% endif %}
+
+            {% if sales_entry.bank_details %}
+            <div class="mb-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">Bank Details</h6>
+                <p class="text-muted small">{{ sales_entry.bank_details|linebreaks }}</p>
+            </div>
+            {% endif %}
+
+            {% if sales_entry.declaration_text %}
+            <div class="mb-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">Declaration</h6>
+                <p class="text-muted small">{{ sales_entry.declaration_text|linebreaks }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="border-top pt-3 mt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        {% if sales_entry.processed_by %}
+                        <p class="small text-muted mb-1"><strong>Processed By:</strong> {{ sales_entry.processed_by }}</p>
+                        {% endif %}
+                        <p class="small text-muted mb-0">
+                            <strong>Created:</strong> {{ sales_entry.created_at|date:"d M, Y H:i" }}
+                        </p>
+                        <p class="small text-muted mb-0">
+                            <strong>Last Updated:</strong> {{ sales_entry.updated_at|date:"d M, Y H:i" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <div class="mt-5 pt-3 border-top" style="max-width: 250px; margin-left: auto;">
+                            <p class="mb-0 small">Authorized Signature</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn-group, nav, .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+    
+    body {
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}
+
+
+
+
+

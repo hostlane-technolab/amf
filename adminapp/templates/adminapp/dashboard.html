@@ -2,376 +2,804 @@
 {%block title%} Admin Panel{%endblock%}
 {% block content %}
 
-<div class="container">
-  <div class="page-inner">
-    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
-      <div>
-        <h1 style="font-size: 2rem;" class="fw-bold mb-3">Admin Panel Dashboard {{request.user}}</h1>
-        <h6 class="op-7 mb-2">AMF Management System</h6>
-      </div>
-      <div class="ms-md-auto py-2 py-md-0">
-        <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
-        <a href="#" class="btn btn-primary btn-round">Add Customer</a>
+<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8" style="margin-top: 5rem;">
+  <div class="max-w-8xl mx-auto">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
+            <i class="fas fa-chart-line text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+            <p class="text-base text-slate-500 font-medium mt-1">AMF Management System</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-base">
+            <i class="fas fa-cog mr-2"></i>
+            Manage
+          </button>
+          <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-base">
+            <i class="fas fa-plus mr-2"></i>
+            Add Customer
+          </button>
+        </div>
       </div>
     </div>
     
-    <!-- Stats Cards Row -->
-    <div class="row">
+<!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      
       <!-- Incomplete Freezing Card -->
-              <div class="col-sm-6 col-md-3">
-                <div class="card card-stats card-round">
-                  <div class="card-body">
-                    <div class="row align-items-center">
-                      <div class="col-icon">
-                        <div
-                          class="icon-big text-center icon-primary bubble-shadow-small"
-                        >
-                          <i class="fa-solid fa-snowflake"></i>
-                        </div>
-                      </div>
-                        <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                            <p class="card-category" style="font-weight: 500;">Incomplete Freezing</p>
-                            <h4 class="card-title">{{ incomplete_freezing_count|default:"0" }}</h4>
-                        </div>
-                        </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <div class="bg-white rounded-xl border border-orange-200 p-4 hover:shadow-lg transition-shadow cursor-pointer group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+            <i class="fa-solid fa-snowflake text-orange-600 text-2xl"></i>
+          </div>
+          <span class="px-2.5 py-1 bg-orange-100 text-orange-700 text-sm font-bold rounded-md">URGENT</span>
+        </div>
+        <div>
+          <p class="text-md font-semibold text-slate-600 mb-1">Incomplete Freezing</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">{{ incomplete_freezing_count|default:"0" }}</h3>
+          <div class="flex items-center text-orange-600">
+            <span class="text-md font-semibold">View Details</span>
+            <i class="fas fa-arrow-right text-xs ml-2 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </div>
+      </div>
 
       <!-- Subscribers Card -->
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-info bubble-shadow-small">
-                  <i class="fas fa-user-check"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Subscribers</p>
-                  <h4 class="card-title">{{ total_subscribers|default:"1303" }}</h4>
-                </div>
-              </div>
+      <div class="bg-white rounded-xl border border-blue-200 p-4 hover:shadow-lg transition-shadow group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+            <i class="fas fa-user-check text-blue-600 text-2xl"></i>
+          </div>
+          <span class="flex items-center text-green-600 text-md font-bold">
+            <i class="fas fa-arrow-up mr-1"></i>
+            12%
+          </span>
+        </div>
+        <div>
+          <p class="text-md font-semibold text-slate-600 mb-1">Subscribers</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">{{ total_subscribers|default:"1303" }}</h3>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full w-3/4 bg-blue-500 rounded-full"></div>
             </div>
+            <span class="text-md font-bold text-slate-600">75%</span>
           </div>
         </div>
       </div>
 
       <!-- Sales Card -->
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-success bubble-shadow-small">
-                  <i class="fas fa-luggage-cart"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Sales</p>
-                  <h4 class="card-title">$ {{ total_sales|default:"1,345" }}</h4>
-                </div>
-              </div>
-            </div>
+      <div class="bg-white rounded-xl border border-emerald-200 p-4 hover:shadow-lg transition-shadow group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+            <i class="fas fa-rupee-sign text-emerald-600 text-2xl"></i>
           </div>
+          <span class="flex items-center text-green-600 text-md font-bold">
+            <i class="fas fa-arrow-up mr-1"></i>
+            8%
+          </span>
+        </div>
+        <div>
+          <p class="text-md font-semibold text-slate-600 mb-1">Total Sales</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">₹{{ total_sales|default:"1,345" }}</h3>
+          <p class="text-sm font-semibold text-emerald-600">This Month</p>
         </div>
       </div>
 
       <!-- Orders Card -->
-      <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-icon">
-                <div class="icon-big text-center icon-secondary bubble-shadow-small">
-                  <i class="far fa-check-circle"></i>
-                </div>
-              </div>
-              <div class="col col-stats ms-3 ms-sm-0">
-                <div class="numbers">
-                  <p class="card-category">Orders</p>
-                  <h4 class="card-title">{{ total_orders|default:"576" }}</h4>
-                </div>
-              </div>
-            </div>
+      <div class="bg-white rounded-xl border border-purple-200 p-4 hover:shadow-lg transition-shadow group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+            <i class="far fa-check-circle text-purple-600 text-2xl"></i>
           </div>
+                    <span class="flex items-center text-green-600 text-md font-bold">
+            <i class="fas fa-arrow-up mr-1"></i>
+            8%
+          </span>
+        </div>
+        <div>
+          <p class="text-md font-semibold text-slate-600 mb-1">Total Orders</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">{{ total_orders|default:"576" }}</h3>
+          <p class="text-sm font-semibold text-purple-600">98% Completed</p>
         </div>
       </div>
     </div>
 
-    <!-- Incomplete Freezing Details Section -->
+        <!-- Incomplete Freezing Section -->
     {% if incomplete_freezing_count > 0 %}
-    <div class="row mt-4">
-      <div class="col-md-12">
-        <div class="card card-round">
-          <div class="card-header">
-            <div class="card-head-row">
-              <div class="card-title">
-                <i class="fa-solid fa-snowflake"></i>
-                Incomplete Freezing Entries
-              </div>
-              <div class="card-tools">
-                <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="btn btn-label-primary btn-round btn-sm me-2">
-                  <span class="btn-label">
-                    <i class="fas fa-map-marker-alt"></i>
-                  </span>
-                  View Spot Entries
-                </a>
-                <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="btn btn-label-success btn-round btn-sm">
-                  <span class="btn-label">
-                    <i class="fas fa-home"></i>
-                  </span>
-                  View Local Entries
-                </a>
-              </div>
+    <!-- <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      
+      <div class="bg-slate-50 px-8 py-5 border-b border-slate-200">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm">
+              <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">Incomplete Freezing Entries</h2>
+              <p class="text-base text-slate-600 mt-0.5">Requires immediate attention</p>
             </div>
           </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="info-box">
-                  <div class="info-icon bg-primary">
-                    <i class="fas fa-map-marker-alt"></i>
-                  </div>
-                  <div class="info-content">
-                    <h5 class="info-title">Spot Freezing</h5>
-                    <p class="info-subtitle">{{ incomplete_spot_freezing|default:"0" }} incomplete entries</p>
-                    <div class="info-actions">
-                      <a href="{% url 'adminapp:freezing_entry_spot_create' %}" class="btn btn-sm btn-primary">Add New</a>
-                      <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="btn btn-sm btn-outline-primary ms-2">View All</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="info-box">
-                  <div class="info-icon bg-success">
-                    <i class="fas fa-home"></i>
-                  </div>
-                  <div class="info-content">
-                    <h5 class="info-title">Local Freezing</h5>
-                    <p class="info-subtitle">{{ incomplete_local_freezing|default:"0" }} incomplete entries</p>
-                    <div class="info-actions">
-                      <a href="{% url 'adminapp:freezing_entry_local_create' %}" class="btn btn-sm btn-success">Add New</a>
-                      <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="btn btn-sm btn-outline-success ms-2">View All</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          
+          <div class="flex flex-wrap gap-3">
+            <a href="{% url 'adminapp:freezing_entry_spot_list' %}" 
+               class="px-5 py-2.5 bg-blue-50 border border-blue-200 text-blue-700 text-base font-semibold rounded-lg hover:bg-blue-100 transition-colors">
+              <i class="fas fa-map-marker-alt mr-2"></i>
+              Spot Entries
+            </a>
+            <a href="{% url 'adminapp:freezing_entry_local_list' %}" 
+               class="px-5 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-base font-semibold rounded-lg hover:bg-emerald-100 transition-colors">
+              <i class="fas fa-home mr-2"></i>
+              Local Entries
+            </a>
           </div>
         </div>
       </div>
+
+      <div class="p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-5">
+
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Spot Freezing</h3>
+                <p class="text-base text-slate-700 mb-4">
+                  <span class="text-3xl font-bold text-blue-600">{{ incomplete_spot_freezing|default:"0" }}</span>
+                  <span class="text-slate-600 ml-2">Incomplete entries</span>
+                </p>
+                <div class="mb-4">
+                  <div class="flex items-center justify-between text-md font-semibold text-slate-600 mb-2">
+                    <span>Progress</span>
+                    <span>66%</span>
+                  </div>
+                  <div class="h-2.5 bg-blue-200 rounded-full overflow-hidden">
+                    <div class="h-full w-2/3 bg-blue-600 rounded-full"></div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <a href="{% url 'adminapp:freezing_entry_spot_create' %}" 
+                     class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-base font-semibold rounded-lg hover:bg-blue-700 transition-colors text-center shadow-sm">
+                    <i class="fas fa-plus mr-1"></i>
+                    Add New
+                  </a>
+                  <a href="{% url 'adminapp:freezing_entry_spot_list' %}" 
+                     class="flex-1 px-4 py-2.5 bg-white border border-blue-300 text-blue-700 text-base font-semibold rounded-lg hover:bg-blue-50 transition-colors text-center">
+                    <i class="fas fa-list mr-1"></i>
+                    View All
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Local Freezing</h3>
+                <p class="text-base text-slate-700 mb-4">
+                  <span class="text-3xl font-bold text-emerald-600">{{ incomplete_local_freezing|default:"0" }}</span>
+                  <span class="text-slate-600 ml-2">Incomplete entries</span>
+                </p>
+                <div class="mb-4">
+                  <div class="flex items-center justify-between text-md font-semibold text-slate-600 mb-2">
+                    <span>Progress</span>
+                    <span>50%</span>
+                  </div>
+                  <div class="h-2.5 bg-emerald-200 rounded-full overflow-hidden">
+                    <div class="h-full w-1/2 bg-emerald-600 rounded-full"></div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <a href="{% url 'adminapp:freezing_entry_local_create' %}" 
+                     class="flex-1 px-4 py-2.5 bg-emerald-600 text-white text-base font-semibold rounded-lg hover:bg-emerald-700 transition-colors text-center shadow-sm">
+                    <i class="fas fa-plus mr-1"></i>
+                    Add New
+                  </a>
+                  <a href="{% url 'adminapp:freezing_entry_local_list' %}" 
+                     class="flex-1 px-4 py-2.5 bg-white border border-emerald-300 text-emerald-700 text-base font-semibold rounded-lg hover:bg-emerald-50 transition-colors text-center">
+                    <i class="fas fa-list mr-1"></i>
+                    View All
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div> -->
     </div>
     {% endif %}
 
-    <!-- Charts Row -->
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card card-primary card-round">
-          <div class="card-header">
-            <div class="card-head-row">
-              <div class="card-title">Daily Sales</div>
-              <div class="card-tools">
-                <div class="dropdown">
-                  <button class="btn btn-sm btn-label-light dropdown-toggle" type="button" 
-                          id="dropdownMenuButton" data-bs-toggle="dropdown" 
-                          aria-haspopup="true" aria-expanded="false">
-                    Export
-                  </button>
-                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="#">Action</a>
-                    <a class="dropdown-item" href="#">Another action</a>
-                    <a class="dropdown-item" href="#">Something else here</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="card-category">March 25 - April 02</div>
-          </div>
-          <div class="card-body pb-0">
-            <div class="mb-4 mt-2">
-              <h1>$4,578.58</h1>
-            </div>
-            <div class="pull-in">
-              <canvas id="dailySalesChart"></canvas>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card card-round">
-          <div class="card-body pb-0">
-            <div class="h1 fw-bold float-end text-primary">+5%</div>
-            <h2 class="mb-2">17</h2>
-            <p class="text-muted">Users online</p>
-            <div class="pull-in sparkline-fix">
-              <div id="lineChart"></div>
-            </div>
-          </div>
+
+    <!-- Add this section after the Stats Cards and before the Management Section -->
+
+<!-- Spot Freezing Analytics Section -->
+<div class="mb-8">
+  <h2 class="text-2xl font-bold text-slate-900 mb-6">Spot Freezing Analytics</h2>
+  
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    
+    <!-- Monthly Trends Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Monthly Freezing Trends</h3>
+        <div class="flex gap-2">
+          <button onclick="changeChartView('entries')" class="chart-view-btn active px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="entries">
+            Entries
+          </button>
+          <button onclick="changeChartView('kg')" class="chart-view-btn px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="kg">
+            Weight (KG)
+          </button>
+          <button onclick="changeChartView('usd')" class="chart-view-btn px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="usd">
+            Value (USD)
+          </button>
         </div>
       </div>
+      <div class="h-80">
+        <canvas id="monthlyTrendsChart"></canvas>
+      </div>
     </div>
+
+    <!-- Status Distribution Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Freezing Status Distribution</h3>
+      <div class="h-80 flex items-center justify-center">
+        <canvas id="statusPieChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Weekly Activity Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Weekly Activity (Last 8 Weeks)</h3>
+      <div class="h-80">
+        <canvas id="weeklyActivityChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Items Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Top 5 Items by Weight</h3>
+      <div class="h-80">
+        <canvas id="topItemsChart"></canvas>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<footer class="footer">
-  <div class="container-fluid d-flex justify-content-between">
-    <nav class="pull-left">
-      <ul class="nav">
-        <li class="nav-item">
-          <a class="nav-link" href="http://www.themekita.com">ThemeKita</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#"> Help </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#"> Licenses </a>
-        </li>
-      </ul>
-    </nav>
-    <div class="copyright">
-      2024, made with <i class="fa fa-heart heart text-danger"></i> by
-      <a href="http://www.themekita.com">ThemeKita</a>
-    </div>
-    <div>
-      Distributed by
-      <a target="_blank" href="https://themewagon.com/">ThemeWagon</a>.
-    </div>
-  </div>
-</footer>
-
 <style>
-/* Custom Styles for Enhanced Dashboard */
-.stats-card-freezing {
-  border-left: 4px solid #ff9500;
-  transition: all 0.3s ease;
-  position: relative;
+.chart-view-btn {
+  background-color: #f1f5f9;
+  color: #64748b;
 }
 
-.stats-card-freezing:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 149, 0, 0.15);
+.chart-view-btn:hover {
+  background-color: #e2e8f0;
+  color: #475569;
 }
 
-.icon-warning {
-  background: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);
-}
-
-.stats-footer {
-  background: rgba(255, 149, 0, 0.1);
-  padding: 8px 15px;
-  border-radius: 0 0 15px 15px;
-}
-
-.stats-link {
-  color: #ff9500;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.stats-link:hover {
-  color: #e68500;
-}
-
-.stretched-link::after {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 1;
-  content: "";
-}
-
-/* Info boxes for incomplete freezing section */
-.info-box {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  border: 1px solid #e9ecef;
-  transition: all 0.3s ease;
-}
-
-.info-box:hover {
-  background: #ffffff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
-}
-
-.info-icon {
-  width: 100px;
-  height: 100px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.chart-view-btn.active {
+  background-color: #3b82f6;
   color: white;
-  font-size: 30px;
-  margin-right: 20px;
-  flex-shrink: 0;
-}
-
-.info-content {
-  flex: 1;
-}
-
-.info-title {
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.info-subtitle {
-  margin-bottom: 15px;
-  color: #6c757d;
-  font-size: 14px;
-}
-
-.info-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* Warning alert styles */
-.alert-freezing {
-  background: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
-  border: 1px solid rgba(255, 149, 0, 0.2);
-  border-left: 4px solid #ff9500;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .info-box {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .info-icon {
-    margin-right: 0;
-    margin-bottom: 15px;
-  }
-  
-  .info-actions {
-    justify-content: center;
-  }
 }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <script>
-// Chart initialization (keeping your existing chart code)
+// Parse data from Django context
+const chartLabels = JSON.parse('{{ chart_labels|safe }}');
+const chartComplete = JSON.parse('{{ chart_complete|safe }}');
+const chartIncomplete = JSON.parse('{{ chart_incomplete|safe }}');
+const chartKg = JSON.parse('{{ chart_kg|safe }}');
+const chartUsd = JSON.parse('{{ chart_usd|safe }}');
+
+const weeklyLabels = JSON.parse('{{ weekly_labels|safe }}');
+const weeklyEntries = JSON.parse('{{ weekly_entries|safe }}');
+const weeklyKg = JSON.parse('{{ weekly_kg|safe }}');
+
+const statusLabels = JSON.parse('{{ status_labels|safe }}');
+const statusCounts = JSON.parse('{{ status_counts|safe }}');
+
+const topItemNames = JSON.parse('{{ top_item_names|safe }}');
+const topItemKg = JSON.parse('{{ top_item_kg|safe }}');
+
+let monthlyTrendsChart;
+
+// Initialize Monthly Trends Chart
+function initMonthlyTrendsChart(viewType = 'entries') {
+  const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+  
+  if (monthlyTrendsChart) {
+    monthlyTrendsChart.destroy();
+  }
+
+  let datasets, yAxisTitle;
+  
+  if (viewType === 'entries') {
+    datasets = [
+      {
+        label: 'Complete',
+        data: chartComplete,
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        borderColor: 'rgb(34, 197, 94)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      },
+      {
+        label: 'Incomplete',
+        data: chartIncomplete,
+        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+        borderColor: 'rgb(249, 115, 22)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }
+    ];
+    yAxisTitle = 'Number of Entries';
+  } else if (viewType === 'kg') {
+    datasets = [{
+      label: 'Total Weight (KG)',
+      data: chartKg,
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: 'rgb(59, 130, 246)',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true
+    }];
+    yAxisTitle = 'Weight (KG)';
+  } else if (viewType === 'usd') {
+    datasets = [{
+      label: 'Total Value (USD)',
+      data: chartUsd,
+      backgroundColor: 'rgba(168, 85, 247, 0.2)',
+      borderColor: 'rgb(168, 85, 247)',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true
+    }];
+    yAxisTitle = 'Value (USD)';
+  }
+
+  monthlyTrendsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: yAxisTitle
+          }
+        }
+      }
+    }
+  });
+}
+
+// Change chart view
+function changeChartView(viewType) {
+  document.querySelectorAll('.chart-view-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  initMonthlyTrendsChart(viewType);
+}
+
+// Initialize Status Pie Chart
+const statusCtx = document.getElementById('statusPieChart').getContext('2d');
+new Chart(statusCtx, {
+  type: 'doughnut',
+  data: {
+    labels: statusLabels,
+    datasets: [{
+      data: statusCounts,
+      backgroundColor: [
+        'rgba(34, 197, 94, 0.8)',
+        'rgba(249, 115, 22, 0.8)',
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(168, 85, 247, 0.8)'
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }
+});
+
+// Initialize Weekly Activity Chart
+const weeklyCtx = document.getElementById('weeklyActivityChart').getContext('2d');
+new Chart(weeklyCtx, {
+  type: 'bar',
+  data: {
+    labels: weeklyLabels,
+    datasets: [
+      {
+        label: 'Entries',
+        data: weeklyEntries,
+        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+        borderColor: 'rgb(59, 130, 246)',
+        borderWidth: 1,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Weight (KG)',
+        data: weeklyKg,
+        type: 'line',
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderWidth: 2,
+        tension: 0.4,
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Number of Entries'
+        }
+      },
+      y1: {
+        type: 'linear',
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Weight (KG)'
+        },
+        grid: {
+          drawOnChartArea: false
+        }
+      }
+    }
+  }
+});
+
+// Initialize Top Items Chart
+const topItemsCtx = document.getElementById('topItemsChart').getContext('2d');
+new Chart(topItemsCtx, {
+  type: 'bar',
+  data: {
+    labels: topItemNames,
+    datasets: [{
+      label: 'Weight (KG)',
+      data: topItemKg,
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(34, 197, 94, 0.8)',
+        'rgba(249, 115, 22, 0.8)',
+        'rgba(168, 85, 247, 0.8)',
+        'rgba(236, 72, 153, 0.8)'
+      ],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Weight (KG)'
+        }
+      }
+    }
+  }
+});
+
+// Initialize monthly trends chart on page load
+initMonthlyTrendsChart('entries');
+</script>
+
+
+    <!-- Management Section Cards (Sidebar Items as Cards) -->
+    <div class="mb-8 mt-5">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">Management</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- User Management Card -->
+        {% if user_permissions.can_manage_users %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-user text-indigo-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">User Management</h3>
+              <p class="text-md text-slate-500">Manage system users and permissions</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="flex gap-2">
+              <a href="{% url 'adminapp:users_list' %}" class="flex-1 px-4 py-2.5 bg-indigo-50 text-indigo-700 text-md font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">
+                <i class="fas fa-list mr-1"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_user' %}" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-md font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
+                <i class="fas fa-plus mr-1"></i> Add
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Processing Operations Card -->
+        {% if user_permissions.can_view_processing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-gear text-amber-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Processing Operations</h3>
+              <p class="text-md text-slate-500">Manage peeling shed operations</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="flex gap-2">
+              <a href="{% url 'adminapp:peeling_shed_supply_list' %}" class="flex-1 px-4 py-2.5 bg-amber-50 text-amber-700 text-md font-semibold rounded-lg hover:bg-amber-100 transition-colors text-center">
+                <i class="fas fa-list mr-1"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="flex-1 px-4 py-2.5 bg-amber-600 text-white text-md font-semibold rounded-lg hover:bg-amber-700 transition-colors text-center">
+                <i class="fas fa-plus mr-1"></i> Create
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Master Dashboard Card -->
+        {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+              <i class="fas fa-tachometer-alt text-purple-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Master Dashboard</h3>
+              <p class="text-md text-slate-500">Configure master data and settings</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <a href="{% url 'adminapp:master' %}" class="block w-full px-4 py-2.5 bg-purple-600 text-white text-md font-semibold rounded-lg hover:bg-purple-700 transition-colors text-center">
+              <i class="fas fa-arrow-right mr-2"></i> Open Dashboard
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Purchase Management Card -->
+        {% if user_permissions.can_view_purchasing or user_permissions.can_add_purchasing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+              <i class="fas fa-shopping-cart text-blue-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Purchase Management</h3>
+              <p class="text-md text-slate-500">Handle spot and local purchases</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:spot_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-location-dot mr-2 text-blue-600"></i>Spot Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:local_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-store mr-2 text-blue-600"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Billing Operations Card -->
+        {% if user_permissions.can_view_billing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-file text-pink-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Billing Operations</h3>
+              <p class="text-md text-slate-500">Manage tenant and main stock bills</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:bill_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-pink-600"></i>Tenant Bill</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:sales_entry_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-import mr-2 text-pink-600"></i>Main Stock Bill</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+
+
+        <!-- Shipping Operations Card -->
+        {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-truck-fast text-green-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Shipping Operations</h3>
+              <p class="text-md text-slate-500">Pre-shipment and stock transfers</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:preshipment_workout_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-green-600"></i>Pre Shipment</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:store_transfer_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-tent-arrow-left-right mr-2 text-green-600"></i>Stock Transaction</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+
+
+
+        <!-- Voucher Card -->
+        {% if user_permissions.can_view_voucher or user_permissions.can_add_voucher %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-file-invoice-dollar text-rose-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Voucher Management</h3>
+              <p class="text-md text-slate-500">Manage all types of vouchers</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Spot Agent</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Supervisor</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Peeling Shed</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:tenantvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Tenat Voucher</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Freezing Operations Card -->
+        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-cyan-100 rounded-lg flex items-center justify-center group-hover:bg-cyan-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-snowflake text-cyan-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Freezing Operations</h3>
+              <p class="text-md text-slate-500">Manage freezing entries and workflow</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-cyan-600"></i>Spot Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-shopping-cart mr-2 text-cyan-600"></i>Local Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:list_freezing_entry_tenant' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-store mr-2 text-cyan-600"></i>Tenant Freezing Entry</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:list_return_tenant' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-store mr-2 text-cyan-600"></i>Return Tenant Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_workout' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-warehouse mr-2 text-cyan-600"></i>Freezing Workout</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+<script>
+// Chart initialization
 var ctx = document.getElementById('statisticsChart');
 if (ctx) {
   ctx = ctx.getContext('2d');
@@ -474,14 +902,6 @@ if (ctx) {
     myLegendContainer.innerHTML = statisticsChart.generateLegend();
   }
 }
-
-// Add click functionality to the incomplete freezing card
-document.addEventListener('DOMContentLoaded', function() {
-  const freezingCard = document.querySelector('.stats-card-freezing');
-  if (freezingCard) {
-    freezingCard.style.cursor = 'pointer';
-  }
-});
 </script>
 
 {% endblock %}

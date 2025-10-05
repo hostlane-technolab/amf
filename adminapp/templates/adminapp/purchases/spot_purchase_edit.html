@@ -53,7 +53,7 @@
         
         <div class="form-card" style="padding: 20px;">
           <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg">
               <div class="form-group">
                 <label class="form-label">{{ purchase_form.date.label }}</label>
                 <div class="input-wrapper">
@@ -66,7 +66,7 @@
               </div>
             </div>
             
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg">
               <div class="form-group">
                 <label class="form-label">{{ purchase_form.voucher_number.label }}</label>
                 <div class="input-wrapper">
@@ -79,7 +79,7 @@
               </div>
             </div>
             
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg">
               <div class="form-group">
                 <label class="form-label">{{ purchase_form.spot.label }}</label>
                 <div class="input-wrapper">
@@ -92,7 +92,7 @@
               </div>
             </div>
             
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg">
               <div class="form-group">
                 <label class="form-label">{{ purchase_form.supervisor.label }}</label>
                 <div class="input-wrapper">
@@ -105,7 +105,7 @@
               </div>
             </div>
             
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg">
               <div class="form-group">
                 <label class="form-label">{{ purchase_form.agent.label }}</label>
                 <div class="input-wrapper">
@@ -336,99 +336,105 @@
         </div>
       </div>
 
-      <!-- Expenses Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center">
-            <div class="icon-wrapper me-4">
-              <i class="fas fa-receipt"></i>
-            </div>
-            <div>
-              <h4 class="card-title mb-0">Additional Expenses</h4>
-              <p class="text-muted mb-0">Edit any additional costs</p>
-            </div>
+<!-- Expenses Card -->
+<div class="form-card mb-4">
+  <div class="card-header">
+    <div class="d-flex align-items-center">
+      <div class="icon-wrapper me-4">
+        <i class="fas fa-receipt"></i>
+      </div>
+      <div>
+        <h4 class="card-title mb-0">Additional Expenses</h4>
+        <p class="text-muted mb-0">Edit any additional costs</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card-body">
+    <div class="row g-4">
+      <div class="col-md-6 col-lg">
+        <div class="form-group">
+          <label class="form-label">{{ expense_form.ice_expense.label }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-snowflake input-icon"></i>
+            {{ expense_form.ice_expense }}
           </div>
-        </div>
-        
-        <div class="card-body">
-          <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ expense_form.ice_expense.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-snowflake input-icon"></i>
-                  {{ expense_form.ice_expense }}
-                </div>
-                {% if expense_form.ice_expense.errors %}
-                  <div class="validation-error">{{ expense_form.ice_expense.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ expense_form.vehicle_rent.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-truck input-icon"></i>
-                  {{ expense_form.vehicle_rent }}
-                </div>
-                {% if expense_form.vehicle_rent.errors %}
-                  <div class="validation-error">{{ expense_form.vehicle_rent.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ expense_form.loading_and_unloading.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-dolly input-icon"></i>
-                  {{ expense_form.loading_and_unloading }}
-                </div>
-                {% if expense_form.loading_and_unloading.errors %}
-                  <div class="validation-error">{{ expense_form.loading_and_unloading.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ expense_form.peeling_charge.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-cut input-icon"></i>
-                  {{ expense_form.peeling_charge }}
-                </div>
-                {% if expense_form.peeling_charge.errors %}
-                  <div class="validation-error">{{ expense_form.peeling_charge.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ expense_form.other_expense.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-plus-circle input-icon"></i>
-                  {{ expense_form.other_expense }}
-                </div>
-                {% if expense_form.other_expense.errors %}
-                  <div class="validation-error">{{ expense_form.other_expense.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-          </div>
+          {% if expense_form.ice_expense.errors %}
+            <div class="validation-error">{{ expense_form.ice_expense.errors }}</div>
+          {% endif %}
         </div>
       </div>
+      
+      <div class="col-md-6 col-lg">
+        <div class="form-group">
+          <label class="form-label">{{ expense_form.vehicle_rent.label }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-truck input-icon"></i>
+            {{ expense_form.vehicle_rent }}
+          </div>
+          {% if expense_form.vehicle_rent.errors %}
+            <div class="validation-error">{{ expense_form.vehicle_rent.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg">
+        <div class="form-group">
+          <label class="form-label">{{ expense_form.loading_and_unloading.label }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-dolly input-icon"></i>
+            {{ expense_form.loading_and_unloading }}
+          </div>
+          {% if expense_form.loading_and_unloading.errors %}
+            <div class="validation-error">{{ expense_form.loading_and_unloading.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg">
+        <div class="form-group">
+          <label class="form-label">{{ expense_form.peeling_charge.label }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-cut input-icon"></i>
+            {{ expense_form.peeling_charge }}
+          </div>
+          {% if expense_form.peeling_charge.errors %}
+            <div class="validation-error">{{ expense_form.peeling_charge.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg">
+        <div class="form-group">
+          <label class="form-label">{{ expense_form.other_expense.label }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-plus-circle input-icon"></i>
+            {{ expense_form.other_expense }}
+          </div>
+          {% if expense_form.other_expense.errors %}
+            <div class="validation-error">{{ expense_form.other_expense.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       <!-- Submit Section -->
-      <div class="form-actions">
-        <button type="submit" class="submit-btn">
-          <i class="fas fa-save me-2"></i>Update Purchase
-        </button>
-        <a href="{% url 'adminapp:spot_purchase_list' %}" class="cancel-btn">
-          <i class="fas fa-times me-2"></i>Cancel
-        </a>
-      </div>
+<div class="form-actions">
+  <div class="row">
+    <div class="col-lg-6 mb-3">
+      <button type="submit" class="submit-btn">
+        <i class="fas fa-save me-2"></i>Update
+      </button>
+    </div>
+    <div class="col-lg-6 mb-3">
+      <a href="{% url 'adminapp:spot_purchase_list' %}" class="cancel-btn">
+        <i class="fas fa-times me-2"></i>Cancel
+      </a>
+    </div>
+  </div>
+</div>
     </form>
   </div>
 </div>
@@ -758,19 +764,25 @@
   margin-top: 40px;
 }
 
+.form-actions .row {
+  width: 100%;
+}
+
 .submit-btn {
   background: #28a745;
   color: white;
   border: 2px solid #28a745;
   padding: 15px 30px;
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 16px;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   text-decoration: none;
+  width: 100%;
 }
 
 .submit-btn:hover {
@@ -781,9 +793,9 @@
 }
 
 .cancel-btn {
-  background: transparent;
-  color: #6c757d;
-  border: 2px solid #e9ecef;
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
   padding: 15px 30px;
   border-radius: 12px;
   font-weight: 600;
@@ -791,14 +803,17 @@
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   text-decoration: none;
+  width: 100%;
 }
 
 .cancel-btn:hover {
-  background: #6c757d;
+  background: #c82333;
   color: white;
   text-decoration: none;
   transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
 }
 
 /* Validation Errors */

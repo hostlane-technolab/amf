@@ -3,63 +3,6 @@
 {% block content %}
 
 <style>
-  /* Main Container */
-  .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-
-  /* Page Header */
-  .page-header {
-    margin-bottom: 30px;
-  }
-
-  .page-header h3 {
-    color: #2c3e50;
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-  }
-
-  .page-header h3 i {
-    color: #e74c3c;
-    font-size: 30px;
-  }
-
-  /* Breadcrumbs */
-  .breadcrumbs {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #6c757d;
-  }
-
-  .breadcrumbs li {
-    display: flex;
-    align-items: center;
-  }
-
-  .breadcrumbs a {
-    color: #e74c3c;
-    text-decoration: none;
-    transition: color 0.3s ease;
-  }
-
-  .breadcrumbs a:hover {
-    color: #c0392b;
-  }
-
-  .separator {
-    margin: 0 5px;
-    color: #dee2e6;
-  }
 
   /* Card Styling */
   .card {
@@ -631,11 +574,26 @@
 <div class="container">
   <div class="page-inner">
     <div class="page-header">
-      <h3 class="fw-bold">
-        <i class="fas fa-undo-alt"></i>
+      <h3 style="font-size: 2rem;" class="fw-bold mb-2">
         Return Operations
       </h3>
-
+            <ul class="breadcrumbs">
+        <li class="nav-home">
+          <a href="#"><i class="icon-home"></i></a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="#">Freezing Entries</a>
+        </li>
+        <li class="separator">
+          <i class="icon-arrow-right"></i>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'adminapp:create_freezing_entry_tenant' %}">Add Entry</a>
+        </li>
+      </ul>
     </div>
 
     <div class="row">
@@ -648,7 +606,7 @@
                   <i class="fas fa-undo-alt"></i>
                 </div>
                 <div class="header-text">
-                  <h3>Tenant Return Entries</h3>
+                  <h3 class="mb-0 fw-bold card-title">Tenant Return Entries</h3>
                   <p>Manage your return entry transactions</p>
                 </div>
               </div>
