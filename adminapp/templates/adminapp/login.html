@@ -140,12 +140,12 @@
                     <form method="post" class="space-y-6">
                         {% csrf_token %}
                         
-                        <!-- Email Field -->
+<!-- Email Field -->
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-slate-700 ml-1">Email Address</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-envelope text-slate-400"></i>
+                            <div class="relative transition-all duration-300">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <i class="fas fa-envelope text-slate-400 text-base"></i>
                                 </div>
                                 <input 
                                     type="email" 
@@ -160,17 +160,25 @@
                         <!-- Password Field -->
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-slate-700 ml-1">Password</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <i class="fas fa-lock text-slate-400"></i>
+                            <div class="relative transition-all duration-300">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <i class="fas fa-lock text-slate-400 text-base"></i>
                                 </div>
                                 <input 
                                     type="password" 
                                     name="password" 
+                                    id="passwordInput"
                                     placeholder="Enter your password"
                                     required
-                                    class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 input-focus text-slate-800 placeholder-slate-400"
+                                    class="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 input-focus text-slate-800 placeholder-slate-400"
                                 >
+                                <button 
+                                    type="button" 
+                                    id="togglePassword"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center z-10 text-slate-400 hover:text-slate-600 transition-colors duration-200 focus:outline-none"
+                                >
+                                    <i class="fas fa-eye text-base" id="toggleIcon"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -234,5 +242,44 @@
             });
         });
     </script>
+
+    <script>
+    // Add subtle interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle functionality
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('passwordInput');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (togglePassword && passwordInput && toggleIcon) {
+            togglePassword.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle password visibility
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            });
+        }
+
+        // Add button click effect
+        const button = document.querySelector('button[type="submit"]');
+        if (button) {
+            button.addEventListener('click', function(e) {
+                this.classList.add('scale-95');
+                setTimeout(() => {
+                    this.classList.remove('scale-95');
+                }, 150);
+            });
+        }
+    });
+</script>
 </body>
 </html>
