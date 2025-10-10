@@ -1,220 +1,250 @@
+<!-- After -->
 {% extends 'admin_base.html' %}
 {%block title%} User List{%endblock%}
 {% block content %}
 <style>
-    .custom-table th:nth-child(3),
-.custom-table td:nth-child(3) {
-  width: 50%;
-  min-width: 300px;
-}
-    .custom-table th:nth-child(4),
-.custom-table td:nth-child(4) {
-  width: 25%;
-  min-width: 200px;
-}
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3) {
+    width: 50%;
+    min-width: 300px;
+  }
+
+  .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4) {
+    width: 25%;
+    min-width: 200px;
+  }
 </style>
-<div class="container" >
-          <div class="page-inner">
-            <div class="page-header">
-              <h3 style="font-size: 2rem;" class="fw-bold mb-3">User Management</h3>
-              <ul class="breadcrumbs mb-3">
-                <li class="nav-home">
-                  <a href="#">
-                    <i class="icon-home"></i>
-                  </a>
-                </li>
-                <li class="separator">
-                  <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                  <a href="{%url 'adminapp:users_list'%}">Users</a>
-                </li>
-                <li class="separator">
-                  <i class="icon-arrow-right"></i>
-                </li>
-                <li class="nav-item">
-                  <a href="{%url 'adminapp:create_user'%}">Create Users</a>
-                </li>
-              </ul>
-            </div>
-<div class="row">
-  <div class="col-md-12">
-    <div class="card border-0 shadow-lg">
-      <div class="card-header bg-white border-0 py-4">
-        <div class="d-flex align-items-center justify-content-between flex-wrap">
-          <div class="d-flex align-items-center mb-3 mb-md-0">
-            <div class="icon-wrapper me-4">
-              <i class="fas fa-users"></i>
-            </div>
-            <div>
-              <h3 class="card-title mb-0 fw-bold">Users</h3>
-              <p class="text-muted mb-0 fs-6">Manage your system users and accounts</p>
-            </div>
+<div class="container">
+  <div class="page-inner">
+    <!-- Page Header - Updated Design with unique class names -->
+
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-users"></i>
           </div>
-          
-          <!-- Search Box -->
-          <div class="search-controls d-flex align-items-center gap-3">
-            <div class="search-box-wrapper">
-              <div class="search-input-group">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search users...">
-                <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
-                  <i class="fas fa-times"></i>
-                </button>
-              </div>
-            </div>
-            
-            <div class="stats-badge">
-              <span class="badge bg-light text-dark px-3 py-2 fs-6">
-                <i class="fas fa-user-friends me-2"></i><span id="userCount">{{ users|length }}</span> Users
-              </span>
-            </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">User Management</h3>
+            <p class="ph-header-subtitle">Manage your system users and accounts</p>
           </div>
         </div>
-      </div>
-      
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table id="multi-filter" class="table table-hover mb-0 custom-table">
-            <thead>
-              <tr>
-                <th class="table-header">
-                  <div class="header-content">
-                    <i class="fas fa-hashtag header-icon"></i>
-                    <span class="header-text">NO</span>
-                  </div>
-                </th>
-                <th class="table-header">
-                  <div class="header-content">
-                    <i class="fas fa-user header-icon"></i>
-                    <span class="header-text">User</span>
-                  </div>
-                </th>
-                <th class="table-header">
-                  <div class="header-content">
-                    <i class="fas fa-envelope header-icon"></i>
-                    <span class="header-text">Email</span>
-                  </div>
-                </th>
-                <th class="table-header">
-                  <div class="header-content">
-                    <i class="fas fa-phone header-icon"></i>
-                    <span class="header-text">Mobile</span>
-                  </div>
-                </th>
-                <th class="table-header">
-                  <div class="header-content">
-                    <i class="fas fa-user-tag header-icon"></i>
-                    <span class="header-text">Role</span>
-                  </div>
-                </th>
-                <th class="table-header">
-                  <div class="header-content">
-                    <i class="fas fa-toggle-on header-icon"></i>
-                    <span class="header-text">Status</span>
-                  </div>
-                </th>
-                <th class="table-header text-center">
-                  <div class="header-content justify-content-center">
-                    <i class="fas fa-tools header-icon"></i>
-                    <span class="header-text">Actions</span>
-                  </div>
-                </th>
-              </tr>
-            </thead>
 
-            <tbody id="tableBody">
-              {% for user in users %}
-              <tr class="table-row" data-searchable="{{ user.full_name|lower }} {{ user.email|lower }} {{ user.mobile|default:''|lower }} {{ user.role|default:''|lower }}">
-                <td class="table-cell">
-                  <div class="id-badge">
-                   #{{ forloop.counter }}
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{%url 'adminapp:users_list'%}" class="ph-breadcrumb-link">
+                <i class="fas fa-users"></i>
+                <span>Users</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>User List</span>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="card-icon-wrapper me-4">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">All Users</h3>
+                  <p class="text-muted mb-0 fs-6">View and manage user records</p>
+                </div>
+              </div>
+
+              <!-- Search Box -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search users...">
+                    <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
                   </div>
-                </td>
+                </div>
                 
-                <td class="table-cell">
-                  <div class="item-info">
-                    <div class="item-avatar">
-                      {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" alt="{{ user.full_name }}" class="profile-img">
+                <div class="stats-badge">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fa-solid fa-user me-2"></i><span id="userCount">{{ users|length }}</span> Users
+                  </span>
+                </div>
+
+                <a href="{% url 'adminapp:create_user' %}" class="add-new-btn">
+                  <i class="fas fa-plus me-2"></i>Add User
+                </a>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table id="multi-filter" class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-hashtag header-icon"></i>
+                        <span class="header-text">NO</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-user header-icon"></i>
+                        <span class="header-text">User</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-envelope header-icon"></i>
+                        <span class="header-text">Email</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-phone header-icon"></i>
+                        <span class="header-text">Mobile</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-user-tag header-icon"></i>
+                        <span class="header-text">Role</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-toggle-on header-icon"></i>
+                        <span class="header-text">Status</span>
+                      </div>
+                    </th>
+                    <th class="table-header text-center">
+                      <div class="header-content justify-content-center">
+                        <i class="fas fa-tools header-icon"></i>
+                        <span class="header-text">Actions</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="tableBody">
+                  {% for user in users %}
+                  <tr class="table-row"
+                    data-searchable="{{ user.full_name|lower }} {{ user.email|lower }} {{ user.mobile|default:''|lower }} {{ user.role|default:''|lower }}">
+                    <td class="table-cell">
+                      <div class="id-badge">
+                        #{{ forloop.counter }}
+                      </div>
+                    </td>
+
+                    <td class="table-cell">
+                      <div class="item-info">
+                        <div class="item-avatar">
+                          {% if user.profile_picture %}
+                          <img src="{{ user.profile_picture.url }}" alt="{{ user.full_name }}" class="profile-img">
+                          {% else %}
+                          <i class="fas fa-user"></i>
+                          {% endif %}
+                        </div>
+                        <div class="item-details">
+                          <div class="item-name">{{ user.full_name }}</div>
+                          <div class="item-meta">{{ user.email }}</div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="table-cell">
+                      <div class="email-display">
+                        <i class="fas fa-envelope me-2"></i>{{ user.email }}
+                      </div>
+                    </td>
+
+                    <td class="table-cell">
+                      <div class="mobile-display">
+                        <i class="fas fa-phone me-2"></i>{{ user.mobile }}
+                      </div>
+                    </td>
+
+                    <td class="table-cell">
+                      <div class="category-badge">
+                        <i class="fas fa-user-tag category-icon"></i>
+                        <span class="category-text">{{ user.role|capfirst }}</span>
+                      </div>
+                    </td>
+
+                    <td class="table-cell">
+                      {% if user.is_active %}
+                      <div class="status-badge status-active">
+                        <i class="fas fa-check-circle status-icon"></i>
+                        <span class="status-text">Active</span>
+                      </div>
                       {% else %}
-                        <i class="fas fa-user"></i>
+                      <div class="status-badge status-inactive">
+                        <i class="fas fa-times-circle status-icon"></i>
+                        <span class="status-text">Inactive</span>
+                      </div>
                       {% endif %}
-                    </div>
-                    <div class="item-details">
-                      <div class="item-name">{{ user.full_name }}</div>
-                      <div class="item-meta">{{ user.email }}</div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td class="table-cell">
-                  <div class="email-display">
-                    <i class="fas fa-envelope me-2"></i>{{ user.email }}
-                  </div>
-                </td>
-                
-                <td class="table-cell">
-                  <div class="mobile-display">
-                    <i class="fas fa-phone me-2"></i>{{ user.mobile }}
-                  </div>
-                </td>
-                
-                <td class="table-cell">
-                  <div class="category-badge">
-                    <i class="fas fa-user-tag category-icon"></i>
-                    <span class="category-text">{{ user.role|capfirst }}</span>
-                  </div>
-                </td>
-                
-                <td class="table-cell">
-                  {% if user.is_active %}
-                    <div class="status-badge status-active">
-                      <i class="fas fa-check-circle status-icon"></i>
-                      <span class="status-text">Active</span>
-                    </div>
-                  {% else %}
-                    <div class="status-badge status-inactive">
-                      <i class="fas fa-times-circle status-icon"></i>
-                      <span class="status-text">Inactive</span>
-                    </div>
-                  {% endif %}
-                </td>
-                
-                <td class="table-cell">
-                  <div class="action-buttons">
-                    <a href="{% url 'adminapp:edit_user' user.pk %}" 
-                       class="action-btn edit-btn" 
-                       title="Edit User">
-                      <i class="fas fa-edit"></i>
-                      <span>Edit</span>
-                    </a>
-                    <a href="{% url 'adminapp:assign_user_permissions' user.id %}"
-                       class="action-btn edit-btn" 
-                       title="Edit User">
-                      <i class="fa-solid fa-users-gear"></i>
-                      <span>Permissions</span>
-                    </a>
-                    <a href="{% url 'adminapp:user_delete' user.id %}" 
-                       class="action-btn delete-btn" 
-                       title="Delete User"
-                       onclick="return confirm('Are you sure you want to delete this user?')">
-                      <i class="fas fa-trash-alt"></i>
-                      <span>Delete</span>
-                    </a>
-                  </div>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          
-          <!-- No Results Message -->
-          <div id="noResults" class="no-results" style="display: none;">
-            <div class="no-results-content">
-              <i class="fas fa-search-minus no-results-icon"></i>
-              <h4>No users found</h4>
-              <p>Try adjusting your search terms</p>
+                    </td>
+
+                    <td class="table-cell">
+                      <div class="action-buttons">
+                        <a href="{% url 'adminapp:edit_user' user.pk %}" class="action-btn edit-btn" title="Edit User">
+                          <i class="fas fa-edit"></i>
+                          <span>Edit</span>
+                        </a>
+                        <a href="{% url 'adminapp:assign_user_permissions' user.id %}" class="action-btn edit-btn"
+                          title="Edit User">
+                          <i class="fa-solid fa-users-gear"></i>
+                          <span>Permissions</span>
+                        </a>
+                        <a href="{% url 'adminapp:user_delete' user.id %}" class="action-btn delete-btn"
+                          title="Delete User" onclick="return confirm('Are you sure you want to delete this user?')">
+                          <i class="fas fa-trash-alt"></i>
+                          <span>Delete</span>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <!-- No Results Message -->
+              <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No users found</h4>
+                  <p>Try adjusting your search terms</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -223,32 +253,186 @@
   </div>
 </div>
 
+
+<!-- Page header style -->
 <style>
-  /* Card Styling */
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-xs);
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-xs);
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+</style>
+
+<style>
+  /* ===== EXISTING TABLE STYLES (Unchanged) ===== */
   .card {
     border-radius: 20px;
     background: #ffffff;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   }
 
-  /* Header Styling */
   .card-header {
     border-radius: 20px 20px 0 0;
     background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
     border-bottom: 2px solid #f1f3f7;
   }
 
-  .icon-wrapper {
+  .card-icon-wrapper {
     width: 60px;
     height: 60px;
-    background: #6f42c1;
+    background: #059669;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 24px;
-    box-shadow: 0 8px 25px rgba(111, 66, 193, 0.2);
+    box-shadow: 0 8px 25px rgba(5, 150, 105, 0.2);
   }
 
   .card-title {
@@ -257,7 +441,30 @@
     letter-spacing: -0.5px;
   }
 
-  /* Search Box Styling */
+    /* Add New Button */
+  .add-new-btn {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid #28a745;
+    font-size: 14px;
+  }
+
+  .add-new-btn:hover {
+    background: #218838;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+
   .search-controls {
     min-width: 300px;
   }
@@ -285,8 +492,8 @@
   }
 
   .search-input:focus {
-    border-color: #6f42c1;
-    box-shadow: 0 0 0 4px rgba(111, 66, 193, 0.1);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
     background: #ffffff;
   }
 
@@ -322,14 +529,13 @@
     background: rgba(220, 53, 69, 0.1);
   }
 
-  .stats-badge .badge {
+    .stats-badge .badge {
     border-radius: 12px;
     font-weight: 600;
     border: 2px solid #e9ecef;
     transition: all 0.3s ease;
   }
 
-  /* Table Styling */
   .custom-table {
     font-size: 15px;
   }
@@ -356,16 +562,15 @@
     font-size: 14px;
   }
 
-  /* Row Styling */
   .table-row {
     border: none;
     transition: all 0.3s ease;
   }
 
   .table-row:hover {
-    background: linear-gradient(135deg, rgba(111, 66, 193, 0.02) 0%, rgba(111, 66, 193, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, rgba(37, 99, 235, 0.05) 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
   }
 
   .table-cell {
@@ -375,7 +580,6 @@
     vertical-align: middle;
   }
 
-  /* ID Badge */
   .id-badge {
     background: #e9ecef;
     color: #495057;
@@ -386,7 +590,6 @@
     display: inline-block;
   }
 
-  /* User Info */
   .item-info {
     display: flex;
     align-items: center;
@@ -395,7 +598,7 @@
   .item-avatar {
     width: 45px;
     height: 45px;
-    background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #e83e8c 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -426,19 +629,16 @@
     font-weight: 500;
   }
 
-  /* Email Display */
   .email-display {
     color: #495057;
     font-weight: 500;
   }
 
-  /* Mobile Display */
   .mobile-display {
     color: #495057;
     font-weight: 500;
   }
 
-  /* Category Badge */
   .category-badge {
     display: inline-flex;
     align-items: center;
@@ -456,7 +656,6 @@
     font-size: 14px;
   }
 
-  /* Status Badge */
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -484,7 +683,6 @@
     font-size: 14px;
   }
 
-  /* Action Buttons */
   .action-buttons {
     display: flex;
     gap: 10px;
@@ -534,7 +732,6 @@
     font-size: 14px;
   }
 
-  /* No Results Styling */
   .no-results {
     padding: 60px 20px;
     text-align: center;
@@ -562,130 +759,54 @@
     color: #6c757d;
     margin: 0;
   }
+    /* Responsive Design */
+  @media (max-width: 768px) {
+    .card-header .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+    }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .card-header .d-flex {
-    flex-direction: column;
-    align-items: stretch !important;
-  }
-  
-  .card-header .d-flex > .d-flex:first-child {
-    flex-direction: row !important;
-    align-items: center !important;
-    margin-bottom: 20px;
-  }
-  
-  .search-controls {
-    min-width: auto;
-    width: 100%;
-    justify-content: space-between;
-    margin-top: 0;
-  }
-  
-  .search-input {
-    width: 200px;
-  }
-  
-  .card-title {
-    font-size: 22px;
-  }
-  
-  .icon-wrapper {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-  }
-  
-  .action-buttons {
-    flex-direction: column;
-  }
-  
-  .item-info {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-  }
-  
-  .item-avatar {
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 16px !important;
-    margin-right: 12px !important;
-    margin-bottom: 0 !important;
-    flex-shrink: 0;
-  }
-  
-  .item-details {
-    flex: 1;
-  }
-  
-  .item-name {
-    font-size: 18px !important;
-  }
-  
-  .item-meta {
-    font-size: 15px !important;
-  }
-}
+    .card-header .d-flex>.d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+      margin-bottom: 20px;
+    }
 
-@media (max-width: 576px) {
-  .card-header .d-flex > .d-flex:first-child {
-    flex-direction: row !important;
-    align-items: center !important;
+    .search-controls {
+      min-width: auto;
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 0;
+    }
+
+    .search-input {
+      width: 500px;
+    }
+
+    .card-title {
+      font-size: 22px;
+    }
+
+
+
+
+    .supplier-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+
+
+    .supplier-details {
+      flex: 1;
+    }
+
   }
-  
-  .search-controls {
-    flex-direction: column;
-    gap: 15px !important;
-  }
-  
-  .search-input {
-    width: 100%;
-  }
-  
-  .stats-badge {
-    align-self: center;
-  }
-  
-  .item-info {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-  }
-  
-  .item-avatar {
-    width: 35px !important;
-    height: 35px !important;
-    font-size: 14px !important;
-    margin-right: 10px !important;
-    margin-bottom: 0 !important;
-    flex-shrink: 0;
-  }
-  
-  .item-name {
-    font-size: 14px;
-  }
-  
-  .item-meta {
-    font-size: 11px;
-  }
-  
-  .icon-wrapper {
-    width: 45px;
-    height: 45px;
-    font-size: 18px;
-    margin-right: 15px;
-  }
-  
-  .card-title {
-    font-size: 20px;
-  }
-}
+
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('DOMContentLoaded', function () {
     const searchInput = document.getElementById('searchInput');
     const clearBtn = document.getElementById('clearSearch');
     const tableBody = document.getElementById('tableBody');
@@ -695,71 +816,63 @@ document.addEventListener('DOMContentLoaded', function() {
     const totalCount = allRows.length;
 
     function updateCounter(visibleCount) {
-        userCount.textContent = visibleCount;
+      userCount.textContent = visibleCount;
     }
 
     function showClearButton(show) {
-        clearBtn.style.display = show ? 'block' : 'none';
+      clearBtn.style.display = show ? 'block' : 'none';
     }
 
     function filterTable() {
-        const searchTerm = searchInput.value.toLowerCase().trim();
-        let visibleCount = 0;
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
 
-        if (searchTerm === '') {
-            // Show all rows
-            allRows.forEach(row => {
-                row.style.display = '';
-                visibleCount++;
-            });
-            noResults.style.display = 'none';
-            showClearButton(false);
+      if (searchTerm === '') {
+        allRows.forEach(row => {
+          row.style.display = '';
+          visibleCount++;
+        });
+        noResults.style.display = 'none';
+        showClearButton(false);
+      } else {
+        allRows.forEach(row => {
+          const searchableText = row.getAttribute('data-searchable');
+          if (searchableText && searchableText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        if (visibleCount === 0) {
+          noResults.style.display = 'block';
         } else {
-            // Filter rows
-            allRows.forEach(row => {
-                const searchableText = row.getAttribute('data-searchable');
-                if (searchableText && searchableText.includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-            
-            // Show/hide no results message
-            if (visibleCount === 0) {
-                noResults.style.display = 'block';
-            } else {
-                noResults.style.display = 'none';
-            }
-            
-            showClearButton(true);
+          noResults.style.display = 'none';
         }
 
-        updateCounter(visibleCount);
+        showClearButton(true);
+      }
+
+      updateCounter(visibleCount);
     }
 
     function clearSearch() {
-        searchInput.value = '';
-        filterTable();
-        searchInput.focus();
+      searchInput.value = '';
+      filterTable();
+      searchInput.focus();
     }
 
-    // Event listeners
     searchInput.addEventListener('input', filterTable);
-    searchInput.addEventListener('keyup', function(e) {
-        if (e.key === 'Escape') {
-            clearSearch();
-        }
+    searchInput.addEventListener('keyup', function (e) {
+      if (e.key === 'Escape') {
+        clearSearch();
+      }
     });
-    
+
     clearBtn.addEventListener('click', clearSearch);
 
-    // Initialize
     updateCounter(totalCount);
-});
+  });
 </script>
-          </div>
-        </div>
-
 {%endblock%}

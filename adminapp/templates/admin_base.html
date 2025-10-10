@@ -994,18 +994,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </li>
                 {% endif %}
 
-                <!-- Freezing Profit/Loss -->
-                {% if user_permissions.can_view_freezing %}
-                <li>
-                  <a href="{% url 'adminapp:spot_profit_loss_report' %}">
-                    <span class="sub-item">
-                      <i class="fas fa-warehouse"></i>
-                      Freezing Profit/Loss
-                    </span>
-                  </a>
-                </li>
-                {% endif %}
-
               </ul>
             </div>
           </li>
