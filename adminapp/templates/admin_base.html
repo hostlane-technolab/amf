@@ -1084,6 +1084,42 @@ document.addEventListener('DOMContentLoaded', function() {
           </li>
           {% endif %}
 
+
+          <!-- Stock Adjustment Operations - Show if user has stock adjustment permissions -->
+          {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
+          <li class="nav-item">
+            <a data-bs-toggle="collapse" href="#stock-adjustment">
+              <i class="fa-solid fa-cart-plus"></i>
+              <p>Stock Adjustment</p>
+              <span class="caret"></span>
+            </a>
+            <div class="collapse" id="stock-adjustment">
+              <ul class="nav nav-collapse">
+                <!-- Pre Shipment Workout -->
+                <li>
+                  <a  href="{%url 'adminapp:stock_adjustment'%}">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-cart-plus"></i>
+                      Main Stocks Adjustment
+                    </span>
+                  </a>
+                </li>
+
+                <!-- Stock Transaction -->
+                <li>
+                  <a data-bs-toggle="collapse" href="">
+                    <span class="sub-item">
+                      <i class="fa-solid fa-tent-arrow-left-right"></i>
+                      Tenat Stock Adjustment
+                    </span>
+                  </a>
+                </li>
+
+              </ul>
+            </div>
+          </li>
+          {% endif %}
+
           <!-- Master Dashboard - Show if user has master data permissions -->
           {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
           <li class="nav-item">
@@ -1401,7 +1437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       {% endif %}
                       {% if user_permissions.can_add_voucher %}
                       <li>
-                        <a href="{% url 'adminapp:supervisorvoucher_create' %}">
+                        <a href="{% url 'adminapp:create_supervisor_voucher' %}">
                           <span class="sub-item">
                             <i class="fas fa-plus"></i>
                             Create
@@ -1535,6 +1571,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <a href="{% url 'adminapp:admin_logout' %}">
               <i class="fas fa-sign-out-alt"></i>
               <p>Logout</p>
+            </a>
+          </li>
+
+          <!-- Notifications -->
+          <li class="nav-item d-block ">
+            <a href="{% url 'adminapp:notification_list' %}">
+              <i class="fa-solid fa-bell"></i>
+              <p>Notifications</p>
             </a>
           </li>
 
@@ -1781,12 +1825,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         </a>
                       </div>
                     </div>
-                      <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:stock_report_amt'%}">
+                      <a class="col-6 col-md-4 p-0" href="{%url 'adminapp:spot_profit_loss_report'%}">
                       <div class="report-card">
-                        <div class="report-icon-wrapper icon-green rounded-circle">
-                          <i class="fas fa-envelope"></i>
+                        <div class="report-icon-wrapper icon-red rounded-circle">
+                          <i class="fa-solid fa-money-check-dollar"></i>
                         </div>
-                        <span class="report-label">Stock Report <br> Amount</span>
+                        <span class="report-label">Profit\Loss </span>
                       </div>
                     </a>
                   </div>

@@ -613,7 +613,7 @@
 
         /* Base Styles */
         .freezing-entry-form {
-            margin-top: -2rem;
+            margin-top: 2rem;
         }
 
         /* Card Styling */
@@ -698,7 +698,7 @@
         .form-control, input, select, textarea {
             padding: 12px 15px 12px 45px !important;
             border: 2px solid #e9ecef !important;
-            border-radius: 12px !important;
+            /* border-radius: 12px !important; */
             font-size: 14px !important;
             font-weight: 500 !important;
             background: #ffffff !important;
@@ -749,15 +749,16 @@
         }
 
         .table-header {
-            background: #f8f9fd;
+            background:#007bff;
             border: none;
-            padding: 20px 15px;
-            font-weight: 700;
-            color: #495057;
+            padding: 12px 15px;
+            font-weight: 700 !important;
+            color: #ffffff;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-size: 12px;
+            font-size: 18px;
         }
+
 
         .header-content {
             display: flex;
@@ -765,9 +766,10 @@
         }
 
         .header-icon {
-            color: #6c757d;
+            color: #ffffff;
             margin-right: 10px;
             font-size: 14px;
+            display: none;
         }
 
         /* Table Rows */
@@ -837,8 +839,8 @@
         }
 
         .action-btn i {
-            margin-right: 6px;
-            font-size: 12px;
+            /* margin-right: 6px; */
+            font-size: 17px;
         }
 
                /* Form Actions */
@@ -928,11 +930,10 @@
             text-align: left;
             border-bottom: 1px solid #f1f3f7;
         }
-
         .basic-entry-table th {
-            background: #f8f9fd;
+            background:#007bff;
             font-weight: 600;
-            color: #495057;
+            color: #ffffff;
             text-transform: uppercase;
             font-size: 12px;
             letter-spacing: 0.5px;
@@ -942,60 +943,62 @@
         .basic-entry-table select {
             padding-left: 15px !important;
         }
-
         /* Items Container */
         .items-container {
             width: 100%;
             max-width: 100%;
             overflow-x: visible;
             overflow-y: visible;
-            margin-bottom: 20px;
-            border: 1px solid #f1f3f7;
+            margin-bottom: 15px;
             border-radius: 12px;
             box-sizing: border-box;
-            padding-left: 15px;
-            padding-right: 15px;
+            /* padding: 10px; */
+            
         }
 
         .items-table {
             width: 100%;
-            table-layout: fixed;
+            table-layout: auto;
             border-collapse: collapse;
         }
 
         /* Column widths */
-        .col-pr-centre { width: 5.5%; }
-        .col-store { width: 5.5%; }
-        .col-shed { width: 4.5%; }
-        .col-item { width: 6.5%; }
-        .col-category { width: 5.5%; }
-        .col-unit { width: 4.5%; }
-        .col-glaze { width: 4.5%; }
-        .col-fr-category { width: 7%; }
-        .col-brand { width: 5.5%; }
-        .col-species { width: 6%; }
-        .col-type { width: 5.5%; }
-        .col-grade { width: 5.5%; }
-        .col-slab-qty { width: 6.5%; }
-        .col-usd-rate-kg { width: 6%; }
-        .col-yield { width: 6.5%; }
-        .col-action { width: 7%; }
+        .col-pr-centre { min-width: 90px;  max-width: 70px;}
+        .col-store { min-width: 70px; max-width: 70px; }
+        .col-shed { min-width: 70px; max-width: 70px;  }
+        .col-item { min-width: 100px; max-width: 100px;    }
+        .col-category { min-width: 120px; }
+        .col-unit { min-width: 70px; max-width: 70px;  }
+        .col-glaze { min-width: 50px; max-width: 50px;  }
+        .col-fr-category { min-width: 110px; max-width: 110px;  }
+        .col-brand { min-width: 70px; max-width: 70px;  }
+        .col-species { min-width: 70px; max-width: 70px;  }
+        .col-type { min-width: 70px; max-width: 70px;  }
+        .col-grade { min-width: 70px; max-width: 70px; }
+        .col-slab-qty { min-width: 70px; max-width: 70px; }
+        .col-cs-qty { min-width: 70px; max-width: 70px; }
+        .col-kg { min-width: 70px; max-width: 70px; }
+        .col-usd-rate-kg { min-width: 70px; max-width: 70px;  }
+        .col-usd-item { min-width: 70px; max-width: 70px;  }
+        .col-usd-inr { min-width: 70px; max-width: 70px;  }
+        .col-yield { min-width: 70px; max-width: 70px;  }
+        .col-action { min-width: 70px; max-width: 70px;  }
+
         
         /* Make inputs and selects fit within their cells */
         .items-table .table-cell input,
         .items-table .table-cell select {
+            margin-top: .5rem !important;
             width: 100% !important;
             box-sizing: border-box;
             font-size: 12px !important;
             padding: 8px 6px !important;
         }
         
-        /* Header styling */
-        .items-table .header-text {
-            font-size: 10px;
+        .header-text{
+            font-size: 12px !important;
             white-space: nowrap;
         }
-        
         .items-table .header-icon {
             font-size: 11px;
             margin-right: 4px;
@@ -1391,7 +1394,7 @@
             </div>
         </div>
 
-            <form method="post" class="freezing-entry-form" style="margin-top: 3rem;">
+            <form method="post" class="freezing-entry-form" >
                 {% csrf_token %}
 
                 <!-- Basic Details Card -->
@@ -1408,7 +1411,7 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="">
                         <table class="basic-entry-table">
                             <thead>
                                 <tr>
@@ -1485,15 +1488,15 @@
 
                     {{ formset.management_form }}
 
-                    <div class="card-body p-0">
+                    <div class=" p-0">
                         <div class="items-container">
                             <table class="modern-table items-table" id="formset-table">
                                 <thead>
                                     <tr>
-                                        <th class="table-header col-pr-centre">
+                                        <th class="table-header col-pr-centre" style="border-top-left-radius: 15px;">
                                             <div class="header-content">
                                                 <i class="fas fa-industry header-icon"></i>
-                                                <a href="{% url 'adminapp:processing_center_create' %}" target="_blank">
+                                                <a href="{% url 'adminapp:processing_center_create' %}"  target="_blank">
                                                     <span class="header-text">PR Centre</span>
                                                 </a>
                                             </div>
@@ -1604,7 +1607,7 @@
                                                 <span class="header-text">Yield</span>
                                             </div>
                                         </th>
-                                        <th class="table-header col-action text-center">
+                                        <th class="table-header col-action text-center" style="border-top-right-radius: 15px;">
                                             <div class="header-content justify-content-center">
                                                 <i class="fas fa-tools header-icon"></i>
                                                 <span class="header-text">Action</span>
@@ -1643,7 +1646,7 @@
                                         <td class="table-cell col-yield">{{ form.yield_percentage }} {{ form.yield_percentage.errors }}</td>
                                         
                                         <!-- Delete checkbox (hidden) -->
-                                        <td class="delete-checkbox col-delete hidden">
+                                        <td class="delete-checkbox col-delete hidden " >
                                             {% if form.DELETE %}
                                                 {{ form.DELETE }}
                                                 <label for="{{ form.DELETE.id_for_label }}">Mark</label>
@@ -1654,7 +1657,6 @@
                                         <td class="table-cell col-action text-center">
                                             <button type="button" class="action-btn delete-btn remove-btn">
                                                 <i class="fas fa-trash-alt"></i>
-                                                <span>Remove</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -1726,6 +1728,66 @@
             </form>
         </div>
     </div>
+
+  <!-- // ITEM QUALITY LOADER spot-->
+    <script>
+    $(document).ready(function() {
+        console.log('Item Quality Script Loaded');
+
+        // Event handler for item selection change
+        $(document).on('change', 'select[name$="-item"]', function() {
+            const itemSelect = $(this);
+            const itemId = itemSelect.val();
+            const row = itemSelect.closest('tr');
+            const qualitySelect = row.find('select[name$="-item_quality"]');
+
+            console.log('Item changed. Item ID:', itemId);
+
+            // Reset quality dropdown
+            qualitySelect.empty().append('<option value="">---------</option>');
+
+            // If item is selected, fetch its qualities
+            if (itemId) {
+                console.log('Fetching qualities for item:', itemId);
+                
+                $.get("{% url 'adminapp:get_item_qualities' %}", { item_id: itemId })
+                    .done(function(data) {
+                        console.log('Qualities received:', data);
+                        
+                        // Check if data is an array and has items
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function(quality) {
+                                qualitySelect.append(
+                                    `<option value="${quality.id}">${quality.quality}</option>`
+                                );
+                            });
+                            console.log(`Loaded ${data.length} qualities`);
+                        } else {
+                            console.log('No qualities found for this item');
+                            // Optionally add a message to the dropdown
+                            // qualitySelect.append('<option value="">No qualities available</option>');
+                        }
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Error loading qualities:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+                        
+                        // Optionally show error message to user
+                        qualitySelect.append('<option value="">Error loading qualities</option>');
+                    });
+            } else {
+                console.log('No item selected, quality dropdown reset');
+            }
+        });
+
+        console.log('Item quality event handler attached');
+    });
+    </script>
+
+
 
     <!-- Enhanced Calculation System with Auto Total KG Update -->
     <script>
@@ -2040,7 +2102,7 @@
     });
     </script>
 
-<!-- FIXED Remove/Hide functionality for update form -->
+    <!-- FIXED Remove/Hide functionality for update form -->
     <script>
     $(document).ready(function () {
         const formsetContainer = $("#formset-container");
@@ -2452,6 +2514,59 @@
             $gradeSelect.empty();
             $gradeSelect.append($("<option>", { value: "", text: "---------" }));
         }
+    });
+    </script>
+
+    <!-- Load grade with Item -->
+    <script>
+    $(document).ready(function () {
+        console.log("Item → Grade script loaded");
+
+        // When an item select changes
+        $(document).on("change", 'select[name$="-item"], select[name="item"]', function () {
+            const itemSelect = $(this);
+            const itemId = itemSelect.val();
+            const row = itemSelect.closest("tr");
+            const gradeSelect = row.find("select[name$='-grade'], select[name='grade']");
+
+            console.log("Item changed. Item ID:", itemId);
+
+            // Reset grade dropdown
+            gradeSelect.empty().append('<option value="">---------</option>');
+
+            if (itemId) {
+                console.log("Fetching grades for item:", itemId);
+
+                $.get("{% url 'adminapp:get_item_grades' %}", { item_id: itemId })
+                    .done(function (data) {
+                        console.log("Grades received:", data);
+
+                        // Handle both array and object response types
+                        const grades = Array.isArray(data) ? data : data.grades || [];
+
+                        if (grades.length > 0) {
+                            grades.forEach(function (grade) {
+                                gradeSelect.append(
+                                    `<option value="${grade.id}">${grade.grade}</option>`
+                                );
+                            });
+                            console.log(`Loaded ${grades.length} grades`);
+                        } else {
+                            console.log("No grades found for this item");
+                        }
+                    })
+                    .fail(function (xhr, status, error) {
+                        console.error("Error loading grades:", {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText,
+                        });
+                        gradeSelect.append('<option value="">Error loading grades</option>');
+                    });
+            } else {
+                console.log("No item selected, grade dropdown reset");
+            }
+        });
     });
     </script>
 

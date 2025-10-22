@@ -191,7 +191,7 @@
 
         /* Base Styles */
         .freezing-entry-form {
-            margin-top: -2rem;
+            margin-top: 2rem;
         }
 
         /* Card Styling */
@@ -338,20 +338,18 @@
             border-collapse: collapse;
         }
 
-/* Adjust header text size for better fit */
-.table-header {
-    background: #f8f9fd;
-    border: none;
-    padding: 15px 8px; /* Reduced horizontal padding */
-    font-weight: 700;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.3px; /* Reduced letter spacing */
-    font-size: 11px; /* Reduced font size */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+        .table-header {
+            background:#007bff;
+            border: none;
+            padding: 17px !important;
+            font-weight: 700 !important;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+        }
+
+        
 
 .header-content {
     display: flex;
@@ -367,6 +365,7 @@
     margin-right: 6px; /* Space between icon and text */
     font-size: 12px;
     flex-shrink: 0;
+    display: none;
 }
         /* Table Rows */
         .table-row {
@@ -431,8 +430,7 @@
         }
 
 .action-btn i {
-    margin-right: 4px; /* Reduced margin */
-    font-size: 10px; /* Smaller icon */
+    font-size: 17px; /* Smaller icon */
 }
 
         /* Form Actions */
@@ -521,9 +519,9 @@
         }
 
         .basic-entry-table th {
-            background: #f8f9fd;
+            background:#007bff;
             font-weight: 600;
-            color: #495057;
+            color: #ffffff;
             text-transform: uppercase;
             font-size: 12px;
             letter-spacing: 0.5px;
@@ -550,42 +548,59 @@
     }
 }
 
-       /* Items Container - Remove horizontal scroll */
-.items-container {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: visible; /* Changed from auto to visible */
-    overflow-y: visible;
-    margin-bottom: 20px;
-    border: 1px solid #f1f3f7;
-    border-radius: 12px;
-    box-sizing: border-box;
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
+        /* Items Container */
+        .items-container {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: visible;
+            overflow-y: visible;
+            margin-bottom: 20px;
+            border: 1px solid #f1f3f7;
+            border-radius: 12px;
+            box-sizing: border-box;
+            /* padding: 10px; */
+            
+        }
 .items-table {
     width: 100%;
     min-width: 100%; /* Changed from 1200px to 100% */
-    table-layout: fixed; /* Changed from auto to fixed for equal column distribution */
+    table-layout: auto; /* Changed from auto to fixed for equal column distribution */
     border-collapse: collapse;
 }
 
+        /* Make inputs and selects fit within their cells */
+        .items-table .table-cell input,
+        .items-table .table-cell select {
+            margin-top: .5rem !important;
+            width: 100% !important;
+            box-sizing: border-box;
+            font-size: 12px !important;
+            padding: 8px 6px !important;
+        }
+        
+
  /* Updated column widths to use percentages for responsive design */
-.col-pr-centre { width: 7%; min-width: 70px; }
-.col-store { width: 6%; min-width: 60px; }
-.col-item { width: 9%; min-width: 90px; }
-.col-quality { width: 7%; min-width: 70px; }
-.col-unit { width: 6%; min-width: 60px; }
-.col-glaze { width: 5%; min-width: 50px; }
-.col-fr-category { width: 8%; min-width: 80px; }
-.col-brand { width: 7%; min-width: 70px; }
-.col-species { width: 7%; min-width: 70px; }
-.col-type { width: 7%; min-width: 70px; }
-.col-grade { width: 7%; min-width: 70px; }
-.col-slab-qty { width: 6%; min-width: 60px; }
-.col-usd-rate-kg { width: 8%; min-width: 80px; }
-.col-action { width: 6%; min-width: 60px; }
+        /* Column widths */
+        .col-pr-centre { min-width: 90px;  max-width: 70px;}
+        .col-store { min-width: 70px; max-width: 70px; }
+        .col-shed { min-width: 70px; max-width: 70px;  }
+        .col-item { min-width: 100px; max-width: 100px;    }
+        .col-category { min-width: 120px; }
+        .col-unit { min-width: 70px; max-width: 70px;  }
+        .col-glaze { min-width: 50px; max-width: 50px;  }
+        .col-fr-category { min-width: 110px; max-width: 110px;  }
+        .col-brand { min-width: 70px; max-width: 70px;  }
+        .col-species { min-width: 70px; max-width: 70px;  }
+        .col-type { min-width: 70px; max-width: 70px;  }
+        .col-grade { min-width: 70px; max-width: 70px; }
+        .col-slab-qty { min-width: 70px; max-width: 70px; }
+        .col-cs-qty { min-width: 70px; max-width: 70px; }
+        .col-kg { min-width: 70px; max-width: 70px; }
+        .col-usd-rate-kg { min-width: 70px; max-width: 70px;  }
+        .col-usd-item { min-width: 70px; max-width: 70px;  }
+        .col-usd-inr { min-width: 70px; max-width: 70px;  }
+        .col-yield { min-width: 70px; max-width: 70px;  }
+        .col-action { min-width: 70px; max-width: 70px;  }
 
         /* Totals Table */
         .totals-card {
@@ -1417,7 +1432,7 @@
                         </div>
                     </div>
                     
-                    <div class="card-body">
+                    <div class="">
                         <table class="basic-entry-table">
                             <thead>
                                 <tr>
@@ -1582,7 +1597,7 @@
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody id="formset-container">
+                                <tbody id="formset-container" style="margin-top: 1rem !important;">
                                     {% for form in formset %}
                                     <tr class="formset-form table-row">
                                         <td class="table-cell col-pr-centre">{{ form.processing_center }} {{ form.processing_center.errors }}</td>
@@ -1605,7 +1620,6 @@
                                         <td class="table-cell col-action text-center">
                                             <button type="button" class="action-btn delete-btn remove-btn">
                                                 <i class="fas fa-trash-alt"></i>
-                                                <span>Remove</span>
                                             </button>
                                         </td>
                                         <td class="hidden">{{ form.DELETE }}</td>
@@ -1670,6 +1684,7 @@
             </form>
         </div>
     </div>
+
 
     <!-- Clone & Add More Formset -->
     <script>
@@ -2074,6 +2089,59 @@
         });
     </script>
 
+    <!-- Load Grades when item changes -->
+    <script>
+    $(document).ready(function () {
+        console.log("Item → Grade script loaded");
+
+        // When an item select changes
+        $(document).on("change", 'select[name$="-item"], select[name="item"]', function () {
+            const itemSelect = $(this);
+            const itemId = itemSelect.val();
+            const row = itemSelect.closest("tr");
+            const gradeSelect = row.find("select[name$='-grade'], select[name='grade']");
+
+            console.log("Item changed. Item ID:", itemId);
+
+            // Reset grade dropdown
+            gradeSelect.empty().append('<option value="">---------</option>');
+
+            if (itemId) {
+                console.log("Fetching grades for item:", itemId);
+
+                $.get("{% url 'adminapp:get_item_grades' %}", { item_id: itemId })
+                    .done(function (data) {
+                        console.log("Grades received:", data);
+
+                        // Handle both array and object response types
+                        const grades = Array.isArray(data) ? data : data.grades || [];
+
+                        if (grades.length > 0) {
+                            grades.forEach(function (grade) {
+                                gradeSelect.append(
+                                    `<option value="${grade.id}">${grade.grade}</option>`
+                                );
+                            });
+                            console.log(`Loaded ${grades.length} grades`);
+                        } else {
+                            console.log("No grades found for this item");
+                        }
+                    })
+                    .fail(function (xhr, status, error) {
+                        console.error("Error loading grades:", {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText,
+                        });
+                        gradeSelect.append('<option value="">Error loading grades</option>');
+                    });
+            } else {
+                console.log("No item selected, grade dropdown reset");
+            }
+        });
+    });
+    </script>
+
     <!-- F1 key shortcut for adding more items -->
     <script>
         $(document).ready(function() {
@@ -2136,8 +2204,7 @@
         });
     </script>
 
-
-<!-- Load Item Qualities when Item changes - Version 6 -->
+        <!-- Load Item Qualities when Item changes - Version 6 -->
     <script>
         $(document).on("change", ".item-select:not(.quality-select)", function () {
             var itemId = $(this).val();
@@ -2184,6 +2251,119 @@
             }
         });
     </script>
+
+    <!-- Arrow key navigation for form fields -->
+    <script>
+        $(document).ready(function() {
+            // Get all focusable form elements
+            function getFocusableElements() {
+                return $('input:not([type="hidden"]), select, textarea').filter(':visible');
+            }
+
+            // Check if input type should navigate on arrow keys
+            function shouldNavigate(element, direction) {
+                const $elem = $(element);
+                const inputType = $elem.attr('type');
+                
+                // Always navigate for select, date, and number inputs
+                if ($elem.is('select') || inputType === 'date' || inputType === 'number') {
+                    return true;
+                }
+                
+                // For text inputs, check cursor position
+                if ($elem.is('input') && inputType === 'text') {
+                    try {
+                        const cursorPos = element.selectionStart;
+                        const valueLength = element.value.length;
+                        
+                        // Left arrow: navigate if cursor at beginning
+                        if (direction === 'left' && cursorPos === 0) {
+                            return true;
+                        }
+                        
+                        // Right arrow: navigate if cursor at end
+                        if (direction === 'right' && cursorPos === valueLength) {
+                            return true;
+                        }
+                    } catch(e) {
+                        // If selectionStart fails, just navigate
+                        return true;
+                    }
+                }
+                
+                // For textarea, don't navigate (allow normal arrow key behavior)
+                if ($elem.is('textarea')) {
+                    return false;
+                }
+                
+                return false;
+            }
+
+            $(document).on('keydown', 'input, select, textarea', function(e) {
+                // Left arrow key (keyCode 37)
+                if (e.keyCode === 37 || e.which === 37) {
+                    if (shouldNavigate(this, 'left')) {
+                        e.preventDefault();
+                        let focusableElements = getFocusableElements();
+                        let currentIndex = focusableElements.index(this);
+                        
+                        // Move to previous field
+                        if (currentIndex > 0) {
+                            focusableElements.eq(currentIndex - 1).focus().select();
+                        }
+                        return false;
+                    }
+                }
+                
+                // Right arrow key (keyCode 39)
+                if (e.keyCode === 39 || e.which === 39) {
+                    if (shouldNavigate(this, 'right')) {
+                        e.preventDefault();
+                        let focusableElements = getFocusableElements();
+                        let currentIndex = focusableElements.index(this);
+                        
+                        // Move to next field
+                        if (currentIndex < focusableElements.length - 1) {
+                            focusableElements.eq(currentIndex + 1).focus().select();
+                        }
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+
+<!-- Limit date input year to 4 digits -->
+<script>
+$(document).ready(function() {
+    $(document).on('input','input[type="date"]',function(){
+        let d=$(this).val();
+        // Only check if we have at least the year part (first 4 characters)
+        if(d && d.length>=4){
+            let y=parseInt(d.substring(0,4));
+            // Only validate if year has 4 digits AND is complete
+            if(d.length>=4 && y.toString().length===4){
+                if(y<1900||y>2100){
+                    // Clear only the year part, allow user to re-enter
+                    $(this).val('');
+                }
+            }
+        }
+    });
+    
+    // Final validation on blur
+    $(document).on('blur','input[type="date"]',function(){
+        let d=$(this).val();
+        if(d && d.length===10){
+            let y=parseInt(d.split('-')[0]);
+            if(y<1900||y>2100){
+                alert('Please enter a valid year (1900-2100)');
+                $(this).val('');
+            }
+        }
+    });
+});
+</script>
 
 {%endblock%}
 

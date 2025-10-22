@@ -1,559 +1,24 @@
 {% extends 'admin_base.html' %}
-{% block title %} Stock Report {% endblock %}
+{% load static %}
+
 {% block content %}
-
-    
-    <!-- Load required libraries from CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <style>
-y
-        .outer {
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.4;
-            color: #333;
-            background: #f8f9fa;
-        }
-
-        .filter-form {
-            background: white;
-            padding: 25px;
-            border: 1px solid #ddd;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .filter-group label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 14px;
-            color: #333;
-        }
-
-        .filter-group select, .filter-group input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
-            background-color: white;
-        }
-
-        .filter-group select[multiple] {
-            height: 100px;
-            overflow-y: auto;
-        }
-
-        .filter-group select:focus, .filter-group input:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-        }
-
-        .filter-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            min-width: 140px;
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-
-        .filter-btn.primary {
-            background: #007bff;
-            color: white;
-        }
-
-        .filter-btn.primary:hover {
-            background: #0056b3;
-        }
-
-        .filter-btn.secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .filter-btn.secondary:hover {
-            background: #5a6268;
-        }
-
-        .filter-btn.export {
-            background: #28a745;
-            color: white;
-        }
-
-        .filter-btn.export:hover {
-            background: #218838;
-        }
-
-        .report-header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding: 20px;
-            border: 2px solid #007bff;
-            background: white;
-            border-radius: 8px;
-        }
-
-        .report-title {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #007bff;
-        }
-
-        .report-subtitle {
-            font-size: 18px;
-            margin-bottom: 15px;
-            color: #666;
-        }
-
-        .company-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border: 1px solid #28a745;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-
-        .company-name {
-            font-weight: bold;
-            font-size: 18px;
-            text-align: center;
-            margin-bottom: 5px;
-            color: #155724;
-        }
-
-        .company-location {
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 3px;
-            color: #155724;
-        }
-
-        .date-range {
-            font-size: 16px;
-            margin-top: 10px;
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        .section-header {
-            background: #007bff;
-            color: white;
-            padding: 15px;
-            margin: 25px 0 10px 0;
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            border-radius: 4px;
-        }
-
-        .section-title {
-            text-transform: uppercase;
-        }
-
-        .section-summary {
-            background: #fff3cd;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ffc107;
-            border-radius: 4px;
-            font-size: 14px;
-            text-align: center;
-            font-weight: bold;
-            color: #856404;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            border: 1px solid #007bff;
-            background-color: white;
-            font-size: 12px;
-        }
-
-        .data-table th {
-            background: #007bff;
-            color: white;
-            border: 1px solid #004085;
-            padding: 10px 8px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 11px;
-        }
-
-        .data-table td {
-            border: 1px solid #dee2e6;
-            padding: 8px 6px;
-            text-align: left;
-            vertical-align: middle;
-            font-size: 11px;
-        }
-
-        .data-table .number-col {
-            text-align: right;
-            padding-right: 10px;
-            font-weight: bold;
-        }
-
-        .data-table .center-col {
-            text-align: center;
-        }
-
-        .data-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-
-        .section-total-row {
-            background: #d4edda !important;
-            font-weight: bold;
-        }
-
-        .section-total-row td {
-            border-top: 2px solid #28a745;
-            border-bottom: 2px solid #28a745;
-            font-weight: bold;
-            padding: 12px 8px;
-            color: #155724;
-        }
-
-        .stock-status {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: bold;
-            color: white;
-            font-size: 10px;
-            text-align: center;
-        }
-
-        .stock-status.in-stock {
-            background: #28a745;
-        }
-
-        .stock-status.low-stock {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .stock-status.out-of-stock {
-            background: #dc3545;
-        }
-
-        .grand-total-section {
-            margin-top: 30px;
-            border: 2px solid #dc3545;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .grand-total-header {
-            background: #dc3545;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        .grand-total-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .grand-total-table td {
-            border: 1px solid #dc3545;
-            padding: 12px;
-            font-weight: bold;
-            text-align: right;
-            font-size: 14px;
-            background: white;
-        }
-
-        .grand-total-table .label-col {
-            background: #f8d7da;
-            text-align: left;
-            width: 60%;
-            color: #721c24;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 40px 20px;
-            font-style: italic;
-            color: #6c757d;
-            font-size: 16px;
-            border: 2px dashed #dee2e6;
-            margin: 25px 0;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin: 30px 0;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            padding: 12px 20px;
-            border: 1px solid #007bff;
-            background: white;
-            font-size: 14px;
-            font-weight: bold;
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 4px;
-            min-width: 150px;
-            text-align: center;
-            transition: background-color 0.3s;
-        }
-
-        .action-btn:hover {
-            background: #f8f9fa;
-        }
-
-        .print-btn {
-            background: #28a745;
-            color: white;
-            border-color: #28a745;
-        }
-
-        .print-btn:hover {
-            background: #218838;
-        }
-
-        .pdf-btn {
-            background: #dc3545;
-            color: white;
-            border-color: #dc3545;
-        }
-
-        .pdf-btn:hover {
-            background: #c82333;
-        }
-
-        .active-filters {
-            background: #e3f2fd;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-left: 4px solid #007bff;
-            font-size: 14px;
-            border-radius: 4px;
-        }
-
-        .filter-tag {
-            display: inline-block;
-            background: #007bff;
-            color: white;
-            padding: 4px 8px;
-            margin: 2px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            z-index: 1000;
-            max-width: 300px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        .notification.success {
-            background: #28a745;
-        }
-
-        .notification.error {
-            background: #dc3545;
-        }
-
-        /* PDF-specific large font styles */
-        .pdf-mode {
-            font-size: 18px !important;
-        }
-
-        .pdf-mode .report-title {
-            font-size: 36px !important;
-        }
-
-        .pdf-mode .report-subtitle {
-            font-size: 24px !important;
-        }
-
-        .pdf-mode .company-name {
-            font-size: 24px !important;
-        }
-
-        .pdf-mode .company-location {
-            font-size: 18px !important;
-        }
-
-        .pdf-mode .date-range {
-            font-size: 20px !important;
-        }
-
-        .pdf-mode .section-header {
-            font-size: 24px !important;
-            padding: 20px !important;
-        }
-
-        .pdf-mode .section-summary {
-            font-size: 18px !important;
-            padding: 15px !important;
-        }
-
-        .pdf-mode .data-table {
-            font-size: 16px !important;
-        }
-
-        .pdf-mode .data-table th {
-            font-size: 16px !important;
-            padding: 15px 10px !important;
-        }
-
-        .pdf-mode .data-table td {
-            font-size: 15px !important;
-            padding: 12px 8px !important;
-        }
-
-        .pdf-mode .section-total-row td {
-            font-size: 16px !important;
-            padding: 15px 10px !important;
-        }
-
-        .pdf-mode .grand-total-header {
-            font-size: 24px !important;
-            padding: 20px !important;
-        }
-
-        .pdf-mode .grand-total-table td {
-            font-size: 18px !important;
-            padding: 15px !important;
-        }
-
-        /* Enhanced print styles */
-        @media print {
-            @page {
-                size: A4;
-                margin: 10mm;
-            }
-
-            body {
-                font-size: 14px;
-                background: white;
-                padding: 0;
-            }
-            
-            .filter-form, 
-            .action-buttons, 
-            .active-filters,
-            .notification {
-                display: none !important;
-                visibility: hidden !important;
-            }
-            
-            .report-header {
-                margin-bottom: 15mm;
-                padding: 10mm;
-            }
-
-            .report-title {
-                font-size: 22px;
-            }
-
-            .report-subtitle {
-                font-size: 18px;
-            }
-
-            .section-header {
-                margin: 5mm 0;
-                padding: 5mm;
-                font-size: 18px;
-                page-break-after: avoid;
-            }
-            
-            .data-table {
-                font-size: 12px;
-                margin-bottom: 5mm;
-                page-break-inside: avoid;
-            }
-            
-            .data-table th, .data-table td {
-                padding: 3mm 2mm;
-                font-size: 11px;
-            }
-            
-            .grand-total-section {
-                margin-top: 5mm;
-                page-break-inside: avoid;
-            }
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-                font-size: 12px;
-            }
-            
-            .filter-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-            
-            .data-table {
-                font-size: 10px;
-            }
-            
-            .data-table th, .data-table td {
-                padding: 6px 4px;
-                font-size: 9px;
-            }
-        }
-    </style>
-
-    <!-- Replace the existing .filter-form section in your stock report template -->
+<!-- Load required libraries from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
-    /* Enhanced Filter Styles - matching spot purchase design exactly */
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Enhanced Filter Card Styles */
     .filter-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
@@ -563,7 +28,8 @@ y
         border: 1px solid rgba(255, 255, 255, 0.3);
         margin-bottom: 30px;
         max-width: 1400px;
-        margin: 0 auto 30px auto;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .card-header {
@@ -676,7 +142,7 @@ y
         padding: 12px 16px;
         border: 2px solid #e2e8f0;
         border-radius: 12px;
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         transition: all 0.3s ease;
         margin-bottom: 16px;
         background: white;
@@ -770,7 +236,6 @@ y
         font-weight: 600;
     }
 
-    /* Single select dropdowns and inputs */
     .filter-section select:not([multiple]),
     .filter-section input[type="text"] {
         width: 100%;
@@ -790,15 +255,6 @@ y
         box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     }
 
-    .filter-section input[type="text"]::placeholder {
-        color: #94a3b8;
-    }
-
-    .filter-section select:not([multiple]) {
-        cursor: pointer;
-    }
-
-    /* Special styling for checkbox groups */
     .checkbox-group {
         display: flex;
         gap: 20px;
@@ -842,7 +298,6 @@ y
         color: #4f46e5;
     }
 
-    /* Filter Buttons */
     .filter-buttons {
         display: flex;
         gap: 12px;
@@ -889,10 +344,6 @@ y
         left: 100%;
     }
 
-    .filter-btn:active {
-        transform: translateY(-1px);
-    }
-
     .filter-btn.primary {
         background: linear-gradient(135deg, #4f46e5, #7c3aed);
         color: white;
@@ -908,11 +359,12 @@ y
         color: white;
     }
 
-    /* Page Header Styling */
+    /* Page Header */
     .outer {
         min-height: 100vh;
         padding: 20px;
         color: #1e293b;
+        margin-top: 5rem;
     }
 
     .container {
@@ -929,50 +381,6 @@ y
         border: 2px solid #f1f3f7;
     }
 
-    .d-flex {
-        display: flex;
-    }
-
-    .align-items-center {
-        align-items: center;
-    }
-
-    .justify-content-between {
-        justify-content: space-between;
-    }
-
-    .flex-wrap {
-        flex-wrap: wrap;
-    }
-
-    .mb-3 {
-        margin-bottom: 1rem;
-    }
-
-    .mb-md-0 {
-        margin-bottom: 0;
-    }
-
-    .me-4 {
-        margin-right: 1.5rem;
-    }
-
-    .mb-0 {
-        margin-bottom: 0;
-    }
-
-    .fw-bold {
-        font-weight: bold;
-    }
-
-    .text-muted {
-        color: #6c757d;
-    }
-
-    .fs-6 {
-        font-size: 1rem;
-    }
-
     .icon-wrapper {
         width: 60px;
         height: 60px;
@@ -984,29 +392,341 @@ y
         color: white;
         font-size: 24px;
         box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        margin-right: 1.5rem;
     }
 
     .card-title {
         font-size: 26px;
         color: #2c3e50;
         letter-spacing: -0.5px;
+        margin-bottom: 0;
+        font-weight: bold;
     }
 
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .card-body {
-            padding: 20px;
+    .text-muted {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    /* Report Display Styles */
+    .report-header {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 2px solid #007bff;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .report-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+
+    .report-subtitle {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #666;
+    }
+
+    .company-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border: 1px solid #28a745;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+
+    .company-name {
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 5px;
+        color: #155724;
+    }
+
+    .company-location {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 3px;
+        color: #155724;
+    }
+
+    .date-range {
+        font-size: 16px;
+        margin-top: 10px;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .section-header {
+        background: #007bff;
+        color: white;
+        padding: 15px;
+        margin: 25px 0 10px 0;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        border-radius: 4px;
+    }
+
+    .section-title {
+        text-transform: uppercase;
+    }
+
+    .section-summary {
+        background: #fff3cd;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ffc107;
+        border-radius: 4px;
+        font-size: 14px;
+        text-align: center;
+        font-weight: bold;
+        color: #856404;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        border: 1px solid #007bff;
+        background-color: white;
+        font-size: 12px;
+    }
+
+    .data-table th {
+        background: #007bff;
+        color: white;
+        border: 1px solid #004085;
+        padding: 10px 8px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    .data-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 6px;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 11px;
+    }
+
+    .data-table .number-col {
+        text-align: right;
+        padding-right: 10px;
+        font-weight: bold;
+    }
+
+    .data-table .center-col {
+        text-align: center;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .section-total-row {
+        background: #d4edda !important;
+        font-weight: bold;
+    }
+
+    .section-total-row td {
+        border-top: 2px solid #28a745;
+        border-bottom: 2px solid #28a745;
+        font-weight: bold;
+        padding: 12px 8px;
+        color: #155724;
+    }
+
+    .stock-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        color: white;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .stock-status.in-stock {
+        background: #28a745;
+    }
+
+    .stock-status.low-stock {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .stock-status.out-of-stock {
+        background: #dc3545;
+    }
+
+    .grand-total-section {
+        margin-top: 30px;
+        border: 2px solid #dc3545;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .grand-total-header {
+        background: #dc3545;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .grand-total-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .grand-total-table td {
+        border: 1px solid #dc3545;
+        padding: 12px;
+        font-weight: bold;
+        text-align: right;
+        font-size: 14px;
+        background: white;
+    }
+
+    .grand-total-table .label-col {
+        background: #f8d7da;
+        text-align: left;
+        width: 60%;
+        color: #721c24;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px 20px;
+        font-style: italic;
+        color: #6c757d;
+        font-size: 16px;
+        border: 2px dashed #dee2e6;
+        margin: 25px 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 12px 20px;
+        border: 1px solid #007bff;
+        background: white;
+        font-size: 14px;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+        border-radius: 4px;
+        min-width: 150px;
+        text-align: center;
+        transition: background-color 0.3s;
+        color: #007bff;
+    }
+
+    .action-btn:hover {
+        background: #f8f9fa;
+    }
+
+    .print-btn {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    .print-btn:hover {
+        background: #218838;
+    }
+
+    .pdf-btn {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
+    .pdf-btn:hover {
+        background: #c82333;
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 1000;
+        max-width: 300px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .notification.success {
+        background: #28a745;
+    }
+
+    .notification.error {
+        background: #dc3545;
+    }
+
+    /* Print styles */
+    @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
         }
-        
+
+        body {
+            font-size: 14px;
+            background: white;
+            padding: 0;
+        }
+
+        .filter-card,
+        .action-buttons,
+        .notification,
+        .page-header {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .report-header {
+            margin-bottom: 15mm;
+            padding: 10mm;
+        }
+
+        .section-header {
+            page-break-after: avoid;
+        }
+
+        .data-table {
+            page-break-inside: avoid;
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
         .filters-grid {
             grid-template-columns: 1fr;
-            gap: 16px;
         }
-        
+
         .filter-buttons {
             flex-direction: column;
         }
-        
+
         .filter-btn {
             min-width: auto;
         }
@@ -1015,670 +735,609 @@ y
             flex-direction: column;
             gap: 12px;
         }
-
-        .page-header .d-flex {
-            flex-direction: column;
-            align-items: stretch !important;
-        }
-        
-        .page-header .d-flex > .d-flex:first-child {
-            flex-direction: row !important;
-            align-items: center !important;
-            margin-bottom: 20px;
-        }
-        
-        .card-title {
-            font-size: 22px;
-        }
-        
-        .icon-wrapper {
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .page-header {
-            padding: 20px;
-        }
-        
-        .icon-wrapper {
-            width: 45px;
-            height: 45px;
-            font-size: 18px;
-            margin-right: 15px;
-        }
-        
-        .card-title {
-            font-size: 20px;
-        }
-    }
-
-    /* Print styles - hide filter completely */
-    @media print {
-        .filter-card {
-            display: none !important;
-            visibility: hidden !important;
-        }
     }
 </style>
 
-<!-- Page Header for Stock Report -->
-<div class="outer" style="margin-top: 5rem;">
+<!-- Page Header -->
+<div class="outer">
     <div class="container">
         <div class="page-header">
-            <div class="d-flex align-items-center justify-content-between flex-wrap">
-                <div class="d-flex align-items-center mb-3 mb-md-0">
-                    <div class="icon-wrapper me-4">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                    <div class="icon-wrapper">
                         <i class="fas fa-boxes"></i>
                     </div>
                     <div>
-                        <h3 class="card-title mb-0 fw-bold">Comprehensive Stock Report</h3>
-                        <p class="text-muted mb-0 fs-6">Detailed inventory breakdown by {{ section_by|title }}</p>
+                        <h3 class="card-title">Comprehensive Stock Report</h3>
+                        <p class="text-muted">Detailed inventory breakdown by {{ section_by|title }}</p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Enhanced Filter Form -->
+        <div class="filter-card">
+            <div class="card-header">
+                <h3>🔍 Advanced Filters</h3>
+            </div>
 
-<!-- Enhanced Filter Form -->
-<div class="filter-card">
-    <div class="card-header">
-        <h3>🔍 Advanced Filters</h3>
-    </div>
-    
-    <div class="card-body">
-        <form method="GET" id="filterForm">
-            <div class="filters-grid">
-                <!-- Section By -->
-                <div class="filter-section">
-                    <label>Section By:</label>
-                    <select name="section_by" id="section_by">
-                        <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
-                        <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
-                        <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
-                        <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
-                        <option value="item_grade" {% if section_by == 'item_grade' %}selected{% endif %}>Grade</option>
-                        <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
-                        <option value="stock_status" {% if section_by == 'stock_status' %}selected{% endif %}>Stock Status</option>
+            <div class="card-body">
+                <form method="GET" id="filterForm">
+                    <div class="filters-grid">
+                        <!-- Section By -->
+                        <div class="filter-section">
+                            <label>Section By:</label>
+                            <select name="section_by" id="section_by">
+                                <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
+                                <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
+                                <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
+                                <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
+                                <option value="item_grade" {% if section_by == 'item_grade' %}selected{% endif %}>Grade</option>
+                                <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
+                                <option value="stock_status" {% if section_by == 'stock_status' %}selected{% endif %}>Stock Status</option>
+                                {% if units %}
+                                <option value="unit" {% if section_by == 'unit' %}selected{% endif %}>Unit</option>
+                                {% endif %}
+                                {% if glazes %}
+                                <option value="glaze" {% if section_by == 'glaze' %}selected{% endif %}>Glaze</option>
+                                {% endif %}
+                                {% if item_qualities %}
+                                <option value="item_quality" {% if section_by == 'item_quality' %}selected{% endif %}>Quality</option>
+                                {% endif %}
+                                {% if freezing_categories %}
+                                <option value="freezing_category" {% if section_by == 'freezing_category' %}selected{% endif %}>Freezing Category</option>
+                                {% endif %}
+                            </select>
+                        </div>
+
+                        <!-- Source Type -->
+                        <div class="filter-section">
+                            <label>Source Type:</label>
+                            <select name="source_type" id="source_type">
+                                <option value="all" {% if source_type == 'all' %}selected{% endif %}>All Sources</option>
+                                <option value="spot" {% if source_type == 'spot' %}selected{% endif %}>Spot</option>
+                                <option value="local" {% if source_type == 'local' %}selected{% endif %}>Local</option>
+                            </select>
+                        </div>
+
+                        <!-- Items -->
+                        <div class="filter-section">
+                            <label>Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
+                            <div class="options-container" id="itemsContainer">
+                                {% for item in items %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="items" value="{{ item.id }}" id="item_{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}checked{% endif %}>
+                                        <label for="item_{{ item.id }}">{{ item.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Categories -->
+                        <div class="filter-section">
+                            <label>Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
+                            <div class="options-container" id="categoriesContainer">
+                                {% for category in categories %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="categories" value="{{ category.id }}" id="category_{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                        <label for="category_{{ category.id }}">{{ category.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Stores -->
+                        <div class="filter-section">
+                            <label>Stores: <span id="storesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search stores..." id="storesSearch">
+                            <div class="options-container" id="storesContainer">
+                                {% for store in stores %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="stores" value="{{ store.id }}" id="store_{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}checked{% endif %}>
+                                        <label for="store_{{ store.id }}">{{ store.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Brands -->
+                        <div class="filter-section">
+                            <label>Brands: <span id="brandsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search brands..." id="brandsSearch">
+                            <div class="options-container" id="brandsContainer">
+                                {% for brand in brands %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="brands" value="{{ brand.id }}" id="brand_{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                        <label for="brand_{{ brand.id }}">{{ brand.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if species %}
+                        <!-- Species -->
+                        <div class="filter-section">
+                            <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
+                            <div class="options-container" id="speciesContainer">
+                                {% for spec in species %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="species" value="{{ spec.id }}" id="species_{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}checked{% endif %}>
+                                        <label for="species_{{ spec.id }}">{{ spec.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if item_grades %}
+                        <!-- Item Grades -->
+                        <div class="filter-section">
+                            <label>Grades: <span id="itemGradesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search grades..." id="itemGradesSearch">
+                            <div class="options-container" id="itemGradesContainer">
+                                {% for grade in item_grades %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="item_grades" value="{{ grade.id }}" id="item_grade_{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_item_grades %}checked{% endif %}>
+                                        <label for="item_grade_{{ grade.id }}">{{ grade.grade }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
                         {% if units %}
-                        <option value="unit" {% if section_by == 'unit' %}selected{% endif %}>Unit</option>
+                        <!-- Units -->
+                        <div class="filter-section">
+                            <label>Units: <span id="unitsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search units..." id="unitsSearch">
+                            <div class="options-container" id="unitsContainer">
+                                {% for unit in units %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="units" value="{{ unit.id }}" id="unit_{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}checked{% endif %}>
+                                        <label for="unit_{{ unit.id }}">{{ unit.description }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if glazes %}
+                        <!-- Glazes -->
+                        <div class="filter-section">
+                            <label>Glazes: <span id="glazesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search glazes..." id="glazesSearch">
+                            <div class="options-container" id="glazesContainer">
+                                {% for glaze in glazes %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="glazes" value="{{ glaze.id }}" id="glaze_{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}checked{% endif %}>
+                                        <label for="glaze_{{ glaze.id }}">{% if glaze.percentage %}{{ glaze.percentage }}%{% else %}{{ glaze.name }}{% endif %}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if item_qualities %}
+                        <!-- Item Qualities -->
+                        <div class="filter-section">
+                            <label>Qualities: <span id="itemQualitiesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search qualities..." id="itemQualitiesSearch">
+                            <div class="options-container" id="itemQualitiesContainer">
+                                {% for quality in item_qualities %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="item_qualities" value="{{ quality.id }}" id="item_quality_{{ quality.id }}" {% if quality.id|stringformat:"s" in selected_item_qualities %}checked{% endif %}>
+                                        <label for="item_quality_{{ quality.id }}">{{ quality.quality }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if freezing_categories %}
+                        <!-- Freezing Categories -->
+                        <div class="filter-section">
+                            <label>Freezing Categories: <span id="freezingCategoriesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search freezing categories..." id="freezingCategoriesSearch">
+                            <div class="options-container" id="freezingCategoriesContainer">
+                                {% for freezing_cat in freezing_categories %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="freezing_categories" value="{{ freezing_cat.id }}" id="freezing_cat_{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}checked{% endif %}>
+                                        <label for="freezing_cat_{{ freezing_cat.id }}">{{ freezing_cat.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Search -->
+                        <div class="filter-section">
+                            <label>Search:</label>
+                            <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Search items, brands, stores...">
+                        </div>
+
+                        <!-- Stock Filters -->
+                        <div class="filter-section">
+                            <label>Stock Filters:</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="low_stock" value="true" id="low_stock" {% if low_stock == 'true' %}checked{% endif %}>
+                                    <label for="low_stock">Low Stock</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="zero_stock" value="true" id="zero_stock" {% if zero_stock == 'true' %}checked{% endif %}>
+                                    <label for="zero_stock">Zero Stock</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-buttons">
+                        <button type="submit" class="filter-btn primary">Generate Report</button>
+                        <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
+                        <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
+                        <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title">COMPREHENSIVE STOCK REPORT</div>
+            <div class="report-subtitle">Detailed Inventory Breakdown by {{ section_by|title }}</div>
+            
+            <div class="company-info">
+                <div class="company-name">PREMIER MARINE FOOD</div>
+                <div class="company-location">VANDANAM, ALAPPUZHA</div>
+                <div class="company-location">KERALA, INDIA</div>
+            </div>
+            
+            <div class="date-range">
+                Generated: {{ "now"|date:"d-M-Y H:i" }}
+                | Sectioned by: {{ section_by|upper }}
+                {% if source_type != 'all' %}| Source: {{ source_type|upper }}{% endif %}
+            </div>
+        </div>
+
+        <!-- Sectioned Data Display -->
+        <div id="sectioned-content">
+            {% for section_name, section_data in sectioned_data.items %}
+            <!-- Section Header -->
+            <div class="section-header">
+                <div class="section-title">
+                    {% if section_by == 'category' %}
+                        CATEGORY: {{ section_name|upper }}
+                    {% elif section_by == 'brand' %}
+                        BRAND: {{ section_name|upper }}
+                    {% elif section_by == 'store' %}
+                        STORE: {{ section_name|upper }}
+                    {% elif section_by == 'species' %}
+                        SPECIES: {{ section_name|upper }}
+                    {% elif section_by == 'item_grade' %}
+                        GRADE: {{ section_name|upper }}
+                    {% elif section_by == 'item' %}
+                        ITEM: {{ section_name|upper }}
+                    {% elif section_by == 'unit' %}
+                        UNIT: {{ section_name|upper }}
+                    {% elif section_by == 'glaze' %}
+                        GLAZE: {{ section_name|upper }}
+                    {% elif section_by == 'item_quality' %}
+                        QUALITY: {{ section_name|upper }}
+                    {% elif section_by == 'freezing_category' %}
+                        FREEZING CATEGORY: {{ section_name|upper }}
+                    {% elif section_by == 'stock_status' %}
+                        STOCK STATUS: {{ section_name|upper }}
+                    {% else %}
+                        {{ section_name|upper }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Section Summary -->
+            <div class="section-summary">
+                <strong>Section Summary:</strong> 
+                {{ section_data.items|length }} items | 
+                CS: {{ section_data.totals.total_cs_quantity|floatformat:2 }} | 
+                KG: {{ section_data.totals.total_kg_quantity|floatformat:2 }} | 
+                USD: ${{ section_data.totals.total_usd_rate_item|floatformat:2 }} | 
+                INR: ₹{{ section_data.totals.total_usd_rate_item_to_inr|floatformat:2 }}
+                {% if section_data.totals.low_stock_count > 0 %} | Low Stock: {{ section_data.totals.low_stock_count }}{% endif %}
+                {% if section_data.totals.zero_stock_count > 0 %} | Out of Stock: {{ section_data.totals.zero_stock_count }}{% endif %}
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>S.NO</th>
+                        <th>ITEM NAME</th>
+                        <th>BRAND</th>
+                        <th>STORE</th>
+                        {% if species %}
+                        <th>SPECIES</th>
+                        {% endif %}
+                        {% if item_grades %}
+                        <th>GRADE</th>
+                        {% endif %}
+                        {% if units %}
+                        <th>UNIT</th>
                         {% endif %}
                         {% if glazes %}
-                        <option value="glaze" {% if section_by == 'glaze' %}selected{% endif %}>Glaze</option>
+                        <th>GLAZE</th>
                         {% endif %}
                         {% if item_qualities %}
-                        <option value="item_quality" {% if section_by == 'item_quality' %}selected{% endif %}>Quality</option>
+                        <th>QUALITY</th>
                         {% endif %}
                         {% if freezing_categories %}
-                        <option value="freezing_category" {% if section_by == 'freezing_category' %}selected{% endif %}>Freezing Category</option>
+                        <th>FREEZING CAT</th>
                         {% endif %}
-                    </select>
-                </div>
-
-                <!-- Source Type -->
-                <div class="filter-section">
-                    <label>Source Type:</label>
-                    <select name="source_type" id="source_type">
-                        <option value="all" {% if source_type == 'all' %}selected{% endif %}>All Sources</option>
-                        <option value="spot" {% if source_type == 'spot' %}selected{% endif %}>Spot</option>
-                        <option value="local" {% if source_type == 'local' %}selected{% endif %}>Local</option>
-                    </select>
-                </div>
-
-                <!-- Items -->
-                <div class="filter-section">
-                    <label>Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
-                    <div class="options-container" id="itemsContainer">
-                        {% for item in items %}
-                            <div class="option-item">
-                                <input type="checkbox" name="items" value="{{ item.id }}" id="item_{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}checked{% endif %}>
-                                <label for="item_{{ item.id }}">{{ item.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Categories -->
-                <div class="filter-section">
-                    <label>Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
-                    <div class="options-container" id="categoriesContainer">
-                        {% for category in categories %}
-                            <div class="option-item">
-                                <input type="checkbox" name="categories" value="{{ category.id }}" id="category_{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
-                                <label for="category_{{ category.id }}">{{ category.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Stores -->
-                <div class="filter-section">
-                    <label>Stores: <span id="storesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search stores..." id="storesSearch">
-                    <div class="options-container" id="storesContainer">
-                        {% for store in stores %}
-                            <div class="option-item">
-                                <input type="checkbox" name="stores" value="{{ store.id }}" id="store_{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}checked{% endif %}>
-                                <label for="store_{{ store.id }}">{{ store.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Brands -->
-                <div class="filter-section">
-                    <label>Brands: <span id="brandsCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search brands..." id="brandsSearch">
-                    <div class="options-container" id="brandsContainer">
-                        {% for brand in brands %}
-                            <div class="option-item">
-                                <input type="checkbox" name="brands" value="{{ brand.id }}" id="brand_{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
-                                <label for="brand_{{ brand.id }}">{{ brand.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                {% if species %}
-                <!-- Species -->
-                <div class="filter-section">
-                    <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
-                    <div class="options-container" id="speciesContainer">
-                        {% for spec in species %}
-                            <div class="option-item">
-                                <input type="checkbox" name="species" value="{{ spec.id }}" id="species_{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}checked{% endif %}>
-                                <label for="species_{{ spec.id }}">{{ spec.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if item_grades %}
-                <!-- Item Grades -->
-                <div class="filter-section">
-                    <label>Grades: <span id="itemGradesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search grades..." id="itemGradesSearch">
-                    <div class="options-container" id="itemGradesContainer">
-                        {% for grade in item_grades %}
-                            <div class="option-item">
-                                <input type="checkbox" name="item_grades" value="{{ grade.id }}" id="item_grade_{{ grade.id }}" {% if grade.id|stringformat:"s" in selected_item_grades %}checked{% endif %}>
-                                <label for="item_grade_{{ grade.id }}">{{ grade.grade }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if units %}
-                <!-- Units -->
-                <div class="filter-section">
-                    <label>Units: <span id="unitsCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search units..." id="unitsSearch">
-                    <div class="options-container" id="unitsContainer">
-                        {% for unit in units %}
-                            <div class="option-item">
-                                <input type="checkbox" name="units" value="{{ unit.id }}" id="unit_{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}checked{% endif %}>
-                                <label for="unit_{{ unit.id }}">{{ unit.description }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if glazes %}
-                <!-- Glazes -->
-                <div class="filter-section">
-                    <label>Glazes: <span id="glazesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search glazes..." id="glazesSearch">
-                    <div class="options-container" id="glazesContainer">
-                        {% for glaze in glazes %}
-                            <div class="option-item">
-                                <input type="checkbox" name="glazes" value="{{ glaze.id }}" id="glaze_{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}checked{% endif %}>
-                                <label for="glaze_{{ glaze.id }}">{% if glaze.percentage %}{{ glaze.percentage }}%{% else %}{{ glaze.name }}{% endif %}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if item_qualities %}
-                <!-- Item Qualities -->
-                <div class="filter-section">
-                    <label>Qualities: <span id="itemQualitiesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search qualities..." id="itemQualitiesSearch">
-                    <div class="options-container" id="itemQualitiesContainer">
-                        {% for quality in item_qualities %}
-                            <div class="option-item">
-                                <input type="checkbox" name="item_qualities" value="{{ quality.id }}" id="item_quality_{{ quality.id }}" {% if quality.id|stringformat:"s" in selected_item_qualities %}checked{% endif %}>
-                                <label for="item_quality_{{ quality.id }}">{{ quality.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if freezing_categories %}
-                <!-- Freezing Categories -->
-                <div class="filter-section">
-                    <label>Freezing Categories: <span id="freezingCategoriesCount" class="selected-count" style="display: none;">0</span></label>
-                    <input type="text" class="search-box" placeholder="Search freezing categories..." id="freezingCategoriesSearch">
-                    <div class="options-container" id="freezingCategoriesContainer">
-                        {% for freezing_cat in freezing_categories %}
-                            <div class="option-item">
-                                <input type="checkbox" name="freezing_categories" value="{{ freezing_cat.id }}" id="freezing_cat_{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}checked{% endif %}>
-                                <label for="freezing_cat_{{ freezing_cat.id }}">{{ freezing_cat.name }}</label>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Search -->
-                <div class="filter-section">
-                    <label>Search:</label>
-                    <input type="text" name="search" id="search" value="{{ search_query }}" placeholder="Search items, brands, stores...">
-                </div>
-
-                <!-- Stock Filters -->
-                <div class="filter-section">
-                    <label>Stock Filters:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="low_stock" value="true" id="low_stock" {% if low_stock == 'true' %}checked{% endif %}>
-                            <label for="low_stock">Low Stock</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" name="zero_stock" value="true" id="zero_stock" {% if zero_stock == 'true' %}checked{% endif %}>
-                            <label for="zero_stock">Zero Stock</label>
-                        </div>
-                    </div>
-                </div>
+                        <th>CS QTY</th>
+                        <th>KG QTY</th>
+                        <th>USD/KG</th>
+                        <th>USD AMT</th>
+                        <th>INR AMT</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in section_data.items %}
+                    <tr>
+                        <td class="center-col">{{ forloop.counter }}</td>
+                        <td>{{ item.item__name|default:"N/A"|truncatechars:20 }}</td>
+                        <td>{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td>{{ item.store__name|default:"N/A"|truncatechars:15 }}</td>
+                        {% if species %}
+                        <td>{{ item.species__name|default:"N/A"|truncatechars:15 }}</td>
+                        {% endif %}
+                        {% if item_grades %}
+                        <td class="center-col">{{ item.item_grade__grade|default:"N/A" }}</td>
+                        {% endif %}
+                        {% if units %}
+                        <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
+                        {% endif %}
+                        {% if glazes %}
+                        <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}N/A{% endif %}</td>
+                        {% endif %}
+                        {% if item_qualities %}
+                        <td>{{ item.item_quality__quality|default:"N/A"|truncatechars:12 }}</td>
+                        {% endif %}
+                        {% if freezing_categories %}
+                        <td>{{ item.freezing_category__name|default:"N/A"|truncatechars:12 }}</td>
+                        {% endif %}
+                        <td class="number-col">{{ item.total_cs_quantity|floatformat:2 }}</td>
+                        <td class="number-col">{{ item.total_kg_quantity|floatformat:2 }}</td>
+                        <td class="number-col">${{ item.total_usd_rate_per_kg|floatformat:2 }}</td>
+                        <td class="number-col">${{ item.total_usd_rate_item|floatformat:2 }}</td>
+                        <td class="number-col">₹{{ item.total_usd_rate_item_to_inr|floatformat:2 }}</td>
+                        <td class="center-col">
+                            <span class="stock-status {% if item.stock_status == 'In Stock' %}in-stock{% elif item.stock_status == 'Low Stock' %}low-stock{% else %}out-of-stock{% endif %}">
+                                {{ item.stock_status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Section Total Row -->
+                    <tr class="section-total-row">
+                        <td colspan="{% if species and item_grades and units and glazes and item_qualities and freezing_categories %}10{% elif species or item_grades or units or glazes or item_qualities or freezing_categories %}8{% else %}4{% endif %}" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        <td class="number-col"><strong>{{ section_data.totals.total_cs_quantity|floatformat:2 }}</strong></td>
+                        <td class="number-col"><strong>{{ section_data.totals.total_kg_quantity|floatformat:2 }}</strong></td>
+                        <td class="center-col"><strong>-</strong></td>
+                        <td class="number-col"><strong>${{ section_data.totals.total_usd_rate_item|floatformat:2 }}</strong></td>
+                        <td class="number-col"><strong>₹{{ section_data.totals.total_usd_rate_item_to_inr|floatformat:2 }}</strong></td>
+                        <td class="center-col"><strong>-</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            {% empty %}
+            <div class="no-data">
+                <h3>No Stock Records Found</h3>
+                <p>No stock records match your current filter criteria.</p>
+                <p>Try adjusting your filters or clearing some selections.</p>
             </div>
+            {% endfor %}
 
-            <div class="filter-buttons">
-                <button type="submit" class="filter-btn primary">Generate Report</button>
-                <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
-                <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
-                <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
+            <!-- Grand Total Section -->
+            {% if sectioned_data %}
+            <div class="grand-total-section">
+                <div class="grand-total-header">GRAND TOTALS - ALL SECTIONS</div>
+                <table class="grand-total-table">
+                    <tr>
+                        <td class="label-col">TOTAL CS QUANTITY</td>
+                        <td>{{ grand_totals.total_cs_quantity|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL KG QUANTITY</td>
+                        <td>{{ grand_totals.total_kg_quantity|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL USD AMOUNT (SPOT)</td>
+                        <td style="color: #0056b3; font-size: 16px;">${{ grand_totals.total_usd_rate_item|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL INR AMOUNT (LOCAL)</td>
+                        <td style="color: #155724; font-size: 16px;">₹{{ grand_totals.total_usd_rate_item_to_inr|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL STOCK ITEMS</td>
+                        <td>{{ grand_totals.count }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL SECTIONS</td>
+                        <td>{{ sectioned_data|length }}</td>
+                    </tr>
+                    {% if grand_totals.avg_usd_rate_per_kg %}
+                    <tr>
+                        <td class="label-col">AVERAGE USD RATE PER KG</td>
+                        <td>${{ grand_totals.avg_usd_rate_per_kg|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="label-col">LOW STOCK ITEMS</td>
+                        <td style="color: #ffc107; font-weight: bold;">{{ grand_totals.low_stock_count }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">OUT OF STOCK ITEMS</td>
+                        <td style="color: #dc3545; font-weight: bold;">{{ grand_totals.zero_stock_count }}</td>
+                    </tr>
+                    {% if grand_totals.avg_cs_per_stock %}
+                    <tr>
+                        <td class="label-col">AVERAGE CS PER ITEM</td>
+                        <td>{{ grand_totals.avg_cs_per_stock|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if grand_totals.avg_kg_per_stock %}
+                    <tr>
+                        <td class="label-col">AVERAGE KG PER ITEM</td>
+                        <td>{{ grand_totals.avg_kg_per_stock|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
             </div>
-        </form>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
+                Generate PDF
+            </button>
+            <a href="{% url 'adminapp:stock_report_print' %}?{{ request.GET.urlencode }}" target="_blank" class="action-btn">
+                Print Preview
+            </a>
+            <button type="button" onclick="exportToCSV()" class="action-btn">
+                Export CSV
+            </button>
+            <button type="button" onclick="exportToExcel()" class="action-btn">
+                Export Excel
+            </button>
+            <button type="button" onclick="showReportSummary()" class="action-btn">
+                Report Summary
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
-    // Search functionality for each filter section - keeping all original functionality
-    function setupSearch(searchId, containerId, countId) {
-        const searchInput = document.getElementById(searchId);
-        const container = document.getElementById(containerId);
-        const countSpan = document.getElementById(countId);
-        
-        if (!searchInput || !container || !countSpan) return;
-        
-        const options = container.querySelectorAll('.option-item');
+// Search and counter functionality
+function setupSearch(searchId, containerId, countId) {
+    const searchInput = document.getElementById(searchId);
+    const container = document.getElementById(containerId);
+    const countSpan = document.getElementById(countId);
+    
+    if (!searchInput || !container || !countSpan) return;
+    
+    const options = container.querySelectorAll('.option-item');
 
-        // Search functionality
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            options.forEach(option => {
-                const label = option.querySelector('label').textContent.toLowerCase();
-                if (label.includes(searchTerm)) {
-                    option.style.display = 'flex';
-                } else {
-                    option.style.display = 'none';
-                }
-            });
-        });
-
-        // Count selected items
-        function updateCount() {
-            const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
-            const count = checkedBoxes.length;
-            if (count > 0) {
-                countSpan.textContent = count;
-                countSpan.style.display = 'inline-block';
-            } else {
-                countSpan.style.display = 'none';
-            }
-        }
-
-        // Add event listeners to checkboxes
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
         options.forEach(option => {
-            const checkbox = option.querySelector('input[type="checkbox"]');
-            if (checkbox) {
-                checkbox.addEventListener('change', updateCount);
+            const label = option.querySelector('label').textContent.toLowerCase();
+            if (label.includes(searchTerm)) {
+                option.style.display = 'flex';
+            } else {
+                option.style.display = 'none';
             }
         });
+    });
 
-        // Click anywhere on option item to toggle checkbox
-        options.forEach(item => {
-            item.addEventListener('click', function(e) {
-                if (e.target.type !== 'checkbox') {
-                    const checkbox = this.querySelector('input[type="checkbox"]');
-                    if (checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        checkbox.dispatchEvent(new Event('change'));
-                    }
-                }
-            });
-        });
-
-        // Initial count update
-        updateCount();
+    // Count selected items
+    function updateCount() {
+        const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+        const count = checkedBoxes.length;
+        if (count > 0) {
+            countSpan.textContent = count;
+            countSpan.style.display = 'inline-block';
+        } else {
+            countSpan.style.display = 'none';
+        }
     }
 
-    // Setup all functionality when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        // Setup search for all filter sections
-        setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
-        setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
-        setupSearch('storesSearch', 'storesContainer', 'storesCount');
-        setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
-        
-        // Setup conditional sections
-        if (document.getElementById('speciesSearch')) {
-            setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
-        }
-        if (document.getElementById('itemGradesSearch')) {
-            setupSearch('itemGradesSearch', 'itemGradesContainer', 'itemGradesCount');
-        }
-        if (document.getElementById('unitsSearch')) {
-            setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
-        }
-        if (document.getElementById('glazesSearch')) {
-            setupSearch('glazesSearch', 'glazesContainer', 'glazesCount');
-        }
-        if (document.getElementById('itemQualitiesSearch')) {
-            setupSearch('itemQualitiesSearch', 'itemQualitiesContainer', 'itemQualitiesCount');
-        }
-        if (document.getElementById('freezingCategoriesSearch')) {
-            setupSearch('freezingCategoriesSearch', 'freezingCategoriesContainer', 'freezingCategoriesCount');
+    // Add event listeners to checkboxes
+    options.forEach(option => {
+        const checkbox = option.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.addEventListener('change', updateCount);
         }
     });
 
-    // Auto-submit form when section_by changes - preserving original functionality
-    document.getElementById('section_by').addEventListener('change', function() {
-        setTimeout(() => {
-            document.getElementById('filterForm').submit();
-        }, 500);
+    // Click anywhere on option item to toggle checkbox
+    options.forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            }
+        });
     });
 
-</div>
-</script>
+    // Initial count update
+    updateCount();
+}
 
-    <!-- Report Header -->
-    <div class="report-header">
-        <div class="report-title">COMPREHENSIVE STOCK REPORT</div>
-        <div class="report-subtitle">Detailed Inventory Breakdown by {{ section_by|title }}</div>
-        
-        <div class="company-info">
-            <div class="company-name">PREMIER MARINE FOOD</div>
-            <div class="company-location">VANDANAM, ALAPPUZHA</div>
-            <div class="company-location">KERALA, INDIA</div>
-        </div>
-        
-        <div class="date-range">
-            Generated: {{ "now"|date:"d-M-Y H:i" }}
-            | Sectioned by: {{ section_by|upper }}
-            {% if source_type != 'all' %}| Source: {{ source_type|upper }}{% endif %}
-        </div>
-    </div>
+// Setup all functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup search for all filter sections
+    setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
+    setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
+    setupSearch('storesSearch', 'storesContainer', 'storesCount');
+    setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
+    
+    // Setup conditional sections
+    if (document.getElementById('speciesSearch')) {
+        setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
+    }
+    if (document.getElementById('itemGradesSearch')) {
+        setupSearch('itemGradesSearch', 'itemGradesContainer', 'itemGradesCount');
+    }
+    if (document.getElementById('unitsSearch')) {
+        setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
+    }
+    if (document.getElementById('glazesSearch')) {
+        setupSearch('glazesSearch', 'glazesContainer', 'glazesCount');
+    }
+    if (document.getElementById('itemQualitiesSearch')) {
+        setupSearch('itemQualitiesSearch', 'itemQualitiesContainer', 'itemQualitiesCount');
+    }
+    if (document.getElementById('freezingCategoriesSearch')) {
+        setupSearch('freezingCategoriesSearch', 'freezingCategoriesContainer', 'freezingCategoriesCount');
+    }
+});
 
-    <!-- Sectioned Data Display -->
-    <div id="sectioned-content">
-        {% for section_name, section_data in sectioned_data.items %}
-        <!-- Section Header -->
-        <div class="section-header">
-            <div class="section-title">
-                {% if section_by == 'category' %}
-                    CATEGORY: {{ section_name|upper }}
-                {% elif section_by == 'brand' %}
-                    BRAND: {{ section_name|upper }}
-                {% elif section_by == 'store' %}
-                    STORE: {{ section_name|upper }}
-                {% elif section_by == 'species' %}
-                    SPECIES: {{ section_name|upper }}
-                {% elif section_by == 'item_grade' %}
-                    GRADE: {{ section_name|upper }}
-                {% elif section_by == 'item' %}
-                    ITEM: {{ section_name|upper }}
-                {% elif section_by == 'unit' %}
-                    UNIT: {{ section_name|upper }}
-                {% elif section_by == 'glaze' %}
-                    GLAZE: {{ section_name|upper }}
-                {% elif section_by == 'item_quality' %}
-                    QUALITY: {{ section_name|upper }}
-                {% elif section_by == 'freezing_category' %}
-                    FREEZING CATEGORY: {{ section_name|upper }}
-                {% elif section_by == 'stock_status' %}
-                    STOCK STATUS: {{ section_name|upper }}
-                {% else %}
-                    {{ section_name|upper }}
-                {% endif %}
-            </div>
-        </div>
+// Auto-submit form when section_by changes
+document.getElementById('section_by').addEventListener('change', function() {
+    showNotification('Updating report...', 'success');
+    setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
 
-        <!-- Section Summary -->
-        <div class="section-summary">
-            <strong>Section Summary:</strong> 
-            {{ section_data.items|length }} items | 
-            CS: {{ section_data.totals.total_cs_quantity|floatformat:2 }} | 
-            KG: {{ section_data.totals.total_kg_quantity|floatformat:2 }} | 
-            USD: ${{ section_data.totals.total_usd_rate_item|floatformat:2 }} | 
-            INR: ₹{{ section_data.totals.total_usd_rate_item_to_inr|floatformat:2 }}
-            {% if section_data.totals.low_stock_count > 0 %} | Low Stock: {{ section_data.totals.low_stock_count }}{% endif %}
-            {% if section_data.totals.zero_stock_count > 0 %} | Out of Stock: {{ section_data.totals.zero_stock_count }}{% endif %}
-        </div>
-
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>S.NO</th>
-                    <th>ITEM NAME</th>
-                    <th>BRAND</th>
-                    <th>STORE</th>
-                    {% if species %}
-                    <th>SPECIES</th>
-                    {% endif %}
-                    {% if item_grades %}
-                    <th>GRADE</th>
-                    {% endif %}
-                    {% if units %}
-                    <th>UNIT</th>
-                    {% endif %}
-                    {% if glazes %}
-                    <th>GLAZE</th>
-                    {% endif %}
-                    {% if item_qualities %}
-                    <th>QUALITY</th>
-                    {% endif %}
-                    {% if freezing_categories %}
-                    <th>FREEZING CAT</th>
-                    {% endif %}
-                    <th>CS QTY</th>
-                    <th>KG QTY</th>
-                    <th>USD/KG</th>
-                    <th>USD AMT</th>
-                    <th>INR AMT</th>
-                    <th>STATUS</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in section_data.items %}
-                <tr>
-                    <td class="center-col">{{ forloop.counter }}</td>
-                    <td>{{ item.item__name|default:"N/A"|truncatechars:20 }}</td>
-                    <td>{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
-                    <td>{{ item.store__name|default:"N/A"|truncatechars:15 }}</td>
-                    {% if species %}
-                    <td>{{ item.species__name|default:"N/A"|truncatechars:15 }}</td>
-                    {% endif %}
-                    {% if item_grades %}
-                    <td class="center-col">{{ item.item_grade__grade|default:"N/A" }}</td>
-                    {% endif %}
-                    {% if units %}
-                    <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
-                    {% endif %}
-                    {% if glazes %}
-                    <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}N/A{% endif %}</td>
-                    {% endif %}
-                    {% if item_qualities %}
-                    <td>{{ item.item_quality__name|default:"N/A"|truncatechars:12 }}</td>
-                    {% endif %}
-                    {% if freezing_categories %}
-                    <td>{{ item.freezing_category__name|default:"N/A"|truncatechars:12 }}</td>
-                    {% endif %}
-                    <td class="number-col">{{ item.total_cs_quantity|floatformat:2 }}</td>
-                    <td class="number-col">{{ item.total_kg_quantity|floatformat:2 }}</td>
-                    <td class="number-col">${{ item.total_usd_rate_per_kg|floatformat:2 }}</td>
-                    <td class="number-col">${{ item.total_usd_rate_item|floatformat:2 }}</td>
-                    <td class="number-col">₹{{ item.total_usd_rate_item_to_inr|floatformat:2 }}</td>
-                    <td class="center-col">
-                        <span class="stock-status {% if item.stock_status == 'In Stock' %}in-stock{% elif item.stock_status == 'Low Stock' %}low-stock{% else %}out-of-stock{% endif %}">
-                            {{ item.stock_status }}
-                        </span>
-                    </td>
-                </tr>
-                {% endfor %}
-                
-                <!-- Section Total Row -->
-                <tr class="section-total-row">
-                    <td></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong></strong></td>
-                    <td class="number-col"><strong>{{ section_data.totals.total_cs_quantity|floatformat:2 }}</strong></td>
-                    <td class="number-col"><strong>{{ section_data.totals.total_kg_quantity|floatformat:2 }}</strong></td>
-                    <td class="number-col"><strong>-</strong></td>
-                    <td class="number-col"><strong>${{ section_data.totals.total_usd_rate_item|floatformat:2 }}</strong></td>
-                    <td class="number-col"><strong>₹{{ section_data.totals.total_usd_rate_item_to_inr|floatformat:2 }}</strong></td>
-                    <td class="center-col"><strong>-</strong></td>
-                </tr>
-            </tbody>
-        </table>
-        {% empty %}
-        <div class="no-data">
-            <h3>No Stock Records Found</h3>
-            <p>No stock records match your current filter criteria.</p>
-            <p>Try adjusting your filters or clearing some selections.</p>
-        </div>
-        {% endfor %}
-
-        <!-- Grand Total Section -->
-        {% if sectioned_data %}
-        <div class="grand-total-section">
-            <div class="grand-total-header">GRAND TOTALS - ALL SECTIONS</div>
-            <table class="grand-total-table">
-                <tr>
-                    <td class="label-col">TOTAL CS QUANTITY</td>
-                    <td>{{ grand_totals.total_cs_quantity|floatformat:2 }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">TOTAL KG QUANTITY</td>
-                    <td>{{ grand_totals.total_kg_quantity|floatformat:2 }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">TOTAL USD AMOUNT</td>
-                    <td>${{ grand_totals.total_usd_rate_item|floatformat:2 }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">TOTAL INR AMOUNT</td>
-                    <td>₹{{ grand_totals.total_usd_rate_item_to_inr|floatformat:2 }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">TOTAL STOCK ITEMS</td>
-                    <td>{{ grand_totals.count }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">TOTAL SECTIONS</td>
-                    <td>{{ sectioned_data|length }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">LOW STOCK ITEMS</td>
-                    <td style="color: #ffc107; font-weight: bold;">{{ grand_totals.low_stock_count }}</td>
-                </tr>
-                <tr>
-                    <td class="label-col">OUT OF STOCK ITEMS</td>
-                    <td style="color: #dc3545; font-weight: bold;">{{ grand_totals.zero_stock_count }}</td>
-                </tr>
-                {% if grand_totals.avg_cs_per_stock %}
-                <tr>
-                    <td class="label-col">AVERAGE CS PER ITEM</td>
-                    <td>{{ grand_totals.avg_cs_per_stock|floatformat:2 }}</td>
-                </tr>
-                {% endif %}
-                {% if grand_totals.avg_kg_per_stock %}
-                <tr>
-                    <td class="label-col">AVERAGE KG PER ITEM</td>
-                    <td>{{ grand_totals.avg_kg_per_stock|floatformat:2 }}</td>
-                </tr>
-                {% endif %}
-                {% if grand_totals.avg_usd_rate_per_kg %}
-                <tr>
-                    <td class="label-col">AVERAGE USD RATE PER KG</td>
-                    <td>${{ grand_totals.avg_usd_rate_per_kg|floatformat:2 }}</td>
-                </tr>
-                {% endif %}
-            </table>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="action-buttons">
-        <button type="button" onclick="window.print()" class="action-btn print-btn">
-            Print Report
-        </button>
-        <button type="button" onclick="generatePDF()" class="action-btn pdf-btn" id="pdfBtn">
-            Generate PDF
-        </button>
-        <a href="{% url 'adminapp:stock_report_print' %}?{{ request.GET.urlencode }}" target="_blank" class="action-btn">
-            Print Preview
-        </a>
-        <button type="button" onclick="exportToCSV()" class="action-btn">
-            Export CSV
-        </button>
-        <button type="button" onclick="exportToExcel()" class="action-btn">
-            Export Excel
-        </button>
-        <button type="button" onclick="showReportSummary()" class="action-btn">
-            Report Summary
-        </button>
-    </div>
-
-<script>
-// Form reset function
+// Reset form function
 function resetForm() {
     const form = document.getElementById('filterForm');
     if (form) {
         form.reset();
-        const multiSelects = form.querySelectorAll('select[multiple]');
-        multiSelects.forEach(select => {
-            Array.from(select.options).forEach(option => {
-                option.selected = false;
-            });
-        });
         
         // Reset to default values
         document.getElementById('section_by').value = 'category';
         document.getElementById('source_type').value = 'all';
         
-        // Uncheck checkboxes
+        // Uncheck all checkboxes
         const checkboxes = form.querySelectorAll('input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
             checkbox.checked = false;
+        });
+        
+        // Reset counters
+        document.querySelectorAll('.selected-count').forEach(counter => {
+            counter.style.display = 'none';
+            counter.textContent = '0';
         });
         
         setTimeout(() => {
@@ -1687,145 +1346,19 @@ function resetForm() {
     }
 }
 
-// Enhanced PDF Generation with large fonts
-async function generatePDF() {
-    const pdfBtn = document.getElementById('pdfBtn');
+// Generate PDF - Opens print view in new window
+function generatePDF() {
+    // Get current URL parameters
+    const currentParams = window.location.search;
     
-    try {
-        // Show loading
-        pdfBtn.textContent = 'Generating PDF...';
-        pdfBtn.disabled = true;
-
-        // Check if libraries are loaded
-        if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
-            throw new Error('PDF libraries not loaded. Please refresh the page.');
-        }
-
-        // Hide interactive elements
-        const elementsToHide = [
-            '.filter-form',
-            '.action-buttons', 
-            '.active-filters',
-            '.notification'
-        ];
-        
-        const hiddenElements = [];
-        elementsToHide.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-                if (el && el.style.display !== 'none') {
-                    hiddenElements.push({
-                        element: el,
-                        originalDisplay: el.style.display
-                    });
-                    el.style.display = 'none';
-                    el.style.visibility = 'hidden';
-                }
-            });
-        });
-
-        // Apply PDF mode for large fonts
-        document.body.classList.add('pdf-mode');
-
-        // Wait for layout
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        // Create canvas
-        const element = document.body;
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            width: element.scrollWidth,
-            height: element.scrollHeight
-        });
-
-        // Create PDF
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        
-        const imgData = canvas.toDataURL('image/png', 0.9);
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const margin = 8;
-        
-        const imgWidth = pageWidth - (margin * 2);
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        let remainingHeight = imgHeight;
-        let pageNumber = 1;
-        let currentY = 0;
-        
-        // Add pages as needed
-        while (remainingHeight > 0) {
-            const pageContentHeight = pageHeight - (margin * 2);
-            const currentPageHeight = Math.min(pageContentHeight, remainingHeight);
-            
-            if (pageNumber > 1) {
-                pdf.addPage();
-            }
-            
-            const sourceY = currentY;
-            const sourceHeight = (currentPageHeight / imgHeight) * canvas.height;
-            
-            const tempCanvas = document.createElement('canvas');
-            const tempCtx = tempCanvas.getContext('2d');
-            
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = sourceHeight;
-            
-            tempCtx.drawImage(canvas, 
-                0, sourceY * (canvas.height / imgHeight), 
-                canvas.width, sourceHeight,
-                0, 0,
-                canvas.width, sourceHeight
-            );
-            
-            const pageImgData = tempCanvas.toDataURL('image/png', 0.9);
-            
-            pdf.addImage(
-                pageImgData, 
-                'PNG', 
-                margin, 
-                margin, 
-                imgWidth, 
-                currentPageHeight,
-                undefined,
-                'FAST'
-            );
-            
-            currentY += currentPageHeight;
-            remainingHeight -= currentPageHeight;
-            pageNumber++;
-        }
-
-        // Generate filename
-        const now = new Date();
-        const dateStr = now.toISOString().split('T')[0];
-        const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
-        const sectionBy = document.getElementById('section_by')?.value || 'category';
-        const filename = `Stock_Report_${sectionBy}_${dateStr}_${timeStr}.pdf`;
-
-        pdf.save(filename);
-        showNotification('PDF generated successfully!', 'success');
-
-    } catch (error) {
-        console.error('PDF Error:', error);
-        showNotification('PDF generation failed: ' + error.message, 'error');
-    } finally {
-        // Remove PDF mode and restore elements
-        document.body.classList.remove('pdf-mode');
-        
-        const hiddenElements = document.querySelectorAll('.filter-form, .action-buttons, .active-filters');
-        hiddenElements.forEach(el => {
-            if (el) {
-                el.style.display = '';
-                el.style.visibility = 'visible';
-            }
-        });
-
-        pdfBtn.textContent = 'Generate PDF';
-        pdfBtn.disabled = false;
+    // Construct print URL with all current filters
+    const printUrl = '{% url "adminapp:stock_report_print_amt" %}' + currentParams;
+    
+    // Open in new window
+    const printWindow = window.open(printUrl, '_blank');
+    
+    if (!printWindow) {
+        showNotification('Please allow popups to generate PDF', 'error');
     }
 }
 
@@ -1870,7 +1403,7 @@ function exportToCSV() {
             csvContent += headers.join(',') + '\n';
 
             // Add data rows
-            table.querySelectorAll('tbody tr').forEach(row => {
+            table.querySelectorAll('tbody tr:not(.section-total-row)').forEach(row => {
                 const cells = [];
                 row.querySelectorAll('td').forEach(td => {
                     let cellText = td.textContent.trim().replace(/"/g, '""');
@@ -1880,7 +1413,9 @@ function exportToCSV() {
                     }
                     cells.push('"' + cellText + '"');
                 });
-                csvContent += cells.join(',') + '\n';
+                if (cells.length > 0) {
+                    csvContent += cells.join(',') + '\n';
+                }
             });
         });
 
@@ -1903,98 +1438,6 @@ function exportToCSV() {
         const now = new Date().toISOString().split('T')[0];
         const sectionBy = document.getElementById('section_by')?.value || 'category';
         const filename = `Stock_Report_${sectionBy}_${now}.csv`;
-
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.href = url;
-            link.download = filename;
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-            showNotification('CSV exported successfully!', 'success');
-        }
-    } catch (error) {
-        console.error('CSV Error:', error);
-        showNotification('CSV export failed: ' + error.message, 'error');
-    }
-}
-
-// Excel Export function
-function exportToExcel() {
-    try {
-        let csvContent = '\uFEFF'; // BOM for UTF-8
-        const tables = document.querySelectorAll('.data-table');
-        
-        if (tables.length === 0) {
-            showNotification('No data to export', 'error');
-            return;
-        }
-
-        // Add report header
-        const reportTitle = document.querySelector('.report-title');
-        const companyName = document.querySelector('.company-name');
-        const dateRange = document.querySelector('.date-range');
-        
-        if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
-        if (companyName) csvContent += companyName.textContent.trim() + '\n';
-        if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
-
-        tables.forEach((table, index) => {
-            // Add section header
-            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
-            if (sectionHeader) {
-                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
-            }
-
-            // Add summary
-            const summary = table.parentElement.querySelector('.section-summary');
-            if (summary) {
-                csvContent += summary.textContent.trim() + '\n\n';
-            }
-
-            // Add table headers
-            const headers = [];
-            table.querySelectorAll('thead th').forEach(th => {
-                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
-            });
-            csvContent += headers.join(',') + '\n';
-
-            // Add data rows
-            table.querySelectorAll('tbody tr').forEach(row => {
-                const cells = [];
-                row.querySelectorAll('td').forEach(td => {
-                    let cellText = td.textContent.trim().replace(/"/g, '""');
-                    // Handle numbers for Excel
-                    if (td.classList.contains('number-col')) {
-                        cellText = cellText.replace(/[$₹,]/g, '');
-                    }
-                    cells.push('"' + cellText + '"');
-                });
-                csvContent += cells.join(',') + '\n';
-            });
-        });
-
-        // Add grand totals
-        const grandTotalTable = document.querySelector('.grand-total-table');
-        if (grandTotalTable) {
-            csvContent += '\n\nGRAND TOTALS\n';
-            grandTotalTable.querySelectorAll('tr').forEach(row => {
-                const cells = [];
-                row.querySelectorAll('td').forEach(td => {
-                    cells.push('"' + td.textContent.trim().replace(/"/g, '""') + '"');
-                });
-                csvContent += cells.join(',') + '\n';
-            });
-        }
-
-        // Download as Excel file
-        const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-        const link = document.createElement('a');
-        const now = new Date().toISOString().split('T')[0];
-        const sectionBy = document.getElementById('section_by')?.value || 'category';
-        const filename = `Stock_Report_${sectionBy}_${now}.xls`;
 
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
@@ -2053,33 +1496,19 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// Auto-submit form when section_by changes
-document.getElementById('section_by').addEventListener('change', function() {
-    showNotification('Updating report...', 'success');
-    setTimeout(() => {
-        document.getElementById('filterForm').submit();
-    }, 500);
-});
-
 // Print event handlers
 window.addEventListener('beforeprint', function() {
-    document.querySelectorAll('.filter-form, .action-buttons, .active-filters').forEach(el => {
+    document.querySelectorAll('.filter-card, .action-buttons, .page-header').forEach(el => {
         if (el) el.style.display = 'none';
     });
 });
 
 window.addEventListener('afterprint', function() {
-    document.querySelectorAll('.filter-form, .action-buttons, .active-filters').forEach(el => {
+    document.querySelectorAll('.filter-card, .action-buttons, .page-header').forEach(el => {
         if (el) el.style.display = '';
     });
 });
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Add any initialization code here
-    console.log('Stock Report loaded successfully');
-});
 </script>
 
+{% endblock %}
 
-{%endblock%}

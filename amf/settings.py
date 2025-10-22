@@ -137,3 +137,6 @@ AUTH_USER_MODEL = 'adminapp.CustomUser'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+
+
+MESSAGE_STORAGE = 'adminapp.message_storage.NotificationStorage'

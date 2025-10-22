@@ -168,6 +168,17 @@
                                             {% endif %}
                                         </div>
                                     </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Item Type</label>
+                                            {{ form.peeling_type }}
+                                            {% if form.peeling_type.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.peeling_type.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 

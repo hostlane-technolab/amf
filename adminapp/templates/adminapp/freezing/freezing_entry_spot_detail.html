@@ -1,6 +1,8 @@
 {% extends 'admin_base.html' %}
 {% block title %} Freezing Entry Spot Detail {% endblock %}
 {% block content %}
+{% load indian_numbers %}
+
 
     <!-- Page header style -->
 <style>
@@ -251,7 +253,7 @@
               </div>
               <div class="info-content">
                 <div class="info-label">Spot Location</div>
-                <div class="info-value">{{ entry.spot }}</div>
+                <div class="info-value">{{ entry.spot.spot }}</div>
                 <div class="info-badge">
                   <i class="fas fa-location-dot"></i>
                   <span>Location</span>
@@ -336,11 +338,21 @@
               <tbody>
                 <tr class="table-row">
                   <td class="table-cell">
-                    <strong>{{ entry.spot_supervisor }}</strong>
+                    <div class="supervisor-value">
+                      <div class="supervisor-icon">
+                        <i class="fas fa-user-tie"></i>
+                      </div>
+                      <strong>{{ entry.spot_supervisor }}</strong>
+                    </div>
                   </td>
-                  <td class="table-cell">
-                    <span class="voucher-badge {% if entry.freezing_status == 'Active' %}status-active{% elif entry.freezing_status == 'Pending' %}status-pending{% else %}status-inactive{% endif %}">{{ entry.get_freezing_status_display }}</span>
-                  </td>
+<!-- Status Column -->
+<td class="table-cell">
+  <div class="status-wrapper">
+    <span class="voucher-badge {% if entry.freezing_status == 'complete' %}status-active{% elif entry.freezing_status == 'incomplete' %}status-pending{% else %}status-inactive{% endif %}">
+      {{ entry.get_freezing_status_display }}
+    </span>
+  </div>
+</td>
                   <td class="table-cell">
                     <span class="boxes-badge">{{ entry.total_slab|floatformat:2 }}</span>
                   </td>
@@ -409,13 +421,13 @@
                 <tr class="summary-row">
                   <td class="table-cell">
                     <div class="summary-value">
-                      <span class="calculated-value">${{ entry.total_usd|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">${{ entry.total_usd|floatformat:2|default:"0.00"|indian_comma }}</span>
                       <small class="unit">USD</small>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="summary-value">
-                      <span class="calculated-value">₹{{ entry.total_inr|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">₹{{ entry.total_inr|floatformat:2|default:"0.00"|indian_comma }}</span>
                       <small class="unit">INR</small>
                     </div>
                   </td>
@@ -430,12 +442,15 @@
   font-size: 13px;
 }
                   </style>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span class="status-badge">Active</span>
-
-                    </div>
-                  </td>
+<!-- Currency Status Column -->
+<td class="table-cell">
+  <div class="currency-status-wrapper">
+    <div class="currency-icon-badge">
+      <i class="fas fa-exchange-alt"></i>
+    </div>
+    <span class="status-badge">Active</span>
+  </div>
+</td>
                   <td class="table-cell">
                     <div class="summary-value total-highlight">
                       <span class="calculated-value">{{ entry.total_kg|floatformat:2|default:"0.00" }}</span>
@@ -508,8 +523,8 @@
                   <td class="table-cell"><span class="quantity-badge">{{ item.c_s_quantity }}</span></td>
                   <td class="table-cell"><span class="weight-value">{{ item.kg }} kg</span></td>
                   <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr|indian_comma }}</span></td>
                   <td class="table-cell"><span class="balance-badge">{{ item.yield_percentage }}%</span></td>
                 </tr>
                 {% empty %}
@@ -549,6 +564,100 @@
 </div>
 
 <style>
+  /* Status and Currency Status Wrappers */
+.status-wrapper,
+.currency-status-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-icon-badge,
+.currency-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.status-icon-badge {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.currency-icon-badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* Enhanced badges with better styling */
+.status-wrapper .voucher-badge,
+.currency-status-wrapper .status-badge {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.status-wrapper .status-active {
+  background: #fce7f3;
+  color: #9f1239;
+}
+
+.status-wrapper .status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-wrapper .status-inactive {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.currency-status-wrapper .status-badge {
+  background: #dbeafe;
+  color: #1e40af;
+}
+  .supervisor-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid #bae6fd;
+  font-weight: 600;
+  color: #0c4a6e;
+  transition: all 0.3s ease;
+}
+
+.supervisor-value:hover {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
+}
+
+.supervisor-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+}
+
+.supervisor-value strong {
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
 small.unit {
   font-size: 0.8rem;        
   font-weight: 600;        

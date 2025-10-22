@@ -1,0 +1,1007 @@
+{% extends 'admin_base.html' %}
+
+{% load static %}
+
+{% block title %}Stock Adjustment{% endblock %}
+
+{% block content %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Stock Management</h3>
+            <p class="ph-header-subtitle">Adjust inventory stock levels</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:list' %}" class="ph-breadcrumb-link">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock List</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>{{ action }} Stock</span>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats"></div>
+      </div>
+    </div>
+
+    <form method="post" id="stockAdjustmentForm" class="purchase-form">
+      {% csrf_token %}
+      
+      <!-- Display form errors -->
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger mb-4">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <!-- Current Stock Display -->
+      <div id="currentStockDisplay" class="form-card mb-4" style="display: none;">
+        <div class="card-header" style="background: linear-gradient(135deg, #fef3c7 0%, #fef9e3 100%); border-bottom: 2px solid #fbbf24;">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4" style="background: #f59e0b; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.2);">
+              <i class="fas fa-warehouse"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Current Stock for Selected Combination</h4>
+              <p class="text-muted mb-0">View existing stock levels</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="stock-info-box">
+                <label class="stock-label">CS Quantity:</label>
+                <span id="currentCS" class="stock-value">0</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stock-info-box">
+                <label class="stock-label">KG Quantity:</label>
+                <span id="currentKG" class="stock-value">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="after-adjustment-box">
+                <i class="fas fa-arrow-right me-2"></i>
+                <strong>After adjustment: </strong>
+                <strong>CS: <span id="afterCS">0</span></strong> | 
+                <strong>KG: <span id="afterKG">0</span></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newStockDisplay" class="form-card mb-4" style="display: none;">
+        <div class="card-header" style="background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%); border-bottom: 2px solid #10b981;">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4" style="background: #10b981; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">New Stock Will Be Created</h4>
+              <p class="text-muted mb-0">This combination does not exist. A new stock entry will be created with your adjustment values.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Store, Brand & Item Selection Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Primary Selection</h3>
+              <p class="text-muted mb-0">Select store, brand and item</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.store.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-store input-icon"></i>
+                  {{ form.store }}
+                </div>
+                {% if form.store.errors %}
+                  <div class="validation-error">{{ form.store.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.brand.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-tag input-icon"></i>
+                  {{ form.brand }}
+                </div>
+                {% if form.brand.errors %}
+                  <div class="validation-error">{{ form.brand.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.item.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-box input-icon"></i>
+                  {{ form.item }}
+                </div>
+                {% if form.item.errors %}
+                  <div class="validation-error">{{ form.item.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item Attributes Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-sliders-h"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Item Attributes</h4>
+              <p class="text-muted mb-0">Optional item specifications</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.item_quality.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-star input-icon"></i>
+                  {{ form.item_quality }}
+                </div>
+                {% if form.item_quality.errors %}
+                  <div class="validation-error">{{ form.item_quality.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.freezing_category.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-snowflake input-icon"></i>
+                  {{ form.freezing_category }}
+                </div>
+                {% if form.freezing_category.errors %}
+                  <div class="validation-error">{{ form.freezing_category.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.unit.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-ruler input-icon"></i>
+                  {{ form.unit }}
+                </div>
+                {% if form.unit.errors %}
+                  <div class="validation-error">{{ form.unit.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.glaze.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-tint input-icon"></i>
+                  {{ form.glaze }}
+                </div>
+                {% if form.glaze.errors %}
+                  <div class="validation-error">{{ form.glaze.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4 mt-1">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.species.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-fish input-icon"></i>
+                  {{ form.species }}
+                </div>
+                {% if form.species.errors %}
+                  <div class="validation-error">{{ form.species.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.item_grade.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-medal input-icon"></i>
+                  {{ form.item_grade }}
+                </div>
+                {% if form.item_grade.errors %}
+                  <div class="validation-error">{{ form.item_grade.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.peeling_type.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-cut input-icon"></i>
+                  {{ form.peeling_type }}
+                </div>
+                {% if form.peeling_type.errors %}
+                  <div class="validation-error">{{ form.peeling_type.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Adjustment Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-balance-scale"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Stock Adjustment</h4>
+              <p class="text-muted mb-0">Enter adjustment quantities (use negative values to reduce stock)</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">CS Adjustment *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-cubes input-icon"></i>
+                  {{ form.cs_adjustment }}
+                </div>
+                <div class="form-text-help">{{ form.cs_adjustment.help_text }}</div>
+                {% if form.cs_adjustment.errors %}
+                  <div class="validation-error">{{ form.cs_adjustment.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">KG Adjustment *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-weight-hanging input-icon"></i>
+                  {{ form.kg_adjustment }}
+                </div>
+                <div class="form-text-help">{{ form.kg_adjustment.help_text }}</div>
+                {% if form.kg_adjustment.errors %}
+                  <div class="validation-error">{{ form.kg_adjustment.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rates Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Rate Information</h4>
+              <p class="text-muted mb-0">Enter pricing rates</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.usd_rate_per_kg.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-dollar-sign input-icon"></i>
+                  {{ form.usd_rate_per_kg }}
+                </div>
+                {% if form.usd_rate_per_kg.errors %}
+                  <div class="validation-error">{{ form.usd_rate_per_kg.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.usd_rate_item.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-dollar-sign input-icon"></i>
+                  {{ form.usd_rate_item }}
+                </div>
+                {% if form.usd_rate_item.errors %}
+                  <div class="validation-error">{{ form.usd_rate_item.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.usd_rate_item_to_inr.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-rupee-sign input-icon"></i>
+                  {{ form.usd_rate_item_to_inr }}
+                </div>
+                {% if form.usd_rate_item_to_inr.errors %}
+                  <div class="validation-error">{{ form.usd_rate_item_to_inr.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-check me-2"></i>{{ action }} Stock
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Help Text */
+.form-text-help {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Stock Info Boxes */
+.stock-info-box {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.stock-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.stock-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.after-adjustment-box {
+  background: #f0f9ff;
+  border: 2px solid #3b82f6;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.form-actions .row {
+  width: 100%;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Animation for updated fields */
+.updated {
+  animation: highlight 0.6s ease;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.2); }
+  100% { background-color: transparent; }
+}
+
+/* Border color classes for adjustment inputs */
+.border-success {
+  border-color: #28a745 !important;
+}
+
+.border-danger {
+  border-color: #dc3545 !important;
+}
+
+.border-warning {
+  border-color: #ffc107 !important;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#currentStockDisplay, #newStockDisplay {
+  animation: fadeIn 0.5s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const storeField = document.getElementById('id_store');
+        const brandField = document.getElementById('id_brand');
+        const itemField = document.getElementById('id_item');
+        const itemQualityField = document.getElementById('id_item_quality');
+        const unitField = document.getElementById('id_unit');
+        const glazeField = document.getElementById('id_glaze');
+        const speciesField = document.getElementById('id_species');
+        const itemGradeField = document.getElementById('id_item_grade');
+        const peelingTypeField = document.getElementById('id_peeling_type');
+        const freezingCategoryField = document.getElementById('id_freezing_category');
+        
+        const csAdjustment = document.getElementById('{{ form.cs_adjustment.id_for_label }}');
+        const kgAdjustment = document.getElementById('{{ form.kg_adjustment.id_for_label }}');
+        
+        const currentStockDisplay = document.getElementById('currentStockDisplay');
+        const newStockDisplay = document.getElementById('newStockDisplay');
+        const currentCS = document.getElementById('currentCS');
+        const currentKG = document.getElementById('currentKG');
+        const afterCS = document.getElementById('afterCS');
+        const afterKG = document.getElementById('afterKG');
+
+        let currentStockData = {
+            cs_quantity: 0,
+            kg_quantity: 0,
+            exists: false
+        };
+
+        // Add visual feedback for positive/negative values
+        function updateInputStyle(input) {
+            const value = parseFloat(input.value) || 0;
+            input.classList.remove('border-success', 'border-danger', 'border-warning');
+            
+            if (value > 0) {
+                input.classList.add('border-success');
+            } else if (value < 0) {
+                input.classList.add('border-danger');
+            } else {
+                input.classList.add('border-warning');
+            }
+        }
+
+        function updateAfterValues() {
+            const csAdj = parseFloat(csAdjustment.value) || 0;
+            const kgAdj = parseFloat(kgAdjustment.value) || 0;
+            
+            afterCS.textContent = (currentStockData.cs_quantity + csAdj).toFixed(2);
+            afterKG.textContent = (currentStockData.kg_quantity + kgAdj).toFixed(2);
+            
+            // Color code the "after" values
+            afterCS.className = (currentStockData.cs_quantity + csAdj) < 0 ? 'text-danger fw-bold' : 'text-success fw-bold';
+            afterKG.className = (currentStockData.kg_quantity + kgAdj) < 0 ? 'text-danger fw-bold' : 'text-success fw-bold';
+        }
+        
+        if (csAdjustment) {
+            csAdjustment.addEventListener('input', function() {
+                updateInputStyle(this);
+                updateAfterValues();
+            });
+        }
+        
+        if (kgAdjustment) {
+            kgAdjustment.addEventListener('input', function() {
+                updateInputStyle(this);
+                updateAfterValues();
+            });
+        }
+
+        function checkCurrentStock() {
+            const store = storeField.value;
+            const brand = brandField.value;
+            const item = itemField.value;
+            const itemQuality = itemQualityField.value;
+            const unit = unitField.value;
+            const glaze = glazeField.value;
+            const species = speciesField.value;
+            const itemGrade = itemGradeField.value;
+            const peelingType = peelingTypeField.value;
+            const freezingCategory = freezingCategoryField.value;
+
+            // Check if required fields are filled
+            if (!store || !brand || !item) {
+                currentStockDisplay.style.display = 'none';
+                newStockDisplay.style.display = 'none';
+                return;
+            }
+
+            // Fetch current stock
+            const url = `/adminapp/get-current-stock/?store=${store}&brand=${brand}&item=${item}&item_quality=${itemQuality}&unit=${unit}&glaze=${glaze}&species=${species}&item_grade=${itemGrade}&peeling_type=${peelingType}&freezing_category=${freezingCategory}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        currentStockData.cs_quantity = data.cs_quantity;
+                        currentStockData.kg_quantity = data.kg_quantity;
+                        currentStockData.exists = true;
+                        
+                        currentCS.textContent = data.cs_quantity.toFixed(2);
+                        currentKG.textContent = data.kg_quantity.toFixed(2);
+                        
+                        currentStockDisplay.style.display = 'block';
+                        newStockDisplay.style.display = 'none';
+                        
+                        // Populate rates if they exist
+                        if (data.usd_rate_per_kg) {
+                            document.getElementById('id_usd_rate_per_kg').value = data.usd_rate_per_kg;
+                        }
+                        if (data.usd_rate_item) {
+                            document.getElementById('id_usd_rate_item').value = data.usd_rate_item;
+                        }
+                        if (data.usd_rate_item_to_inr) {
+                            document.getElementById('id_usd_rate_item_to_inr').value = data.usd_rate_item_to_inr;
+                        }
+                        
+                        updateAfterValues();
+                    } else {
+                        currentStockData.cs_quantity = 0;
+                        currentStockData.kg_quantity = 0;
+                        currentStockData.exists = false;
+                        
+                        currentStockDisplay.style.display = 'none';
+                        newStockDisplay.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stock:', error);
+                    currentStockDisplay.style.display = 'none';
+                    newStockDisplay.style.display = 'none';
+                });
+        }
+
+        // Attach event listeners to all fields
+        [storeField, brandField, itemField, itemQualityField, unitField, 
+         glazeField, speciesField, itemGradeField, peelingTypeField, freezingCategoryField].forEach(field => {
+            if (field) {
+                field.addEventListener('change', checkCurrentStock);
+            }
+        });
+    });
+</script>
+
+{% endblock %}

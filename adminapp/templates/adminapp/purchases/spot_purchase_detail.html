@@ -1,6 +1,7 @@
 {% extends 'admin_base.html' %}
 {% block title %} Spot Purchase Detail {% endblock %}
 {% block content %}
+{% load indian_numbers %}
 
 <!-- Page header style -->
 <style>
@@ -367,10 +368,10 @@
                     <span class="quantity-badge">{{ item.quantity|floatformat:2 }} kg</span>
                   </td>
                   <td class="table-cell ">
-                    <span class="currency-value">₹{{ item.rate|floatformat:2 }}</span>
+                    <span class="currency-value">₹{{ item.rate|floatformat:2|indian_comma  }}</span>
                   </td>
                   <td class="table-cell ">
-                    <span class="amount-value">₹{{ item.amount|floatformat:2 }}</span>
+                    <span class="amount-value">₹{{ item.amount|floatformat:2|indian_comma  }}</span>
                   </td>
                   <td class="table-cell ">
                     <span class="boxes-badge">{{ item.boxes|default:"0" }}</span>
@@ -431,7 +432,7 @@
                   <td class="table-cell">
                     <div class="summary-value">
                       <span class="currency">₹</span>
-                      <span class="calculated-value">{{ purchase.total_amount|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">{{ purchase.total_amount|floatformat:2|default:"0.00"|indian_comma  }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
@@ -443,19 +444,19 @@
                   <td class="table-cell">
                     <div class="summary-value">
                       <span class="currency">₹</span>
-                      <span class="calculated-value">{{ purchase.total_expense|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">{{ purchase.total_expense|floatformat:2|default:"0.00"|indian_comma   }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="summary-value total-highlight">
                       <span class="currency">₹</span>
-                      <span class="calculated-value">{{ purchase.total_purchase_amount|floatformat:2 }}</span>
+                      <span class="calculated-value">{{ purchase.total_purchase_amount|floatformat:2|indian_comma  }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="summary-value total-highlight">
                       <span class="currency">₹</span>
-                      <span class="calculated-value">{{ purchase.total_purchase_amount_per_kg|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">{{ purchase.total_purchase_amount_per_kg|floatformat:2|default:"0.00"|indian_comma  }}</span>
                       <small class="unit">/kg</small>
                     </div>
                   </td>
@@ -491,7 +492,7 @@
                     <span>Ice Expense</span>
                   </td>
                   <td class="table-cell text-end">
-                    <span class="currency-value">₹{{ purchase.expense.ice_expense|floatformat:2 }}</span>
+                    <span class="currency-value">₹{{ purchase.expense.ice_expense|floatformat:2|indian_comma   }}</span>
                   </td>
                 </tr>
                 <tr class="table-row">
@@ -500,7 +501,7 @@
                     <span>Vehicle Rent</span>
                   </td>
                   <td class="table-cell text-end">
-                    <span class="currency-value">₹{{ purchase.expense.vehicle_rent|floatformat:2 }}</span>
+                    <span class="currency-value">₹{{ purchase.expense.vehicle_rent|floatformat:2|indian_comma  }}</span>
                   </td>
                 </tr>
                 <tr class="table-row">
@@ -509,7 +510,7 @@
                     <span>Loading/Unloading</span>
                   </td>
                   <td class="table-cell text-end">
-                    <span class="currency-value">₹{{ purchase.expense.loading_and_unloading|floatformat:2 }}</span>
+                    <span class="currency-value">₹{{ purchase.expense.loading_and_unloading|floatformat:2|indian_comma   }}</span>
                   </td>
                 </tr>
                 <tr class="table-row">
@@ -518,7 +519,7 @@
                     <span>Peeling Charge</span>
                   </td>
                   <td class="table-cell text-end">
-                    <span class="currency-value">₹{{ purchase.expense.peeling_charge|floatformat:2 }}</span>
+                    <span class="currency-value">₹{{ purchase.expense.peeling_charge|floatformat:2|indian_comma  }}</span>
                   </td>
                 </tr>
                 <tr class="table-row">
@@ -527,7 +528,7 @@
                     <span>Other Expense</span>
                   </td>
                   <td class="table-cell text-end">
-                    <span class="currency-value">₹{{ purchase.expense.other_expense|floatformat:2 }}</span>
+                    <span class="currency-value">₹{{ purchase.expense.other_expense|floatformat:2|indian_comma   }}</span>
                   </td>
                 </tr>
                 <tr class="total-expense-row">
@@ -536,7 +537,7 @@
                     <span>Total Purchase Amount</span>
                   </td>
                   <td class="table-cell text-end">
-                    <span class="total-amount">₹{{ purchase.total_purchase_amount|floatformat:2 }}</span>
+                    <span class="total-amount">₹{{ purchase.total_purchase_amount|floatformat:2|indian_comma   }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -1257,7 +1258,7 @@ function confirmDelete() {
     return confirm(confirmMessage);
 }
 
-// Print functionality
+// Enhanced print functionality with professional styling
 function printMyclassIsolated() {
     const myclassElement = document.querySelector('.myclass');
     const clonedContent = myclassElement.cloneNode(true);
@@ -1268,7 +1269,7 @@ function printMyclassIsolated() {
         actionButtons.remove();
     }
     
-    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    const printWindow = window.open('', '_blank', 'width=1024,height=768');
     
     printWindow.document.write(`
         <!DOCTYPE html>
@@ -1276,75 +1277,390 @@ function printMyclassIsolated() {
         <head>
             <title>Purchase Details - Print</title>
             <meta charset="utf-8">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                @page { margin: 0.5in; size: A4; }
-                body { 
-                    font-family: 'Roboto', Arial, sans-serif; 
-                    background: white; 
-                    color: #333; 
-                    font-size: 14px; 
-                    line-height: 1.4; 
+                /* Reset and Base Styles */
+                * { 
+                    margin: 0; 
+                    padding: 0; 
+                    box-sizing: border-box; 
                 }
+                
+                @page { 
+                    margin: 15mm 15mm 15mm 15mm;
+                    size: A4 portrait;
+                }
+                
+                body { 
+                    font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
+                    background: white; 
+                    color: #1a1a1a; 
+                    font-size: 11pt; 
+                    line-height: 1.5;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                /* Header Styles */
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 25px;
+                    padding-bottom: 15px;
+                    border-bottom: 3px solid #28a745;
+                }
+                
+                .print-header h1 {
+                    font-size: 24pt;
+                    color: #2c3e50;
+                    margin-bottom: 5px;
+                    font-weight: 700;
+                    letter-spacing: -0.5px;
+                }
+                
+                .print-header p {
+                    font-size: 10pt;
+                    color: #6c757d;
+                    margin: 0;
+                }
+                
+                /* Card Styles */
                 .form-card { 
                     background: white; 
-                    border: 1px solid #ddd; 
+                    border: 1.5px solid #dee2e6; 
                     margin-bottom: 20px; 
-                    border-radius: 8px; 
+                    border-radius: 8px;
+                    page-break-inside: avoid;
+                    overflow: hidden;
                 }
+                
                 .card-header { 
-                    background: #f8f9fa; 
-                    padding: 15px 20px; 
-                    border-bottom: 1px solid #ddd; 
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                    padding: 12px 18px; 
+                    border-bottom: 2px solid #28a745;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
                 }
-                .card-title { font-size: 18px; color: #333; margin: 0; }
-                .card-body { padding: 20px; }
-                .detail-item { 
-                    background: #f8f9fa; 
-                    padding: 12px; 
-                    margin-bottom: 10px; 
-                    border-radius: 4px; 
-                    border-left: 3px solid #28a745; 
+                
+                .card-header .icon-wrapper {
+                    width: 48px;
+                    height: 48px;
+                    background: #28a745;
+                    border-radius: 12px;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 20pt;
+                    flex-shrink: 0;
+                    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
                 }
-                .detail-label { 
-                    font-size: 12px; 
-                    color: #666; 
-                    text-transform: uppercase; 
-                    margin-bottom: 4px; 
+                
+                .card-header .d-flex {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    width: 100%;
                 }
-                .detail-value { 
-                    font-size: 14px; 
-                    font-weight: 600; 
-                    color: #333; 
+                
+                .card-title { 
+                    font-size: 14pt; 
+                    color: #2c3e50; 
+                    margin: 0;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
                 }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { 
-                    padding: 8px 10px; 
-                    border: 1px solid #ddd; 
-                    font-size: 12px; 
+                
+                .card-title::before {
+                    content: '■';
+                    color: #28a745;
+                    font-size: 12pt;
                 }
+                
+                .card-header p {
+                    font-size: 9pt;
+                    color: #6c757d;
+                    margin: 3px 0 0 0;
+                }
+                
+                .card-body { 
+                    padding: 18px; 
+                }
+                
+                /* Purchase Info Grid */
+                .purchase-info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                    padding: 0;
+                }
+                
+                .info-card {
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    border-left: 4px solid #28a745;
+                    border-radius: 6px;
+                    padding: 12px 15px;
+                    page-break-inside: avoid;
+                }
+                
+                .info-label {
+                    font-size: 8pt;
+                    color: #6c757d;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin-bottom: 4px;
+                    font-weight: 600;
+                    display: block;
+                }
+                
+                .info-value {
+                    font-size: 11pt;
+                    font-weight: 700;
+                    color: #2c3e50;
+                    word-break: break-word;
+                }
+                
+                .info-badge {
+                    display: inline-block;
+                    background: #28a745;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 10px;
+                    font-size: 7pt;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    margin-top: 4px;
+                    letter-spacing: 0.3px;
+                }
+                
+                /* Hide decorative elements */
+                .info-background {
+                    display: none !important;
+                }
+                
+                /* Keep icons visible */
+                .icon-wrapper,
+                .detail-icon,
+                .expense-icon,
+                .header-icon {
+                    display: inline-block !important;
+                    font-size: 9pt;
+                    color: #28a745;
+                    margin-right: 5px;
+                }
+                
+                /* Table Styles */
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse;
+                    margin: 0;
+                    font-size: 10pt;
+                }
+                
                 th { 
-                    background: #f8f9fa; 
-                    font-weight: 600; 
-                    text-transform: uppercase; 
+                    background: #f8f9fa;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    font-size: 9pt;
+                    color: #495057;
+                    padding: 10px 12px;
+                    border: 1px solid #dee2e6;
+                    text-align: left;
+                    letter-spacing: 0.3px;
                 }
-                .currency-value, .amount-value { 
-                    color: #28a745; 
-                    font-weight: 600; 
+                
+                td { 
+                    padding: 10px 12px;
+                    border: 1px solid #dee2e6;
+                    font-size: 10pt;
+                    color: #2c3e50;
                 }
-                .total-amount { 
-                    color: #dc3545; 
-                    font-weight: 700; 
+                
+                .table-row:nth-child(even) {
+                    background: #f8f9fa;
                 }
-                .icon-wrapper { display: none; }
+                
+                /* Value Styling */
+                .quantity-badge,
+                .boxes-badge {
+                    background: #e9ecef;
+                    color: #495057;
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    font-size: 9pt;
+                    display: inline-block;
+                }
+                
+                .currency-value {
+                    color: #28a745;
+                    font-weight: 600;
+                }
+                
+                .amount-value {
+                    color: #dc3545;
+                    font-weight: 700;
+                    font-size: 11pt;
+                }
+                
+                /* Summary Table */
+                .summary-table th {
+                    background: #28a745;
+                    color: white;
+                    font-size: 9pt;
+                    padding: 10px 8px;
+                }
+                
+                .summary-table td {
+                    text-align: center;
+                    font-weight: 600;
+                    background: #f8f9fa;
+                }
+                
+                .summary-value {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 3px;
+                }
+                
+                .currency {
+                    color: #28a745;
+                    font-weight: 700;
+                }
+                
+                .calculated-value {
+                    color: #2c3e50;
+                    font-weight: 700;
+                }
+                
+                small.unit {
+                    font-size: 8pt;
+                    font-weight: 600;
+                    color: #6c757d;
+                    text-transform: uppercase;
+                }
+                
+                .total-highlight {
+                    background: #fff3cd !important;
+                }
+                
+                .total-highlight .calculated-value {
+                    color: #dc3545;
+                    font-size: 12pt;
+                }
+                
+                .total-highlight .currency {
+                    color: #dc3545;
+                }
+                
+                /* Expense Table */
+                .expense-label {
+                    font-weight: 600;
+                    color: #495057;
+                    padding: 10px 12px;
+                    border: 1px solid #dee2e6;
+                }
+                
+                .total-expense-row {
+                    background: #d4edda !important;
+                }
+                
+                .total-expense-row .expense-label,
+                .total-expense-row .table-cell {
+                    color: #155724;
+                    font-weight: 700;
+                    font-size: 11pt;
+                    border: 1px solid #c3e6cb;
+                }
+                
+                .total-amount {
+                    color: #dc3545;
+                    font-weight: 700;
+                    font-size: 12pt;
+                }
+                
+                /* Empty State */
+                .empty-state {
+                    padding: 30px;
+                    text-align: center;
+                    color: #6c757d;
+                }
+                
+                .empty-icon {
+                    font-size: 36pt;
+                    color: #dee2e6;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                
+                /* No Expense */
+                .no-expense {
+                    text-align: center;
+                    padding: 30px;
+                    color: #6c757d;
+                }
+                
+                .no-expense-icon {
+                    font-size: 36pt;
+                    color: #dee2e6;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+                
+                /* Footer */
+                .print-footer {
+                    margin-top: 30px;
+                    padding-top: 15px;
+                    border-top: 2px solid #dee2e6;
+                    text-align: center;
+                    font-size: 9pt;
+                    color: #6c757d;
+                }
+                
+                /* Utilities */
                 .d-flex { display: flex; align-items: center; }
                 .me-4 { margin-right: 1rem; }
                 .mb-0 { margin-bottom: 0; }
                 .text-muted { color: #6c757d; }
+                .text-center { text-align: center; }
+                .text-end { text-align: right; }
+                
+                /* Print-specific adjustments */
+                @media print {
+                    body {
+                        margin: 0;
+                        padding: 0;
+                    }
+                    
+                    .form-card {
+                        box-shadow: none;
+                    }
+                }
             </style>
         </head>
         <body>
+            <div class="print-header">
+                <h1>Purchase Order Details</h1>
+                <p>Generated on ${new Date().toLocaleDateString('en-IN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</p>
+            </div>
+            
             ${clonedContent.innerHTML}
+            
+            <div class="print-footer">
+                <p>This is a computer-generated document. No signature is required.</p>
+                <p style="margin-top: 5px; font-size: 8pt;">© ${new Date().getFullYear()} Purchase Management System. All rights reserved.</p>
+            </div>
         </body>
         </html>
     `);
@@ -1361,7 +1677,7 @@ function printMyclassIsolated() {
             printWindow.onafterprint = function() {
                 printWindow.close();
             };
-        }, 500);
+        }, 250);
     };
 }
 

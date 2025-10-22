@@ -3,6 +3,27 @@
 {% block content %}
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+</style>
+
+<style>
+
+    /* Voucher Display */
+  .voucher-display {
+    text-align: center;
+  }
+
+  .voucher-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+    color: white;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
  
 
   /* Card Styling */
@@ -266,12 +287,13 @@
 
   /* Date Display */
   .date-display {
-    display: flex;
-    align-items: center;
     color: #495057;
-    font-weight: 600;
-    font-family: 'Monaco', 'Consolas', monospace;
+  font-family: "Barlow", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+    font-size: 16px;
   }
+
 
   .date-display i {
     margin-right: 8px;
@@ -316,7 +338,7 @@
     align-items: center;
     padding: 8px 16px;
     border-radius: 20px;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -782,16 +804,16 @@
             <table class="modern-table" id="dataTable">
               <thead>
                 <tr>
-                  <th>
+                                    <th>
                     <div class="header-content-table">
-                      <i class="fas fa-calendar-alt header-icon"></i>
-                      <span>Freezing Date</span>
+                      <i class="fas fa-receipt header-icon"></i>
+                      <span>Voucher No</span>
                     </div>
                   </th>
                   <th>
                     <div class="header-content-table">
-                      <i class="fas fa-receipt header-icon"></i>
-                      <span>Voucher No</span>
+                      <i class="fas fa-calendar-alt header-icon"></i>
+                      <span>Freezing Date</span>
                     </div>
                   </th>
                   <th>
@@ -829,6 +851,11 @@
               <tbody id="tableBody">
                 {% for entry in entries %}
                 <tr class="table-row" data-searchable="{{ entry.voucher_number|lower }} {{ entry.tenant_company_name|lower }} {{ entry.freezing_date }} {{ entry.total_slab }} {{ entry.total_c_s }} {{ entry.total_kg }}">
+                                        <td class="table-cell">
+                      <div class="voucher-display">
+                        <span class="voucher-badge">{{ entry.voucher_number }}</span>
+                      </div>
+                    </td>
                   <td>
                     <div class="date-display">
                       <i class="fas fa-calendar-alt"></i>
@@ -836,10 +863,7 @@
                     </div>
                   </td>
                   
-                  <td>
-                    <strong>{{ entry.voucher_number }}</strong>
-                  </td>
-                  
+
                   <td>
                     <div class="company-info">
                       <div class="company-avatar">

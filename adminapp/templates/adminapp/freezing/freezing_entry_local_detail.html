@@ -1,7 +1,7 @@
 {% extends 'admin_base.html' %}
 {% block title %} Local Freezing Entry Detail {% endblock %}
 {% block content %}
-
+{% load indian_numbers %}
 
     <!-- Page header style -->
 <style>
@@ -332,7 +332,7 @@
               <tbody>
                 <tr class="table-row">
                   <td class="table-cell">
-                    <span class="voucher-badge {% if entry.freezing_status == 'Active' %}status-active{% elif entry.freezing_status == 'Pending' %}status-pending{% else %}status-inactive{% endif %}">{{ entry.get_freezing_status_display }}</span>
+                    <span class="voucher-badge {% if entry.freezing_status == 'complete' %}status-active{% elif entry.freezing_status == 'incomplete' %}status-pending{% else %}status-inactive{% endif %}">{{ entry.get_freezing_status_display }}</span>
                   </td>
                   <td class="table-cell">
                     <span class="boxes-badge">{{ entry.total_slab|floatformat:2 }}</span>
@@ -402,13 +402,13 @@
                 <tr class="summary-row">
                   <td class="table-cell">
                     <div class="summary-value">
-                      <span class="calculated-value">${{ entry.total_usd|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">${{ entry.total_usd|floatformat:2|default:"0.00"|indian_comma }}</span>
                       <small class="unit">USD</small>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="summary-value">
-                      <span class="calculated-value">₹{{ entry.total_inr|floatformat:2|default:"0.00" }}</span>
+                      <span class="calculated-value">₹{{ entry.total_inr|floatformat:2|default:"0.00"|indian_comma }}</span>
                       <small class="unit">INR</small>
                     </div>
                   </td>
@@ -466,7 +466,6 @@
                   <th class="table-header">USD/kg</th>
                   <th class="table-header">USD Item</th>
                   <th class="table-header">INR</th>
-                  <th class="table-header">Yield %</th>
                 </tr>
               </thead>
               <tbody>
@@ -482,14 +481,13 @@
                   <td class="table-cell">{{ item.brand }}</td>
                   <td class="table-cell">{{ item.freezing_category }}</td>
                   <td class="table-cell">{{ item.unit }}</td>
-                  <td class="table-cell"><span class="balance-badge">{{ item.glaze }}%</span></td>
+                  <td class="table-cell"><span class="balance-badge">{{ item.glaze }}</span></td>
                   <td class="table-cell"><span class="boxes-badge">{{ item.slab_quantity }}</span></td>
                   <td class="table-cell"><span class="quantity-badge">{{ item.c_s_quantity }}</span></td>
                   <td class="table-cell"><span class="weight-value">{{ item.kg }} kg</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr }}</span></td>
-                  <td class="table-cell"><span class="balance-badge">{{ item.yield_percentage }}%</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr|indian_comma }}</span></td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -848,7 +846,7 @@ small.unit {
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .voucher-badge {
@@ -857,7 +855,7 @@ small.unit {
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .item-name {
@@ -872,13 +870,13 @@ small.unit {
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .weight-value {
   color: #dc3545;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .balance-badge {
@@ -887,13 +885,13 @@ small.unit {
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .currency-cell {
   color: #28a745;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .status-badge {
@@ -902,7 +900,7 @@ small.unit {
   padding: 6px 12px;
   border-radius: 20px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 /* Status badges */

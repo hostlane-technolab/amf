@@ -215,15 +215,21 @@ class LocalParty(BaseModel):
 
 
 
-class PurchasingSupervisor(BaseModel):
+
+class PurchasingSupervisor(models.Model):
     name = models.CharField(max_length=150)
-    mobile = models.CharField(max_length=15, unique=True)
+    mobile = models.CharField(max_length=15,blank=True)
     email = models.EmailField(blank=True)
     joining_date = models.DateField(null=True, blank=True)
+    commission = models.DecimalField(max_digits=5, decimal_places=2)
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.name} - {self.mobile}"
+
+
+
 
 class PurchasingAgent(BaseModel):
     purchasingSpot = models.ForeignKey(PurchasingSpot, on_delete=models.CASCADE)
@@ -618,10 +624,10 @@ class FreezingEntrySpotItem(BaseModel):
     unit = models.ForeignKey('PackingUnit', on_delete=models.CASCADE)
     glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
-    brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE, null=True, blank=True , default=None)
-    species = models.ForeignKey('Species', on_delete=models.CASCADE,null=True, blank=True , default=None )
-    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True , default=None)
-    grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE, null=True, blank=True , default=None )
+    brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE, null=True, blank=True )
+    species = models.ForeignKey('Species', on_delete=models.CASCADE,null=True, blank=True  )
+    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True )
+    grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE, null=True, blank=True  )
     slab_quantity = models.DecimalField(max_digits=100, decimal_places=2)
     c_s_quantity = models.DecimalField(max_digits=100, decimal_places=2)
     kg = models.DecimalField(max_digits=100, decimal_places=2)
@@ -679,10 +685,11 @@ class FreezingEntryLocalItem(BaseModel):
     unit = models.ForeignKey('PackingUnit', on_delete=models.CASCADE)
     glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
-    brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
-    species = models.ForeignKey('Species', on_delete=models.CASCADE)
-    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE)
-    grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
+
+    brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE, null=True, blank=True )
+    species = models.ForeignKey('Species', on_delete=models.CASCADE,null=True, blank=True  )
+    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True )
+    grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE, null=True, blank=True  )
 
     slab_quantity = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     c_s_quantity = models.DecimalField(max_digits=100, decimal_places=2, default=0)
@@ -694,6 +701,71 @@ class FreezingEntryLocalItem(BaseModel):
     def __str__(self):
         return f"{self.item} - {self.kg} KG"
 
+
+class TenantStock(BaseModel):
+    """
+    Tracks stock returned by tenants and available for reuse/resale
+    """
+    # Tenant reference - ALLOW NULL TEMPORARILY for migration
+    tenant_company_name = models.ForeignKey(
+        'Tenant', 
+        on_delete=models.CASCADE,
+        null=True,  # ✅ Temporarily allow null for migration
+        blank=True
+    )
+    
+    # Stock location
+    processing_center = models.ForeignKey(
+        'ProcessingCenter', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True
+    )
+    store = models.ForeignKey(
+        'Store', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True
+    )
+    
+    # Item details (denormalized for quick access)
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    item_quality = models.ForeignKey(
+        'ItemQuality', 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True
+    )
+    unit = models.ForeignKey('PackingUnit', on_delete=models.CASCADE)
+    glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
+    freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
+    brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
+    species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
+    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True)
+    
+    # Quantities
+    available_slab = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    available_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    available_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    
+    # Original quantities (for tracking)
+    original_slab = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    original_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    original_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    
+    remarks = models.TextField(blank=True, null=True)
+    
+    class Meta:
+        # Note: unique_together will be added after data migration
+        indexes = [
+            models.Index(fields=['tenant_company_name', 'item']),
+            models.Index(fields=['processing_center', 'store']),
+        ]
+    
+    def __str__(self):
+        tenant_name = self.tenant_company_name.name if self.tenant_company_name else "No Tenant"
+        return f"{tenant_name} - {self.item} - {self.available_kg} KG"
 
 
 class FreezingEntryTenant(BaseModel):
@@ -734,6 +806,7 @@ class FreezingEntryTenantItem(BaseModel):
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
     brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
     species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True )
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
 
     slab_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -761,7 +834,7 @@ class ReturnTenant(BaseModel):
     return_status = models.CharField(  # Changed from freezing_status
         max_length=50,
         choices=RETURN_STATUS_CHOICES,
-        default='complete'
+        default='incomplete'
     )
 
     def __str__(self):
@@ -773,14 +846,6 @@ class ReturnTenantItem(BaseModel):
         on_delete=models.CASCADE,
         related_name='items'
     )
-    # 🔑 Link back to the exact stock lot (traceability)
-    original_item = models.ForeignKey(
-        FreezingEntryTenantItem,
-        on_delete=models.SET_NULL,
-        null=True, blank=True,
-        related_name="returned_items",
-        help_text="Reference to the original stock lot"
-    )
 
     processing_center = models.ForeignKey('ProcessingCenter', on_delete=models.CASCADE, null=True, blank=True)
     store = models.ForeignKey('Store', on_delete=models.CASCADE, null=True, blank=True)
@@ -791,6 +856,7 @@ class ReturnTenantItem(BaseModel):
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
     brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
     species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True )
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
 
     slab_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
@@ -802,15 +868,11 @@ class ReturnTenantItem(BaseModel):
 
 
 
-
-
-
-
-
-
 # PRE SHIPMENT WORK OUT model
 class PreShipmentWorkOut(BaseModel):
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    item_quality = models.ForeignKey('ItemQuality', on_delete=models.CASCADE)
+
     unit = models.ForeignKey('PackingUnit', on_delete=models.CASCADE)
     glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
     category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
@@ -821,7 +883,6 @@ class PreShipmentWorkOut(BaseModel):
 
 class PreShipmentWorkOutItem(BaseModel):
     workout = models.ForeignKey(PreShipmentWorkOut, on_delete=models.CASCADE, related_name="items")
-    item_quality = models.ForeignKey('ItemQuality', on_delete=models.CASCADE, null=True, blank=True , default=None)
     species = models.ForeignKey('Species', on_delete=models.CASCADE)
     peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE)
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
@@ -1008,6 +1069,7 @@ class Stock(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     item_quality = models.ForeignKey(ItemQuality, on_delete=models.CASCADE, null=True, blank=True)
     freezing_category = models.ForeignKey(FreezingCategory, on_delete=models.CASCADE, null=True, blank=True)
+    peeling_type = models.ForeignKey(ItemType, on_delete=models.CASCADE, null=True, blank=True)
 
     # Changed from CharField to ForeignKey
     unit = models.ForeignKey(PackingUnit, on_delete=models.SET_NULL, null=True, blank=True)
@@ -1023,12 +1085,14 @@ class Stock(models.Model):
     usd_rate_item_to_inr = models.DecimalField(max_digits=100, decimal_places=2, default=0)
 
     class Meta:
-        unique_together = ['store', 'item', 'brand', 'item_quality', 'unit', 'glaze', 'species', 'item_grade']
+        # Added freezing_category to unique constraint
+        unique_together = [
+            'store', 'item', 'brand', 'item_quality', 'unit', 'glaze', 
+            'species', 'item_grade', 'peeling_type', 'freezing_category'
+        ]
 
     def __str__(self):
         return f"{self.item.name} ({self.store.name})"
-
-
 
 
 
@@ -1063,10 +1127,6 @@ class StoreTransferItem(models.Model):
 
 
 
-
-
-from django.db import models
-from django.utils import timezone
 
 # --- Spot Agent Voucher --- fix
 class SpotAgentVoucher(models.Model):
@@ -1148,9 +1208,6 @@ class TenantVoucher(models.Model):
 
 
 
-from django.db import models
-from django.utils import timezone
-from decimal import Decimal
 
 
 class Buyer(BaseModel):
@@ -1288,6 +1345,132 @@ class SalesEntryItem(BaseModel):
     # Stock Reference (for inventory tracking)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+
+
+class Notification(models.Model):
+    """
+    Store system-wide notifications for activities
+    """
+    
+    NOTIFICATION_TYPES = [
+        ('success', 'Success'),
+        ('info', 'Info'),
+        ('warning', 'Warning'),
+        ('danger', 'Danger'),
+        ('primary', 'Primary'),
+    ]
+    
+    ACTION_TYPES = [
+        ('create', 'Created'),
+        ('update', 'Updated'),
+        ('delete', 'Deleted'),
+        ('purchase', 'Purchase'),
+        ('sale', 'Sale'),
+        ('transfer', 'Transfer'),
+        ('freezing', 'Freezing'),
+        ('billing', 'Billing'),
+        ('payment', 'Payment'),
+        ('voucher', 'Voucher'),
+        ('login', 'Login'),
+        ('other', 'Other'),
+    ]
+    
+    # Who performed the action
+    user = models.ForeignKey(
+        CustomUser, 
+        on_delete=models.CASCADE, 
+        related_name='created_notifications'
+    )
+    
+    # Notification details
+    notification_type = models.CharField(
+        max_length=20, 
+        choices=NOTIFICATION_TYPES,
+        default='info'
+    )
+    
+    action_type = models.CharField(
+        max_length=20,
+        choices=ACTION_TYPES,
+        default='other'
+    )
+    
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    
+    # Optional: link to related page
+    link_url = models.CharField(max_length=500, blank=True, null=True)
+    link_text = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Read/Unread tracking
+    read_by = models.ManyToManyField(
+        CustomUser, 
+        related_name='read_notifications',
+        blank=True
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    
+    # Optional: Target specific users (leave empty for all users)
+    target_users = models.ManyToManyField(
+        CustomUser,
+        related_name='received_notifications',
+        blank=True
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['-created_at']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['is_active', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def mark_as_read(self, user):
+        """Mark notification as read for a specific user"""
+        self.read_by.add(user)
+    
+    def is_read_by(self, user):
+        """Check if notification is read by user"""
+        return self.read_by.filter(id=user.id).exists()
+    
+    @property
+    def get_icon(self):
+        """Get Bootstrap icon based on action type"""
+        icons = {
+            'create': 'bi-plus-circle-fill',
+            'update': 'bi-pencil-fill',
+            'delete': 'bi-trash-fill',
+            'purchase': 'bi-cart-fill',
+            'sale': 'bi-cash-coin',
+            'transfer': 'bi-arrow-left-right',
+            'freezing': 'bi-snow',
+            'billing': 'bi-receipt',
+            'payment': 'bi-credit-card',
+            'voucher': 'bi-file-earmark-text',
+            'login': 'bi-box-arrow-in-right',
+            'other': 'bi-bell-fill',
+    }
+        return icons.get(self.action_type, 'bi-bell-fill')
+    
+    @property
+    def time_since(self):
+        """Human readable time since creation"""
+        from django.utils.timesince import timesince
+        return timesince(self.created_at)
+
+
+
+
+
+
 
 
 

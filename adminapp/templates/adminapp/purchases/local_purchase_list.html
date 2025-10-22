@@ -1,6 +1,8 @@
 {% extends 'admin_base.html' %}
 {% block title %} Local Purchase List {% endblock %}
 {% block content %}
+{% load indian_numbers %}
+
 
 <style>
   .custom-table th:nth-child(1),
@@ -361,7 +363,7 @@
                     <td class="table-cell">
                       <div class="amount-display">
                         <span class="currency-symbol">₹</span>
-                        <span class="amount-value">{{ purchase.total_amount|floatformat:2 }}</span>
+                        <span class="amount-value">{{ purchase.total_amount|floatformat:2|indian_comma }}</span>
                       </div>
                     </td>
                     

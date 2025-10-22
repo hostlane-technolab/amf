@@ -216,7 +216,8 @@ urlpatterns = [
     path('freezing-workout/', views.FreezingWorkOutView.as_view(), name='freezing_workout'),
 
     # pre_shipment_workout_create
-    path('create_preshipment_workout/', views.PreShipmentWorkOutCreateAndSummaryView.as_view(), name='create_preshipment_workout'),
+    path('get-stock-rate/', views.GetStockRateView.as_view(), name='get_stock_rate'),
+    path('create_preshipment_workout/', views.PreShipmentWorkOutView.as_view(), name='create_preshipment_workout'),
     path("preshipment-workouts/", views.PreShipmentWorkOutListView.as_view(), name="preshipment_workout_list"),
     path("preshipment-workout/delete/<int:pk>/", views.PreShipmentWorkOutDeleteView.as_view(), name="preshipment_workout_delete"),
     path('get-species/', views.get_species_for_item, name='get_species_for_item'),
@@ -266,11 +267,8 @@ urlpatterns = [
     path("return-tenant/create/", views.return_tenant_create, name="create_return_tenant"),
     path("return-tenant/<int:pk>/", views.return_tenant_detail, name="detail_return_tenant"),
     path('return-tenant/<int:pk>/pdf/', views.generate_return_tenant_pdf, name='return_tenant_pdf'),
-    path("return-tenant/<int:pk>/update/", views.return_tenant_update, name="update_return_tenant"),
-    path("return-tenant/<int:pk>/delete/", views.return_tenant_delete, name="delete_return_tenant"),
 
-    path('ajax/get-tenant-original-items/', views.get_tenant_original_items, name='get_tenant_original_items'),
-    path('ajax/get-tenant-tariff/', views.get_tenant_tariff, name='get_tenant_tariff'),
+
     
 
 #  Tenant Stock Management URLs
@@ -346,10 +344,18 @@ urlpatterns = [
     path('spotagentvouchers/summary-pdf/', views.spot_agent_voucher_summary_pdf, name='spot_agent_voucher_summary_pdf'),
     path('spotagentvouchers/agent/<str:agent_id>/statement/', views.spot_agent_statement_pdf, name='spot_agent_statement_pdf'),
 
-    # --- Supervisor ---
-    path("vouchers/supervisor/create/", views.SupervisorVoucherCreateView.as_view(), name="supervisorvoucher_create"),
-    path("vouchers/supervisor/list/", views.SupervisorVoucherListView.as_view(), name="supervisorvoucher_list"),
-
+    
+    
+    # --- Supervisor voucher ---
+    path('supervisor-vouchers/', views.supervisorvoucher_list_with_summary, name='supervisorvoucher_list'),    
+    path('supervisor-vouchers/create/',views.create_supervisor_voucher, name='create_supervisor_voucher'),
+    path('supervisor-vouchers/<int:voucher_id>/update/', views.update_supervisor_voucher, name='update_supervisor_voucher'),
+    path('supervisor-vouchers/<int:voucher_id>/delete/',views.delete_supervisor_voucher,name='delete_supervisor_voucher'),
+    path('supervisor-vouchers/summary-pdf/', views.supervisor_voucher_summary_pdf, name='supervisor_voucher_summary_pdf'),
+    path('supervisor-vouchers/statement-pdf/<int:supervisor_id>/', views.supervisor_statement_pdf, name='supervisor_statement_pdf'),
+    path('api/get-supervisor-balance/', views.get_supervisor_balance, name='get_supervisor_balance'),
+    
+    
     # --- Local Purchase ---
     path("vouchers/local/create/", views.create_local_purchase_voucher, name="localpurchasevoucher_create"),
     path("api/get-party-balance/", views.get_party_balance, name="get_party_balance"),
@@ -424,5 +430,33 @@ urlpatterns = [
     path('sales-entry/<int:pk>/delete/', views.delete_sales_entry, name='sales_entry_delete'),
     
     path('sales/entry/<int:pk>/pdf/', views.sales_entry_invoice_pdf, name='sales_entry_invoice_pdf'),
+
+
+
+
+
+
+    path('get-item-grades/', views.get_item_grades, name='get_item_grades'),
+
+    path('stock/adjustment/', views.stock_adjustment, name='stock_adjustment'),
+    path('get-current-stock/', views.get_current_stock, name='get_current_stock'), 
+
+
+
+ 
+    path('return-tenant/update/<int:pk>/', views.return_tenant_update, name='update_return_tenant'),
+    path('return-tenant/delete/<int:pk>/', views.return_tenant_delete, name='delete_return_tenant'),
+    path('get-tenant-stock/', views.get_tenant_stock_ajax, name='get_tenant_stock_ajax'),
+
+    
+    path('notifications/',views.NotificationListView.as_view(), name='notification_list'),
+    path('notifications/unread/',views.UnreadNotificationsView.as_view(), name='notification_unread'),
+    path('notifications/<int:pk>/mark-read/',views.mark_notification_read, name='notification_mark_read'),
+    path('notifications/mark-all-read/',views.mark_all_notifications_read, name='notification_mark_all_read'),
+    path('notifications/delete/<int:pk>/',views.delete_notification, name='notification_delete'),
+    path('notifications/ajax/count/',views.get_unread_count_ajax, name='notification_count_ajax'),
+
+
+
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -144,6 +144,8 @@ class PurchasingSupervisorForm(forms.ModelForm):
     class Meta:
         model = PurchasingSupervisor
         fields = '__all__'
+        exclude = ['is_active', 'created_at']
+
 
 class PurchasingAgentForm(forms.ModelForm):
     class Meta:
@@ -316,6 +318,13 @@ class SpotPurchaseForm(forms.ModelForm):
             'supervisor': forms.Select(attrs={'class': 'form-control'}),
             'agent': forms.Select(attrs={'class': 'form-control'}),
         }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show active supervisors
+        self.fields['supervisor'].queryset = PurchasingSupervisor.objects.filter(is_active=True)
+
+
 
 class SpotPurchaseItemForm(forms.ModelForm):
     class Meta:
@@ -357,19 +366,13 @@ class SpotPurchaseExpenseForm(forms.ModelForm):
 
 # local purchase forms
 class LocalPurchaseForm(forms.ModelForm):
-    date = forms.DateField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control datepicker',
-            'placeholder': 'dd/mm/yyyy'
-        }),
-        input_formats=['%d/%m/%Y'],  # ✅ Accept dd/mm/yyyy
-        initial=now
-    )
+
 
     class Meta:
         model = LocalPurchase
         fields = ['date', 'voucher_number', 'party_name']
         widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'voucher_number': forms.TextInput(attrs={'class': 'form-control'}),
             'party_name': forms.Select(attrs={'class': 'form-control'}),
         }
@@ -564,65 +567,129 @@ FreezingEntryLocalItemFormSet = inlineformset_factory(
 
 
 
-# Main form for PreShipmentWorkOut
+
 class PreShipmentWorkOutForm(forms.ModelForm):
+    """Main form for PreShipmentWorkOut"""
+    
     class Meta:
         model = PreShipmentWorkOut
-        fields = "__all__"
-        exclude = ['remark']
+        fields = ['item', 'item_quality', 'unit', 'glaze', 'category', 'brand']
         widgets = {
-            'item': forms.Select(attrs={'class': 'form-control'}),
-            'unit': forms.Select(attrs={'class': 'form-control'}),
-            'glaze': forms.Select(attrs={'class': 'form-control'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'brand': forms.Select(attrs={'class': 'form-control'}),
+            'item': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_item', 
+            }),
+            'item_quality': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_item_quality'
+            }),
+            'unit': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_unit'
+            }),
+            'glaze': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_glaze'
+            }),
+            'category': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_category'
+            }),
+            'brand': forms.Select(attrs={
+                'class': 'form-select',
+                'id': 'id_brand'
+            }),
         }
 
-# Inline form for PreShipmentWorkOutItem
+    def clean(self):
+        cleaned_data = super().clean()
+        # Add cross-field validation if needed
+        return cleaned_data
+
 class PreShipmentWorkOutItemForm(forms.ModelForm):
+    """Form for individual workout items"""
+    
     class Meta:
         model = PreShipmentWorkOutItem
-        fields = "__all__"
-        exclude = ['remark']  # Exclude remark field
+        fields = [
+            'species', 'peeling_type', 'grade', 'cartons', 'quantity',
+            'usd_rate_per_kg', 'usd_rate_item', 'usd_rate_item_to_inr',
+            'usd_rate_per_kg_get', 'usd_rate_item_get', 'usd_rate_item_to_inr_get',
+            'profit', 'loss'
+        ]
         widgets = {
-            'item_quality': forms.Select(attrs={'class': 'form-control quality'}),
-            'species': forms.Select(attrs={'class': 'form-control species'}),            
-            'peeling_type': forms.Select(attrs={'class': 'form-control'}),
-            'grade': forms.Select(attrs={'class': 'form-control'}),
-
-            'cartons': forms.NumberInput(attrs={'class': 'form-control cartons'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control quantity'}),
-
-            # "We want rate" fields
-            'usd_rate_per_kg': forms.NumberInput(attrs={'class': 'form-control usd-rate-per-kg'}),
-            'usd_rate_item': forms.NumberInput(attrs={'class': 'form-control usd-rate-item'}),
-            'usd_rate_item_to_inr': forms.NumberInput(attrs={'class': 'form-control usd-rate-item-inr'}),
-
-            # "We get rate" fields
-            'usd_rate_per_kg_get': forms.NumberInput(attrs={'class': 'form-control usd-rate-per-kg-get'}),
-            'usd_rate_item_get': forms.NumberInput(attrs={'class': 'form-control usd-rate-item-get'}),
-            'usd_rate_item_to_inr_get': forms.NumberInput(attrs={'class': 'form-control usd-rate-item-inr-get'}),
-
-            'profit': forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control profit'}),
-            'loss': forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control loss'}),
+            'species': forms.Select(attrs={
+                'class': 'form-select species',
+            }),
+            'peeling_type': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'form-select'
+            }),
+            'cartons': forms.NumberInput(attrs={
+                'class': 'form-control cartons',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'quantity': forms.NumberInput(attrs={
+                'class': 'form-control quantity',
+                'step': '0.01',
+                'readonly': True
+            }),
+            'usd_rate_per_kg': forms.NumberInput(attrs={
+                'class': 'form-control usd-rate-per-kg',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'usd_rate_item': forms.NumberInput(attrs={
+                'class': 'form-control usd-rate-item',
+                'step': '0.01',
+                'readonly': True
+            }),
+            'usd_rate_item_to_inr': forms.NumberInput(attrs={
+                'class': 'form-control usd-rate-item-inr',
+                'step': '0.01',
+                'readonly': True
+            }),
+            'usd_rate_per_kg_get': forms.NumberInput(attrs={
+                'class': 'form-control usd-rate-per-kg-get',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'usd_rate_item_get': forms.NumberInput(attrs={
+                'class': 'form-control usd-rate-item-get',
+                'step': '0.01',
+                'readonly': True
+            }),
+            'usd_rate_item_to_inr_get': forms.NumberInput(attrs={
+                'class': 'form-control usd-rate-item-inr-get',
+                'step': '0.01',
+                'readonly': True
+            }),
+            'profit': forms.NumberInput(attrs={
+                'class': 'form-control profit',
+                'readonly': True,
+                'step': '0.01'
+            }),
+            'loss': forms.NumberInput(attrs={
+                'class': 'form-control loss',
+                'readonly': True,
+                'step': '0.01'
+            }),
         }
 
-    def __init__(self, *args, **kwargs):
-        item_id = kwargs.pop('item_id', None)
-        super().__init__(*args, **kwargs)
-        if item_id:
-            self.fields['species'].queryset = Species.objects.filter(item_id=item_id)
-        else:
-            self.fields['species'].queryset = Species.objects.none()
-            
-# Inline formset to attach PreShipmentWorkOutItem to PreShipmentWorkOut
+
 PreShipmentWorkOutItemFormSet = inlineformset_factory(
     PreShipmentWorkOut,
     PreShipmentWorkOutItem,
     form=PreShipmentWorkOutItemForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+   
 )
+
+
 
 
 
@@ -679,9 +746,6 @@ class FreezingEntryTenantItemForm(forms.ModelForm):
         # ✅ Show only active freezing categories
         self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
 
-
-
-
 FreezingEntryTenantItemFormSet = inlineformset_factory(
     FreezingEntryTenant,
     FreezingEntryTenantItem,
@@ -693,69 +757,42 @@ FreezingEntryTenantItemFormSet = inlineformset_factory(
 
 # return to Tenant Forms
 
-
 class ReturnTenantForm(forms.ModelForm):
     class Meta:
         model = ReturnTenant
         fields = "__all__"
-        exclude = ['total_amount']  # Exclude if calculated automatically
+        exclude = ['total_amount']
         widgets = {
-            'return_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),  # Fixed field name
+            'return_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'voucher_number': forms.TextInput(attrs={'class': 'form-control'}),
-            'tenant_company_name': forms.Select(attrs={'class': 'form-control'}),
-
+            'tenant_company_name': forms.Select(attrs={'class': 'form-control', 'id': 'id_tenant_company_name'}),
             'total_slab': forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
             'total_c_s': forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
             'total_kg': forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
-
-            'return_status': forms.Select(attrs={'class': 'form-control'}),  # Fixed field name
+            'return_status': forms.Select(attrs={'class': 'form-control'}),
         }
+
 
 class ReturnTenantItemForm(forms.ModelForm):
     class Meta:
         model = ReturnTenantItem
         fields = "__all__"
+        exclude = ['peeling_type']
         widgets = {
-            'original_item': forms.Select(attrs={'class': 'form-control original-item-select'}),  # Added for traceability
             'processing_center': forms.Select(attrs={'class': 'form-control'}),
             'store': forms.Select(attrs={'class': 'form-control'}),
-
-            # 🔹 For AJAX population
             'item': forms.Select(attrs={'class': 'form-control item-select'}),
             'item_quality': forms.Select(attrs={'class': 'form-control'}),
-
             'unit': forms.Select(attrs={'class': 'form-control unit-select'}),
             'glaze': forms.Select(attrs={'class': 'form-control'}),
-            'freezing_category': forms.Select(attrs={'class': 'form-control'}),
+            'freezing_category': forms.Select(attrs={'class': 'form-control freezing-category-select'}),
             'brand': forms.Select(attrs={'class': 'form-control'}),
-
-            # 🔹 Add "species-select" for dependent dropdowns
             'species': forms.Select(attrs={'class': 'form-control species-select'}),
             'grade': forms.Select(attrs={'class': 'form-control'}),
-
-            'slab_quantity': forms.NumberInput(attrs={'class': 'form-control slab-quantity'}),
-            'c_s_quantity': forms.NumberInput(attrs={'class': 'form-control cs-quantity'}),
-            'kg': forms.NumberInput(attrs={'class': 'form-control kg'}),
+            'slab_quantity': forms.NumberInput(attrs={'class': 'form-control slab-quantity', 'step': '0.01'}),
+            'c_s_quantity': forms.NumberInput(attrs={'class': 'form-control cs-quantity', 'step': '0.01'}),
+            'kg': forms.NumberInput(attrs={'class': 'form-control kg', 'step': '0.01'}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        # Filter original_item to show only items from the same tenant
-        if 'tenant_company_name' in self.initial:
-            tenant = self.initial['tenant_company_name']
-            self.fields['original_item'].queryset = FreezingEntryTenantItem.objects.filter(
-                freezing_entry__tenant_company_name=tenant
-            ).select_related('item', 'freezing_entry')
-        
-        # Make original_item optional but helpful
-        self.fields['original_item'].required = False
-        self.fields['original_item'].help_text = "Link to original stock lot (optional)"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # ✅ Show only active freezing categories
-        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
 
 
 ReturnTenantItemFormSet = inlineformset_factory(
@@ -765,7 +802,6 @@ ReturnTenantItemFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
-
 
 
 
@@ -901,18 +937,47 @@ class SpotAgentVoucherForm(forms.ModelForm):
 
 
 # --- Supervisor Voucher Form ---
+# --- Supervisor Voucher Form ---
+from django import forms
+from .models import SupervisorVoucher, PurchasingSupervisor
+
 class SupervisorVoucherForm(forms.ModelForm):
     class Meta:
         model = SupervisorVoucher
-        fields = ["voucher_no", "supervisor", "date", "description", "receipt", "payment"]
+        fields = ["voucher_no", "supervisor", "date", "description", "remain_amount", "receipt", "payment", "total_amount"]
         widgets = {
             "voucher_no": forms.TextInput(attrs={"class": "form-control"}),
             "supervisor": forms.Select(attrs={"class": "form-control"}),
             "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
+            "remain_amount": forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
             "receipt": forms.NumberInput(attrs={"class": "form-control"}),
             "payment": forms.NumberInput(attrs={"class": "form-control"}),
+            "total_amount": forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Get active supervisors and create choices
+        supervisors = PurchasingSupervisor.objects.filter(
+            is_active=True
+        ).order_by('name')
+        
+        supervisor_choices = [('', '--- Select Supervisor ---')]
+        
+        for supervisor in supervisors:
+            display_name = supervisor.name
+            if supervisor.mobile:
+                display_name += f" - {supervisor.mobile}"
+            if supervisor.email:
+                display_name += f" ({supervisor.email})"
+            supervisor_choices.append((supervisor.id, display_name))
+        
+        # Update form choices
+        self.fields['supervisor'].choices = supervisor_choices
+
+
 
 
 # --- Local Purchase Voucher Form ---
@@ -1047,7 +1112,7 @@ class StockForm(forms.ModelForm):
         model = Stock
         fields = [
             'store', 'brand', 'item', 'item_quality', 'freezing_category',
-            'unit', 'glaze', 'species', 'item_grade', 
+            'unit', 'glaze', 'species', 'item_grade','peeling_type', 
             'cs_quantity', 'kg_quantity', 
             'usd_rate_per_kg', 'usd_rate_item', 'usd_rate_item_to_inr'
         ]
@@ -1083,30 +1148,33 @@ class StockForm(forms.ModelForm):
             'item_grade': forms.Select(attrs={
                 'class': 'form-control'
             }),
+            'peeling_type': forms.Select(attrs={
+                'class': 'form-control'
+            }),
             'cs_quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0'
+                
             }),
             'kg_quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0'
+          
             }),
             'usd_rate_per_kg': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0'
+     
             }),
             'usd_rate_item': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0'
+
             }),
             'usd_rate_item_to_inr': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01',
-                'min': '0'
+      
             }),
         }
         
@@ -1180,6 +1248,146 @@ class StockForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # ✅ Show only active freezing categories
         self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
+
+
+
+class StockAdjustmentForm(forms.Form):  # Changed from ModelForm to Form
+    # Stock identification fields
+    store = forms.ModelChoiceField(
+        queryset=Store.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control', 'required': True, 'id': 'id_store'}),
+        label='Store *'
+    )
+    brand = forms.ModelChoiceField(
+        queryset=ItemBrand.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control', 'required': True, 'id': 'id_brand'}),
+        label='Brand *'
+    )
+    item = forms.ModelChoiceField(
+        queryset=Item.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-control', 'required': True, 'id': 'id_item'}),
+        label='Item *'
+    )
+    item_quality = forms.ModelChoiceField(
+        queryset=ItemQuality.objects.all(),
+        required=False,
+        empty_label="Select Item Quality (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_item_quality'}),
+        label='Item Quality'
+    )
+    freezing_category = forms.ModelChoiceField(
+        queryset=FreezingCategory.objects.filter(is_active=True),
+        required=False,
+        empty_label="Select Freezing Category (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        label='Freezing Category'
+    )
+    unit = forms.ModelChoiceField(
+        queryset=PackingUnit.objects.all(),
+        required=False,
+        empty_label="Select Packing Unit (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_unit'}),
+        label='Packing Unit'
+    )
+    glaze = forms.ModelChoiceField(
+        queryset=GlazePercentage.objects.all(),
+        required=False,
+        empty_label="Select Glaze Percentage (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_glaze'}),
+        label='Glaze Percentage'
+    )
+    species = forms.ModelChoiceField(
+        queryset=Species.objects.all(),
+        required=False,
+        empty_label="Select Species (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_species'}),
+        label='Species'
+    )
+    item_grade = forms.ModelChoiceField(
+        queryset=ItemGrade.objects.all(),
+        required=False,
+        empty_label="Select Item Grade (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_item_grade'}),
+        label='Item Grade'
+    )
+    peeling_type = forms.ModelChoiceField(
+        queryset=ItemType.objects.all(),
+        required=False,
+        empty_label="Select Peeling Type (Optional)",
+        widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_peeling_type'}),
+        label='Peeling Type'
+    )
+    
+    # Adjustment fields
+    cs_adjustment = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        initial=0,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01',
+            'placeholder': 'e.g., 10 or -5'
+        }),
+        help_text="Enter positive to add, negative to reduce",
+        label='CS Adjustment *'
+    )
+    kg_adjustment = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        initial=0,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01',
+            'placeholder': 'e.g., 100 or -50'
+        }),
+        help_text="Enter positive to add, negative to reduce",
+        label='KG Adjustment *'
+    )
+    
+    # Rate fields
+    usd_rate_per_kg = forms.DecimalField(
+        max_digits=100,
+        decimal_places=2,
+        required=False,
+        initial=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'id': 'id_usd_rate_per_kg'}),
+        label='USD Rate per KG'
+    )
+    usd_rate_item = forms.DecimalField(
+        max_digits=100,
+        decimal_places=2,
+        required=False,
+        initial=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'id': 'id_usd_rate_item'}),
+        label='USD Rate Item'
+    )
+    usd_rate_item_to_inr = forms.DecimalField(
+        max_digits=100,
+        decimal_places=2,
+        required=False,
+        initial=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'id': 'id_usd_rate_item_to_inr'}),
+        label='USD Rate Item to INR'
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        cs_adjustment = cleaned_data.get('cs_adjustment', 0) or 0
+        kg_adjustment = cleaned_data.get('kg_adjustment', 0) or 0
+        
+        # At least one adjustment must be provided
+        if cs_adjustment == 0 and kg_adjustment == 0:
+            raise forms.ValidationError(
+                "Please provide at least one adjustment value (CS or KG)."
+            )
+        
+        return cleaned_data
+
+
 
 
 # Added in 02/10/2025

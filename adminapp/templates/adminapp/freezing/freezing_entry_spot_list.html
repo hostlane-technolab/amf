@@ -1,6 +1,13 @@
 {% extends 'admin_base.html' %}
 {% block title %} Freezing Entry List {% endblock %}
 {% block content %}
+{% load indian_numbers %}
+
+
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+</style>
 
 <style>
   .custom-table th:nth-child(1),
@@ -383,7 +390,7 @@
                     <td class="table-cell">
                       <div class="amount-display">
                         <span class="currency-symbol">₹</span>
-                        <span class="amount-value">{{ entry.total_inr|floatformat:2 }}</span>
+                        <span class="amount-value">{{ entry.total_inr|floatformat:2|indian_comma }}</span>
                       </div>
                     </td>
                     
@@ -396,7 +403,7 @@
                     
                     <td class="table-cell">
                       <div class="status-wrapper">
-                        <span class="status-badge {% if entry.freezing_status == 'Active' %}status-active{% elif entry.freezing_status == 'Pending' %}status-pending{% else %}status-inactive{% endif %}">
+                        <span class="status-badge {% if entry.freezing_status == 'complete' %}status-active{% elif entry.freezing_status == 'inccomplete' %}status-pending{% else %}status-inactive{% endif %}">
                           <i class="fas fa-circle status-dot"></i>
                           {{ entry.freezing_status }}
                         </span>
@@ -639,9 +646,10 @@
   /* Date Display */
   .date-display {
     color: #495057;
-    font-weight: 600;
-    font-family: 'Monaco', 'Consolas', monospace;
-    font-size: 15px;
+  font-family: "Barlow", sans-serif;
+  font-weight: 500;
+  font-style: normal;
+    font-size: 16px;
   }
 
   /* Spot Info */
