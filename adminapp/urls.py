@@ -449,13 +449,17 @@ urlpatterns = [
     path('get-tenant-stock/', views.get_tenant_stock_ajax, name='get_tenant_stock_ajax'),
 
     
-    path('notifications/',views.NotificationListView.as_view(), name='notification_list'),
-    path('notifications/unread/',views.UnreadNotificationsView.as_view(), name='notification_unread'),
-    path('notifications/<int:pk>/mark-read/',views.mark_notification_read, name='notification_mark_read'),
-    path('notifications/mark-all-read/',views.mark_all_notifications_read, name='notification_mark_all_read'),
-    path('notifications/delete/<int:pk>/',views.delete_notification, name='notification_delete'),
-    path('notifications/ajax/count/',views.get_unread_count_ajax, name='notification_count_ajax'),
+    # path('notifications/',views.NotificationListView.as_view(), name='notification_list'),
+    # path('notifications/unread/',views.UnreadNotificationsView.as_view(), name='notification_unread'),
+    # path('notifications/<int:pk>/mark-read/',views.mark_notification_read, name='notification_mark_read'),
+    # path('notifications/mark-all-read/',views.mark_all_notifications_read, name='notification_mark_all_read'),
+    # path('notifications/delete/<int:pk>/',views.delete_notification, name='notification_delete'),
+    # path('notifications/ajax/count/',views.get_unread_count_ajax, name='notification_count_ajax'),
 
+    # Tenant Stock Adjustment 
+    path('tenant-stock/adjustment/', views.tenant_stock_adjustment, name='tenant_stock_adjustment'),
+    path('tenant-stock/get-current/', views.get_current_tenant_stock, name='get_current_tenant_stock'),
+    path('tenant-stock/', views.tenant_stock_list, name='tenant_stock_list'),
 
 
 

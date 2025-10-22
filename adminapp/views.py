@@ -9081,9 +9081,9 @@ def stock_quick_info(request, pk):
     return JsonResponse(data)
 
 
-# Replaced By AGK from Shameer 22/10/2025 (STOCK REPORT,STOCK REPORT with amount)
-    
+
 # STOCK REPORT
+
 @check_permission('reports_view')
 def stock_report(request):
     """Main stock report view with filters and sectioning"""
@@ -9168,36 +9168,36 @@ def stock_report(request):
     # Apply filters
     def apply_filters(queryset):
         if selected_items:
-            queryset = queryset.filter(item_id_in=selected_items)
+            queryset = queryset.filter(item__id__in=selected_items)
         
         if selected_categories:
-            queryset = queryset.filter(item_categoryid_in=selected_categories)
+            queryset = queryset.filter(item__category__id__in=selected_categories)
             
         if selected_stores:
-            queryset = queryset.filter(store_id_in=selected_stores)
+            queryset = queryset.filter(store__id__in=selected_stores)
             
         if selected_brands:
-            queryset = queryset.filter(brand_id_in=selected_brands)
+            queryset = queryset.filter(brand__id__in=selected_brands)
         
         # Check optional fields
         test_item = queryset.first()
         if test_item:
             if hasattr(test_item, 'unit') and selected_units:
-                queryset = queryset.filter(unit_id_in=selected_units)
+                queryset = queryset.filter(unit__id__in=selected_units)
             if hasattr(test_item, 'glaze') and selected_glazes:
-                queryset = queryset.filter(glaze_id_in=selected_glazes)
+                queryset = queryset.filter(glaze__id__in=selected_glazes)
             if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species_id_in=selected_species)
+                queryset = queryset.filter(species__id__in=selected_species)
             if hasattr(test_item, 'item_grade') and selected_item_grades:
-                queryset = queryset.filter(item_grade_id_in=selected_item_grades)
+                queryset = queryset.filter(item_grade__id__in=selected_item_grades)
             if hasattr(test_item, 'item_quality') and selected_item_qualities:
-                queryset = queryset.filter(item_quality_id_in=selected_item_qualities)
+                queryset = queryset.filter(item_quality__id__in=selected_item_qualities)
             if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
-                queryset = queryset.filter(freezing_category_id_in=selected_freezing_categories)
+                queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
             
         # Stock level filters
         if low_stock == "true":
-            queryset = queryset.filter(Q(cs_quantity_lt=10) | Q(kg_quantity_lt=10))
+            queryset = queryset.filter(Q(cs_quantity__lt=10) | Q(kg_quantity__lt=10))
             
         if zero_stock == "true":
             queryset = queryset.filter(Q(cs_quantity=0) | Q(kg_quantity=0))
@@ -9211,9 +9211,9 @@ def stock_report(request):
         # Search filter
         if search_query:
             queryset = queryset.filter(
-                Q(item_name_icontains=search_query) |
-                Q(brand_name_icontains=search_query) |
-                Q(store_name_icontains=search_query)
+                Q(item__name__icontains=search_query) |
+                Q(brand__name__icontains=search_query) |
+                Q(store__name__icontains=search_query)
             )
 
         return queryset
@@ -9227,7 +9227,7 @@ def stock_report(request):
         data_row = {
             'id': stock.id,
             'item__name': stock.item.name if stock.item else None,
-            'item_category_name': stock.item.category.name if stock.item and stock.item.category else None,
+            'item__category__name': stock.item.category.name if stock.item and stock.item.category else None,
             'store__name': stock.store.name if stock.store else None,
             'brand__name': stock.brand.name if stock.brand else None,
             'stock_count': 1,
@@ -9263,7 +9263,7 @@ def stock_report(request):
     
     for stock in all_data:
         if section_by == "category":
-            section_key = stock.get("item_category_name") or "Uncategorized"
+            section_key = stock.get("item__category__name") or "Uncategorized"
         elif section_by == "brand":
             section_key = stock.get("brand__name") or "No Brand"
         elif section_by == "store":
@@ -9430,36 +9430,36 @@ def stock_report_print(request):
     # Apply filters (same function as main view)
     def apply_filters(queryset):
         if selected_items:
-            queryset = queryset.filter(item_id_in=selected_items)
+            queryset = queryset.filter(item__id__in=selected_items)
         
         if selected_categories:
-            queryset = queryset.filter(item_categoryid_in=selected_categories)
+            queryset = queryset.filter(item__category__id__in=selected_categories)
             
         if selected_stores:
-            queryset = queryset.filter(store_id_in=selected_stores)
+            queryset = queryset.filter(store__id__in=selected_stores)
             
         if selected_brands:
-            queryset = queryset.filter(brand_id_in=selected_brands)
+            queryset = queryset.filter(brand__id__in=selected_brands)
         
         # Check optional fields
         test_item = queryset.first()
         if test_item:
             if hasattr(test_item, 'unit') and selected_units:
-                queryset = queryset.filter(unit_id_in=selected_units)
+                queryset = queryset.filter(unit__id__in=selected_units)
             if hasattr(test_item, 'glaze') and selected_glazes:
-                queryset = queryset.filter(glaze_id_in=selected_glazes)
+                queryset = queryset.filter(glaze__id__in=selected_glazes)
             if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species_id_in=selected_species)
+                queryset = queryset.filter(species__id__in=selected_species)
             if hasattr(test_item, 'item_grade') and selected_item_grades:
-                queryset = queryset.filter(item_grade_id_in=selected_item_grades)
+                queryset = queryset.filter(item_grade__id__in=selected_item_grades)
             if hasattr(test_item, 'item_quality') and selected_item_qualities:
-                queryset = queryset.filter(item_quality_id_in=selected_item_qualities)
+                queryset = queryset.filter(item_quality__id__in=selected_item_qualities)
             if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
-                queryset = queryset.filter(freezing_category_id_in=selected_freezing_categories)
+                queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
             
         # Stock level filters
         if low_stock == "true":
-            queryset = queryset.filter(Q(cs_quantity_lt=10) | Q(kg_quantity_lt=10))
+            queryset = queryset.filter(Q(cs_quantity__lt=10) | Q(kg_quantity__lt=10))
             
         if zero_stock == "true":
             queryset = queryset.filter(Q(cs_quantity=0) | Q(kg_quantity=0))
@@ -9473,9 +9473,9 @@ def stock_report_print(request):
         # Search filter
         if search_query:
             queryset = queryset.filter(
-                Q(item_name_icontains=search_query) |
-                Q(brand_name_icontains=search_query) |
-                Q(store_name_icontains=search_query)
+                Q(item__name__icontains=search_query) |
+                Q(brand__name__icontains=search_query) |
+                Q(store__name__icontains=search_query)
             )
 
         return queryset
@@ -9489,7 +9489,7 @@ def stock_report_print(request):
         data_row = {
             'id': stock.id,
             'item__name': stock.item.name if stock.item else None,
-            'item_category_name': stock.item.category.name if stock.item and stock.item.category else None,
+            'item__category__name': stock.item.category.name if stock.item and stock.item.category else None,
             'store__name': stock.store.name if stock.store else None,
             'brand__name': stock.brand.name if stock.brand else None,
             'stock_count': 1,
@@ -9525,7 +9525,7 @@ def stock_report_print(request):
     
     for stock in all_data:
         if section_by == "category":
-            section_key = stock.get("item_category_name") or "Uncategorized"
+            section_key = stock.get("item__category__name") or "Uncategorized"
         elif section_by == "brand":
             section_key = stock.get("brand__name") or "No Brand"
         elif section_by == "store":
@@ -9711,36 +9711,36 @@ def stock_report_amt(request):
     # Apply filters
     def apply_filters(queryset):
         if selected_items:
-            queryset = queryset.filter(item_id_in=selected_items)
+            queryset = queryset.filter(item__id__in=selected_items)
         
         if selected_categories:
-            queryset = queryset.filter(item_categoryid_in=selected_categories)
+            queryset = queryset.filter(item__category__id__in=selected_categories)
             
         if selected_stores:
-            queryset = queryset.filter(store_id_in=selected_stores)
+            queryset = queryset.filter(store__id__in=selected_stores)
             
         if selected_brands:
-            queryset = queryset.filter(brand_id_in=selected_brands)
+            queryset = queryset.filter(brand__id__in=selected_brands)
         
         # Check optional fields
         test_item = queryset.first()
         if test_item:
             if hasattr(test_item, 'unit') and selected_units:
-                queryset = queryset.filter(unit_id_in=selected_units)
+                queryset = queryset.filter(unit__id__in=selected_units)
             if hasattr(test_item, 'glaze') and selected_glazes:
-                queryset = queryset.filter(glaze_id_in=selected_glazes)
+                queryset = queryset.filter(glaze__id__in=selected_glazes)
             if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species_id_in=selected_species)
+                queryset = queryset.filter(species__id__in=selected_species)
             if hasattr(test_item, 'item_grade') and selected_item_grades:
-                queryset = queryset.filter(item_grade_id_in=selected_item_grades)
+                queryset = queryset.filter(item_grade__id__in=selected_item_grades)
             if hasattr(test_item, 'item_quality') and selected_item_qualities:
-                queryset = queryset.filter(item_quality_id_in=selected_item_qualities)
+                queryset = queryset.filter(item_quality__id__in=selected_item_qualities)
             if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
-                queryset = queryset.filter(freezing_category_id_in=selected_freezing_categories)
+                queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
             
         # Stock level filters
         if low_stock == "true":
-            queryset = queryset.filter(Q(cs_quantity_lt=10) | Q(kg_quantity_lt=10))
+            queryset = queryset.filter(Q(cs_quantity__lt=10) | Q(kg_quantity__lt=10))
             
         if zero_stock == "true":
             queryset = queryset.filter(Q(cs_quantity=0) | Q(kg_quantity=0))
@@ -9754,9 +9754,9 @@ def stock_report_amt(request):
         # Search filter
         if search_query:
             queryset = queryset.filter(
-                Q(item_name_icontains=search_query) |
-                Q(brand_name_icontains=search_query) |
-                Q(store_name_icontains=search_query)
+                Q(item__name__icontains=search_query) |
+                Q(brand__name__icontains=search_query) |
+                Q(store__name__icontains=search_query)
             )
 
         return queryset
@@ -9770,7 +9770,7 @@ def stock_report_amt(request):
         data_row = {
             'id': stock.id,
             'item__name': stock.item.name if stock.item else None,
-            'item_category_name': stock.item.category.name if stock.item and stock.item.category else None,
+            'item__category__name': stock.item.category.name if stock.item and stock.item.category else None,
             'store__name': stock.store.name if stock.store else None,
             'brand__name': stock.brand.name if stock.brand else None,
             'stock_count': 1,
@@ -9806,7 +9806,7 @@ def stock_report_amt(request):
     
     for stock in all_data:
         if section_by == "category":
-            section_key = stock.get("item_category_name") or "Uncategorized"
+            section_key = stock.get("item__category__name") or "Uncategorized"
         elif section_by == "brand":
             section_key = stock.get("brand__name") or "No Brand"
         elif section_by == "store":
@@ -9973,36 +9973,36 @@ def stock_report_print_amt(request):
     # Apply filters (same function as main view)
     def apply_filters(queryset):
         if selected_items:
-            queryset = queryset.filter(item_id_in=selected_items)
+            queryset = queryset.filter(item__id__in=selected_items)
         
         if selected_categories:
-            queryset = queryset.filter(item_categoryid_in=selected_categories)
+            queryset = queryset.filter(item__category__id__in=selected_categories)
             
         if selected_stores:
-            queryset = queryset.filter(store_id_in=selected_stores)
+            queryset = queryset.filter(store__id__in=selected_stores)
             
         if selected_brands:
-            queryset = queryset.filter(brand_id_in=selected_brands)
+            queryset = queryset.filter(brand__id__in=selected_brands)
         
         # Check optional fields
         test_item = queryset.first()
         if test_item:
             if hasattr(test_item, 'unit') and selected_units:
-                queryset = queryset.filter(unit_id_in=selected_units)
+                queryset = queryset.filter(unit__id__in=selected_units)
             if hasattr(test_item, 'glaze') and selected_glazes:
-                queryset = queryset.filter(glaze_id_in=selected_glazes)
+                queryset = queryset.filter(glaze__id__in=selected_glazes)
             if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species_id_in=selected_species)
+                queryset = queryset.filter(species__id__in=selected_species)
             if hasattr(test_item, 'item_grade') and selected_item_grades:
-                queryset = queryset.filter(item_grade_id_in=selected_item_grades)
+                queryset = queryset.filter(item_grade__id__in=selected_item_grades)
             if hasattr(test_item, 'item_quality') and selected_item_qualities:
-                queryset = queryset.filter(item_quality_id_in=selected_item_qualities)
+                queryset = queryset.filter(item_quality__id__in=selected_item_qualities)
             if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
-                queryset = queryset.filter(freezing_category_id_in=selected_freezing_categories)
+                queryset = queryset.filter(freezing_category__id__in=selected_freezing_categories)
             
         # Stock level filters
         if low_stock == "true":
-            queryset = queryset.filter(Q(cs_quantity_lt=10) | Q(kg_quantity_lt=10))
+            queryset = queryset.filter(Q(cs_quantity__lt=10) | Q(kg_quantity__lt=10))
             
         if zero_stock == "true":
             queryset = queryset.filter(Q(cs_quantity=0) | Q(kg_quantity=0))
@@ -10016,9 +10016,9 @@ def stock_report_print_amt(request):
         # Search filter
         if search_query:
             queryset = queryset.filter(
-                Q(item_name_icontains=search_query) |
-                Q(brand_name_icontains=search_query) |
-                Q(store_name_icontains=search_query)
+                Q(item__name__icontains=search_query) |
+                Q(brand__name__icontains=search_query) |
+                Q(store__name__icontains=search_query)
             )
 
         return queryset
@@ -10032,7 +10032,7 @@ def stock_report_print_amt(request):
         data_row = {
             'id': stock.id,
             'item__name': stock.item.name if stock.item else None,
-            'item_category_name': stock.item.category.name if stock.item and stock.item.category else None,
+            'item__category__name': stock.item.category.name if stock.item and stock.item.category else None,
             'store__name': stock.store.name if stock.store else None,
             'brand__name': stock.brand.name if stock.brand else None,
             'stock_count': 1,
@@ -10068,7 +10068,7 @@ def stock_report_print_amt(request):
     
     for stock in all_data:
         if section_by == "category":
-            section_key = stock.get("item_category_name") or "Uncategorized"
+            section_key = stock.get("item__category__name") or "Uncategorized"
         elif section_by == "brand":
             section_key = stock.get("brand__name") or "No Brand"
         elif section_by == "store":
@@ -10167,7 +10167,6 @@ def stock_report_print_amt(request):
             "search_query": search_query,
         },
     )
-
 
 
 
@@ -15116,8 +15115,6 @@ def delete_notification(request, pk):
 
 @login_required
 def get_unread_count_ajax(request):
-
-
 
     """
     AJAX endpoint to get unread notification count

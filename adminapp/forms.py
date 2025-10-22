@@ -4,6 +4,7 @@ from adminapp.models import CustomUser  # adjust if CustomUser is elsewhere
 from django.forms import inlineformset_factory
 from django.utils.timezone import now
 from .models import *
+from django.core.exceptions import ValidationError
 
 
 
@@ -1707,6 +1708,365 @@ SalesEntryItemFormSet = inlineformset_factory(
 
 )
 
+
+
+class TenantStockForm(forms.ModelForm):
+    """ModelForm for creating/editing tenant stock"""
+    
+    class Meta:
+        model = TenantStock
+        fields = [
+            'tenant_company_name', 'processing_center', 'store', 'brand', 'item', 
+            'item_quality', 'freezing_category', 'unit', 'glaze', 'species', 'grade',
+            'peeling_type', 'available_slab', 'available_c_s', 'available_kg', 'remarks'
+        ]
+        
+        widgets = {
+            'tenant_company_name': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'processing_center': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'store': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'brand': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'item': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'item_quality': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'freezing_category': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True
+            }),
+            'unit': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'glaze': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'species': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'grade': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'peeling_type': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'available_slab': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'available_c_s': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'available_kg': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'step': '0.01'
+            }),
+            'remarks': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4
+            })
+        }
+        
+        labels = {
+            'tenant_company_name': 'Tenant Company *',
+            'processing_center': 'Processing Center',
+            'store': 'Store',
+            'brand': 'Brand *',
+            'item': 'Item *',
+            'item_quality': 'Item Quality',
+            'freezing_category': 'Freezing Category *',
+            'unit': 'Packing Unit',
+            'glaze': 'Glaze Percentage',
+            'species': 'Species',
+            'grade': 'Grade',
+            'peeling_type': 'Peeling Type',
+            'available_slab': 'Available Slab',
+            'available_c_s': 'Available CS',
+            'available_kg': 'Available KG',
+            'remarks': 'Remarks'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Set empty labels for optional dropdowns
+        self.fields['item_quality'].empty_label = "Select Item Quality (Optional)"
+        self.fields['unit'].empty_label = "Select Packing Unit (Optional)"
+        self.fields['glaze'].empty_label = "Select Glaze Percentage (Optional)"
+        self.fields['species'].empty_label = "Select Species (Optional)"
+        self.fields['grade'].empty_label = "Select Grade (Optional)"
+        self.fields['peeling_type'].empty_label = "Select Peeling Type (Optional)"
+        self.fields['processing_center'].empty_label = "Select Processing Center (Optional)"
+        self.fields['store'].empty_label = "Select Store (Optional)"
+        
+        # Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Check that either processing_center or store is selected
+        processing_center = cleaned_data.get('processing_center')
+        store = cleaned_data.get('store')
+        
+        if not processing_center and not store:
+            raise forms.ValidationError(
+                "Please select either a Processing Center or Store."
+            )
+        
+        if processing_center and store:
+            raise forms.ValidationError(
+                "Please select only one location (Processing Center or Store), not both."
+            )
+        
+        # Check for unique constraint
+        tenant = cleaned_data.get('tenant_company_name')
+        item = cleaned_data.get('item')
+        brand = cleaned_data.get('brand')
+        item_quality = cleaned_data.get('item_quality')
+        unit = cleaned_data.get('unit')
+        glaze = cleaned_data.get('glaze')
+        species = cleaned_data.get('species')
+        grade = cleaned_data.get('grade')
+        peeling_type = cleaned_data.get('peeling_type')
+        
+        if all([tenant, item, brand]):
+            # Check if this combination already exists
+            existing_stock = TenantStock.objects.filter(
+                tenant_company_name=tenant,
+                item=item,
+                brand=brand,
+                item_quality=item_quality,
+                unit=unit,
+                glaze=glaze,
+                species=species,
+                grade=grade,
+                peeling_type=peeling_type,
+                processing_center=processing_center,
+                store=store
+            )
+            
+            # If updating, exclude current instance
+            if self.instance.pk:
+                existing_stock = existing_stock.exclude(pk=self.instance.pk)
+                
+            if existing_stock.exists():
+                raise forms.ValidationError(
+                    "Tenant stock with this combination already exists."
+                )
+        
+        return cleaned_data
+
+
+class TenantStockAdjustmentForm(forms.Form):
+    """Form for adjusting tenant stock - uses Form instead of ModelForm for custom fields"""
+    
+    # Required fields (matching your model)
+    tenant_company_name = forms.ModelChoiceField(
+        queryset=None,  # Will be set in __init__
+        required=True,
+        label="Tenant Company",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    item = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Item",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    brand = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Brand",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    unit = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Unit",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    glaze = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Glaze Percentage",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    freezing_category = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Freezing Category",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    species = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Species",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    grade = forms.ModelChoiceField(
+        queryset=None,
+        required=True,
+        label="Grade",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    # Optional fields (null=True, blank=True in model)
+    item_quality = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        label="Item Quality",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    peeling_type = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        label="Peeling Type",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    # Location fields - mutually exclusive
+    processing_center = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        label="Processing Center",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    store = forms.ModelChoiceField(
+        queryset=None,
+        required=False,
+        label="Store",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    # Adjustment fields
+    slab_adjustment = forms.DecimalField(
+        required=False,
+        initial=0,
+        max_digits=12,
+        decimal_places=2,
+        label="Slab Adjustment",
+        help_text="Enter positive value to add, negative to subtract",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01',
+            'placeholder': '0.00'
+        })
+    )
+    
+    cs_adjustment = forms.DecimalField(
+        required=False,
+        initial=0,
+        max_digits=12,
+        decimal_places=2,
+        label="CS Adjustment",
+        help_text="Enter positive value to add, negative to subtract",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01',
+            'placeholder': '0.00'
+        })
+    )
+    
+    kg_adjustment = forms.DecimalField(
+        required=False,
+        initial=0,
+        max_digits=12,
+        decimal_places=2,
+        label="KG Adjustment",
+        help_text="Enter positive value to add, negative to subtract",
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'step': '0.01',
+            'placeholder': '0.00'
+        })
+    )
+    
+    remarks = forms.CharField(
+        required=False,
+        label="Remarks",
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Enter any remarks...'
+        })
+    )
+    
+    def __init__(self, *args, **kwargs):
+        """Initialize form with querysets from models"""
+        super().__init__(*args, **kwargs)
+        
+        # Import models here to avoid circular imports
+        from adminapp.models import (
+            Tenant, Item, ItemBrand, ItemQuality, PackingUnit,
+            GlazePercentage, Species, ItemGrade, ItemType,
+            FreezingCategory, ProcessingCenter, Store
+        )
+        
+        # Set querysets for all fields
+        self.fields['tenant_company_name'].queryset = Tenant.objects.all()
+        self.fields['item'].queryset = Item.objects.all()
+        self.fields['brand'].queryset = ItemBrand.objects.all()
+        self.fields['item_quality'].queryset = ItemQuality.objects.all()
+        self.fields['unit'].queryset = PackingUnit.objects.all()
+        self.fields['glaze'].queryset = GlazePercentage.objects.all()
+        self.fields['species'].queryset = Species.objects.all()
+        self.fields['grade'].queryset = ItemGrade.objects.all()
+        self.fields['peeling_type'].queryset = ItemType.objects.all()
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.all()
+        self.fields['processing_center'].queryset = ProcessingCenter.objects.all()
+        self.fields['store'].queryset = Store.objects.all()
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        processing_center = cleaned_data.get('processing_center')
+        store = cleaned_data.get('store')
+        
+        # Validation: Only one location should be selected
+        if processing_center and store:
+            raise ValidationError(
+                "Please select only one location (Processing Center or Store), not both."
+            )
+        
+        # Validation: At least one location is required
+        if not processing_center and not store:
+            raise ValidationError(
+                "Please select at least one location (Processing Center or Store)."
+            )
+        
+        # Validation: At least one adjustment value must be non-zero
+        slab_adj = cleaned_data.get('slab_adjustment') or Decimal('0')
+        cs_adj = cleaned_data.get('cs_adjustment') or Decimal('0')
+        kg_adj = cleaned_data.get('kg_adjustment') or Decimal('0')
+        
+        if slab_adj == 0 and cs_adj == 0 and kg_adj == 0:
+            raise ValidationError(
+                "Please enter at least one adjustment value (Slab, CS, or KG)."
+            )
+        
+        return cleaned_data
 
 
 
