@@ -1196,4 +1196,181 @@ input[readonly] {
         }
     });
     </script>
+
+
+<script>
+  // Enhanced Arrow key navigation for form fields
+document.addEventListener('keydown', function(e) {
+    if (e.target.matches('input, select, textarea')) {
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea'))
+            .filter(el => {
+                // Check if element is visible and enabled
+                return el.offsetParent !== null && !el.disabled && !el.readOnly;
+            });
+        
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Left arrow key - only navigate when cursor is at start of input
+        if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+            // For text inputs, only navigate if cursor is at the beginning
+            if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                if (e.target.selectionStart === 0 && e.target.selectionEnd === 0) {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        activeElements[currentIndex - 1].focus();
+                        if (activeElements[currentIndex - 1].select) {
+                            activeElements[currentIndex - 1].select();
+                        }
+                    }
+                }
+            } else {
+                // For non-text inputs (select, date, etc.), navigate immediately
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    activeElements[currentIndex - 1].focus();
+                    if (activeElements[currentIndex - 1].select) {
+                        activeElements[currentIndex - 1].select();
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Right arrow key - only navigate when cursor is at end of input
+        if (e.key === 'ArrowRight' || e.keyCode === 39) {
+            // For text inputs, only navigate if cursor is at the end
+            if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                const inputLength = e.target.value.length;
+                if (e.target.selectionStart === inputLength && e.target.selectionEnd === inputLength) {
+                    e.preventDefault();
+                    if (currentIndex < activeElements.length - 1) {
+                        activeElements[currentIndex + 1].focus();
+                        if (activeElements[currentIndex + 1].select) {
+                            activeElements[currentIndex + 1].select();
+                        }
+                    }
+                }
+            } else {
+                // For non-text inputs (select, date, etc.), navigate immediately
+                e.preventDefault();
+                if (currentIndex < activeElements.length - 1) {
+                    activeElements[currentIndex + 1].focus();
+                    if (activeElements[currentIndex + 1].select) {
+                        activeElements[currentIndex + 1].select();
+                    }
+                }
+            }
+            return false;
+        }
+    }
+});
+
+// Enter key to move to next field
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && e.target.matches('input:not([type="submit"]):not([type="button"])')) {
+        e.preventDefault();
+        
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea'))
+            .filter(el => el.offsetParent !== null && !el.disabled && !el.readOnly);
+        
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Move to next field
+        if (currentIndex < activeElements.length - 1) {
+            activeElements[currentIndex + 1].focus();
+            if (activeElements[currentIndex + 1].select) {
+                activeElements[currentIndex + 1].select();
+            }
+        }
+        
+        return false;
+    }
+});
+
+// Limit date year input to 4 digits
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all date inputs in the form
+    const dateInputs = document.querySelectorAll('input[type="date"], input[name*="date"]');
+    
+    dateInputs.forEach(function(dateInput) {
+        // For HTML5 date input
+        if (dateInput.type === 'date') {
+            dateInput.setAttribute('max', '9999-12-31');
+            dateInput.setAttribute('min', '1900-01-01');
+            
+            // Only validate on change (after user finishes input)
+            dateInput.addEventListener('change', function(e) {
+                const value = e.target.value;
+                if (value) {
+                    const parts = value.split('-');
+                    const year = parts[0];
+                    
+                    // Check if year is valid (4 digits, between 1900-9999)
+                    if (year && (year.length > 4 || parseInt(year) > 9999)) {
+                        alert('Year must be 4 digits (1900-9999). Please correct the date.');
+                        e.target.value = '';
+                        setTimeout(() => e.target.focus(), 100);
+                    }
+                }
+            });
+        }
+        
+        // For text input with manual date entry (non-HTML5 date inputs)
+        if (dateInput.type !== 'date') {
+            dateInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                
+                // Handle DD/MM/YYYY format
+                if (value.includes('/')) {
+                    const parts = value.split('/');
+                    if (parts.length === 3 && parts[2] && parts[2].length > 4) {
+                        parts[2] = parts[2].substring(0, 4);
+                        e.target.value = parts.join('/');
+                    }
+                }
+                
+                // Handle YYYY-MM-DD format  
+                if (value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        e.target.value = parts.join('-');
+                    }
+                }
+            });
+        }
+    });
+});
+
+// Date validation helper
+function isValidDate(day, month, year) {
+    const d = parseInt(day);
+    const m = parseInt(month);
+    const y = parseInt(year);
+    
+    if (y < 1900 || y > 9999) return false;
+    if (m < 1 || m > 12) return false;
+    
+    const daysInMonth = new Date(y, m, 0).getDate();
+    if (d < 1 || d > daysInMonth) return false;
+    
+    return true;
+}
+
+// Visual feedback for focused field
+document.addEventListener('DOMContentLoaded', function() {
+    const formInputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+    
+    formInputs.forEach(function(input) {
+        input.addEventListener('focus', function() {
+            this.style.transform = 'scale(1.01)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
     {%endblock%}

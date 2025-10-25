@@ -293,7 +293,6 @@ urlpatterns = [
     # Billing Configs
     path('billing/configs/', views.billing_config_list, name='billing_config_list'),
     path('billing/configs/setup/', views.setup_billing_configuration, name='setup_billing_configuration'),
-    path('billing/configs/run/', views.run_auto_billing, name='run_auto_billing'),
     path('billing/configs/debug/', views.debug_billing_status, name='debug_billing_status'),
     path('billing/configs/<int:pk>/delete/', views.delete_billing_configuration, name='delete_billing_configuration'), 
 
@@ -460,6 +459,7 @@ urlpatterns = [
     path('tenant-stock/adjustment/', views.tenant_stock_adjustment, name='tenant_stock_adjustment'),
     path('tenant-stock/get-current/', views.get_current_tenant_stock, name='get_current_tenant_stock'),
     path('tenant-stock/', views.tenant_stock_list, name='tenant_stock_list'),
+    path('tenant-stock/delete/<int:pk>/', views.tenant_stock_delete, name='tenant_stock_delete'),
 
 
 

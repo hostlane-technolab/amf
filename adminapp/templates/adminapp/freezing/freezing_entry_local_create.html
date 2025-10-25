@@ -2056,6 +2056,47 @@
         $(document).ready(calculateTotals);
     </script>
 
+   <!-- Load peeling and Species -->
+    <script>
+    $(document).ready(function () {
+        console.log("Freezing Entry AJAX ready");
+
+        // 🔹 Listen for item change inside each formset row
+        $(document).on("change", ".item-select", function () {
+            let itemId = $(this).val();
+            let row = $(this).closest(".formset-form");
+
+            if (!itemId) return;
+
+            // 🔹 1. Fetch Species for this item
+            $.ajax({
+                url: "{% url 'adminapp:get_species_for_item' %}",
+                data: { item_id: itemId },
+                success: function (response) {
+                    let speciesSelect = row.find(".species-select");
+                    speciesSelect.empty().append('<option value="">---------</option>');
+                    $.each(response.species, function (i, species) {
+                        speciesSelect.append('<option value="' + species.id + '">' + species.name + '</option>');
+                    });
+                }
+            });
+
+            // 🔹 2. Fetch Peeling Types for this item
+            $.ajax({
+                url: "{% url 'adminapp:get_peeling_for_item' %}",
+                data: { item_id: itemId },
+                success: function (response) {
+                    let peelingSelect = row.find(".peeling-select");
+                    peelingSelect.empty().append('<option value="">---------</option>');
+                    $.each(response.peeling_types, function (i, peeling) {
+                        peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
+                    });
+                }
+            });
+        });
+    });
+    </script>
+
     <!-- Load Grades when Species changes -->
     <script>
         $(document).on("change", ".species-select", function () {

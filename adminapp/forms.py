@@ -301,19 +301,12 @@ class SettingsForm(forms.ModelForm):
 
 # forms for create a Purchase Entry 
 class SpotPurchaseForm(forms.ModelForm):
-    date = forms.DateField(
-        widget=forms.TextInput(attrs={
-            'class': 'form-control datepicker',
-            'placeholder': 'dd/mm/yyyy'
-        }),
-        input_formats=['%d/%m/%Y'],  # ✅ Accept dd/mm/yyyy
-        initial=now
-    )
 
     class Meta:
         model = SpotPurchase
         fields = ['date', 'voucher_number', 'spot', 'supervisor', 'agent']
         widgets = {
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'voucher_number': forms.TextInput(attrs={'class': 'form-control'}),
             'spot': forms.Select(attrs={'class': 'form-control'}),
             'supervisor': forms.Select(attrs={'class': 'form-control'}),
@@ -324,7 +317,6 @@ class SpotPurchaseForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Only show active supervisors
         self.fields['supervisor'].queryset = PurchasingSupervisor.objects.filter(is_active=True)
-
 
 
 class SpotPurchaseItemForm(forms.ModelForm):
@@ -549,11 +541,8 @@ class FreezingEntryLocalItemForm(forms.ModelForm):
         # Ensure item_quality shows qualities, not item names
         self.fields['item_quality'].queryset = ItemQuality.objects.all().select_related('item')
         self.fields['item_quality'].label_from_instance = lambda obj: f"{obj.quality} ({obj.item.name})"
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # ✅ Show only active freezing categories
         self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
 
 
 FreezingEntryLocalItemFormSet = inlineformset_factory(
@@ -606,6 +595,11 @@ class PreShipmentWorkOutForm(forms.ModelForm):
         cleaned_data = super().clean()
         # Add cross-field validation if needed
         return cleaned_data
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['category'].queryset = FreezingCategory.objects.filter(is_active=True)
 
 class PreShipmentWorkOutItemForm(forms.ModelForm):
     """Form for individual workout items"""
@@ -794,6 +788,11 @@ class ReturnTenantItemForm(forms.ModelForm):
             'c_s_quantity': forms.NumberInput(attrs={'class': 'form-control cs-quantity', 'step': '0.01'}),
             'kg': forms.NumberInput(attrs={'class': 'form-control kg', 'step': '0.01'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # ✅ Show only active freezing categories
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
 
 
 ReturnTenantItemFormSet = inlineformset_factory(
@@ -1275,7 +1274,7 @@ class StockAdjustmentForm(forms.Form):  # Changed from ModelForm to Form
         required=False,
         empty_label="Select Item Quality (Optional)",
         widget=forms.Select(attrs={'class': 'form-control', 'id': 'id_item_quality'}),
-        label='Item Quality'
+        label='Item Sub'
     )
     freezing_category = forms.ModelChoiceField(
         queryset=FreezingCategory.objects.filter(is_active=True),
@@ -1759,9 +1758,6 @@ class TenantStockForm(forms.ModelForm):
             'grade': forms.Select(attrs={
                 'class': 'form-control'
             }),
-            'peeling_type': forms.Select(attrs={
-                'class': 'form-control'
-            }),
             'available_slab': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'step': '0.01'
@@ -1792,7 +1788,6 @@ class TenantStockForm(forms.ModelForm):
             'glaze': 'Glaze Percentage',
             'species': 'Species',
             'grade': 'Grade',
-            'peeling_type': 'Peeling Type',
             'available_slab': 'Available Slab',
             'available_c_s': 'Available CS',
             'available_kg': 'Available KG',
@@ -1808,7 +1803,6 @@ class TenantStockForm(forms.ModelForm):
         self.fields['glaze'].empty_label = "Select Glaze Percentage (Optional)"
         self.fields['species'].empty_label = "Select Species (Optional)"
         self.fields['grade'].empty_label = "Select Grade (Optional)"
-        self.fields['peeling_type'].empty_label = "Select Peeling Type (Optional)"
         self.fields['processing_center'].empty_label = "Select Processing Center (Optional)"
         self.fields['store'].empty_label = "Select Store (Optional)"
         
@@ -1841,7 +1835,6 @@ class TenantStockForm(forms.ModelForm):
         glaze = cleaned_data.get('glaze')
         species = cleaned_data.get('species')
         grade = cleaned_data.get('grade')
-        peeling_type = cleaned_data.get('peeling_type')
         
         if all([tenant, item, brand]):
             # Check if this combination already exists
@@ -1854,7 +1847,6 @@ class TenantStockForm(forms.ModelForm):
                 glaze=glaze,
                 species=species,
                 grade=grade,
-                peeling_type=peeling_type,
                 processing_center=processing_center,
                 store=store
             )
@@ -1939,14 +1931,8 @@ class TenantStockAdjustmentForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
-    peeling_type = forms.ModelChoiceField(
-        queryset=None,
-        required=False,
-        label="Peeling Type",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
     
-    # Location fields - mutually exclusive
+    # Location fields - both can be selected now
     processing_center = forms.ModelChoiceField(
         queryset=None,
         required=False,
@@ -2017,15 +2003,8 @@ class TenantStockAdjustmentForm(forms.Form):
     def __init__(self, *args, **kwargs):
         """Initialize form with querysets from models"""
         super().__init__(*args, **kwargs)
-        
-        # Import models here to avoid circular imports
-        from adminapp.models import (
-            Tenant, Item, ItemBrand, ItemQuality, PackingUnit,
-            GlazePercentage, Species, ItemGrade, ItemType,
-            FreezingCategory, ProcessingCenter, Store
-        )
-        
-        # Set querysets for all fields
+
+        # Assign querysets for all dropdown fields
         self.fields['tenant_company_name'].queryset = Tenant.objects.all()
         self.fields['item'].queryset = Item.objects.all()
         self.fields['brand'].queryset = ItemBrand.objects.all()
@@ -2034,27 +2013,14 @@ class TenantStockAdjustmentForm(forms.Form):
         self.fields['glaze'].queryset = GlazePercentage.objects.all()
         self.fields['species'].queryset = Species.objects.all()
         self.fields['grade'].queryset = ItemGrade.objects.all()
-        self.fields['peeling_type'].queryset = ItemType.objects.all()
-        self.fields['freezing_category'].queryset = FreezingCategory.objects.all()
         self.fields['processing_center'].queryset = ProcessingCenter.objects.all()
         self.fields['store'].queryset = Store.objects.all()
-    
+
+        # Filter freezing_category to only active ones
+        self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
     def clean(self):
         cleaned_data = super().clean()
-        processing_center = cleaned_data.get('processing_center')
-        store = cleaned_data.get('store')
-        
-        # Validation: Only one location should be selected
-        if processing_center and store:
-            raise ValidationError(
-                "Please select only one location (Processing Center or Store), not both."
-            )
-        
-        # Validation: At least one location is required
-        if not processing_center and not store:
-            raise ValidationError(
-                "Please select at least one location (Processing Center or Store)."
-            )
         
         # Validation: At least one adjustment value must be non-zero
         slab_adj = cleaned_data.get('slab_adjustment') or Decimal('0')

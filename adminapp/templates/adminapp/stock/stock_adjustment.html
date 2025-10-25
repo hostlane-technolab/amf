@@ -353,17 +353,19 @@
         
         <div class="card-body">
           <div class="row g-4">
+
+
             <div class="col-md-4 col-lg-3">
-              <div class="form-group">
-                <label class="form-label">{{ form.item_quality.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-star input-icon"></i>
-                  {{ form.item_quality }}
+                <div class="form-group">
+                    <label class="form-label">{{ form.item_quality.label }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-star input-icon"></i>
+                        {{ form.item_quality }}
+                    </div>
+                    {% if form.item_quality.errors %}
+                    <div class="validation-error">{{ form.item_quality.errors }}</div>
+                    {% endif %}
                 </div>
-                {% if form.item_quality.errors %}
-                  <div class="validation-error">{{ form.item_quality.errors }}</div>
-                {% endif %}
-              </div>
             </div>
 
             <div class="col-md-4 col-lg-3">
@@ -860,6 +862,906 @@
   }
 }
 </style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- quality script -->
+<script>
+$(document).ready(function() {
+    console.log('✅ Item Quality Script Loaded');
+    
+    const itemSelect = $('#id_item');
+    const qualitySelect = $('#id_item_quality');
+    
+    // IMPORTANT: Clear all options except the first one on page load
+    // This prevents the form from showing all qualities initially
+    const firstOption = qualitySelect.find('option:first').clone();
+    qualitySelect.empty().append(firstOption);
+    
+    // Function to load qualities
+    function loadItemQualities(itemId) {
+        console.log('🔄 Loading qualities for item ID:', itemId);
+        
+        // Reset quality select
+        qualitySelect.empty().append('<option value="">Select Item Quality (Optional)</option>');
+        qualitySelect.prop('disabled', true);
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided');
+            return;
+        }
+
+        // Show loading state
+        qualitySelect.empty().append('<option value="">Loading qualities...</option>');
+
+        // Use $.get() like your working script
+        $.get("{% url 'adminapp:get_item_qualities' %}", { item_id: itemId })
+            .done(function(data) {
+                console.log('✅ Quality data received:', data);
+                
+                // Clear and add default option
+                qualitySelect.empty().append('<option value="">Select Item Quality (Optional)</option>');
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(function(quality) {
+                        qualitySelect.append(`<option value="${quality.id}">${quality.quality}</option>`);
+                    });
+                    qualitySelect.prop('disabled', false);
+                    console.log(`✅ Loaded ${data.length} qualities successfully`);
+                } else {
+                    console.log('⚠️ No qualities found for item:', itemId);
+                    qualitySelect.append('<option value="">No qualities available</option>');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ AJAX Error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText,
+                    statusCode: xhr.status
+                });
+                
+                qualitySelect.empty()
+                    .append('<option value="">Select Item Quality (Optional)</option>')
+                    .append('<option value="">Error loading qualities</option>');
+                
+                if (xhr.status !== 404) {
+                    alert('Error loading item qualities. Please refresh and try again.');
+                }
+            });
+    }
+    
+    // Event listener for item selection change - using .on() like your working script
+    itemSelect.on('change', function() {
+        const itemId = $(this).val();
+        console.log('📦 Item changed → ID:', itemId);
+        
+        if (itemId) {
+            loadItemQualities(itemId);
+        } else {
+            // Reset quality if no item selected
+            qualitySelect.empty()
+                .append('<option value="">Select Item Quality (Optional)</option>')
+                .prop('disabled', true);
+        }
+    });
+    
+    // Check if item is already selected on page load
+    const initialItemId = itemSelect.val();
+    if (initialItemId) {
+        console.log('🔄 Loading qualities for pre-selected item:', initialItemId);
+        loadItemQualities(initialItemId);
+    }
+    
+    // Debug: Log when selects are interacted with
+    itemSelect.on('focus', function() {
+        console.log('🎯 Item select focused');
+    });
+    
+    qualitySelect.on('focus', function() {
+        console.log('🎯 Quality select focused');
+    });
+});
+</script>
+
+<!-- Load Item Grades (Fixed with Better Debugging) -->
+<script>
+$(document).ready(function() {
+    console.log('✅ Item → Grade Script Loaded');
+    
+    const itemSelect = $('#id_item');
+    const gradeSelect = $('#id_item_grade');
+    
+    console.log('🔍 Finding selects...');
+    console.log('Item select found:', itemSelect.length);
+    console.log('Grade select found:', gradeSelect.length);
+    
+    if (itemSelect.length === 0) {
+        console.error('❌ Item select (#id_item) not found!');
+        return;
+    }
+    
+    if (gradeSelect.length === 0) {
+        console.error('❌ Grade select (#id_item_grade) not found!');
+        return;
+    }
+    
+    console.log('✅ Both selects found successfully');
+    
+    // Clear grade options on page load (keep only first option)
+    const defaultOption = gradeSelect.find('option:first').clone();
+    gradeSelect.empty().append(defaultOption).prop('disabled', true);
+    console.log('🧹 Grade select cleared on page load');
+    
+    // Function to load grades
+    function loadItemGrades(itemId) {
+        console.log('🔍 loadItemGrades() called with itemId:', itemId);
+        
+        // Reset grade select
+        gradeSelect.empty().append('<option value="">Select Item Grade (Optional)</option>');
+        gradeSelect.prop('disabled', true);
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        gradeSelect.empty().append('<option value="">Loading grades...</option>');
+        console.log('⏳ Loading state set, making AJAX request...');
+
+        const ajaxUrl = "{% url 'adminapp:get_item_grades' %}";
+        console.log('📡 AJAX URL:', ajaxUrl);
+        console.log('📡 Request params:', { item_id: itemId });
+        
+        // Use $.get() like your working quality script
+        $.get(ajaxUrl, { item_id: itemId })
+            .done(function(data) {
+                console.log('✅ Grade AJAX SUCCESS! Raw data:', data);
+                console.log('📊 Data type:', typeof data);
+                console.log('📊 Is array?:', Array.isArray(data));
+                console.log('📊 Data length:', data.length);
+                
+                // Clear and add default option
+                gradeSelect.empty().append('<option value="">Select Item Grade (Optional)</option>');
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log(`📦 Processing ${data.length} grades...`);
+                    
+                    data.forEach(function(grade, index) {
+                        console.log(`  Grade ${index + 1}:`, grade);
+                        const option = `<option value="${grade.id}">${grade.grade}</option>`;
+                        console.log(`  Adding option:`, option);
+                        gradeSelect.append(option);
+                    });
+                    
+                    gradeSelect.prop('disabled', false);
+                    console.log('✅ ALL GRADES ADDED! Total options:', gradeSelect.find('option').length);
+                    console.log('✅ Grade select enabled:', !gradeSelect.prop('disabled'));
+                } else {
+                    console.log('⚠️ No grades found or empty array');
+                    console.log('⚠️ Keeping grade select disabled');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Status Code:', xhr.status);
+                console.error('❌ Response Text:', xhr.responseText);
+                
+                gradeSelect.empty()
+                    .append('<option value="">Select Item Grade (Optional)</option>')
+                    .append('<option value="">Error loading grades</option>');
+            });
+    }
+    
+    // Event listener for item selection change
+    itemSelect.on('change', function() {
+        const itemId = $(this).val();
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 ITEM SELECT CHANGED!');
+        console.log('📦 New Item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+        
+        if (itemId) {
+            loadItemGrades(itemId);
+        } else {
+            console.log('⚠️ No item selected, resetting grade select');
+            // Reset grade if no item selected
+            gradeSelect.empty()
+                .append('<option value="">Select Item Grade (Optional)</option>')
+                .prop('disabled', true);
+        }
+    });
+    
+    // Check if item is already selected on page load
+    const initialItemId = itemSelect.val();
+    if (initialItemId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('🔄 PRE-SELECTED ITEM DETECTED ON PAGE LOAD');
+        console.log('🔄 Item ID:', initialItemId);
+        console.log('═══════════════════════════════════════');
+        loadItemGrades(initialItemId);
+    }
+    
+    console.log('✅ Item Grade Script fully initialized');
+    console.log('');
+});
+</script>
+
+<!-- Load Grades with Species (Fixed with Better Debugging) -->
+<script>
+$(document).ready(function() {
+    console.log('✅ Species → Grade Script Loaded');
+    
+    const speciesSelect = $('#id_species');
+    const gradeSelect = $('#id_item_grade');
+    
+    console.log('🔍 Finding selects...');
+    console.log('Species select found:', speciesSelect.length);
+    console.log('Grade select found:', gradeSelect.length);
+    
+    if (speciesSelect.length === 0) {
+        console.error('❌ Species select (#id_species) not found!');
+        return;
+    }
+    
+    if (gradeSelect.length === 0) {
+        console.error('❌ Grade select (#id_item_grade) not found!');
+        return;
+    }
+    
+    console.log('✅ Both selects found successfully');
+    
+    // Function to load grades for species
+    function loadGradesForSpecies(speciesId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('🐟 Loading grades for species ID:', speciesId);
+        console.log('═══════════════════════════════════════');
+        
+        if (!speciesId) {
+            console.log('⚠️ No species ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        const currentOptions = gradeSelect.html(); // Save current options
+        gradeSelect.empty().append('<option value="">Loading grades for species...</option>');
+        console.log('⏳ Loading state set, making AJAX request...');
+
+        const ajaxUrl = "{% url 'adminapp:get_grade_for_species' %}";
+        console.log('📡 AJAX URL:', ajaxUrl);
+        console.log('📡 Request params:', { species_id: speciesId });
+        
+        $.get(ajaxUrl, { species_id: speciesId })
+            .done(function(data) {
+                console.log('✅ Species Grade AJAX SUCCESS! Raw data:', data);
+                console.log('📊 Data type:', typeof data);
+                console.log('📊 Has grades property?:', 'grades' in data);
+                
+                // Clear and add default option
+                gradeSelect.empty().append('<option value="">Select Item Grade (Optional)</option>');
+                
+                // Handle the response structure {grades: [...]}
+                const grades = data.grades || [];
+                console.log('📊 Grades array:', grades);
+                console.log('📊 Grades length:', grades.length);
+                
+                if (grades.length > 0) {
+                    console.log(`📦 Processing ${grades.length} grades for species...`);
+                    
+                    grades.forEach(function(grade, index) {
+                        console.log(`  Grade ${index + 1}:`, grade);
+                        const option = `<option value="${grade.id}">${grade.grade}</option>`;
+                        console.log(`  Adding option:`, option);
+                        gradeSelect.append(option);
+                    });
+                    
+                    gradeSelect.prop('disabled', false);
+                    console.log('✅ ALL SPECIES GRADES ADDED! Total options:', gradeSelect.find('option').length);
+                    console.log('✅ Grade select enabled:', !gradeSelect.prop('disabled'));
+                } else {
+                    console.log('⚠️ No grades found for this species');
+                    gradeSelect.prop('disabled', true);
+                    console.log('⚠️ Grade select disabled');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ SPECIES AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Status Code:', xhr.status);
+                console.error('❌ Response Text:', xhr.responseText);
+                
+                // Restore previous options on error
+                gradeSelect.html(currentOptions);
+            });
+    }
+    
+    // Event listener for species selection change
+    speciesSelect.on('change', function() {
+        const speciesId = $(this).val();
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('🐟 SPECIES SELECT CHANGED!');
+        console.log('🐟 New Species ID:', speciesId);
+        console.log('═══════════════════════════════════════');
+        
+        if (speciesId) {
+            loadGradesForSpecies(speciesId);
+        }
+        // Note: We don't reset grades if species is cleared, 
+        // because item might have already populated grades
+    });
+    
+    console.log('✅ Species Grade Script fully initialized');
+    console.log('');
+});
+</script>
+
+
+ <!-- Load Species and Peeling based on Item (FIXED)  -->
+<script>
+$(document).ready(function () {
+    console.log("✅ Item → Species/Peeling Script Loaded");
+
+    // Get the item, species, and peeling selects
+    const itemSelect = $('#id_item');
+    const speciesSelect = $('#id_species');
+    const peelingSelect = $('#id_peeling_type');
+
+    console.log('🔍 Finding item select:', itemSelect.length);
+    console.log('🔍 Finding species select:', speciesSelect.length);
+    console.log('🔍 Finding peeling select:', peelingSelect.length);
+
+    // Function to load species for item
+    function loadSpeciesForItem(itemId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 Loading species for item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        const currentOptions = speciesSelect.html();
+        speciesSelect.empty().append('<option value="">Loading species...</option>');
+        console.log('⏳ Loading species...');
+
+        $.ajax({
+            url: "{% url 'adminapp:get_species_for_item' %}",
+            data: { item_id: itemId },
+            success: function (response) {
+                console.log('✅ Species AJAX SUCCESS! Raw data:', response);
+                
+                // Clear and add default option
+                speciesSelect.empty().append('<option value="">---------</option>');
+                
+                const species = response.species || [];
+                console.log('📊 Species array:', species);
+                console.log('📊 Species count:', species.length);
+
+                if (species.length > 0) {
+                    console.log(`📦 Processing ${species.length} species for item...`);
+                    
+                    $.each(species, function (i, speciesItem) {
+                        console.log(`  Species ${i + 1}:`, speciesItem);
+                        speciesSelect.append('<option value="' + speciesItem.id + '">' + speciesItem.name + '</option>');
+                    });
+                    
+                    speciesSelect.prop('disabled', false);
+                    console.log('✅ ALL SPECIES ADDED! Total options:', speciesSelect.find('option').length);
+                } else {
+                    console.log('⚠️ No species found for this item');
+                    speciesSelect.prop('disabled', true);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ SPECIES AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Response:', xhr.responseText);
+                
+                // Restore previous options on error
+                speciesSelect.html(currentOptions);
+            }
+        });
+    }
+
+    // Function to load peeling types for item
+    function loadPeelingForItem(itemId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 Loading peeling types for item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        const currentOptions = peelingSelect.html();
+        peelingSelect.empty().append('<option value="">Loading peeling types...</option>');
+        console.log('⏳ Loading peeling types...');
+
+        $.ajax({
+            url: "{% url 'adminapp:get_peeling_for_item' %}",
+            data: { item_id: itemId },
+            success: function (response) {
+                console.log('✅ Peeling AJAX SUCCESS! Raw data:', response);
+                
+                // Clear and add default option
+                peelingSelect.empty().append('<option value="">---------</option>');
+                
+                const peelingTypes = response.peeling_types || [];
+                console.log('📊 Peeling types array:', peelingTypes);
+                console.log('📊 Peeling types count:', peelingTypes.length);
+
+                if (peelingTypes.length > 0) {
+                    console.log(`📦 Processing ${peelingTypes.length} peeling types for item...`);
+                    
+                    $.each(peelingTypes, function (i, peeling) {
+                        console.log(`  Peeling ${i + 1}:`, peeling);
+                        peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
+                    });
+                    
+                    peelingSelect.prop('disabled', false);
+                    console.log('✅ ALL PEELING TYPES ADDED! Total options:', peelingSelect.find('option').length);
+                } else {
+                    console.log('⚠️ No peeling types found for this item');
+                    peelingSelect.prop('disabled', true);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ PEELING AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Response:', xhr.responseText);
+                
+                // Restore previous options on error
+                peelingSelect.html(currentOptions);
+            }
+        });
+    }
+
+    // Listen for item change
+    itemSelect.on('change', function() {
+        const itemId = $(this).val();
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 ITEM SELECT CHANGED!');
+        console.log('📦 New Item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+        
+        if (itemId) {
+            loadSpeciesForItem(itemId);
+            loadPeelingForItem(itemId);
+        } else {
+            console.log('⚠️ Item cleared, resetting dependent fields');
+            speciesSelect.empty().append('<option value="">---------</option>');
+            peelingSelect.empty().append('<option value="">---------</option>');
+        }
+    });
+
+    console.log('✅ Item → Species/Peeling Script fully initialized');
+    console.log('');
+});
+</script>
+
+
+
+<!-- Stock Adjustment Calculation Script -->
+<script>
+$(document).ready(function () {
+    console.log('✅ Stock Adjustment Calculation Script Loaded');
+    
+    let precision = 0;
+    let factor = 0;
+    let lastEditedField = null; // Track which field was last edited by user
+
+    // Fetch unit details when unit is selected - USE THE CORRECT ID
+    $('#id_unit').on('change', function () {
+        let unitId = $(this).val();
+        
+        if (!unitId) {
+            console.log('⚠️ No unit selected, clearing precision and factor');
+            precision = 0;
+            factor = 0;
+            return;
+        }
+
+        console.log('📡 Fetching unit details for stock adjustment, Unit ID:', unitId);
+        $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+            console.log('✅ Unit details for stock adjustment:', data);
+            precision = parseFloat(data.precision) || 0;
+            factor = parseFloat(data.factor) || 0;
+            console.log('📊 Precision:', precision, 'Factor:', factor);
+        }).fail(function(xhr, status, error) {
+            console.log('❌ Could not fetch unit details for stock adjustment');
+            console.log('❌ Error:', error);
+        });
+    });
+
+    // Trigger unit fetch on page load if unit is already selected
+    const initialUnit = $('#id_unit').val();
+    if (initialUnit) {
+        console.log('🔄 Unit already selected on load:', initialUnit);
+        $('#id_unit').trigger('change');
+    }
+
+    // Track when user focuses on a field (they want to edit it manually)
+    $('#id_cs_adjustment').on('focus', function() {
+        lastEditedField = 'cs';
+        console.log('👆 User focused on CS field');
+    });
+
+    $('#id_kg_adjustment').on('focus', function() {
+        lastEditedField = 'kg';
+        console.log('👆 User focused on KG field');
+    });
+
+    // Auto-calculate KG when CS is entered (but only if CS was the last edited field)
+    $('#id_cs_adjustment').on('input', function () {
+        // Only auto-calculate if CS is the field being edited
+        if (lastEditedField !== 'cs') {
+            return;
+        }
+        
+        let csValue = parseFloat($(this).val()) || 0;
+        
+        if (csValue === 0) {
+            console.log('🧹 CS cleared, clearing KG');
+            $('#id_kg_adjustment').val('');
+            $('#id_kg_adjustment').trigger('input');
+            return;
+        }
+
+        if (!precision || !factor) {
+            console.log('⚠️ Cannot calculate KG: precision or factor not available');
+            console.log('⚠️ Current precision:', precision, 'factor:', factor);
+            return;
+        }
+
+        // Calculate KG from CS
+        // CS = Slab / Precision, so Slab = CS * Precision
+        // KG = Slab * Factor
+        let slabValue = csValue * precision;
+        let kgValue = (slabValue * factor).toFixed(2);
+        
+        console.log('🔄 CS to KG calculation:', {
+            cs: csValue,
+            precision: precision,
+            factor: factor,
+            calculatedSlab: slabValue,
+            calculatedKG: kgValue
+        });
+
+        // Temporarily change last edited field to prevent circular calculation
+        let tempField = lastEditedField;
+        lastEditedField = null;
+        $('#id_kg_adjustment').val(kgValue);
+        $('#id_kg_adjustment').trigger('input');
+        lastEditedField = tempField;
+    });
+
+    // Auto-calculate CS when KG is entered (but only if KG was the last edited field)
+    $('#id_kg_adjustment').on('input', function () {
+        // Only auto-calculate if KG is the field being edited
+        if (lastEditedField !== 'kg') {
+            return;
+        }
+        
+        let kgValue = parseFloat($(this).val()) || 0;
+        
+        if (kgValue === 0) {
+            console.log('🧹 KG cleared, clearing CS');
+            $('#id_cs_adjustment').val('');
+            $('#id_cs_adjustment').trigger('input');
+            return;
+        }
+
+        if (!precision || !factor) {
+            console.log('⚠️ Cannot calculate CS: precision or factor not available');
+            console.log('⚠️ Current precision:', precision, 'factor:', factor);
+            return;
+        }
+
+        // Calculate CS from KG
+        // KG = Slab * Factor, so Slab = KG / Factor
+        // CS = Slab / Precision
+        let slabValue = kgValue / factor;
+        let csValue = (slabValue / precision).toFixed(2);
+        
+        console.log('🔄 KG to CS calculation:', {
+            kg: kgValue,
+            precision: precision,
+            factor: factor,
+            calculatedSlab: slabValue,
+            calculatedCS: csValue
+        });
+
+        // Temporarily change last edited field to prevent circular calculation
+        let tempField = lastEditedField;
+        lastEditedField = null;
+        $('#id_cs_adjustment').val(csValue);
+        $('#id_cs_adjustment').trigger('input');
+        lastEditedField = tempField;
+    });
+
+    console.log('✅ Stock Adjustment Calculation Script Initialized');
+    console.log('💡 Tip: Click on a field to edit it. The other field will auto-calculate based on your input.');
+});
+</script>
+
+
+<!-- USD Rate Calculation Script for Stock Adjustment -->
+<script>
+$(document).ready(function () {
+    console.log('✅ USD Rate Calculation Script Loaded');
+    
+    // Log all field IDs to verify they exist
+    console.log('🔍 Checking field IDs:');
+    console.log('  KG adjustment field:', $('#id_kg_adjustment').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    console.log('  USD per KG field:', $('#id_usd_rate_per_kg').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    console.log('  USD rate item field:', $('#id_usd_rate_item').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    console.log('  USD to INR field:', $('#id_usd_rate_item_to_inr').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    
+    let dollarRate = 0;
+    
+    // Fetch dollar rate on page load
+    console.log('📡 Fetching dollar rate...');
+    $.getJSON("{% url 'adminapp:get_dollar_rate' %}", function (data) {
+        console.log('✅ Dollar rate response:', data);
+        if (data.dollar_rate_to_inr) {
+            dollarRate = parseFloat(data.dollar_rate_to_inr);
+            console.log('💵 Dollar Rate Loaded:', dollarRate);
+            // Recalculate if values are present
+            calculateUSDRates();
+        }
+    }).fail(function(xhr, status, error) {
+        console.log('❌ Could not fetch dollar rate');
+        console.log('  Status:', status);
+        console.log('  Error:', error);
+    });
+    
+    // Function to calculate USD rates based on KG
+    function calculateUSDRates() {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('💰 CALCULATING USD RATES');
+        console.log('═══════════════════════════════════════');
+        
+        let kgValue = parseFloat($('#id_kg_adjustment').val()) || 0;
+        let usdPerKg = parseFloat($('#id_usd_rate_per_kg').val()) || 0;
+        
+        console.log('📊 Input values:', {
+            kgAdjustment: kgValue,
+            usdPerKg: usdPerKg,
+            dollarRate: dollarRate
+        });
+        
+        // If no KG or no USD rate, clear the fields
+        if (!kgValue || !usdPerKg) {
+            console.log('⚠️ Missing KG or USD per KG');
+            $('#id_usd_rate_item').val('');
+            $('#id_usd_rate_item_to_inr').val('');
+            console.log('🧹 USD rate fields cleared');
+            return;
+        }
+        
+        // Calculate USD Rate Item = KG × USD per KG
+        let usdRateItem = (kgValue * usdPerKg).toFixed(2);
+        $('#id_usd_rate_item').val(usdRateItem);
+        console.log('✅ USD Rate Item calculated and set:', usdRateItem);
+        console.log('   Formula: KG (' + kgValue + ') × USD per KG (' + usdPerKg + ') = ' + usdRateItem);
+        
+        // Calculate USD Rate Item to INR
+        if (dollarRate > 0) {
+            let usdRateItemInr = (parseFloat(usdRateItem) * dollarRate).toFixed(2);
+            $('#id_usd_rate_item_to_inr').val(usdRateItemInr);
+            console.log('✅ USD Rate Item to INR calculated and set:', usdRateItemInr);
+            console.log('   Formula: USD Item (' + usdRateItem + ') × Dollar Rate (' + dollarRate + ') = ' + usdRateItemInr);
+        } else {
+            console.log('⚠️ Dollar rate not available (value: ' + dollarRate + '), cannot calculate INR');
+        }
+        
+        console.log('═══════════════════════════════════════');
+        console.log('');
+    }
+    
+    // Recalculate when KG adjustment changes
+    $('#id_kg_adjustment').on('input', function() {
+        let value = $(this).val();
+        console.log('🔄 KG adjustment input event triggered, value:', value);
+        calculateUSDRates();
+    });
+    
+    // Recalculate when USD per KG changes
+    $('#id_usd_rate_per_kg').on('input', function() {
+        let value = $(this).val();
+        console.log('💵 USD per KG input event triggered, value:', value);
+        calculateUSDRates();
+    });
+    
+    // Initial calculation if values are already present on page load
+    setTimeout(function() {
+        let kgVal = $('#id_kg_adjustment').val();
+        let usdVal = $('#id_usd_rate_per_kg').val();
+        if (kgVal || usdVal) {
+            console.log('🔄 Initial values detected on load:');
+            console.log('  KG:', kgVal);
+            console.log('  USD per KG:', usdVal);
+            calculateUSDRates();
+        }
+    }, 500); // Wait 500ms to ensure dollar rate is loaded
+    
+    console.log('✅ USD Rate Calculation Script Fully Initialized');
+    console.log('');
+});
+</script>
+
+<style>
+/* Add visual feedback for total updates */
+.total-field.updated {
+    animation: total-pulse 0.4s ease;
+}
+
+@keyframes total-pulse {
+    0%, 100% { 
+        background-color: transparent;
+        transform: scale(1);
+    }
+    50% { 
+        background-color: rgba(40, 167, 69, 0.1);
+        transform: scale(1.01);
+    }
+}
+
+/* Style for total fields */
+.total-field {
+    transition: all 0.3s ease;
+}
+</style>
+
+<!-- USD Rate Calculation Script for Stock Adjustment -->
+<script>
+$(document).ready(function () {
+    console.log('✅ USD Rate Calculation Script Loaded');
+    
+    let dollarRate = 0;
+    let currentStockKG = 0; // Store current stock KG
+    
+    // Fetch dollar rate on page load
+    console.log('📡 Fetching dollar rate...');
+    $.getJSON("{% url 'adminapp:get_dollar_rate' %}", function (data) {
+        console.log('✅ Dollar rate response:', data);
+        if (data.dollar_rate_to_inr) {
+            dollarRate = parseFloat(data.dollar_rate_to_inr);
+            console.log('💵 Dollar Rate Loaded:', dollarRate);
+            calculateUSDRates();
+        }
+    }).fail(function(xhr, status, error) {
+        console.log('❌ Could not fetch dollar rate');
+        console.log('  Status:', status);
+        console.log('  Error:', error);
+    });
+    
+    // Watch for current stock display updates to get the current KG
+    const observer = new MutationObserver(function(mutations) {
+        const currentKGElement = document.getElementById('currentKG');
+        if (currentKGElement && currentKGElement.textContent) {
+            currentStockKG = parseFloat(currentKGElement.textContent) || 0;
+            console.log('📦 Current Stock KG Updated:', currentStockKG);
+            calculateUSDRates();
+        }
+    });
+    
+    // Observe changes to current stock display
+    const currentStockDisplay = document.getElementById('currentStockDisplay');
+    if (currentStockDisplay) {
+        observer.observe(currentStockDisplay, { 
+            childList: true, 
+            subtree: true,
+            characterData: true 
+        });
+    }
+    
+    // Also check immediately on load
+    const currentKGElement = document.getElementById('currentKG');
+    if (currentKGElement && currentKGElement.textContent) {
+        currentStockKG = parseFloat(currentKGElement.textContent) || 0;
+        console.log('📦 Initial Current Stock KG:', currentStockKG);
+    }
+    
+    // Function to calculate USD rates based on TOTAL KG (current + adjustment)
+    function calculateUSDRates() {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('💰 CALCULATING USD RATES');
+        console.log('═══════════════════════════════════════');
+        
+        let kgAdjustment = parseFloat($('#id_kg_adjustment').val()) || 0;
+        let usdPerKg = parseFloat($('#id_usd_rate_per_kg').val()) || 0;
+        
+        // Calculate TOTAL KG = Current Stock + Adjustment
+        let totalKG = currentStockKG + kgAdjustment;
+        
+        console.log('📊 Calculation values:', {
+            currentStockKG: currentStockKG,
+            kgAdjustment: kgAdjustment,
+            totalKG: totalKG,
+            usdPerKg: usdPerKg,
+            dollarRate: dollarRate
+        });
+        
+        // If no USD rate, clear the fields
+        if (!usdPerKg) {
+            console.log('⚠️ No USD per KG rate provided');
+            $('#id_usd_rate_item').val('');
+            $('#id_usd_rate_item_to_inr').val('');
+            return;
+        }
+        
+        // If total KG is negative or zero, clear fields
+        if (totalKG <= 0) {
+            console.log('⚠️ Total KG is zero or negative:', totalKG);
+            $('#id_usd_rate_item').val('0.00');
+            $('#id_usd_rate_item_to_inr').val('0.00');
+            return;
+        }
+        
+        // Calculate USD Rate Item = TOTAL KG × USD per KG
+        let usdRateItem = (totalKG * usdPerKg).toFixed(2);
+        $('#id_usd_rate_item').val(usdRateItem);
+        console.log('✅ USD Rate Item calculated:', usdRateItem);
+        console.log('   Formula: Total KG (' + totalKG + ') × USD per KG (' + usdPerKg + ') = ' + usdRateItem);
+        
+        // Calculate USD Rate Item to INR
+        if (dollarRate > 0) {
+            let usdRateItemInr = (parseFloat(usdRateItem) * dollarRate).toFixed(2);
+            $('#id_usd_rate_item_to_inr').val(usdRateItemInr);
+            console.log('✅ USD Rate Item to INR calculated:', usdRateItemInr);
+            console.log('   Formula: USD Item (' + usdRateItem + ') × Dollar Rate (' + dollarRate + ') = ' + usdRateItemInr);
+        } else {
+            console.log('⚠️ Dollar rate not available, cannot calculate INR');
+        }
+        
+        console.log('═══════════════════════════════════════');
+        console.log('');
+    }
+    
+    // Recalculate when KG adjustment changes
+    $('#id_kg_adjustment').on('input', function() {
+        let value = $(this).val();
+        console.log('🔄 KG adjustment changed:', value);
+        calculateUSDRates();
+    });
+    
+    // Recalculate when USD per KG changes
+    $('#id_usd_rate_per_kg').on('input', function() {
+        let value = $(this).val();
+        console.log('💵 USD per KG changed:', value);
+        calculateUSDRates();
+    });
+    
+    // Initial calculation
+    setTimeout(function() {
+        calculateUSDRates();
+    }, 500);
+    
+    console.log('✅ USD Rate Calculation Script Fully Initialized');
+    console.log('');
+});
+</script>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

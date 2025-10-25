@@ -7324,42 +7324,32 @@ def return_tenant_delete(request, pk):
                         item_kg = item.kg or Decimal(0)
                         
                         print(f"\nRestoring to {item.item.name}:")
-                        print(f"  Current Stock: Slab={existing_stock.available_slab}, CS={existing_stock.available_c_s}, KG={existing_stock.available_kg}")
+                        print(f"  Current Available: Slab={existing_stock.available_slab}, CS={existing_stock.available_c_s}, KG={existing_stock.available_kg}")
+                        print(f"  Current Original: Slab={existing_stock.original_slab}, CS={existing_stock.original_c_s}, KG={existing_stock.original_kg}")
                         print(f"  Restoring (Adding): Slab={item_slab}, CS={item_cs}, KG={item_kg}")
                         
-                        # Add back the returned quantities
+                        # ✅ ONLY restore to AVAILABLE quantities (not original)
                         existing_stock.available_slab += item_slab
                         existing_stock.available_c_s += item_cs
                         existing_stock.available_kg += item_kg
                         
-                        existing_stock.original_slab += item_slab
-                        existing_stock.original_c_s += item_cs
-                        existing_stock.original_kg += item_kg
+                        # ❌ DO NOT modify original quantities
+                        # original_kg stays unchanged - it represents the original frozen amount
                         
                         existing_stock.save()
                         
-                        print(f"  New Stock: Slab={existing_stock.available_slab}, CS={existing_stock.available_c_s}, KG={existing_stock.available_kg}")
+                        print(f"  New Available: Slab={existing_stock.available_slab}, CS={existing_stock.available_c_s}, KG={existing_stock.available_kg}")
+                        print(f"  Original (unchanged): Slab={existing_stock.original_slab}, CS={existing_stock.original_c_s}, KG={existing_stock.original_kg}")
                         print(f"  ✓ Tenant stock restored successfully")
                     else:
-                        # Create new stock entry with positive values
-                        item_slab = item.slab_quantity or Decimal(0)
-                        item_cs = item.c_s_quantity or Decimal(0)
-                        item_kg = item.kg or Decimal(0)
-                        
-                        new_stock_data = {
-                            **stock_filters,
-                            'available_slab': item_slab,
-                            'available_c_s': item_cs,
-                            'available_kg': item_kg,
-                            'original_slab': item_slab,
-                            'original_c_s': item_cs,
-                            'original_kg': item_kg,
-                        }
-                        
-                        TenantStock.objects.create(**new_stock_data)
-                        print(f"\n✓ Tenant stock CREATED for {item.item.name}:")
-                        print(f"  Slab={item_slab}, CS={item_cs}, KG={item_kg}")
-                        messages.info(request, f"Stock entry created for {item.item.name} with restored quantities")
+                        # ⚠️ This shouldn't happen when deleting a return
+                        # Returns should only modify existing stock, not create new entries
+                        print(f"⚠️ WARNING: No existing stock found for {item.item.name}")
+                        messages.warning(
+                            request, 
+                            f"No existing stock found for {item.item.name}. "
+                            f"Cannot restore return quantities."
+                        )
                         
                 except Exception as e:
                     print(f"Error restoring tenant stock for {item.item.name}: {e}")
@@ -7699,13 +7689,21 @@ def tenant_stock_summary(request):
     return render(request, 'adminapp/TenantStock/summary.html', context)
 
 
+@transaction.atomic
 def create_tenant_bill(tenant, from_date, to_date):
     """
-    Create a TenantBill and items from freezing entries between from_date and to_date.
-    Calculation is tariff × kg (not per-day).
-    Returns the created or existing bill, or None if nothing to bill.
+    Create a TenantBill using ONLY TenantStock data.
+    
+    IMPORTANT: This uses original_kg from TenantStock.
+    If original_kg is 0, it will use available_kg as fallback.
     """
-    # avoid duplicates for exact period
+    from adminapp.models import (
+        TenantBill, TenantBillItem, TenantStock, 
+        FreezingEntryTenant, FreezingEntryTenantItem,
+        TenantFreezingTariff
+    )
+    
+    # Avoid duplicates for exact period
     existing = TenantBill.objects.filter(
         tenant=tenant, from_date=from_date, to_date=to_date
     ).first()
@@ -7713,15 +7711,17 @@ def create_tenant_bill(tenant, from_date, to_date):
         logger.info(f"Bill already exists for {tenant} {from_date} to {to_date}")
         return existing
 
-    entries = FreezingEntryTenant.objects.filter(
+    # ✅ Get data ONLY from TenantStock
+    tenant_stocks = TenantStock.objects.filter(
         tenant_company_name=tenant,
-        freezing_date__gte=from_date,
-        freezing_date__lte=to_date,
-        freezing_status="complete",
-    ).prefetch_related("items")
+    ).select_related(
+        'item', 'brand', 'unit', 'glaze', 'species', 
+        'grade', 'freezing_category', 'processing_center', 
+        'store', 'item_quality', 'peeling_type'
+    )
 
-    if not entries.exists():
-        logger.info(f"No freezing entries for {tenant} between {from_date} and {to_date}")
+    if not tenant_stocks.exists():
+        logger.info(f"No tenant stock found for {tenant}")
         return None
 
     bill = TenantBill.objects.create(
@@ -7732,120 +7732,120 @@ def create_tenant_bill(tenant, from_date, to_date):
 
     totals = {"amount": Decimal("0.00"), "slabs": 0, "cs": 0, "kg": Decimal("0.00")}
     items_created = 0
+    items_skipped = 0
 
-    for entry in entries:
-        for item in entry.items.all():
-            try:
-                tariff_obj = TenantFreezingTariff.objects.get(
-                    tenant=tenant, category=item.freezing_category
-                )
-                tariff = Decimal(str(tariff_obj.tariff))
-            except TenantFreezingTariff.DoesNotExist:
-                logger.warning(f"No tariff for {tenant} - {item.freezing_category}; using 0.00")
-                tariff = Decimal("0.00")
-
-            # quantity
-            kg_quantity = Decimal(str(getattr(item, "kg", 0)))
-
-            # ✅ only tariff × kg
-            line_total = tariff * kg_quantity
-
-            TenantBillItem.objects.create(
-                bill=bill,
-                freezing_entry=entry,
-                freezing_entry_item=item,
-                slab_quantity=getattr(item, "slab_quantity", 0),
-                c_s_quantity=getattr(item, "c_s_quantity", 0),
-                kg_quantity=kg_quantity,
-                days_stored=0,             # optional placeholder
-                tariff_per_day=tariff,     # actually "tariff", no per-day calc
-                line_total=line_total,
+    # ✅ Process each TenantStock entry
+    for stock in tenant_stocks:
+        # ✅ Use ORIGINAL_KG, fallback to AVAILABLE_KG if original is 0
+        if stock.original_kg > 0:
+            billing_kg = stock.original_kg
+            billing_slab = stock.original_slab
+            billing_cs = stock.original_c_s
+            logger.info(f"Using ORIGINAL quantities for {stock.item.name}: {billing_kg} KG")
+        elif stock.available_kg > 0:
+            # Fallback: Use available if original not set
+            billing_kg = stock.available_kg
+            billing_slab = stock.available_slab
+            billing_cs = stock.available_c_s
+            logger.warning(
+                f"ORIGINAL_KG is 0 for {stock.item.name}, "
+                f"using AVAILABLE_KG as fallback: {billing_kg} KG"
             )
+        else:
+            # Skip items with no stock
+            logger.info(f"Skipping {stock.item.name} - no stock available")
+            items_skipped += 1
+            continue
 
-            totals["amount"] += line_total
-            totals["slabs"] += getattr(item, "slab_quantity", 0) or 0
-            totals["cs"] += getattr(item, "c_s_quantity", 0) or 0
-            totals["kg"] += kg_quantity
-            items_created += 1
+        # Get tariff for this freezing category
+        try:
+            tariff_obj = TenantFreezingTariff.objects.get(
+                tenant=tenant, 
+                category=stock.freezing_category
+            )
+            tariff = Decimal(str(tariff_obj.tariff))
+        except TenantFreezingTariff.DoesNotExist:
+            logger.warning(
+                f"No tariff for {tenant} - {stock.freezing_category}; using 0.00"
+            )
+            tariff = Decimal("0.00")
 
-    # update totals on bill
+        # ✅ Calculate line total
+        line_total = tariff * billing_kg
+        
+        logger.info(
+            f"Billing {stock.item.name}: "
+            f"KG={billing_kg}, Tariff={tariff}, Total={line_total}"
+        )
+
+        # Find ANY related FreezingEntry to satisfy NOT NULL constraint
+        freezing_entry = FreezingEntryTenant.objects.filter(
+            tenant_company_name=tenant,
+            freezing_status="complete"
+        ).first()
+        
+        if not freezing_entry:
+            logger.error(f"No FreezingEntry found for {tenant}, cannot create bill item")
+            continue
+        
+        # Find ANY related FreezingEntryTenantItem to satisfy NOT NULL constraint
+        freezing_item = FreezingEntryTenantItem.objects.filter(
+            freezing_entry=freezing_entry,
+            item=stock.item,
+            brand=stock.brand,
+        ).first()
+        
+        # If no exact match, use any item from this entry
+        if not freezing_item:
+            freezing_item = FreezingEntryTenantItem.objects.filter(
+                freezing_entry=freezing_entry
+            ).first()
+        
+        if not freezing_item:
+            logger.error(f"No FreezingEntryTenantItem found, skipping {stock.item.name}")
+            items_skipped += 1
+            continue
+
+        # Create bill item with TenantStock quantities
+        TenantBillItem.objects.create(
+            bill=bill,
+            freezing_entry=freezing_entry,
+            freezing_entry_item=freezing_item,
+            slab_quantity=billing_slab,  # ✅ From TenantStock
+            c_s_quantity=billing_cs,     # ✅ From TenantStock
+            kg_quantity=billing_kg,      # ✅ From TenantStock
+            days_stored=0,
+            tariff_per_day=tariff,
+            line_total=line_total,
+        )
+
+        totals["amount"] += line_total
+        totals["slabs"] += billing_slab or 0
+        totals["cs"] += billing_cs or 0
+        totals["kg"] += billing_kg
+        items_created += 1
+
+    # Update totals on bill
     bill.total_amount = totals["amount"]
     bill.total_slabs = totals["slabs"]
     bill.total_c_s = totals["cs"]
     bill.total_kg = totals["kg"]
     bill.save()
 
-    logger.info(f"Created bill {bill.pk} ({items_created} items) for tenant {tenant}")
+    logger.info(
+        f"Created bill {bill.pk} for {tenant}: "
+        f"{items_created} items billed, {items_skipped} items skipped, "
+        f"Total: ₹{totals['amount']}"
+    )
+    
     return bill
-
-def auto_generate_bills():
-    """
-    Generate bills for all TenantBillingConfiguration entries that are due.
-    Returns (generated_bills_list, errors_list)
-    """
-    today = timezone.now().date()
-    configs_due = TenantBillingConfiguration.objects.filter(is_active=True, next_bill_date__lte=today)
-    generated = []
-    errors = []
-
-    for config in configs_due:
-        try:
-            from_date = (config.last_bill_generated_date + timedelta(days=1)) if config.last_bill_generated_date else config.billing_start_date
-            to_date = today
-
-            if from_date > to_date:
-                logger.warning(f"Skipping {config.tenant}: from_date {from_date} > to_date {to_date}")
-                continue
-
-            bill = create_tenant_bill(config.tenant, from_date, to_date)
-            if bill:
-                generated.append(bill)
-                # update config
-                config.last_bill_generated_date = to_date
-                config.next_bill_date = to_date + timedelta(days=config.billing_frequency_days)
-                config.save()
-        except Exception as e:
-            logger.exception(f"Auto billing error for {config.tenant}: {e}")
-            errors.append(f"{config.tenant}: {str(e)}")
-
-    return generated, errors
-
-def run_auto_billing(request):
-    """
-    Trigger auto billing manually.
-    If POST contains config_id -> generate only for that config.
-    Otherwise generate for all due configs.
-    """
-    if request.method == 'POST':
-        config_id = request.POST.get('config_id')
-        if config_id:
-            config = get_object_or_404(TenantBillingConfiguration, id=config_id)
-            today = timezone.now().date()
-            from_date = (config.last_bill_generated_date + timedelta(days=1)) if config.last_bill_generated_date else config.billing_start_date
-            bill = create_tenant_bill(config.tenant, from_date, today)
-            if bill:
-                config.last_bill_generated_date = today
-                config.next_bill_date = today + timedelta(days=config.billing_frequency_days)
-                config.save()
-                messages.success(request, f"Generated bill {getattr(bill, 'bill_number', bill.id)} for {config.tenant}")
-            else:
-                messages.warning(request, f"No freezing entries found for {config.tenant}")
-        else:
-            bills, errors = auto_generate_bills()
-            if bills:
-                messages.success(request, f"Generated {len(bills)} bills.")
-            else:
-                messages.info(request, "No bills generated. No due configurations found.")
-            for e in errors:
-                messages.error(request, e)
-    return redirect('adminapp:billing_config_list')
-
 
 
 @check_permission('billing_view')
 def bill_list(request):
     bills = TenantBill.objects.select_related('tenant').order_by('-created_at')
     return render(request, 'adminapp/billing/bill_list.html', {'bills': bills})
+
 
 @check_permission('billing_add')
 def generate_manual_bill(request):
@@ -7859,26 +7859,61 @@ def generate_manual_bill(request):
 
             bill = create_tenant_bill(tenant, from_date, to_date)
             if bill:
-                messages.success(request, f"Bill {getattr(bill, 'bill_number', bill.id)} created successfully.")
+                messages.success(
+                    request, 
+                    f"Bill {getattr(bill, 'bill_number', bill.id)} created successfully. "
+                    f"Total Amount: ₹{bill.total_amount}, Total KG: {bill.total_kg}"
+                )
                 return redirect('adminapp:view_bill', bill_id=bill.id)
             else:
-                messages.warning(request, "No freezing entries found for selected period.")
+                messages.warning(request, "No tenant stock found for billing.")
     else:
         tenant_id = request.GET.get("tenant_id")
         initial = {}
         if tenant_id:
-            from adminapp.models import TenantBill  # adjust if different app name
+            from adminapp.models import TenantBill
             try:
-                last_bill = TenantBill.objects.filter(tenant_id=tenant_id).order_by('-to_date').first()
+                last_bill = TenantBill.objects.filter(
+                    tenant_id=tenant_id
+                ).order_by('-to_date').first()
+                
                 if last_bill:
-                    # Set next start date = last bill end date + 1 day
                     initial['from_date'] = last_bill.to_date + timedelta(days=1)
+                    initial['tenant'] = tenant_id
             except TenantBill.DoesNotExist:
                 pass
 
         form = BillGenerationForm(initial=initial)
 
     return render(request, 'adminapp/billing/generate_manual_bill.html', {'form': form})
+
+
+def populate_original_quantities():
+    """
+    One-time script to populate original_kg from available_kg
+    Run this in Django shell: python manage.py shell
+    >>> from adminapp.views import populate_original_quantities
+    >>> populate_original_quantities()
+    """
+    from adminapp.models import TenantStock
+    
+    updated = 0
+    for stock in TenantStock.objects.all():
+        if stock.original_kg == 0 and stock.available_kg > 0:
+            stock.original_kg = stock.available_kg
+            stock.original_slab = stock.available_slab
+            stock.original_c_s = stock.available_c_s
+            stock.save()
+            updated += 1
+            print(f"Updated {stock.item.name}: original_kg = {stock.original_kg}")
+    
+    print(f"\nTotal updated: {updated} records")
+    return updated
+
+
+
+
+
 
 @check_permission('billing_view')
 def view_bill(request, bill_id):
@@ -8126,18 +8161,6 @@ def bill_list_by_status(request, status):
 @check_permission('billing_view')
 def bill_list_draft(request):
     return bill_list_by_status(request, "draft")
-
-# def bill_list_finalized(request):
-#     return bill_list_by_status(request, "finalized")
-
-# def bill_list_sent(request):
-#     return bill_list_by_status(request, "sent")
-
-# def bill_list_paid(request):
-#     return bill_list_by_status(request, "paid")
-
-# def bill_list_cancelled(request):
-#     return bill_list_by_status(request, "cancelled")
 
 
 
@@ -14639,6 +14662,8 @@ def get_current_stock(request):
 
 
 
+
+
 def tenant_stock_adjustment(request):
     """Adjust tenant stock - create new or update existing"""
     if request.method == 'POST':
@@ -14662,7 +14687,6 @@ def tenant_stock_adjustment(request):
                     store = form.cleaned_data.get('store')
                     
                     # Ensure adjustment values are Decimal
-                    from decimal import Decimal
                     slab_adjustment = Decimal(str(form.cleaned_data.get('slab_adjustment') or 0))
                     cs_adjustment = Decimal(str(form.cleaned_data.get('cs_adjustment') or 0))
                     kg_adjustment = Decimal(str(form.cleaned_data.get('kg_adjustment') or 0))
@@ -14679,40 +14703,25 @@ def tenant_stock_adjustment(request):
                         'species': species,
                         'grade': grade,
                         'freezing_category': freezing_category,
+                        'item_quality': item_quality,
+                        'peeling_type': peeling_type,
+                        'processing_center': processing_center,
+                        'store': store,
                     }
-                    
-                    # Add optional fields
-                    if item_quality is not None:
-                        lookup_params['item_quality'] = item_quality
-                    else:
-                        lookup_params['item_quality__isnull'] = True
-                    
-                    if peeling_type is not None:
-                        lookup_params['peeling_type'] = peeling_type
-                    else:
-                        lookup_params['peeling_type__isnull'] = True
-                    
-                    if processing_center is not None:
-                        lookup_params['processing_center'] = processing_center
-                        lookup_params['store__isnull'] = True
-                    elif store is not None:
-                        lookup_params['store'] = store
-                        lookup_params['processing_center__isnull'] = True
                     
                     # Try to find existing tenant stock
                     try:
                         tenant_stock = TenantStock.objects.get(**lookup_params)
                         created = False
                         
-                        # Store old values for message
-                        old_slab = tenant_stock.available_slab
-                        old_cs = tenant_stock.available_c_s
-                        old_kg = tenant_stock.available_kg
-                        
-                        # Update existing tenant stock by ADDING the adjustment
+                        # ✅ Update BOTH available AND original quantities
                         tenant_stock.available_slab += slab_adjustment
                         tenant_stock.available_c_s += cs_adjustment
                         tenant_stock.available_kg += kg_adjustment
+                        
+                        tenant_stock.original_slab += slab_adjustment
+                        tenant_stock.original_c_s += cs_adjustment
+                        tenant_stock.original_kg += kg_adjustment
                         
                         if remarks:
                             tenant_stock.remarks = remarks
@@ -14747,7 +14756,15 @@ def tenant_stock_adjustment(request):
                         messages.warning(
                             request, 
                             f'Warning: Tenant stock adjusted but resulted in negative quantity. '
-                            f'Slab: {tenant_stock.available_slab}, CS: {tenant_stock.available_c_s}, KG: {tenant_stock.available_kg}'
+                            f'Available - Slab: {tenant_stock.available_slab}, CS: {tenant_stock.available_c_s}, KG: {tenant_stock.available_kg}'
+                        )
+                    
+                    # ✅ Also check original quantities for negative values
+                    if tenant_stock.original_slab < 0 or tenant_stock.original_c_s < 0 or tenant_stock.original_kg < 0:
+                        messages.warning(
+                            request, 
+                            f'Warning: Original stock also resulted in negative quantity. '
+                            f'Original - Slab: {tenant_stock.original_slab}, CS: {tenant_stock.original_c_s}, KG: {tenant_stock.original_kg}'
                         )
                     
                     tenant_stock.save()
@@ -14755,7 +14772,7 @@ def tenant_stock_adjustment(request):
                     if created:
                         messages.success(
                             request, 
-                            f'New tenant stock created for {tenant.name} - {tenant_stock.item.name}! '
+                            f'New tenant stock created for {tenant.company_name} - {tenant_stock.item.name}! '
                             f'Slab: {tenant_stock.available_slab}, CS: {tenant_stock.available_c_s}, KG: {tenant_stock.available_kg}'
                         )
                     else:
@@ -14764,9 +14781,10 @@ def tenant_stock_adjustment(request):
                         action = "increased" if total_adjustment > 0 else "decreased" if total_adjustment < 0 else "adjusted"
                         messages.success(
                             request, 
-                            f'Tenant stock {action} for {tenant.name} - {tenant_stock.item.name}! '
+                            f'Tenant stock {action} for {tenant.company_name} - {tenant_stock.item.name}! '
                             f'Adjustment: Slab {slab_adjustment:+}, CS {cs_adjustment:+}, KG {kg_adjustment:+} | '
-                            f'New values: Slab: {tenant_stock.available_slab}, CS: {tenant_stock.available_c_s}, KG: {tenant_stock.available_kg}'
+                            f'Available: Slab: {tenant_stock.available_slab}, CS: {tenant_stock.available_c_s}, KG: {tenant_stock.available_kg} | '
+                            f'Original: Slab: {tenant_stock.original_slab}, CS: {tenant_stock.original_c_s}, KG: {tenant_stock.original_kg}'
                         )
                     
                     return redirect('adminapp:tenant_stock_list')
@@ -14807,58 +14825,31 @@ def get_current_tenant_stock(request):
         store_id = request.GET.get('store') or None
         
         # Convert empty strings to None
-        def parse_id(value):
-            return None if value in ('', None) else value
-        
-        item_quality_id = parse_id(item_quality_id)
-        peeling_type_id = parse_id(peeling_type_id)
-        processing_center_id = parse_id(processing_center_id)
-        store_id = parse_id(store_id)
+        if item_quality_id == '':
+            item_quality_id = None
+        if peeling_type_id == '':
+            peeling_type_id = None
+        if processing_center_id == '':
+            processing_center_id = None
+        if store_id == '':
+            store_id = None
         
         try:
-            # Build lookup dictionary
-            lookup_params = {
-                'tenant_company_name_id': tenant_id,
-                'item_id': item_id,
-                'brand_id': brand_id,
-                'unit_id': unit_id,
-                'glaze_id': glaze_id,
-                'species_id': species_id,
-                'grade_id': grade_id,
-                'freezing_category_id': freezing_category_id,
-            }
-            
-            # Handle optional fields with isnull lookups
-            if item_quality_id:
-                lookup_params['item_quality_id'] = item_quality_id
-            else:
-                lookup_params['item_quality__isnull'] = True
-            
-            if peeling_type_id:
-                lookup_params['peeling_type_id'] = peeling_type_id
-            else:
-                lookup_params['peeling_type__isnull'] = True
-            
-            # Handle location fields
-            if processing_center_id:
-                lookup_params['processing_center_id'] = processing_center_id
-                lookup_params['store__isnull'] = True
-            elif store_id:
-                lookup_params['store_id'] = store_id
-                lookup_params['processing_center__isnull'] = True
-            else:
-                # If neither is selected, we can't find a match
-                return JsonResponse({
-                    'exists': False,
-                    'available_slab': 0,
-                    'available_c_s': 0,
-                    'available_kg': 0,
-                    'original_slab': 0,
-                    'original_c_s': 0,
-                    'original_kg': 0
-                })
-            
-            tenant_stock = TenantStock.objects.get(**lookup_params)
+            # Build lookup with direct values (allow both locations)
+            tenant_stock = TenantStock.objects.get(
+                tenant_company_name_id=tenant_id,
+                item_id=item_id,
+                brand_id=brand_id,
+                unit_id=unit_id,
+                glaze_id=glaze_id,
+                species_id=species_id,
+                grade_id=grade_id,
+                freezing_category_id=freezing_category_id,
+                item_quality_id=item_quality_id,
+                peeling_type_id=peeling_type_id,
+                processing_center_id=processing_center_id,
+                store_id=store_id
+            )
             
             return JsonResponse({
                 'exists': True,
@@ -14884,7 +14875,6 @@ def get_current_tenant_stock(request):
             return JsonResponse({'error': str(e)}, status=400)
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
 
 def tenant_stock_list(request):
     """List all tenant stocks with filtering and search"""
@@ -14931,6 +14921,38 @@ def tenant_stock_list(request):
     }
     return render(request, 'adminapp/TenantStock/tenant_stock_list.html', context)
 
+def tenant_stock_delete(request, pk):
+    """Delete tenant stock entry"""
+    try:
+        tenant_stock = TenantStock.objects.get(pk=pk)
+        
+        if request.method == 'POST':
+            # Store info for success message
+            tenant_name = tenant_stock.tenant_company_name.company_name
+            item_name = tenant_stock.item.name
+            
+            # Delete the tenant stock
+            tenant_stock.delete()
+            
+            messages.success(
+                request,
+                f'Tenant stock for {tenant_name} - {item_name} has been deleted successfully!'
+            )
+            return redirect('adminapp:tenant_stock_list')
+        
+        # GET request - show confirmation page
+        context = {
+            'tenant_stock': tenant_stock,
+            'title': 'Delete Tenant Stock'
+        }
+        return render(request, 'adminapp/confirm_delete.html', context)
+        
+    except TenantStock.DoesNotExist:
+        messages.error(request, 'Tenant stock not found.')
+        return redirect('adminapp:tenant_stock_list')
+    except Exception as e:
+        messages.error(request, f'Error deleting tenant stock: {str(e)}')
+        return redirect('adminapp:tenant_stock_list')
 
 
 

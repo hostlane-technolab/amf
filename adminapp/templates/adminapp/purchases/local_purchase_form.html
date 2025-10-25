@@ -863,6 +863,60 @@ small.unit {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
+
+<!-- Load Item Quality when item changes -->
+<script>
+$(document).ready(function () {
+    console.log("Item → Quality script loaded");
+
+    $(document).on("change", 'select[name$="-item"]', function () {
+        const itemSelect = $(this);
+        const itemId = itemSelect.val();
+        const row = itemSelect.closest("tr");
+        const qualitySelect = row.find("select[name$='-item_quality']");
+
+        console.log("Item changed for quality. Item ID:", itemId);
+        console.log("Quality select found:", qualitySelect.length);
+
+        // Reset quality dropdown
+        qualitySelect.empty().append('<option value="">---------</option>');
+
+        if (itemId) {
+            console.log("Fetching qualities for item:", itemId);
+
+            $.get("{% url 'adminapp:get_item_qualities' %}", { item_id: itemId })
+                .done(function (data) {
+                    console.log("Qualities received:", data);
+
+                    const qualities = Array.isArray(data) ? data : data.qualities || [];
+
+                    if (qualities.length > 0) {
+                        qualities.forEach(function (quality) {
+                            qualitySelect.append(
+                                `<option value="${quality.id}">${quality.quality}</option>`
+                            );
+                        });
+                        console.log(`Loaded ${qualities.length} qualities`);
+                    } else {
+                        console.log("No qualities found for this item");
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error("Error loading qualities:", {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText,
+                    });
+                    qualitySelect.append('<option value="">Error loading qualities</option>');
+                });
+        } else {
+            console.log("No item selected, quality dropdown reset");
+        }
+    });
+});
+</script>
+
+
 <script>
 // Date picker initialization
 
@@ -1064,8 +1118,6 @@ $(document).on("change", "select[name$='-item']", function () {
     }
 });
 </script>
-
-
 
 <!-- Load Grades when item changes -->
 <script>
