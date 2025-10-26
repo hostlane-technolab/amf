@@ -3155,205 +3155,180 @@ def delete_stock_entries_for_spot_entry(freezing_entry):
 
 @check_permission('freezing_add')
 def create_freezing_entry_local(request):
-    if request.method == 'POST':
+    FreezingEntryLocalItemFormSet = inlineformset_factory(
+        FreezingEntryLocal,
+        FreezingEntryLocalItem,
+        form=FreezingEntryLocalItemForm,
+        extra=1,
+        can_delete=True
+    )
+    
+    if request.method == "POST":
         form = FreezingEntryLocalForm(request.POST)
-        formset = FreezingEntryLocalItemFormSet(request.POST, prefix='form')
-
+        formset = FreezingEntryLocalItemFormSet(
+            request.POST, prefix="form"
+        )
+        
         if form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
-                    # First calculate totals
-                    total_kg = Decimal(0)
-                    total_slab = Decimal(0)
-                    total_c_s = Decimal(0)
-                    total_usd = Decimal(0)
-                    total_inr = Decimal(0)
+                    # Get Dollar Rate from active Settings
+                    try:
+                        from adminapp.models import Settings
+                        active_settings = Settings.objects.filter(is_active=True).first()
+                        if active_settings:
+                            dollar_rate_to_inr = active_settings.dollar_rate_to_inr
+                            print(f"✓ Using active dollar rate: {dollar_rate_to_inr}")
+                        else:
+                            raise ValueError("No active settings found in database")
+                    except Exception as e:
+                        print(f"✗ Error loading dollar rate: {e}")
+                        messages.error(request, f"Error: {str(e)}")
+                        raise
+
+                    # Process formset data
+                    total_kg = Decimal('0')
+                    total_slab = Decimal('0')
+                    total_c_s = Decimal('0')
+                    total_usd = Decimal('0')
+                    total_inr = Decimal('0')
                     stock_updates = []
 
-                    # Get Dollar Rate
-                    dollar_rate_to_inr = Decimal(85)  # Default fallback
-                    try:
-                        from django.apps import apps
-                        for model_name in ['Dollar', 'DollarRate', 'ExchangeRate', 'USDRate', 'Currency']:
-                            try:
-                                DollarModel = apps.get_model('adminapp', model_name)
-                                dollar_obj = DollarModel.objects.latest("id")
-                                dollar_rate_to_inr = Decimal(str(dollar_obj.rate))
-                                print(f"Dollar rate loaded from {model_name}: {dollar_rate_to_inr}")
-                                break
-                            except LookupError:
-                                continue
-                    except Exception as e:
-                        print(f"Error loading dollar rate: {e}")
+                    # Save formset
+                    instances = formset.save(commit=False)
+                    
+                    for obj in formset.deleted_objects:
+                        obj.delete()
 
-                    # Process formset and collect stock data
-                    for f in formset:
+                    # Process formset
+                    for f in formset.forms:
                         if f.cleaned_data and not f.cleaned_data.get('DELETE', False):
-                            slab = f.cleaned_data.get('slab_quantity') or Decimal(0)
-                            cs = f.cleaned_data.get('c_s_quantity') or Decimal(0)
-                            kg = f.cleaned_data.get('kg') or Decimal(0)
-                            usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal(0)
+                            slab = f.cleaned_data.get('slab_quantity') or Decimal('0')
+                            cs = f.cleaned_data.get('c_s_quantity') or Decimal('0')
+                            kg = f.cleaned_data.get('kg') or Decimal('0')
+                            usd_rate_per_kg = f.cleaned_data.get('usd_rate_per_kg') or Decimal('0')
 
-                            # Calculate USD and INR amounts
                             usd_item = kg * usd_rate_per_kg
                             inr_item = usd_item * dollar_rate_to_inr
 
-                            # Extract data from formset for stock creation
-                            store = f.cleaned_data.get('store')
-                            item = f.cleaned_data.get('item')
-                            item_quality = f.cleaned_data.get('item_quality')
-                            unit = f.cleaned_data.get('unit')
-                            glaze = f.cleaned_data.get('glaze')
-                            brand = f.cleaned_data.get('brand')
-                            species = f.cleaned_data.get('species')
-                            grade = f.cleaned_data.get('grade')
-                            peeling_type = f.cleaned_data.get('peeling_type')  # Added
-                            freezing_category = f.cleaned_data.get('freezing_category')
+                            stock_data = {
+                                'store': f.cleaned_data.get('store'),
+                                'item': f.cleaned_data.get('item'),
+                                'item_quality': f.cleaned_data.get('item_quality'),
+                                'unit': f.cleaned_data.get('unit'),
+                                'glaze': f.cleaned_data.get('glaze'),
+                                'brand': f.cleaned_data.get('brand'),
+                                'species': f.cleaned_data.get('species'),
+                                'grade': f.cleaned_data.get('grade'),
+                                'peeling_type': f.cleaned_data.get('peeling_type'),
+                                'freezing_category': f.cleaned_data.get('freezing_category'),
+                                'cs': cs,
+                                'kg': kg,
+                                'usd_rate_per_kg': usd_rate_per_kg,
+                                'usd_rate_item': usd_item,
+                                'usd_rate_item_to_inr': inr_item,
+                                'form_instance': f,
+                            }
 
-                            # Store stock update data
-                            if store and item and brand and freezing_category:
-                                stock_updates.append({
-                                    'store': store,
-                                    'item': item,
-                                    'item_quality': item_quality,
-                                    'unit': unit,
-                                    'glaze': glaze,
-                                    'brand': brand,
-                                    'species': species,
-                                    'grade': grade,
-                                    'peeling_type': peeling_type,  # Added
-                                    'freezing_category': freezing_category,
-                                    'cs': cs,
-                                    'kg': kg,
-                                    'usd_rate_per_kg': usd_rate_per_kg,
-                                    'usd_rate_item': usd_item,
-                                    'usd_rate_item_to_inr': inr_item,
-                                })
+                            if stock_data['store'] and stock_data['item'] and stock_data['brand']:
+                                stock_updates.append(stock_data)
 
-                            # Calculate totals
                             total_slab += slab
                             total_c_s += cs
                             total_kg += kg
                             total_usd += usd_item
                             total_inr += inr_item
 
-                    # Create and save the main freezing entry
-                    freezing_entry = form.save(commit=False)
-                    freezing_entry.created_by = request.user
-                    freezing_entry.total_slab = total_slab
-                    freezing_entry.total_c_s = total_c_s
-                    freezing_entry.total_kg = total_kg
-                    freezing_entry.total_usd = total_usd
-                    freezing_entry.total_inr = total_inr
-                    freezing_entry.save()
+                    # Create and save the main freezing entry first
+                    entry = form.save(commit=False)
+                    entry.total_slab = total_slab
+                    entry.total_c_s = total_c_s
+                    entry.total_kg = total_kg
+                    entry.total_usd = total_usd
+                    entry.total_inr = total_inr
+                    entry.save()
 
-                    # Save formset with calculations
-                    for f in formset.forms:
-                        if f.cleaned_data and not f.cleaned_data.get("DELETE", False):
-                            item = f.save(commit=False)
-                            item.freezing_entry = freezing_entry
+                    # Save formset instances
+                    for instance in instances:
+                        for stock_update in stock_updates:
+                            if stock_update['form_instance'].instance == instance:
+                                kg = stock_update['kg']
+                                usd_rate_per_kg = stock_update['usd_rate_per_kg']
+                                usd_item = kg * usd_rate_per_kg
+                                inr_item = usd_item * dollar_rate_to_inr
+                                
+                                instance.usd_rate_item = usd_item
+                                instance.usd_rate_item_to_inr = inr_item
+                                break
+                        
+                        instance.freezing_entry = entry
+                        instance.save()
 
-                            kg = f.cleaned_data.get("kg") or Decimal(0)
-                            usd_rate_per_kg = f.cleaned_data.get("usd_rate_per_kg") or Decimal(0)
-                            usd_item = kg * usd_rate_per_kg
-                            inr_item = usd_item * dollar_rate_to_inr
-
-                            item.usd_rate_item = usd_item
-                            item.usd_rate_item_to_inr = inr_item
-                            item.save()
-
-                    # Process stock updates with WEIGHTED AVERAGE
-                    stock_errors = []
+                    # ADD to stock WITH WEIGHTED AVERAGE
+                    print(f"\n=== ADDING STOCK QUANTITIES ===")
                     for stock_data in stock_updates:
                         try:
-                            # Prepare stock filter criteria
                             stock_filters = {
                                 'store': stock_data['store'],
                                 'item': stock_data['item'],
                                 'brand': stock_data['brand'],
+                                'item_quality': stock_data['item_quality'],
+                                'unit': stock_data['unit'],
+                                'glaze': stock_data['glaze'],
+                                'species': stock_data['species'],
+                                'item_grade': stock_data['grade'],
+                                'peeling_type': stock_data['peeling_type'],
                                 'freezing_category': stock_data['freezing_category'],
                             }
-                            
-                            # Add nullable fields
-                            stock_filters['item_quality'] = stock_data.get('item_quality')
-                            stock_filters['unit'] = stock_data.get('unit')
-                            stock_filters['glaze'] = stock_data.get('glaze')
-                            stock_filters['species'] = stock_data.get('species')
-                            stock_filters['item_grade'] = stock_data.get('grade')
-                            stock_filters['peeling_type'] = stock_data.get('peeling_type')  # Added
-                            
-                            print(f"Looking for stock with filters: {stock_filters}")
+                            stock_filters = {k: v for k, v in stock_filters.items() if v is not None}
 
-                            # Try to update existing stock
-                            existing_stocks = Stock.objects.filter(**stock_filters)
+                            existing_stock = Stock.objects.select_for_update().filter(**stock_filters).first()
                             
-                            if existing_stocks.exists():
-                                # Update with WEIGHTED AVERAGE
-                                existing_stock = existing_stocks.first()
+                            if existing_stock:
+                                print(f"\nAdding to {stock_data['item'].name}:")
                                 
-                                # Get old values
                                 old_kg = existing_stock.kg_quantity
-                                old_usd_per_kg = existing_stock.usd_rate_per_kg or Decimal(0)
-                                old_usd_item = existing_stock.usd_rate_item or Decimal(0)
-                                old_inr = existing_stock.usd_rate_item_to_inr or Decimal(0)
-                                
-                                # Get new values
                                 add_kg = stock_data['kg']
-                                new_usd_per_kg = stock_data['usd_rate_per_kg']
-                                new_usd_item = stock_data['usd_rate_item']
-                                new_inr = stock_data['usd_rate_item_to_inr']
+                                new_total_kg = old_kg + add_kg
                                 
-                                # Calculate new total
-                                total_kg = old_kg + add_kg
-                                
-                                print(f"\nUpdating stock for {stock_data['item'].name}:")
-                                print(f"  Old: KG={old_kg}")
-                                print(f"  Adding: KG={add_kg}")
-                                print(f"  New Total KG: {total_kg}")
-                                
-                                # Calculate weighted average rates
-                                if total_kg > 0:
+                                # Weighted average calculation
+                                if new_total_kg > 0 and add_kg > 0:
+                                    old_usd_per_kg = existing_stock.usd_rate_per_kg or Decimal(0)
+                                    old_usd_item = existing_stock.usd_rate_item or Decimal(0)
+                                    old_inr = existing_stock.usd_rate_item_to_inr or Decimal(0)
+                                    
+                                    new_usd_per_kg = stock_data['usd_rate_per_kg']
+                                    new_usd_item = stock_data['usd_rate_item']
+                                    new_inr = stock_data['usd_rate_item_to_inr']
+                                    
                                     existing_stock.usd_rate_per_kg = (
                                         (old_kg * old_usd_per_kg) + (add_kg * new_usd_per_kg)
-                                    ) / total_kg
+                                    ) / new_total_kg
                                     
                                     existing_stock.usd_rate_item = (
                                         (old_kg * old_usd_item) + (add_kg * new_usd_item)
-                                    ) / total_kg
+                                    ) / new_total_kg
                                     
                                     existing_stock.usd_rate_item_to_inr = (
                                         (old_kg * old_inr) + (add_kg * new_inr)
-                                    ) / total_kg
+                                    ) / new_total_kg
                                     
                                     print(f"  Rates (Weighted Avg):")
                                     print(f"    USD/kg: {old_usd_per_kg:.2f} → {existing_stock.usd_rate_per_kg:.2f}")
-                                    print(f"    USD/item: {old_usd_item:.2f} → {existing_stock.usd_rate_item:.2f}")
-                                    print(f"    INR: {old_inr:.2f} → {existing_stock.usd_rate_item_to_inr:.2f}")
-                                else:
-                                    existing_stock.usd_rate_per_kg = new_usd_per_kg
-                                    existing_stock.usd_rate_item = new_usd_item
-                                    existing_stock.usd_rate_item_to_inr = new_inr
+                                elif add_kg > 0:
+                                    existing_stock.usd_rate_per_kg = stock_data['usd_rate_per_kg']
+                                    existing_stock.usd_rate_item = stock_data['usd_rate_item']
+                                    existing_stock.usd_rate_item_to_inr = stock_data['usd_rate_item_to_inr']
                                 
-                                # Update quantities
                                 existing_stock.cs_quantity += stock_data['cs']
                                 existing_stock.kg_quantity += add_kg
                                 existing_stock.save()
-                                
-                                print(f"  ✓ Stock updated successfully")
+                                print(f"  ✓ Stock updated")
                                 
                             else:
                                 # Create new stock
                                 new_stock_data = {
-                                    'store': stock_data['store'],
-                                    'item': stock_data['item'],
-                                    'brand': stock_data['brand'],
-                                    'item_quality': stock_data.get('item_quality'),
-                                    'unit': stock_data.get('unit'),
-                                    'glaze': stock_data.get('glaze'),
-                                    'species': stock_data.get('species'),
-                                    'item_grade': stock_data.get('grade'),
-                                    'peeling_type': stock_data.get('peeling_type'),  # Added
-                                    'freezing_category': stock_data['freezing_category'],
+                                    **stock_filters,
                                     'cs_quantity': stock_data['cs'],
                                     'kg_quantity': stock_data['kg'],
                                     'usd_rate_per_kg': stock_data['usd_rate_per_kg'],
@@ -3361,49 +3336,16 @@ def create_freezing_entry_local(request):
                                     'usd_rate_item_to_inr': stock_data['usd_rate_item_to_inr'],
                                 }
                                 
-                                if not Stock.objects.filter(**stock_filters).exists():
-                                    stock = Stock.objects.create(**new_stock_data)
-                                    print(f"\n✓ New stock created for {stock_data['item'].name}")
-                                else:
-                                    # Race condition - update instead
-                                    existing_stock = Stock.objects.filter(**stock_filters).first()
-                                    old_kg = existing_stock.kg_quantity
-                                    add_kg = stock_data['kg']
-                                    total_kg = old_kg + add_kg
-                                    
-                                    if total_kg > 0:
-                                        existing_stock.usd_rate_per_kg = (
-                                            (old_kg * existing_stock.usd_rate_per_kg) + 
-                                            (add_kg * stock_data['usd_rate_per_kg'])
-                                        ) / total_kg
-                                        
-                                        existing_stock.usd_rate_item = (
-                                            (old_kg * existing_stock.usd_rate_item) + 
-                                            (add_kg * stock_data['usd_rate_item'])
-                                        ) / total_kg
-                                        
-                                        existing_stock.usd_rate_item_to_inr = (
-                                            (old_kg * existing_stock.usd_rate_item_to_inr) + 
-                                            (add_kg * stock_data['usd_rate_item_to_inr'])
-                                        ) / total_kg
-                                    
-                                    existing_stock.cs_quantity += stock_data['cs']
-                                    existing_stock.kg_quantity += add_kg
-                                    existing_stock.save()
-                                    print(f"Stock updated after race condition")
+                                stock = Stock.objects.create(**new_stock_data)
+                                print(f"\n✓ Stock CREATED for {stock_data['item'].name}")
 
-                        except Exception as stock_error:
-                            error_msg = f"Error with stock for {stock_data.get('item', 'Unknown')}: {str(stock_error)}"
-                            print(error_msg)
+                        except Exception as e:
+                            print(f"\n✗ Error updating stock: {e}")
                             import traceback
-                            print(f"Stock error traceback: {traceback.format_exc()}")
-                            stock_errors.append(error_msg)
-                            continue
+                            traceback.print_exc()
+                            messages.warning(request, f"Error updating stock for {stock_data['item'].name}: {str(e)}")
 
-                    # Add warnings
-                    for error in stock_errors:
-                        messages.warning(request, error)
-
+                    print(f"\n=== CREATE COMPLETE ===")
                     messages.success(request, "Freezing Entry created successfully ✅")
                     return redirect("adminapp:freezing_entry_local_list")
 
@@ -3415,16 +3357,17 @@ def create_freezing_entry_local(request):
 
         else:
             print("Form Errors:", form.errors)
-            print("Formset Errors:", [f.errors for f in formset.forms])
+            print("Formset Errors:", [f.errors for f in formset.forms if f.errors])
             messages.error(request, 'Please correct the errors below.')
     else:
         form = FreezingEntryLocalForm()
-        formset = FreezingEntryLocalItemFormSet(prefix='form')
-
-    return render(request, "adminapp/freezing/freezing_entry_local_create.html", {
-        "form": form,
-        "formset": formset,
-    })
+        formset = FreezingEntryLocalItemFormSet(prefix="form")
+        
+    return render(
+        request,
+        "adminapp/freezing/freezing_entry_local_create.html",
+        {"form": form, "formset": formset},
+    )
 
 @check_permission('freezing_view')
 def freezing_entry_local_list(request):
@@ -3513,7 +3456,7 @@ def freezing_entry_local_update(request, pk):
                                 'glaze': old_item.glaze,
                                 'species': old_item.species,
                                 'item_grade': old_item.grade,
-                                'peeling_type': old_item.peeling_type,  # Added
+                                'peeling_type': old_item.peeling_type,
                                 'freezing_category': old_item.freezing_category,
                             }
                             stock_filters = {k: v for k, v in stock_filters.items() if v is not None}
@@ -3598,21 +3541,19 @@ def freezing_entry_local_update(request, pk):
                     total_inr = Decimal('0')
                     stock_updates = []
 
-                    # Get Dollar Rate
-                    dollar_rate_to_inr = Decimal(85)
+                    # Get Dollar Rate from active Settings
                     try:
-                        from django.apps import apps
-                        for model_name in ['Dollar', 'DollarRate', 'ExchangeRate', 'USDRate', 'Currency']:
-                            try:
-                                DollarModel = apps.get_model('adminapp', model_name)
-                                dollar_obj = DollarModel.objects.latest("id")
-                                dollar_rate_to_inr = Decimal(str(dollar_obj.rate))
-                                print(f"Dollar rate: {dollar_rate_to_inr}")
-                                break
-                            except LookupError:
-                                continue
+                        from adminapp.models import Settings
+                        active_settings = Settings.objects.filter(is_active=True).first()
+                        if active_settings:
+                            dollar_rate_to_inr = active_settings.dollar_rate_to_inr
+                            print(f"✓ Using active dollar rate: {dollar_rate_to_inr}")
+                        else:
+                            raise ValueError("No active settings found in database")
                     except Exception as e:
-                        print(f"Error loading dollar rate: {e}")
+                        print(f"✗ Error loading dollar rate: {e}")
+                        messages.error(request, f"Error: {str(e)}")
+                        raise
 
                     # Save formset
                     instances = formset.save(commit=False)
@@ -3640,7 +3581,7 @@ def freezing_entry_local_update(request, pk):
                                 'brand': f.cleaned_data.get('brand'),
                                 'species': f.cleaned_data.get('species'),
                                 'grade': f.cleaned_data.get('grade'),
-                                'peeling_type': f.cleaned_data.get('peeling_type'),  # Added
+                                'peeling_type': f.cleaned_data.get('peeling_type'),
                                 'freezing_category': f.cleaned_data.get('freezing_category'),
                                 'cs': cs,
                                 'kg': kg,
@@ -3696,7 +3637,7 @@ def freezing_entry_local_update(request, pk):
                                 'glaze': stock_data['glaze'],
                                 'species': stock_data['species'],
                                 'item_grade': stock_data['grade'],
-                                'peeling_type': stock_data['peeling_type'],  # Added
+                                'peeling_type': stock_data['peeling_type'],
                                 'freezing_category': stock_data['freezing_category'],
                             }
                             stock_filters = {k: v for k, v in stock_filters.items() if v is not None}
@@ -3789,7 +3730,6 @@ def freezing_entry_local_update(request, pk):
         "adminapp/freezing/freezing_entry_local_update.html",
         {"form": form, "formset": formset, "entry": freezing_entry},
     )
-
 
 def get_parties_by_date(request):
     date = request.GET.get('date')
