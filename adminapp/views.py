@@ -13199,13 +13199,9 @@ def stock_search_ajax(request):
 
 
 
-
-
-
-
 def spot_purchase_profit_loss_report(request):
     """
-    Generate profit/loss report for spot purchases with filters and date range
+    Generate profit/loss report for spot purchases with comprehensive filters and date range
     """
     from datetime import datetime, timedelta
     from django.db.models import Q, Sum, Count
@@ -13213,13 +13209,30 @@ def spot_purchase_profit_loss_report(request):
     from django.http import JsonResponse
     from django.shortcuts import render
     
-    # Get filter parameters
+    # Get all filter parameters
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
     quick_filter = request.GET.get('quick_filter', '')
+    
+    # Basic filters
     selected_spots = request.GET.getlist('spots')
     selected_agents = request.GET.getlist('agents')
     selected_supervisors = request.GET.getlist('supervisors')
+    
+    # New comprehensive filters
+    selected_items = request.GET.getlist('items')
+    selected_species = request.GET.getlist('species')
+    selected_item_categories = request.GET.getlist('item_categories')
+    selected_item_qualities = request.GET.getlist('item_qualities')
+    selected_item_types = request.GET.getlist('item_types')
+    selected_item_grades = request.GET.getlist('item_grades')
+    selected_item_brands = request.GET.getlist('item_brands')
+    selected_freezing_categories = request.GET.getlist('freezing_categories')
+    selected_processing_centers = request.GET.getlist('processing_centers')
+    selected_stores = request.GET.getlist('stores')
+    selected_packing_units = request.GET.getlist('packing_units')
+    selected_glaze_percentages = request.GET.getlist('glaze_percentages')
+    
     profit_filter = request.GET.get('profit_filter', 'all')  # all, profit, loss
     format_type = request.GET.get('format', 'html')  # html, json, print
     
@@ -13245,7 +13258,13 @@ def spot_purchase_profit_loss_report(request):
             if format_type == 'json':
                 return JsonResponse({'error': error_msg})
             else:
-                context = {'error': error_msg, 'report_data': []}
+                context = build_filter_context(
+                    error=error_msg,
+                    report_data=[],
+                    quick_filter=quick_filter,
+                    start_date=start_date,
+                    end_date=end_date
+                )
                 return render(request, 'spot_purchase_profit_loss_report.html', context)
     
     try:
@@ -13254,7 +13273,7 @@ def spot_purchase_profit_loss_report(request):
             date__range=[start_date_obj, end_date_obj]
         ).prefetch_related('items', 'expense', 'agent', 'supervisor', 'spot')
         
-        # Apply filters
+        # Apply basic filters
         if selected_spots:
             spot_purchases = spot_purchases.filter(spot__id__in=selected_spots)
         if selected_agents:
@@ -13262,23 +13281,78 @@ def spot_purchase_profit_loss_report(request):
         if selected_supervisors:
             spot_purchases = spot_purchases.filter(supervisor__id__in=selected_supervisors)
         
+        # Apply item-level filters through freezing entries
+        if any([selected_items, selected_species, selected_item_categories, selected_item_qualities,
+                selected_item_types, selected_item_grades, selected_item_brands, 
+                selected_freezing_categories, selected_processing_centers, selected_stores,
+                selected_packing_units, selected_glaze_percentages]):
+            
+            # Get freezing entry IDs that match the filters
+            freezing_query = FreezingEntrySpotItem.objects.all()
+            
+            if selected_items:
+                freezing_query = freezing_query.filter(item__id__in=selected_items)
+            if selected_species:
+                freezing_query = freezing_query.filter(species__id__in=selected_species)
+            if selected_item_qualities:
+                freezing_query = freezing_query.filter(item_quality__id__in=selected_item_qualities)
+            if selected_item_types:
+                freezing_query = freezing_query.filter(peeling_type__id__in=selected_item_types)
+            if selected_item_grades:
+                freezing_query = freezing_query.filter(grade__id__in=selected_item_grades)
+            if selected_item_brands:
+                freezing_query = freezing_query.filter(brand__id__in=selected_item_brands)
+            if selected_freezing_categories:
+                freezing_query = freezing_query.filter(freezing_category__id__in=selected_freezing_categories)
+            if selected_processing_centers:
+                freezing_query = freezing_query.filter(processing_center__id__in=selected_processing_centers)
+            if selected_stores:
+                freezing_query = freezing_query.filter(store__id__in=selected_stores)
+            if selected_packing_units:
+                freezing_query = freezing_query.filter(unit__id__in=selected_packing_units)
+            if selected_glaze_percentages:
+                freezing_query = freezing_query.filter(glaze__id__in=selected_glaze_percentages)
+            
+            # Filter by item categories through item relationship
+            if selected_item_categories:
+                freezing_query = freezing_query.filter(item__category__id__in=selected_item_categories)
+            
+            # Get unique spot purchase IDs from matching freezing entries
+            matching_spot_purchase_ids = freezing_query.values_list(
+                'freezing_entry__spot__id', flat=True
+            ).distinct()
+            
+            # Filter spot purchases to only those with matching freezing entries
+            spot_purchases = spot_purchases.filter(id__in=matching_spot_purchase_ids)
+        
         if not spot_purchases.exists():
             message = f'No spot purchases found for the selected criteria'
             if format_type == 'json':
                 return JsonResponse({'message': message, 'total_purchases': 0})
             else:
-                context = {
-                    'message': message, 
-                    'report_data': [],
-                    'quick_filter': quick_filter,
-                    'start_date': start_date,
-                    'end_date': end_date,
-                    'selected_spots': selected_spots,
-                    'selected_agents': selected_agents,
-                    'selected_supervisors': selected_supervisors,
-                    'profit_filter': profit_filter,
-                    'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
-                }
+                context = build_filter_context(
+                    message=message,
+                    report_data=[],
+                    quick_filter=quick_filter,
+                    start_date=start_date,
+                    end_date=end_date,
+                    selected_spots=selected_spots,
+                    selected_agents=selected_agents,
+                    selected_supervisors=selected_supervisors,
+                    selected_items=selected_items,
+                    selected_species=selected_species,
+                    selected_item_categories=selected_item_categories,
+                    selected_item_qualities=selected_item_qualities,
+                    selected_item_types=selected_item_types,
+                    selected_item_grades=selected_item_grades,
+                    selected_item_brands=selected_item_brands,
+                    selected_freezing_categories=selected_freezing_categories,
+                    selected_processing_centers=selected_processing_centers,
+                    selected_stores=selected_stores,
+                    selected_packing_units=selected_packing_units,
+                    selected_glaze_percentages=selected_glaze_percentages,
+                    profit_filter=profit_filter
+                )
                 return render(request, 'spot_purchase_profit_loss_report.html', context)
         
         # Get processing overhead total (active records only)
@@ -13336,8 +13410,8 @@ def spot_purchase_profit_loss_report(request):
                     freezing_revenue += item_revenue
                     total_kg += item.kg or Decimal('0.00')
                     
-                    # Calculate freezing category tariff
-                    if item.freezing_category and item.freezing_category.tariff:
+                    # Calculate freezing category tariff (only for active categories)
+                    if item.freezing_category and item.freezing_category.is_active and item.freezing_category.tariff:
                         tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
                         total_freezing_tariff += tariff_cost
             
@@ -13367,6 +13441,12 @@ def spot_purchase_profit_loss_report(request):
                 profit_status = 'Break Even'
                 summary['break_even_count'] += 1
             
+            # Apply profit filter
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
+            
             purchase_data = {
                 'id': purchase.id,
                 'date': purchase.date,
@@ -13387,12 +13467,6 @@ def spot_purchase_profit_loss_report(request):
                 'total_items': sum(entry.items.count() for entry in freezing_entries),
                 'total_kg': float(total_kg)
             }
-            
-            # Apply profit filter
-            if profit_filter == 'profit' and profit_loss <= 0:
-                continue
-            elif profit_filter == 'loss' and profit_loss >= 0:
-                continue
             
             report_data.append(purchase_data)
             
@@ -13434,51 +13508,141 @@ def spot_purchase_profit_loss_report(request):
                     'spots': selected_spots,
                     'agents': selected_agents,
                     'supervisors': selected_supervisors,
+                    'items': selected_items,
+                    'species': selected_species,
+                    'item_categories': selected_item_categories,
+                    'item_qualities': selected_item_qualities,
+                    'item_types': selected_item_types,
+                    'item_grades': selected_item_grades,
+                    'item_brands': selected_item_brands,
+                    'freezing_categories': selected_freezing_categories,
+                    'processing_centers': selected_processing_centers,
+                    'stores': selected_stores,
+                    'packing_units': selected_packing_units,
+                    'glaze_percentages': selected_glaze_percentages,
                     'profit_filter': profit_filter,
                     'quick_filter': quick_filter
                 }
             })
         
-        # Get filter options for template
-        spots = PurchasingSpot.objects.all().order_by('location_name')
-        agents = PurchasingAgent.objects.all().order_by('name')
-        supervisors = PurchasingSupervisor.objects.all().order_by('name')
-        
-        context = {
-            'report_data': report_data,
-            'summary': summary,
-            'quick_filter': quick_filter,
-            'start_date': start_date,
-            'end_date': end_date,
-            'spots': spots,
-            'agents': agents,
-            'supervisors': supervisors,
-            'selected_spots': selected_spots,
-            'selected_agents': selected_agents,
-            'selected_supervisors': selected_supervisors,
-            'profit_filter': profit_filter,
-            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
-            'is_print': format_type == 'print'
-        }
+        # Build full context for template
+        context = build_filter_context(
+            report_data=report_data,
+            summary=summary,
+            quick_filter=quick_filter,
+            start_date=start_date,
+            end_date=end_date,
+            selected_spots=selected_spots,
+            selected_agents=selected_agents,
+            selected_supervisors=selected_supervisors,
+            selected_items=selected_items,
+            selected_species=selected_species,
+            selected_item_categories=selected_item_categories,
+            selected_item_qualities=selected_item_qualities,
+            selected_item_types=selected_item_types,
+            selected_item_grades=selected_item_grades,
+            selected_item_brands=selected_item_brands,
+            selected_freezing_categories=selected_freezing_categories,
+            selected_processing_centers=selected_processing_centers,
+            selected_stores=selected_stores,
+            selected_packing_units=selected_packing_units,
+            selected_glaze_percentages=selected_glaze_percentages,
+            profit_filter=profit_filter,
+            is_print=(format_type == 'print')
+        )
         
         template = 'spot_purchase_profit_loss_report_print.html' if format_type == 'print' else 'spot_purchase_profit_loss_report.html'
         return render(request, template, context)
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         error_msg = f'An error occurred: {str(e)}'
         if format_type == 'json':
             return JsonResponse({'error': error_msg})
         else:
-            context = {
-                'error': error_msg, 
-                'report_data': [],
-                'quick_filter': quick_filter,
-                'start_date': start_date,
-                'end_date': end_date,
-                'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
-            }
+            context = build_filter_context(
+                error=error_msg,
+                report_data=[],
+                quick_filter=quick_filter,
+                start_date=start_date,
+                end_date=end_date
+            )
             return render(request, 'spot_purchase_profit_loss_report.html', context)
 
+def build_filter_context(**kwargs):
+    """
+    Helper function to build context with all filter options.
+    Accepts any keyword arguments and merges them with defaults.
+    """
+    # Get filter options (only active records where applicable)
+    spots = PurchasingSpot.objects.all().order_by('location_name')
+    agents = PurchasingAgent.objects.all().order_by('name')
+    supervisors = PurchasingSupervisor.objects.filter(is_active=True).order_by('name')
+    items = Item.objects.all().order_by('name')
+    all_species = Species.objects.all().order_by('name')
+    item_categories = ItemCategory.objects.all().order_by('name')
+    item_qualities = ItemQuality.objects.all().order_by('quality')
+    item_types = ItemType.objects.all().order_by('name')
+    item_grades = ItemGrade.objects.all().order_by('grade')
+    item_brands = ItemBrand.objects.all().order_by('name')
+    freezing_categories = FreezingCategory.objects.filter(is_active=True).order_by('name')
+    processing_centers = ProcessingCenter.objects.filter(is_active=True).order_by('name')
+    stores = Store.objects.filter(is_active=True).order_by('name')
+    packing_units = PackingUnit.objects.all().order_by('unit_code')
+    glaze_percentages = GlazePercentage.objects.all().order_by('percentage')
+    
+    # Extract date parameters for date_range_text
+    quick_filter = kwargs.get('quick_filter', '')
+    start_date = kwargs.get('start_date', '')
+    end_date = kwargs.get('end_date', '')
+    
+    # Base context with defaults
+    context = {
+        'report_data': [],
+        'summary': None,
+        'spots': spots,
+        'agents': agents,
+        'supervisors': supervisors,
+        'items': items,
+        'all_species': all_species,
+        'item_categories': item_categories,
+        'item_qualities': item_qualities,
+        'item_types': item_types,
+        'item_grades': item_grades,
+        'item_brands': item_brands,
+        'freezing_categories': freezing_categories,
+        'processing_centers': processing_centers,
+        'stores': stores,
+        'packing_units': packing_units,
+        'glaze_percentages': glaze_percentages,
+        'selected_spots': [],
+        'selected_agents': [],
+        'selected_supervisors': [],
+        'selected_items': [],
+        'selected_species': [],
+        'selected_item_categories': [],
+        'selected_item_qualities': [],
+        'selected_item_types': [],
+        'selected_item_grades': [],
+        'selected_item_brands': [],
+        'selected_freezing_categories': [],
+        'selected_processing_centers': [],
+        'selected_stores': [],
+        'selected_packing_units': [],
+        'selected_glaze_percentages': [],
+        'profit_filter': 'all',
+        'quick_filter': quick_filter,
+        'start_date': start_date,
+        'end_date': end_date,
+        'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+        'is_print': False,
+    }
+    
+    # Update context with any provided kwargs
+    context.update(kwargs)
+    
+    return context
 
 def spot_purchase_profit_loss_report_print(request):
     """
@@ -13492,13 +13656,30 @@ def spot_purchase_profit_loss_report_print(request):
     from django.shortcuts import render
     import calendar
     
-    # Get filter parameters - same as main view
+    # Get ALL filter parameters - same as main view
     quick_filter = request.GET.get('quick_filter', '')
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
+    
+    # Basic filters
     selected_spots = request.GET.getlist('spots')
     selected_agents = request.GET.getlist('agents')
     selected_supervisors = request.GET.getlist('supervisors')
+    
+    # New comprehensive filters
+    selected_items = request.GET.getlist('items')
+    selected_species = request.GET.getlist('species')
+    selected_item_categories = request.GET.getlist('item_categories')
+    selected_item_qualities = request.GET.getlist('item_qualities')
+    selected_item_types = request.GET.getlist('item_types')
+    selected_item_grades = request.GET.getlist('item_grades')
+    selected_item_brands = request.GET.getlist('item_brands')
+    selected_freezing_categories = request.GET.getlist('freezing_categories')
+    selected_processing_centers = request.GET.getlist('processing_centers')
+    selected_stores = request.GET.getlist('stores')
+    selected_packing_units = request.GET.getlist('packing_units')
+    selected_glaze_percentages = request.GET.getlist('glaze_percentages')
+    
     profit_filter = request.GET.get('profit_filter', 'all')
     
     # Calculate dates based on quick filter or use today as default
@@ -13543,13 +13724,57 @@ def spot_purchase_profit_loss_report_print(request):
             'spot'
         ).select_related('spot', 'agent', 'supervisor')
         
-        # Apply filters - same as main view
+        # Apply basic filters - same as main view
         if selected_spots:
             spot_purchases = spot_purchases.filter(spot__id__in=selected_spots)
         if selected_agents:
             spot_purchases = spot_purchases.filter(agent__id__in=selected_agents)
         if selected_supervisors:
             spot_purchases = spot_purchases.filter(supervisor__id__in=selected_supervisors)
+        
+        # Apply item-level filters through freezing entries - same as main view
+        if any([selected_items, selected_species, selected_item_categories, selected_item_qualities,
+                selected_item_types, selected_item_grades, selected_item_brands, 
+                selected_freezing_categories, selected_processing_centers, selected_stores,
+                selected_packing_units, selected_glaze_percentages]):
+            
+            # Get freezing entry IDs that match the filters
+            freezing_query = FreezingEntrySpotItem.objects.all()
+            
+            if selected_items:
+                freezing_query = freezing_query.filter(item__id__in=selected_items)
+            if selected_species:
+                freezing_query = freezing_query.filter(species__id__in=selected_species)
+            if selected_item_qualities:
+                freezing_query = freezing_query.filter(item_quality__id__in=selected_item_qualities)
+            if selected_item_types:
+                freezing_query = freezing_query.filter(peeling_type__id__in=selected_item_types)
+            if selected_item_grades:
+                freezing_query = freezing_query.filter(grade__id__in=selected_item_grades)
+            if selected_item_brands:
+                freezing_query = freezing_query.filter(brand__id__in=selected_item_brands)
+            if selected_freezing_categories:
+                freezing_query = freezing_query.filter(freezing_category__id__in=selected_freezing_categories)
+            if selected_processing_centers:
+                freezing_query = freezing_query.filter(processing_center__id__in=selected_processing_centers)
+            if selected_stores:
+                freezing_query = freezing_query.filter(store__id__in=selected_stores)
+            if selected_packing_units:
+                freezing_query = freezing_query.filter(unit__id__in=selected_packing_units)
+            if selected_glaze_percentages:
+                freezing_query = freezing_query.filter(glaze__id__in=selected_glaze_percentages)
+            
+            # Filter by item categories through item relationship
+            if selected_item_categories:
+                freezing_query = freezing_query.filter(item__category__id__in=selected_item_categories)
+            
+            # Get unique spot purchase IDs from matching freezing entries
+            matching_spot_purchase_ids = freezing_query.values_list(
+                'freezing_entry__spot__id', flat=True
+            ).distinct()
+            
+            # Filter spot purchases to only those with matching freezing entries
+            spot_purchases = spot_purchases.filter(id__in=matching_spot_purchase_ids)
         
         if not spot_purchases.exists():
             message = f'No spot purchases found for the selected criteria'
@@ -13563,6 +13788,18 @@ def spot_purchase_profit_loss_report_print(request):
                 'selected_spots': selected_spots,
                 'selected_agents': selected_agents,
                 'selected_supervisors': selected_supervisors,
+                'selected_items': selected_items,
+                'selected_species': selected_species,
+                'selected_item_categories': selected_item_categories,
+                'selected_item_qualities': selected_item_qualities,
+                'selected_item_types': selected_item_types,
+                'selected_item_grades': selected_item_grades,
+                'selected_item_brands': selected_item_brands,
+                'selected_freezing_categories': selected_freezing_categories,
+                'selected_processing_centers': selected_processing_centers,
+                'selected_stores': selected_stores,
+                'selected_packing_units': selected_packing_units,
+                'selected_glaze_percentages': selected_glaze_percentages,
                 'profit_filter': profit_filter,
                 'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
             }
@@ -13660,9 +13897,12 @@ def spot_purchase_profit_loss_report_print(request):
                         freezing_revenue += item_revenue
                         total_kg += item.kg or Decimal('0.00')
                         
-                        # Calculate freezing category tariff
+                        # Calculate freezing category tariff (only for active categories)
                         item_tariff_cost = Decimal('0.00')
-                        if item.freezing_category and hasattr(item.freezing_category, 'tariff') and item.freezing_category.tariff:
+                        if (item.freezing_category and 
+                            item.freezing_category.is_active and 
+                            hasattr(item.freezing_category, 'tariff') and 
+                            item.freezing_category.tariff):
                             item_tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
                             total_freezing_tariff += item_tariff_cost
                             
@@ -13677,7 +13917,7 @@ def spot_purchase_profit_loss_report_print(request):
                                     'tariff_rate': float(item.freezing_category.tariff),
                                     'quantity': float(item.kg or 0),
                                     'amount': float(item_tariff_cost),
-                                    'kg': float(item.kg or 0)  # Add kg field for template compatibility
+                                    'kg': float(item.kg or 0)
                                 })
                         
                         # Add to freezing items details
@@ -13732,6 +13972,12 @@ def spot_purchase_profit_loss_report_print(request):
                 profit_status = 'Break Even'
                 summary['break_even_count'] += 1
             
+            # Apply profit filter - same as main view
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
+            
             # Get purchase items details
             purchase_items = []
             for item in purchase.items.all():
@@ -13775,7 +14021,7 @@ def spot_purchase_profit_loss_report_print(request):
                 'profit_status': profit_status,
                 'freezing_entries_count': len(freezing_entries),
                 'total_items': sum(entry.items.count() for entry in freezing_entries) if freezing_entries else 0,
-                'total_kg_processed': float(total_kg),  # Changed to match template
+                'total_kg_processed': float(total_kg),
                 
                 # Detailed breakdowns for print report
                 'purchase_items': purchase_items,
@@ -13785,12 +14031,6 @@ def spot_purchase_profit_loss_report_print(request):
                 'freezing_tariff_breakdown': freezing_tariff_breakdown,
                 'processing_overhead_rate': float(processing_overhead_total)
             }
-            
-            # Apply profit filter - same as main view
-            if profit_filter == 'profit' and profit_loss <= 0:
-                continue
-            elif profit_filter == 'loss' and profit_loss >= 0:
-                continue
             
             report_data.append(purchase_data)
             
@@ -13830,6 +14070,18 @@ def spot_purchase_profit_loss_report_print(request):
             'selected_spots': selected_spots,
             'selected_agents': selected_agents,
             'selected_supervisors': selected_supervisors,
+            'selected_items': selected_items,
+            'selected_species': selected_species,
+            'selected_item_categories': selected_item_categories,
+            'selected_item_qualities': selected_item_qualities,
+            'selected_item_types': selected_item_types,
+            'selected_item_grades': selected_item_grades,
+            'selected_item_brands': selected_item_brands,
+            'selected_freezing_categories': selected_freezing_categories,
+            'selected_processing_centers': selected_processing_centers,
+            'selected_stores': selected_stores,
+            'selected_packing_units': selected_packing_units,
+            'selected_glaze_percentages': selected_glaze_percentages,
             'profit_filter': profit_filter,
             'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
         }
@@ -13837,6 +14089,8 @@ def spot_purchase_profit_loss_report_print(request):
         return render(request, 'spot_purchase_profit_loss_report_print.html', context)
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         error_msg = f'An error occurred: {str(e)}'
         context = {
             'error': error_msg, 
@@ -13848,7 +14102,6 @@ def spot_purchase_profit_loss_report_print(request):
             'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
         }
         return render(request, 'spot_purchase_profit_loss_report_print.html', context)
-
 
 def calculate_quick_filter_dates(quick_filter, base_date):
     """
@@ -13908,7 +14161,6 @@ def calculate_quick_filter_dates(quick_filter, base_date):
     else:
         # Default to today
         return base_date, base_date
-
 
 def get_date_range_text(quick_filter, start_date, end_date):
     """Helper function to generate human-readable date range text"""
@@ -15104,3 +15356,803 @@ def test_notification(request):
     
     # Redirect to notifications list
     return redirect('adminapp:notification_list')
+
+
+
+def local_purchase_profit_loss_report(request):
+    """
+    Generate profit/loss report for local purchases with filters and date range
+    Only shows active records from all related models
+    """
+    from datetime import datetime, timedelta
+    from django.db.models import Q, Sum, Count
+    from decimal import Decimal
+    from django.http import JsonResponse
+    from django.shortcuts import render
+    
+    # Get filter parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    quick_filter = request.GET.get('quick_filter', '')
+    selected_parties = request.GET.getlist('parties')
+    selected_items = request.GET.getlist('items')
+    selected_species = request.GET.getlist('species')
+    selected_item_categories = request.GET.getlist('item_categories')
+    selected_item_qualities = request.GET.getlist('item_qualities')
+    selected_item_types = request.GET.getlist('item_types')
+    selected_item_grades = request.GET.getlist('item_grades')
+    selected_item_brands = request.GET.getlist('item_brands')
+    selected_freezing_categories = request.GET.getlist('freezing_categories')
+    selected_processing_centers = request.GET.getlist('processing_centers')
+    selected_stores = request.GET.getlist('stores')
+    selected_packing_units = request.GET.getlist('packing_units')
+    selected_glaze_percentages = request.GET.getlist('glaze_percentages')
+    profit_filter = request.GET.get('profit_filter', 'all')
+    format_type = request.GET.get('format', 'html')
+    
+    # Calculate dates based on quick filter or use today as default
+    today = datetime.now().date()
+    
+    if quick_filter:
+        start_date_obj, end_date_obj = calculate_quick_filter_dates(quick_filter, today)
+        start_date = start_date_obj.strftime('%Y-%m-%d')
+        end_date = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        # Default to today if no dates specified
+        if not start_date:
+            start_date = today.strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = today.strftime('%Y-%m-%d')
+        
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            error_msg = 'Invalid date format. Use YYYY-MM-DD'
+            if format_type == 'json':
+                return JsonResponse({'error': error_msg})
+            else:
+                context = {'error': error_msg, 'report_data': []}
+                return render(request, 'local_purchase_profit_loss_report.html', context)
+    
+    try:
+        # Base query for local purchases within date range
+        local_purchases = LocalPurchase.objects.filter(
+            date__range=[start_date_obj, end_date_obj]
+        ).prefetch_related('items', 'party_name')
+        
+        # Apply party filter (LocalParty doesn't have is_active field)
+        if selected_parties:
+            local_purchases = local_purchases.filter(party_name__id__in=selected_parties)
+        
+        # Apply item filter (Item doesn't have is_active field)
+        if selected_items:
+            local_purchases = local_purchases.filter(items__item__id__in=selected_items).distinct()
+        
+        # Apply species filter (Species doesn't have is_active field)
+        if selected_species:
+            local_purchases = local_purchases.filter(items__species__id__in=selected_species).distinct()
+        
+        # Apply item category filter
+        if selected_item_categories:
+            local_purchases = local_purchases.filter(items__item__category__id__in=selected_item_categories).distinct()
+        
+        # Apply item quality filter
+        if selected_item_qualities:
+            local_purchases = local_purchases.filter(items__item_quality__id__in=selected_item_qualities).distinct()
+        
+        # Apply item type filter
+        if selected_item_types:
+            local_purchases = local_purchases.filter(items__item_type__id__in=selected_item_types).distinct()
+        
+        # Apply item grade filter
+        if selected_item_grades:
+            local_purchases = local_purchases.filter(items__grade__id__in=selected_item_grades).distinct()
+        
+        if not local_purchases.exists():
+            message = f'No local purchases found for the selected criteria'
+            if format_type == 'json':
+                return JsonResponse({'message': message, 'total_purchases': 0})
+            else:
+                # Get filter options for template - only active records
+                context = get_filter_context(
+                    quick_filter, start_date, end_date, 
+                    selected_parties, selected_items, selected_species, 
+                    profit_filter, message,
+                    selected_item_categories=selected_item_categories,
+                    selected_item_qualities=selected_item_qualities,
+                    selected_item_types=selected_item_types,
+                    selected_item_grades=selected_item_grades,
+                    selected_item_brands=selected_item_brands,
+                    selected_freezing_categories=selected_freezing_categories,
+                    selected_processing_centers=selected_processing_centers,
+                    selected_stores=selected_stores,
+                    selected_packing_units=selected_packing_units,
+                    selected_glaze_percentages=selected_glaze_percentages
+                )
+                return render(request, 'local_purchase_profit_loss_report.html', context)
+        
+        # Get processing overhead total (ONLY ACTIVE RECORDS)
+        processing_overhead_total = ProcessingOverhead.objects.filter(
+            is_active=True
+        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        
+        # Calculate profit/loss for each purchase
+        report_data = []
+        summary = {
+            'total_purchases': 0,
+            'total_purchase_amount': Decimal('0.00'),
+            'total_processing_overhead': Decimal('0.00'),
+            'total_freezing_tariff': Decimal('0.00'),
+            'total_cost': Decimal('0.00'),
+            'total_revenue': Decimal('0.00'),
+            'total_profit_loss': Decimal('0.00'),
+            'profit_count': 0,
+            'loss_count': 0,
+            'break_even_count': 0
+        }
+        
+        for purchase in local_purchases:
+            # Get purchase cost
+            purchase_cost = purchase.total_amount or Decimal('0.00')
+            
+            # Calculate freezing revenue and collect total kg for processing overhead
+            freezing_revenue = Decimal('0.00')
+            total_kg = Decimal('0.00')
+            total_freezing_tariff = Decimal('0.00')
+            
+            freezing_entries = FreezingEntryLocal.objects.filter(
+                party=purchase
+            ).prefetch_related('items__item', 'items__freezing_category')
+            
+            # Apply freezing entry filters
+            if selected_item_brands:
+                freezing_entries = freezing_entries.filter(items__brand__id__in=selected_item_brands).distinct()
+            
+            if selected_freezing_categories:
+                freezing_entries = freezing_entries.filter(
+                    items__freezing_category__id__in=selected_freezing_categories,
+                    items__freezing_category__is_active=True
+                ).distinct()
+            
+            if selected_processing_centers:
+                freezing_entries = freezing_entries.filter(
+                    items__processing_center__id__in=selected_processing_centers,
+                    items__processing_center__is_active=True
+                ).distinct()
+            
+            if selected_stores:
+                freezing_entries = freezing_entries.filter(
+                    items__store__id__in=selected_stores,
+                    items__store__is_active=True
+                ).distinct()
+            
+            if selected_packing_units:
+                freezing_entries = freezing_entries.filter(items__unit__id__in=selected_packing_units).distinct()
+            
+            if selected_glaze_percentages:
+                freezing_entries = freezing_entries.filter(items__glaze__id__in=selected_glaze_percentages).distinct()
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
+                    freezing_revenue += item_revenue
+                    total_kg += item.kg or Decimal('0.00')
+                    
+                    # Calculate freezing category tariff (ONLY ACTIVE CATEGORIES)
+                    if (item.freezing_category and 
+                        item.freezing_category.is_active and 
+                        item.freezing_category.tariff):
+                        tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
+                        total_freezing_tariff += tariff_cost
+            
+            # Calculate processing overhead for this purchase
+            processing_overhead_amount = total_kg * processing_overhead_total
+            
+            # Calculate total cost (no peeling expenses for local purchases)
+            total_cost = purchase_cost + processing_overhead_amount + total_freezing_tariff
+            
+            # Calculate profit/loss
+            profit_loss = freezing_revenue - total_cost
+            
+            # Calculate profit percentage
+            if total_cost > 0:
+                profit_percentage = (profit_loss / total_cost * 100)
+            else:
+                profit_percentage = 0
+            
+            # Determine profit status
+            if profit_loss > 0:
+                profit_status = 'Profit'
+                summary['profit_count'] += 1
+            elif profit_loss < 0:
+                profit_status = 'Loss'
+                summary['loss_count'] += 1
+            else:
+                profit_status = 'Break Even'
+                summary['break_even_count'] += 1
+            
+            purchase_data = {
+                'id': purchase.id,
+                'date': purchase.date,
+                'voucher_number': purchase.voucher_number,
+                'party_name': purchase.party_name.party if purchase.party_name else 'N/A',
+                'purchase_amount': float(purchase_cost),
+                'processing_overhead': float(processing_overhead_amount),
+                'freezing_tariff': float(total_freezing_tariff),
+                'total_cost': float(total_cost),
+                'freezing_revenue': float(freezing_revenue),
+                'profit_loss': float(profit_loss),
+                'profit_percentage': float(profit_percentage),
+                'profit_status': profit_status,
+                'freezing_entries_count': freezing_entries.count(),
+                'total_items': sum(entry.items.count() for entry in freezing_entries),
+                'total_kg': float(total_kg)
+            }
+            
+            # Apply profit filter
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
+            
+            report_data.append(purchase_data)
+            
+            # Update summary
+            summary['total_purchase_amount'] += purchase_cost
+            summary['total_processing_overhead'] += processing_overhead_amount
+            summary['total_freezing_tariff'] += total_freezing_tariff
+            summary['total_cost'] += total_cost
+            summary['total_revenue'] += freezing_revenue
+            summary['total_profit_loss'] += profit_loss
+        
+        # Calculate final summary
+        summary['total_purchases'] = len(report_data)
+        if summary['total_cost'] > 0:
+            summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
+        else:
+            summary['overall_profit_margin'] = 0
+        
+        # Convert Decimal to float for JSON serialization
+        for key in ['total_purchase_amount', 'total_processing_overhead', 
+                   'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
+            summary[key] = float(summary[key])
+        
+        # Add processing overhead info to summary
+        summary['processing_overhead_rate'] = float(processing_overhead_total)
+        
+        # Sort by date (newest first)
+        report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Return based on format
+        if format_type == 'json':
+            return JsonResponse({
+                'success': True,
+                'date_range': {'start': start_date, 'end': end_date},
+                'summary': summary,
+                'data': report_data,
+                'filters': {
+                    'parties': selected_parties,
+                    'items': selected_items,
+                    'species': selected_species,
+                    'item_categories': selected_item_categories,
+                    'item_qualities': selected_item_qualities,
+                    'item_types': selected_item_types,
+                    'item_grades': selected_item_grades,
+                    'item_brands': selected_item_brands,
+                    'freezing_categories': selected_freezing_categories,
+                    'processing_centers': selected_processing_centers,
+                    'stores': selected_stores,
+                    'packing_units': selected_packing_units,
+                    'glaze_percentages': selected_glaze_percentages,
+                    'profit_filter': profit_filter,
+                    'quick_filter': quick_filter
+                }
+            })
+        
+        # Get filter options for template - only active records
+        context = get_filter_context(
+            quick_filter, start_date, end_date,
+            selected_parties, selected_items, selected_species,
+            profit_filter, None, report_data, summary,
+            selected_item_categories=selected_item_categories,
+            selected_item_qualities=selected_item_qualities,
+            selected_item_types=selected_item_types,
+            selected_item_grades=selected_item_grades,
+            selected_item_brands=selected_item_brands,
+            selected_freezing_categories=selected_freezing_categories,
+            selected_processing_centers=selected_processing_centers,
+            selected_stores=selected_stores,
+            selected_packing_units=selected_packing_units,
+            selected_glaze_percentages=selected_glaze_percentages
+        )
+        
+        template = 'local_purchase_profit_loss_report_print.html' if format_type == 'print' else 'local_purchase_profit_loss_report.html'
+        return render(request, template, context)
+        
+    except Exception as e:
+        import traceback
+        error_msg = f'An error occurred: {str(e)}'
+        print(f"DEBUG - Full error traceback:\n{traceback.format_exc()}")
+        
+        if format_type == 'json':
+            return JsonResponse({'error': error_msg})
+        else:
+            context = get_filter_context(
+                quick_filter, start_date, end_date,
+                selected_parties, selected_items, selected_species,
+                profit_filter, error_msg,
+                selected_item_categories=selected_item_categories,
+                selected_item_qualities=selected_item_qualities,
+                selected_item_types=selected_item_types,
+                selected_item_grades=selected_item_grades,
+                selected_item_brands=selected_item_brands,
+                selected_freezing_categories=selected_freezing_categories,
+                selected_processing_centers=selected_processing_centers,
+                selected_stores=selected_stores,
+                selected_packing_units=selected_packing_units,
+                selected_glaze_percentages=selected_glaze_percentages
+            )
+            return render(request, 'local_purchase_profit_loss_report.html', context)
+
+def get_filter_context(quick_filter, start_date, end_date, selected_parties, 
+                       selected_items, selected_species, profit_filter, 
+                       message=None, report_data=None, summary=None,
+                       selected_item_categories=None, selected_item_qualities=None,
+                       selected_item_types=None, selected_item_grades=None,
+                       selected_item_brands=None, selected_freezing_categories=None,
+                       selected_processing_centers=None, selected_stores=None,
+                       selected_packing_units=None, selected_glaze_percentages=None):
+    """
+    Helper function to get filter context with only active records
+    """
+    # Get ALL filter options - only active records where applicable
+    parties = LocalParty.objects.all().order_by('party')  # No is_active field
+    items = Item.objects.all().order_by('name')  # No is_active field
+    all_species = Species.objects.all().order_by('name')  # No is_active field
+    item_categories = ItemCategory.objects.all().order_by('name')  # No is_active field
+    item_qualities = ItemQuality.objects.all().order_by('quality')  # No is_active field
+    item_types = ItemType.objects.all().order_by('name')  # No is_active field
+    item_grades = ItemGrade.objects.all().order_by('grade')  # No is_active field
+    item_brands = ItemBrand.objects.all().order_by('name')  # No is_active field
+    packing_units = PackingUnit.objects.all().order_by('unit_code')  # No is_active field
+    glaze_percentages = GlazePercentage.objects.all().order_by('percentage')  # No is_active field
+    
+    # Get active processing centers, stores and freezing categories
+    processing_centers = ProcessingCenter.objects.filter(is_active=True).order_by('name')
+    stores = Store.objects.filter(is_active=True).order_by('name')
+    freezing_categories = FreezingCategory.objects.filter(is_active=True).order_by('name')
+    
+    context = {
+        'quick_filter': quick_filter,
+        'start_date': start_date,
+        'end_date': end_date,
+        'parties': parties,
+        'items': items,
+        'all_species': all_species,
+        'item_categories': item_categories,
+        'item_qualities': item_qualities,
+        'item_types': item_types,
+        'item_grades': item_grades,
+        'item_brands': item_brands,
+        'freezing_categories': freezing_categories,
+        'processing_centers': processing_centers,
+        'stores': stores,
+        'packing_units': packing_units,
+        'glaze_percentages': glaze_percentages,
+        'selected_parties': selected_parties or [],
+        'selected_items': selected_items or [],
+        'selected_species': selected_species or [],
+        'selected_item_categories': selected_item_categories or [],
+        'selected_item_qualities': selected_item_qualities or [],
+        'selected_item_types': selected_item_types or [],
+        'selected_item_grades': selected_item_grades or [],
+        'selected_item_brands': selected_item_brands or [],
+        'selected_freezing_categories': selected_freezing_categories or [],
+        'selected_processing_centers': selected_processing_centers or [],
+        'selected_stores': selected_stores or [],
+        'selected_packing_units': selected_packing_units or [],
+        'selected_glaze_percentages': selected_glaze_percentages or [],
+        'profit_filter': profit_filter,
+        'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+    }
+    
+    if message:
+        context['message'] = message
+        context['report_data'] = []
+    elif report_data is not None:
+        context['report_data'] = report_data
+        context['summary'] = summary
+    else:
+        context['report_data'] = []
+    
+    return context
+
+def get_date_range_text(quick_filter, start_date, end_date):
+    """Generate human-readable date range text"""
+    if quick_filter:
+        filter_texts = {
+            'today': 'Today',
+            'yesterday': 'Yesterday',
+            'this_week': 'This Week',
+            'last_week': 'Last Week',
+            'this_month': 'This Month',
+            'last_month': 'Last Month',
+            'this_quarter': 'This Quarter',
+            'last_quarter': 'Last Quarter',
+            'this_year': 'This Year',
+            'last_year': 'Last Year',
+        }
+        return filter_texts.get(quick_filter, f'{start_date} to {end_date}')
+    return f'{start_date} to {end_date}'
+
+def calculate_quick_filter_dates(filter_type, today):
+    """Calculate date ranges for quick filters"""
+    from datetime import timedelta
+    
+    if filter_type == 'today':
+        return today, today
+    
+    elif filter_type == 'yesterday':
+        yesterday = today - timedelta(days=1)
+        return yesterday, yesterday
+    
+    elif filter_type == 'this_week':
+        week_start = today - timedelta(days=today.weekday())
+        return week_start, today
+    
+    elif filter_type == 'last_week':
+        week_start = today - timedelta(days=today.weekday() + 7)
+        week_end = week_start + timedelta(days=6)
+        return week_start, week_end
+    
+    elif filter_type == 'this_month':
+        month_start = today.replace(day=1)
+        return month_start, today
+    
+    elif filter_type == 'last_month':
+        last_month_end = today.replace(day=1) - timedelta(days=1)
+        last_month_start = last_month_end.replace(day=1)
+        return last_month_start, last_month_end
+    
+    elif filter_type == 'this_quarter':
+        quarter = (today.month - 1) // 3
+        quarter_start = today.replace(month=quarter * 3 + 1, day=1)
+        return quarter_start, today
+    
+    elif filter_type == 'last_quarter':
+        quarter = (today.month - 1) // 3
+        if quarter == 0:
+            last_quarter_start = today.replace(year=today.year - 1, month=10, day=1)
+            last_quarter_end = today.replace(year=today.year - 1, month=12, day=31)
+        else:
+            last_quarter_start = today.replace(month=(quarter - 1) * 3 + 1, day=1)
+            last_quarter_end = today.replace(month=quarter * 3, day=1) - timedelta(days=1)
+        return last_quarter_start, last_quarter_end
+    
+    elif filter_type == 'this_year':
+        year_start = today.replace(month=1, day=1)
+        return year_start, today
+    
+    elif filter_type == 'last_year':
+        last_year_start = today.replace(year=today.year - 1, month=1, day=1)
+        last_year_end = today.replace(year=today.year - 1, month=12, day=31)
+        return last_year_start, last_year_end
+    
+    return today, today
+
+
+def local_purchase_profit_loss_report_print(request):
+    """
+    Generate print-optimized profit/loss report for local purchases
+    This view inherits all filters from the main report view
+    """
+    from datetime import datetime, timedelta
+    from django.db.models import Q, Sum, Count, Prefetch
+    from decimal import Decimal
+    from django.http import JsonResponse
+    from django.shortcuts import render
+    import calendar
+    
+    # Get filter parameters - same as main view
+    quick_filter = request.GET.get('quick_filter', '')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    selected_parties = request.GET.getlist('parties')
+    profit_filter = request.GET.get('profit_filter', 'all')
+    
+    # Calculate dates based on quick filter or use today as default
+    today = datetime.now().date()
+    
+    if quick_filter:
+        start_date_obj, end_date_obj = calculate_quick_filter_dates(quick_filter, today)
+        start_date = start_date_obj.strftime('%Y-%m-%d')
+        end_date = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        # Default to today if no dates specified
+        if not start_date:
+            start_date = today.strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = today.strftime('%Y-%m-%d')
+        
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            error_msg = 'Invalid date format. Use YYYY-MM-DD'
+            context = {
+                'error': error_msg, 
+                'report_data': [],
+                'summary': {},
+                'quick_filter': quick_filter,
+                'start_date': start_date,
+                'end_date': end_date,
+                'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
+            }
+            return render(request, 'local_purchase_profit_loss_report_print.html', context)
+
+    try:
+        # Base query for local purchases within date range with all related data
+        local_purchases = LocalPurchase.objects.filter(
+            date__range=[start_date_obj, end_date_obj]
+        ).prefetch_related(
+            'items__item', 
+            'items__item_quality',
+            'items__species',
+            'items__item_type',
+            'items__grade',
+            'party_name'
+        ).select_related('party_name')
+        
+        # Apply filters - same as main view
+        if selected_parties:
+            local_purchases = local_purchases.filter(party_name__id__in=selected_parties)
+        
+        if not local_purchases.exists():
+            message = f'No local purchases found for the selected criteria'
+            context = {
+                'message': message, 
+                'report_data': [],
+                'summary': {},
+                'quick_filter': quick_filter,
+                'start_date': start_date,
+                'end_date': end_date,
+                'selected_parties': selected_parties,
+                'profit_filter': profit_filter,
+                'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+            }
+            return render(request, 'local_purchase_profit_loss_report_print.html', context)
+        
+        # Get processing overhead total (active records only)
+        try:
+            processing_overhead_total = ProcessingOverhead.objects.filter(
+                is_active=True
+            ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+        except:
+            processing_overhead_total = Decimal('0.00')
+        
+        # Calculate profit/loss for each purchase with detailed breakdown
+        report_data = []
+        summary = {
+            'total_purchases': 0,
+            'total_purchase_amount': Decimal('0.00'),
+            'total_processing_overhead': Decimal('0.00'),
+            'total_freezing_tariff': Decimal('0.00'),
+            'total_cost': Decimal('0.00'),
+            'total_revenue': Decimal('0.00'),
+            'total_profit_loss': Decimal('0.00'),
+            'profit_count': 0,
+            'loss_count': 0,
+            'break_even_count': 0
+        }
+        
+        for purchase in local_purchases:
+            # Get purchase cost
+            purchase_cost = purchase.total_amount or Decimal('0.00')
+            
+            # Get freezing entries for this local purchase
+            try:
+                freezing_entries = FreezingEntryLocal.objects.filter(
+                    party=purchase
+                ).prefetch_related(
+                    'items__item',
+                    'items__item_quality',
+                    'items__species',
+                    'items__peeling_type',
+                    'items__grade__species',
+                    'items__processing_center',
+                    'items__store',
+                    'items__unit',
+                    'items__glaze',
+                    'items__freezing_category',
+                    'items__brand'
+                )
+            except:
+                freezing_entries = []
+            
+            # Calculate freezing revenue and collect freezing items details
+            freezing_revenue = Decimal('0.00')
+            freezing_items = []
+            total_kg = Decimal('0.00')
+            total_freezing_tariff = Decimal('0.00')
+            freezing_tariff_breakdown = []
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    try:
+                        item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
+                        freezing_revenue += item_revenue
+                        total_kg += item.kg or Decimal('0.00')
+                        
+                        # Calculate freezing category tariff
+                        item_tariff_cost = Decimal('0.00')
+                        if item.freezing_category and hasattr(item.freezing_category, 'tariff') and item.freezing_category.tariff:
+                            item_tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
+                            total_freezing_tariff += item_tariff_cost
+                            
+                            # Add to tariff breakdown
+                            existing_category = next((t for t in freezing_tariff_breakdown if t['category_name'] == item.freezing_category.name), None)
+                            if existing_category:
+                                existing_category['quantity'] += float(item.kg or 0)
+                                existing_category['amount'] += float(item_tariff_cost)
+                            else:
+                                freezing_tariff_breakdown.append({
+                                    'category_name': item.freezing_category.name,
+                                    'tariff_rate': float(item.freezing_category.tariff),
+                                    'quantity': float(item.kg or 0),
+                                    'amount': float(item_tariff_cost),
+                                    'kg': float(item.kg or 0)
+                                })
+                        
+                        # Add to freezing items details
+                        freezing_items.append({
+                            'item_name': item.item.name if item.item else 'N/A',
+                            'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
+                            'species': item.species.name if item.species else 'N/A',
+                            'peeling_type': item.peeling_type.name if item.peeling_type else 'N/A',
+                            'processing_center': item.processing_center.name if item.processing_center else 'N/A',
+                            'store': item.store.name if item.store else 'N/A',
+                            'freezing_category': item.freezing_category.name if item.freezing_category else 'N/A',
+                            'kg': float(item.kg or 0),
+                            'usd_rate_per_kg': float(item.usd_rate_per_kg or 0),
+                            'usd_rate_item': float(item.usd_rate_item or 0),
+                            'usd_rate_item_to_inr': float(item.usd_rate_item_to_inr or 0),
+                            'slab_quantity': float(item.slab_quantity or 0),
+                            'c_s_quantity': float(item.c_s_quantity or 0),
+                            'unit': item.unit.unit_code if item.unit else 'N/A',
+                            'glaze': f"{item.glaze.percentage}%" if item.glaze else 'N/A',
+                            'brand': item.brand.name if item.brand else 'N/A',
+                            'grade': f"{item.grade.species.name} - {item.grade.grade}" if item.grade and item.grade.species else 'N/A',
+                            'tariff_cost': float(item_tariff_cost)
+                        })
+                    except Exception as e:
+                        continue
+            
+            # Calculate processing overhead for this purchase
+            processing_overhead_amount = total_kg * processing_overhead_total
+            
+            # Calculate total cost (no peeling expenses for local purchases)
+            total_cost = purchase_cost + processing_overhead_amount + total_freezing_tariff
+            
+            # Calculate profit/loss
+            profit_loss = freezing_revenue - total_cost
+            
+            # Calculate profit percentage
+            if total_cost > 0:
+                profit_percentage = (profit_loss / total_cost * 100)
+            else:
+                profit_percentage = Decimal('0.00')
+            
+            # Determine profit status
+            if profit_loss > 0:
+                profit_status = 'Profit'
+                summary['profit_count'] += 1
+            elif profit_loss < 0:
+                profit_status = 'Loss'
+                summary['loss_count'] += 1
+            else:
+                profit_status = 'Break Even'
+                summary['break_even_count'] += 1
+            
+            # Get purchase items details
+            purchase_items = []
+            for item in purchase.items.all():
+                purchase_items.append({
+                    'item_name': item.item.name if item.item else 'N/A',
+                    'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
+                    'species': item.species.name if item.species else 'N/A',
+                    'item_type': item.item_type.name if item.item_type else 'N/A',
+                    'grade': f"{item.grade.species.name} - {item.grade.grade}" if item.grade and item.grade.species else 'N/A',
+                    'quantity': float(item.quantity or 0),
+                    'rate': float(item.rate or 0),
+                    'amount': float(item.amount or 0)
+                })
+            
+            purchase_data = {
+                'id': purchase.id,
+                'date': purchase.date,
+                'voucher_number': purchase.voucher_number or '',
+                'party_name': purchase.party_name.party if purchase.party_name else 'N/A',  # FIXED: changed .name to .party
+                'purchase_amount': float(purchase_cost),
+                'processing_overhead': float(processing_overhead_amount),
+                'freezing_tariff': float(total_freezing_tariff),
+                'total_cost': float(total_cost),
+                'freezing_revenue': float(freezing_revenue),
+                'profit_loss': float(profit_loss),
+                'profit_percentage': float(profit_percentage),
+                'profit_status': profit_status,
+                'freezing_entries_count': len(freezing_entries),
+                'total_items': sum(entry.items.count() for entry in freezing_entries) if freezing_entries else 0,
+                'total_kg_processed': float(total_kg),
+                
+                # Detailed breakdowns for print report
+                'purchase_items': purchase_items,
+                'freezing_items': freezing_items,
+                'freezing_tariff_breakdown': freezing_tariff_breakdown,
+                'processing_overhead_rate': float(processing_overhead_total)
+            }
+            
+            # Apply profit filter - same as main view
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
+            
+            report_data.append(purchase_data)
+            
+            # Update summary
+            summary['total_purchase_amount'] += purchase_cost
+            summary['total_processing_overhead'] += processing_overhead_amount
+            summary['total_freezing_tariff'] += total_freezing_tariff
+            summary['total_cost'] += total_cost
+            summary['total_revenue'] += freezing_revenue
+            summary['total_profit_loss'] += profit_loss
+        
+        # Calculate final summary
+        summary['total_purchases'] = len(report_data)
+        if summary['total_cost'] > 0:
+            summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
+        else:
+            summary['overall_profit_margin'] = 0.0
+        
+        # Convert Decimal to float for template
+        for key in ['total_purchase_amount', 'total_processing_overhead',
+                   'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
+            summary[key] = float(summary[key])
+        
+        # Add processing overhead info to summary
+        summary['processing_overhead_rate'] = float(processing_overhead_total)
+        
+        # Sort by date (newest first)
+        report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        context = {
+            'report_data': report_data,
+            'summary': summary,
+            'quick_filter': quick_filter,
+            'start_date': start_date,
+            'end_date': end_date,
+            'selected_parties': selected_parties,
+            'profit_filter': profit_filter,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+        }
+        
+        return render(request, 'local_purchase_profit_loss_report_print.html', context)
+        
+    except Exception as e:
+        import traceback
+        error_msg = f'An error occurred: {str(e)}'
+        print(f"DEBUG - Print view error:\n{traceback.format_exc()}")
+        
+        context = {
+            'error': error_msg, 
+            'report_data': [],
+            'summary': {},
+            'quick_filter': quick_filter,
+            'start_date': start_date,
+            'end_date': end_date,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+        }
+        return render(request, 'local_purchase_profit_loss_report_print.html', context)
+
+

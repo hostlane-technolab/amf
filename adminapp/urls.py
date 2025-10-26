@@ -461,6 +461,10 @@ urlpatterns = [
     path('tenant-stock/', views.tenant_stock_list, name='tenant_stock_list'),
     path('tenant-stock/delete/<int:pk>/', views.tenant_stock_delete, name='tenant_stock_delete'),
 
+        # Local Purchase Profit/Loss Report URLs
+    path('reports/local-purchase-profit-loss/', views.local_purchase_profit_loss_report, name='local_purchase_profit_loss_report'),
+    path('reports/local-purchase-profit-loss/print/', views.local_purchase_profit_loss_report_print, name='local_purchase_profit_loss_report_print'),
+
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

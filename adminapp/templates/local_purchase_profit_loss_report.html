@@ -1,5 +1,5 @@
 {% extends 'admin_base.html' %}
-{% block title %} Spot Purchase Profit/Loss Report {% endblock %}
+{% block title %} Local Purchase Profit/Loss Report {% endblock %}
 {% block content %}
 
 <style>
@@ -31,7 +31,7 @@
     }
 
     .card-header {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
         padding: 24px 32px;
         color: white;
         position: relative;
@@ -91,14 +91,14 @@
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+        background: linear-gradient(90deg, #0891b2, #06b6d4, #14b8a6);
         opacity: 0;
         transition: opacity 0.3s ease;
     }
 
     .filter-section:hover {
-        border-color: rgba(79, 70, 229, 0.2);
-        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        border-color: rgba(8, 145, 178, 0.2);
+        box-shadow: 0 12px 30px rgba(8, 145, 178, 0.1);
         transform: translateY(-3px);
         background: linear-gradient(145deg, #ffffff, #f8fafc);
     }
@@ -118,7 +118,7 @@
     }
 
     .selected-count {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
         color: white;
         padding: 4px 12px;
         border-radius: 20px;
@@ -126,7 +126,7 @@
         font-weight: 600;
         min-width: 24px;
         text-align: center;
-        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
         animation: slideIn 0.3s ease;
     }
 
@@ -149,8 +149,8 @@
 
     .search-box:focus {
         outline: none;
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        border-color: #0891b2;
+        box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.1);
     }
 
     .search-box::placeholder {
@@ -175,7 +175,7 @@
     }
 
     .options-container::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
         border-radius: 3px;
     }
 
@@ -201,12 +201,12 @@
         top: 0;
         bottom: 0;
         width: 0;
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
         transition: width 0.3s ease;
     }
 
     .option-item:hover {
-        background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+        background: linear-gradient(135deg, rgba(8, 145, 178, 0.08), rgba(6, 182, 212, 0.08));
         padding-left: 20px;
     }
 
@@ -217,7 +217,7 @@
     .option-item input[type="checkbox"] {
         width: 18px;
         height: 18px;
-        accent-color: #4f46e5;
+        accent-color: #0891b2;
         cursor: pointer;
     }
 
@@ -230,7 +230,7 @@
     }
 
     .option-item:hover label {
-        color: #4f46e5;
+        color: #0891b2;
         font-weight: 600;
     }
 
@@ -248,8 +248,8 @@
     }
 
     .date-section:hover {
-        border-color: rgba(79, 70, 229, 0.2);
-        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        border-color: rgba(8, 145, 178, 0.2);
+        box-shadow: 0 12px 30px rgba(8, 145, 178, 0.1);
         background: linear-gradient(145deg, #ffffff, #f8fafc);
     }
 
@@ -281,8 +281,8 @@
     .date-section select:focus,
     .date-section input[type="date"]:focus {
         outline: none;
-        border-color: #4f46e5;
-        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        border-color: #0891b2;
+        box-shadow: 0 0 0 4px rgba(8, 145, 178, 0.1);
     }
 
     .date-range-group {
@@ -301,7 +301,7 @@
     .apply-button {
         width: 100%;
         padding: 16px 24px;
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        background: linear-gradient(135deg, #0891b2, #06b6d4);
         color: white;
         border: none;
         border-radius: 16px;
@@ -328,7 +328,7 @@
 
     .apply-button:hover {
         transform: translateY(-3px);
-        box-shadow: 0 18px 35px rgba(79, 70, 229, 0.4);
+        box-shadow: 0 18px 35px rgba(8, 145, 178, 0.4);
     }
 
     .apply-button:hover::before {
@@ -339,6 +339,7 @@
         transform: translateY(-1px);
     }
 
+    /* Summary Statistics */
     .summary-stats {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
@@ -350,7 +351,7 @@
     }
 
     .stats-header {
-        background: linear-gradient(135deg, #059669, #0891b2);
+        background: linear-gradient(135deg, #059669, #10b981);
         padding: 20px 32px;
         color: white;
         position: relative;
@@ -395,7 +396,7 @@
     }
 
     .stat-item:hover {
-        background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(124, 58, 237, 0.05));
+        background: linear-gradient(135deg, rgba(8, 145, 178, 0.05), rgba(6, 182, 212, 0.05));
         transform: translateY(-2px);
     }
 
@@ -423,7 +424,7 @@
     }
 
     .stat-value.neutral {
-        color: #1e40af;
+        color: #0891b2;
     }
 
     .stat-change {
@@ -431,6 +432,7 @@
         font-weight: 500;
     }
 
+    /* Table Styles */
     .table-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
@@ -441,7 +443,7 @@
     }
 
     .table-header {
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         padding: 24px 32px;
         color: white;
         position: relative;
@@ -507,7 +509,7 @@
     }
 
     .export-btn.print-btn {
-        background: linear-gradient(135deg, rgba(79, 70, 229, 0.3), rgba(124, 58, 237, 0.3));
+        background: linear-gradient(135deg, rgba(8, 145, 178, 0.3), rgba(6, 182, 212, 0.3));
     }
 
     .export-btn.json-btn {
@@ -551,7 +553,7 @@
     }
 
     tbody tr:hover {
-        background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(124, 58, 237, 0.05));
+        background: linear-gradient(135deg, rgba(8, 145, 178, 0.05), rgba(6, 182, 212, 0.05));
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
@@ -605,26 +607,27 @@
         color: #991b1b;
     }
 
+    /* Page Header Styling */
     .page-header {
-        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+        background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
         border-radius: 20px;
         padding: 24px 32px;
         margin-bottom: 40px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-        border: 2px solid #f1f3f7;
+        border: 2px solid #ccfbf1;
     }
 
     .icon-wrapper {
         width: 60px;
         height: 60px;
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
         border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-size: 24px;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+        box-shadow: 0 8px 25px rgba(8, 145, 178, 0.3);
     }
 
     .card-title {
@@ -633,6 +636,7 @@
         letter-spacing: -0.5px;
     }
 
+    /* Responsive Design */
     @media (max-width: 768px) {
         .card-body {
             padding: 20px;
@@ -736,20 +740,22 @@
 
 <div class="outer" style="margin-top: 5rem;">
     <div class="container">
+        <!-- Page Header -->
         <div class="page-header">
             <div class="d-flex align-items-center justify-content-between flex-wrap">
                 <div class="d-flex align-items-center mb-3 mb-md-0">
                     <div class="icon-wrapper me-4">
-                        <i class="fas fa-chart-line"></i>
+                        <i class="fas fa-shopping-basket"></i>
                     </div>
                     <div>
-                        <h3 class="card-title mb-0 fw-bold">Spot Purchase Profit/Loss Report</h3>
-                        <p class="text-muted mb-0 fs-6">Comprehensive profit and loss analysis for spot purchases</p>
+                        <h3 class="card-title mb-0 fw-bold">Local Purchase Profit/Loss Report</h3>
+                        <p class="text-muted mb-0 fs-6">Comprehensive profit and loss analysis for local purchases</p>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Filters Card -->
         <div class="filter-card">
             <div class="card-header">
                 <h3>🔍 Advanced Filters & Settings</h3>
@@ -758,43 +764,15 @@
             <div class="card-body">
                 <form method="get" id="filterForm">
                     <div class="filters-grid">
-                        <!-- Spots -->
+                        <!-- Parties -->
                         <div class="filter-section">
-                            <label>Spots: <span id="spotsCount" class="selected-count" style="display: none;">0</span></label>
-                            <input type="text" class="search-box" placeholder="Search spots..." id="spotsSearch">
-                            <div class="options-container" id="spotsContainer">
-                                {% for spot in spots %}
+                            <label>Parties: <span id="partiesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search parties..." id="partiesSearch">
+                            <div class="options-container" id="partiesContainer">
+                                {% for party in parties %}
                                     <div class="option-item">
-                                        <input type="checkbox" name="spots" value="{{ spot.id }}" id="spot_{{ spot.id }}" {% if spot.id|stringformat:"s" in selected_spots %}checked{% endif %}>
-                                        <label for="spot_{{ spot.id }}">{{ spot.location_name }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- Agents -->
-                        <div class="filter-section">
-                            <label>Agents: <span id="agentsCount" class="selected-count" style="display: none;">0</span></label>
-                            <input type="text" class="search-box" placeholder="Search agents..." id="agentsSearch">
-                            <div class="options-container" id="agentsContainer">
-                                {% for agent in agents %}
-                                    <div class="option-item">
-                                        <input type="checkbox" name="agents" value="{{ agent.id }}" id="agent_{{ agent.id }}" {% if agent.id|stringformat:"s" in selected_agents %}checked{% endif %}>
-                                        <label for="agent_{{ agent.id }}">{{ agent.name }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-
-                        <!-- Supervisors -->
-                        <div class="filter-section">
-                            <label>Supervisors: <span id="supervisorsCount" class="selected-count" style="display: none;">0</span></label>
-                            <input type="text" class="search-box" placeholder="Search supervisors..." id="supervisorsSearch">
-                            <div class="options-container" id="supervisorsContainer">
-                                {% for supervisor in supervisors %}
-                                    <div class="option-item">
-                                        <input type="checkbox" name="supervisors" value="{{ supervisor.id }}" id="supervisor_{{ supervisor.id }}" {% if supervisor.id|stringformat:"s" in selected_supervisors %}checked{% endif %}>
-                                        <label for="supervisor_{{ supervisor.id }}">{{ supervisor.name }}</label>
+                                        <input type="checkbox" name="parties" value="{{ party.id }}" id="party_{{ party.id }}" {% if party.id|stringformat:"s" in selected_parties %}checked{% endif %}>
+                                        <label for="party_{{ party.id }}">{{ party.party }}</label>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -979,6 +957,7 @@
                         </div>
                     </div>
 
+                    <!-- Date Section -->
                     <div class="date-section">
                         <div class="date-group">
                             <label>Quick Date Filter:</label>
@@ -1021,6 +1000,7 @@
             </div>
         </div>
 
+        <!-- Error/Info Messages -->
         {% if error %}
             <div class="error-message">
                 <i class="fas fa-exclamation-triangle"></i> {{ error }}
@@ -1033,6 +1013,7 @@
             </div>
         {% endif %}
 
+        <!-- Summary Statistics -->
         {% if summary %}
         <div class="summary-stats">
             <div class="stats-header">
@@ -1048,11 +1029,6 @@
                     <div class="stat-label">Purchase Amount</div>
                     <div class="stat-value neutral">₹{{ summary.total_purchase_amount|floatformat:2 }}</div>
                     <div class="stat-change">Base Cost</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Peeling Expenses</div>
-                    <div class="stat-value neutral">₹{{ summary.total_peeling_expenses|floatformat:2 }}</div>
-                    <div class="stat-change">Processing</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Processing Overhead</div>
@@ -1095,12 +1071,13 @@
         </div>
         {% endif %}
 
+        <!-- Data Table -->
         {% if report_data %}
         <div class="table-card">
             <div class="table-header">
                 <h3>📈 Profit/Loss Analysis Report</h3>
                 <div class="export-buttons">
-                    <a href="{% url 'adminapp:spot_purchase_profit_loss_report_print' %}" id="printLink" target="_blank" class="export-btn print-btn">
+                    <a href="{% url 'adminapp:local_purchase_profit_loss_report_print' %}" id="printLink" target="_blank" class="export-btn print-btn">
                         <i class="fas fa-print"></i> Print Report
                     </a>
                     <a href="?format=json&{{ request.GET.urlencode }}" class="export-btn json-btn">
@@ -1115,11 +1092,8 @@
                         <tr>
                             <th>Date</th>
                             <th>Voucher #</th>
-                            <th>Spot</th>
-                            <th>Agent</th>
-                            <th>Supervisor</th>
+                            <th>Party</th>
                             <th>Purchase Amount</th>
-                            <th>Peeling Expenses</th>
                             <th>Processing OH</th>
                             <th>Freezing Tariff</th>
                             <th>Total Cost</th>
@@ -1128,6 +1102,7 @@
                             <th>Margin %</th>
                             <th>Status</th>
                             <th>Items</th>
+                            <th>Total KG</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1135,11 +1110,8 @@
                         <tr>
                             <td>{{ purchase.date|date:"M d, Y" }}</td>
                             <td>{{ purchase.voucher_number|default:"N/A" }}</td>
-                            <td>{{ purchase.spot_name }}</td>
-                            <td>{{ purchase.agent_name }}</td>
-                            <td>{{ purchase.supervisor_name }}</td>
+                            <td>{{ purchase.party_name }}</td>
                             <td>₹{{ purchase.purchase_amount|floatformat:2 }}</td>
-                            <td>₹{{ purchase.peeling_expenses|floatformat:2 }}</td>
                             <td>₹{{ purchase.processing_overhead|floatformat:2 }}</td>
                             <td>₹{{ purchase.freezing_tariff|floatformat:2 }}</td>
                             <td>₹{{ purchase.total_cost|floatformat:2 }}</td>
@@ -1156,6 +1128,7 @@
                                 </span>
                             </td>
                             <td>{{ purchase.total_items|default:0 }}</td>
+                            <td>{{ purchase.total_kg|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -1172,11 +1145,8 @@
                         <tr>
                             <th>Date</th>
                             <th>Voucher #</th>
-                            <th>Spot</th>
-                            <th>Agent</th>
-                            <th>Supervisor</th>
+                            <th>Party</th>
                             <th>Purchase Amount</th>
-                            <th>Peeling Expenses</th>
                             <th>Processing OH</th>
                             <th>Freezing Tariff</th>
                             <th>Total Cost</th>
@@ -1185,11 +1155,12 @@
                             <th>Margin %</th>
                             <th>Status</th>
                             <th>Items</th>
+                            <th>Total KG</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr class="empty-state">
-                            <td colspan="15">📋 No data available. Please apply filters and generate report.</td>
+                            <td colspan="13">📋 No data available. Please apply filters and generate report.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1200,11 +1171,10 @@
 </div>
 
 <script>
+// JavaScript for local purchase profit/loss report
 document.addEventListener('DOMContentLoaded', function() {
     // Setup search for all filter sections
-    setupSearch('spotsSearch', 'spotsContainer', 'spotsCount');
-    setupSearch('agentsSearch', 'agentsContainer', 'agentsCount');
-    setupSearch('supervisorsSearch', 'supervisorsContainer', 'supervisorsCount');
+    setupSearch('partiesSearch', 'partiesContainer', 'partiesCount');
     setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
     setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
     setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
@@ -1218,15 +1188,22 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
     setupSearch('glazeSearch', 'glazeContainer', 'glazeCount');
 
+    // Setup quick date filter functionality
     setupQuickDateFilter();
+
+    // Initialize with today's data as default
     initializeDefaultValues();
+
+    // Update print link with current filters
     updatePrintLink();
 
+    // Add event listeners for form changes to update print link
     const form = document.getElementById('filterForm');
     if (form) {
         form.addEventListener('change', updatePrintLink);
         form.addEventListener('input', debounce(updatePrintLink, 300));
         
+        // Form validation
         form.addEventListener('submit', function(e) {
             const startDate = document.querySelector('input[name="start_date"]').value;
             const endDate = document.querySelector('input[name="end_date"]').value;
@@ -1237,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
             
+            // Add loading state to submit button
             const submitBtn = this.querySelector('.apply-button');
             if (submitBtn) {
                 const originalText = submitBtn.innerHTML;
@@ -1244,6 +1222,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.style.opacity = '0.7';
                 submitBtn.disabled = true;
                 
+                // Reset on error or if form doesn't submit
                 setTimeout(() => {
                     submitBtn.innerHTML = originalText;
                     submitBtn.style.opacity = '1';
@@ -1253,6 +1232,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Add loading states for export buttons
     const exportButtons = document.querySelectorAll('.export-btn');
     exportButtons.forEach(button => {
         button.addEventListener('click', function(e) {
@@ -1260,6 +1240,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.opacity = '0.7';
             this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
             
+            // Reset after 3 seconds
             setTimeout(() => {
                 this.style.opacity = '1';
                 this.innerHTML = originalText;
@@ -1267,9 +1248,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Call highlight function after DOM loads
     setTimeout(highlightRows, 100);
 });
 
+// Search functionality for each filter section
 function setupSearch(searchId, containerId, countId) {
     const searchInput = document.getElementById(searchId);
     const container = document.getElementById(containerId);
@@ -1279,6 +1262,7 @@ function setupSearch(searchId, containerId, countId) {
     
     const options = container.querySelectorAll('.option-item');
 
+    // Search functionality
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         options.forEach(option => {
@@ -1291,6 +1275,7 @@ function setupSearch(searchId, containerId, countId) {
         });
     });
 
+    // Count selected items
     function updateCount() {
         const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
         const count = checkedBoxes.length;
@@ -1303,6 +1288,7 @@ function setupSearch(searchId, containerId, countId) {
         updatePrintLink();
     }
 
+    // Add event listeners to checkboxes
     options.forEach(option => {
         const checkbox = option.querySelector('input[type="checkbox"]');
         if (checkbox) {
@@ -1310,6 +1296,7 @@ function setupSearch(searchId, containerId, countId) {
         }
     });
 
+    // Click anywhere on option item to toggle checkbox
     options.forEach(item => {
         item.addEventListener('click', function(e) {
             if (e.target.type !== 'checkbox' && e.target.tagName !== 'LABEL') {
@@ -1322,9 +1309,11 @@ function setupSearch(searchId, containerId, countId) {
         });
     });
 
+    // Initial count update
     updateCount();
 }
 
+// Function to setup quick date filter functionality
 function setupQuickDateFilter() {
     const quickFilter = document.getElementById('quickFilter');
     const customDateRange = document.getElementById('customDateRange');
@@ -1333,16 +1322,19 @@ function setupQuickDateFilter() {
 
     if (!quickFilter || !customDateRange || !startDate || !endDate) return;
 
+    // Handle quick filter change
     quickFilter.addEventListener('change', function() {
         const selectedValue = this.value;
         
         if (selectedValue === '') {
+            // Show custom date range inputs
             customDateRange.style.display = 'block';
             customDateRange.style.opacity = '1';
             updatePrintLink();
             return;
         }
 
+        // Dim custom date range for quick filters but keep visible
         customDateRange.style.opacity = '0.5';
         
         const dates = calculateDateRange(selectedValue);
@@ -1353,9 +1345,11 @@ function setupQuickDateFilter() {
         updatePrintLink();
     });
 
+    // Add event listeners to date inputs
     startDate.addEventListener('change', updatePrintLink);
     endDate.addEventListener('change', updatePrintLink);
 
+    // Show/hide custom date range based on current selection
     if (quickFilter.value !== '') {
         customDateRange.style.opacity = '0.5';
     } else {
@@ -1364,6 +1358,7 @@ function setupQuickDateFilter() {
     }
 }
 
+// Function to calculate date ranges for quick filters
 function calculateDateRange(filterType) {
     const today = new Date();
     const formatDate = (date) => date.toISOString().split('T')[0];
@@ -1423,11 +1418,13 @@ function calculateDateRange(filterType) {
     }
 }
 
+// Function to initialize default values (today's data)
 function initializeDefaultValues() {
     const startDate = document.getElementById('startDate');
     const endDate = document.getElementById('endDate');
     const quickFilter = document.getElementById('quickFilter');
     
+    // Check if we're on a fresh page load (no existing data)
     const hasExistingData = document.querySelector('.table-card tbody tr:not(.empty-state)');
     const hasUrlParams = window.location.search.length > 0;
     
@@ -1436,6 +1433,7 @@ function initializeDefaultValues() {
         const hasEndDate = endDate.value !== '';
         const hasQuickFilter = quickFilter.value !== '';
         
+        // Only set defaults if nothing is selected and no existing data
         if (!hasStartDate && !hasEndDate && !hasQuickFilter && !hasUrlParams) {
             const today = new Date().toISOString().split('T')[0];
             startDate.value = today;
@@ -1445,26 +1443,34 @@ function initializeDefaultValues() {
     }
 }
 
+// Function to update print link with current filters
 function updatePrintLink() {
     const printLink = document.getElementById('printLink');
     if (!printLink) return;
 
     try {
+        // Get the base print URL (remove existing parameters)
         const baseUrl = printLink.href.split('?')[0];
+        
+        // Get current form data
         const form = document.getElementById('filterForm');
         if (!form) return;
         
         const formData = new FormData(form);
         const params = new URLSearchParams();
         
+        // Add all form parameters except format
         for (let [key, value] of formData.entries()) {
             if (key !== 'format' && value !== '') {
                 params.append(key, value);
             }
         }
         
+        // Build the new URL
         const queryString = params.toString();
         const newUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+        
+        // Update the print link
         printLink.href = newUrl;
         
     } catch (error) {
@@ -1472,6 +1478,7 @@ function updatePrintLink() {
     }
 }
 
+// Function to highlight rows based on profit/loss
 function highlightRows() {
     const rows = document.querySelectorAll('tbody tr:not(.empty-state)');
     rows.forEach(row => {
@@ -1488,6 +1495,7 @@ function highlightRows() {
     });
 }
 
+// Debounce function to limit how often updatePrintLink is called
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -1500,7 +1508,9 @@ function debounce(func, wait) {
     };
 }
 
+// Add smooth animations for better UX
 function addSmoothAnimations() {
+    // Animate stats on load
     const statItems = document.querySelectorAll('.stat-item');
     statItems.forEach((item, index) => {
         item.style.opacity = '0';
@@ -1512,6 +1522,7 @@ function addSmoothAnimations() {
         }, index * 100);
     });
 
+    // Animate table rows
     const tableRows = document.querySelectorAll('tbody tr');
     tableRows.forEach((row, index) => {
         row.style.opacity = '0';
@@ -1524,6 +1535,7 @@ function addSmoothAnimations() {
     });
 }
 
+// Call animations after load
 window.addEventListener('load', () => {
     setTimeout(addSmoothAnimations, 200);
 });

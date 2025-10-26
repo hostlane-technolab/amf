@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Local Purchase Profit/Loss Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Load required libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 15px;
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 9px;
+            line-height: 1.3;
+            color: #000000;
+            background: white;
+            max-width: 210mm;
+            margin: 0 auto;
+        }
+
+        .report-container {
+            width: 100%;
+            max-width: 190mm;
+            margin: 0 auto;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #7c3aed;
+        }
+
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #5b21b6;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .report-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .report-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 9px;
+            color: #000000;
+        }
+
+        .date-range {
+            font-weight: 600;
+            color: #000000;
+            font-size: 10px;
+        }
+
+        .print-date {
+            font-style: italic;
+            color: #000000;
+            font-size: 9px;
+        }
+
+        .summary-stats {
+            background: #faf5ff;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd6fe;
+            page-break-inside: avoid;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 6px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e9d5ff;
+        }
+
+        .stat-label {
+            font-size: 7px;
+            color: #000000;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 2px;
+            letter-spacing: 0.2px;
+        }
+
+        .stat-value {
+            font-size: 10px;
+            font-weight: bold;
+            color: #5b21b6;
+        }
+
+        .stat-value.positive {
+            color: #059669;
+        }
+
+        .stat-value.negative {
+            color: #dc2626;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #5b21b6;
+            margin: 15px 0 8px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e9d5ff;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            page-break-after: avoid;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            font-size: 7px;
+            page-break-inside: auto;
+        }
+
+        .data-table thead {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .data-table thead tr {
+            page-break-inside: avoid;
+            page-break-after: avoid;
+        }
+
+        .data-table th {
+            padding: 5px 2px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 6.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.1px;
+            border-right: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            white-space: nowrap;
+        }
+
+        .data-table th:last-child {
+            border-right: none;
+        }
+
+        .data-table td {
+            padding: 4px 2px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 7px;
+            vertical-align: middle;
+            color: #000000;
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr {
+            page-break-inside: avoid;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .profit-cell {
+            color: #059669 !important;
+            font-weight: bold;
+            background-color: #d1fae5 !important;
+        }
+
+        .loss-cell {
+            color: #dc2626 !important;
+            font-weight: bold;
+            background-color: #fecaca !important;
+        }
+
+        .break-even-cell {
+            color: #64748b !important;
+            font-weight: bold;
+            background-color: #f1f5f9 !important;
+        }
+
+        .amount-cell {
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .quantity-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .date-cell {
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #666666;
+            font-style: italic;
+            font-size: 10px;
+        }
+
+        .purchase-details {
+            margin-bottom: 20px;
+            border: 1px solid #e9d5ff;
+            border-radius: 6px;
+            overflow: hidden;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        .purchase-header {
+            background: #7c3aed;
+            color: white;
+            padding: 6px 8px;
+            font-weight: 600;
+            font-size: 9px;
+        }
+
+        .purchase-content {
+            padding: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .detail-value {
+            color: #000000;
+        }
+
+        .breakdown-section {
+            margin-top: 8px;
+            padding: 6px;
+            background: #faf5ff;
+            border-radius: 4px;
+            page-break-inside: avoid;
+        }
+
+        .breakdown-title {
+            font-weight: 600;
+            color: #5b21b6;
+            margin-bottom: 4px;
+            font-size: 8px;
+        }
+
+        .report-footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            font-size: 7px;
+            color: #000000;
+            page-break-inside: avoid;
+        }
+
+        .footer-left, .footer-right {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .print-btn {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .pdf-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #991b1b;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .message-info {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #1e40af;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: #000000 !important;
+                font-size: 8px;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .action-buttons {
+                display: none !important;
+            }
+            
+            .report-container {
+                max-width: 100%;
+            }
+
+            .data-table thead {
+                display: table-header-group;
+            }
+
+            .data-table tbody tr {
+                page-break-inside: avoid;
+            }
+
+            .purchase-details {
+                page-break-inside: avoid;
+            }
+
+            .summary-stats {
+                page-break-inside: avoid;
+            }
+
+            .section-title {
+                page-break-after: avoid;
+            }
+            
+            .data-table th {
+                color: white !important;
+                background-color: #7c3aed !important;
+            }
+
+            .profit-cell {
+                color: #059669 !important;
+                background-color: #d1fae5 !important;
+            }
+
+            .loss-cell {
+                color: #dc2626 !important;
+                background-color: #fecaca !important;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+                font-size: 8px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 3px 2px;
+                font-size: 6px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .company-name {
+                font-size: 16px;
+            }
+
+            .report-title {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <div class="company-name">Premier Marine Food</div>
+            <div class="report-title">Enhanced Local Purchase Profit/Loss Report</div>
+            
+            <div class="report-info">
+                <div class="date-range">
+                    Period: {{ date_range_text|default:"No Date Range" }}
+                </div>
+                <div class="print-date">Generated on: <span id="currentDate"></span></div>
+            </div>
+        </div>
+
+        <!-- Error Messages -->
+        {% if error %}
+            <div class="error-message">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if message %}
+            <div class="message-info">
+                <strong>Info:</strong> {{ message }}
+            </div>
+        {% endif %}
+
+        <!-- Enhanced Summary Statistics -->
+        {% if summary %}
+        <div class="summary-stats">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Purchases</div>
+                    <div class="stat-value">{{ summary.total_purchases }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Purchase Amount</div>
+                    <div class="stat-value">₹{{ summary.total_purchase_amount|floatformat:2 }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Processing OH</div>
+                    <div class="stat-value">₹{{ summary.total_processing_overhead|floatformat:2 }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Freezing Tariff</div>
+                    <div class="stat-value">₹{{ summary.total_freezing_tariff|floatformat:2 }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Cost</div>
+                    <div class="stat-value">₹{{ summary.total_cost|floatformat:2 }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">₹{{ summary.total_revenue|floatformat:2 }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Net P/L</div>
+                    <div class="stat-value {% if summary.total_profit_loss > 0 %}positive{% elif summary.total_profit_loss < 0 %}negative{% endif %}">
+                        ₹{{ summary.total_profit_loss|floatformat:2 }}
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Margin</div>
+                    <div class="stat-value {% if summary.overall_profit_margin > 0 %}positive{% elif summary.overall_profit_margin < 0 %}negative{% endif %}">
+                        {{ summary.overall_profit_margin|floatformat:1 }}%
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Profitable</div>
+                    <div class="stat-value positive">{{ summary.profit_count }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Loss Making</div>
+                    <div class="stat-value negative">{{ summary.loss_count }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Break Even</div>
+                    <div class="stat-value">{{ summary.break_even_count }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">OH Rate/KG</div>
+                    <div class="stat-value">₹{{ summary.processing_overhead_rate|floatformat:2 }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Detailed Purchase Data -->
+        {% if report_data %}
+            <div class="section-title">Detailed Purchase Analysis</div>
+            
+            {% for purchase in report_data %}
+            <div class="purchase-details">
+                <div class="purchase-header">
+                    Purchase #{{ purchase.voucher_number|default:"N/A" }} - {{ purchase.date|date:"d/m/Y" }} - {{ purchase.party_name }}
+                </div>
+                <div class="purchase-content">
+                    <div class="detail-row">
+                        <span class="detail-label">Party Name:</span>
+                        <span class="detail-value">{{ purchase.party_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Purchase Amount:</span>
+                        <span class="detail-value">₹{{ purchase.purchase_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Processing Overhead:</span>
+                        <span class="detail-value">₹{{ purchase.processing_overhead|floatformat:2 }} <span class="info-badge">@ ₹{{ purchase.processing_overhead_rate|floatformat:2 }}/KG</span></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Freezing Tariff:</span>
+                        <span class="detail-value">₹{{ purchase.freezing_tariff|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Cost:</span>
+                        <span class="detail-value">₹{{ purchase.total_cost|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Revenue:</span>
+                        <span class="detail-value">₹{{ purchase.freezing_revenue|floatformat:2 }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total KG:</span>
+                        <span class="detail-value">{{ purchase.total_kg_processed|floatformat:2 }} KG</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Freezing Entries:</span>
+                        <span class="detail-value">{{ purchase.freezing_entries_count }} ({{ purchase.total_items }} items)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Profit/Loss:</span>
+                        <span class="detail-value {% if purchase.profit_loss > 0 %}profit-cell{% elif purchase.profit_loss < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
+                            ₹{{ purchase.profit_loss|floatformat:2 }} ({{ purchase.profit_percentage|floatformat:1 }}%)
+                        </span>
+                    </div>
+
+                    <!-- Purchase Items Details -->
+                    {% if purchase.purchase_items %}
+                    <div class="breakdown-section">
+                        <div class="breakdown-title">Purchase Items</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quality</th>
+                                    <th>Species</th>
+                                    <th>Type</th>
+                                    <th>Grade</th>
+                                    <th>Qty (KG)</th>
+                                    <th>Rate/KG</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in purchase.purchase_items %}
+                                <tr>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.item_quality }}</td>
+                                    <td>{{ item.species }}</td>
+                                    <td>{{ item.item_type }}</td>
+                                    <td>{{ item.grade }}</td>
+                                    <td class="quantity-cell">{{ item.quantity|floatformat:2 }}</td>
+                                    <td class="amount-cell">₹{{ item.rate|floatformat:2 }}</td>
+                                    <td class="amount-cell">₹{{ item.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    <!-- Freezing Items Details -->
+                    {% if purchase.freezing_items %}
+                    <div class="breakdown-section">
+                        <div class="breakdown-title">Freezing Entry Details</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Quality</th>
+                                    <th>Species</th>
+                                    <th>Type</th>
+                                    <th>Grade</th>
+                                    <th>KG</th>
+                                    <th>USD/KG</th>
+                                    <th>INR Total</th>
+                                    <th>Category</th>
+                                    <th>Tariff</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in purchase.freezing_items %}
+                                <tr>
+                                    <td>{{ item.item_name }}</td>
+                                    <td>{{ item.item_quality }}</td>
+                                    <td>{{ item.species }}</td>
+                                    <td>{{ item.peeling_type }}</td>
+                                    <td>{{ item.grade }}</td>
+                                    <td class="quantity-cell">{{ item.kg|floatformat:2 }}</td>
+                                    <td class="amount-cell">${{ item.usd_rate_per_kg|floatformat:2 }}</td>
+                                    <td class="amount-cell">₹{{ item.usd_rate_item_to_inr|floatformat:2 }}</td>
+                                    <td>{{ item.freezing_category }}</td>
+                                    <td class="amount-cell">₹{{ item.tariff_cost|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+
+                    <!-- Freezing Tariff Breakdown -->
+                    {% if purchase.freezing_tariff_breakdown %}
+                    <div class="breakdown-section">
+                        <div class="breakdown-title">Freezing Tariff Breakdown</div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Tariff Rate/KG</th>
+                                    <th>Quantity (KG)</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tariff in purchase.freezing_tariff_breakdown %}
+                                <tr>
+                                    <td>{{ tariff.category_name }}</td>
+                                    <td class="amount-cell">₹{{ tariff.tariff_rate|floatformat:2 }}</td>
+                                    <td class="quantity-cell">{{ tariff.quantity|floatformat:2 }}</td>
+                                    <td class="amount-cell">₹{{ tariff.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            <!-- Summary Table -->
+            <div class="section-title">Summary Table</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Voucher</th>
+                        <th>Party</th>
+                        <th>Purchase</th>
+                        <th>OH</th>
+                        <th>Tariff</th>
+                        <th>Cost</th>
+                        <th>Revenue</th>
+                        <th>P/L</th>
+                        <th>%</th>
+                        <th>Status</th>
+                        <th>KG</th>
+                        <th>Entries</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in report_data %}
+                    <tr>
+                        <td class="date-cell">{{ purchase.date|date:"d/m/Y" }}</td>
+                        <td>{{ purchase.voucher_number|default:"N/A" }}</td>
+                        <td>{{ purchase.party_name }}</td>
+                        <td class="amount-cell">₹{{ purchase.purchase_amount|floatformat:2 }}</td>
+                        <td class="amount-cell">₹{{ purchase.processing_overhead|floatformat:2 }}</td>
+                        <td class="amount-cell">₹{{ purchase.freezing_tariff|floatformat:2 }}</td>
+                        <td class="amount-cell">₹{{ purchase.total_cost|floatformat:2 }}</td>
+                        <td class="amount-cell">₹{{ purchase.freezing_revenue|floatformat:2 }}</td>
+                        <td class="amount-cell {% if purchase.profit_loss > 0 %}profit-cell{% elif purchase.profit_loss < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
+                            ₹{{ purchase.profit_loss|floatformat:2 }}
+                        </td>
+                        <td class="{% if purchase.profit_percentage > 0 %}profit-cell{% elif purchase.profit_percentage < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
+                            {{ purchase.profit_percentage|floatformat:1 }}%
+                        </td>
+                        <td class="{% if purchase.profit_status == 'Profit' %}profit-cell{% elif purchase.profit_status == 'Loss' %}loss-cell{% else %}break-even-cell{% endif %}">
+                            {{ purchase.profit_status }}
+                        </td>
+                        <td class="quantity-cell">{{ purchase.total_kg_processed|floatformat:2 }}</td>
+                        <td class="quantity-cell">{{ purchase.freezing_entries_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {% else %}
+            <div class="section-title">Purchase Data</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Voucher</th>
+                        <th>Party</th>
+                        <th>Purchase</th>
+                        <th>Cost</th>
+                        <th>Revenue</th>
+                        <th>P/L</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="7" class="no-data">
+                            No local purchase data found for the selected criteria.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
+
+        <!-- Export Buttons -->
+        <div class="action-buttons">
+            <button type="button" onclick="window.print()" class="action-btn print-btn">
+                Print Report
+            </button>
+            <button type="button" id="pdfButton" onclick="generatePDF()" class="action-btn pdf-btn">
+                Generate PDF
+            </button>
+        </div>
+
+        <!-- Report Footer -->
+        <div class="report-footer">
+            <div class="footer-left">
+                <div><strong>Generated by:</strong> Local Purchase System</div>
+                <div><strong>Report Type:</strong> P/L Analysis</div>
+                <div><strong>Note:</strong> No peeling expenses for local purchases</div>
+            </div>
+            <div class="footer-right">
+                <div><strong>Total Records:</strong> {{ report_data|length|default:0 }}</div>
+                <div><strong>Cost Components:</strong> Purchase + OH + Tariff</div>
+                <div><strong>OH Rate:</strong> ₹{{ summary.processing_overhead_rate|floatformat:2 }}/KG</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set current date
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN');
+        });
+
+        async function generatePDF() {
+            const pdfButton = document.getElementById('pdfButton');
+            
+            try {
+                pdfButton.disabled = true;
+                pdfButton.textContent = 'Generating PDF...';
+
+                if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+
+                if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                    throw new Error('Required libraries failed to load. Please refresh and try again.');
+                }
+
+                const actionButtons = document.querySelector('.action-buttons');
+                actionButtons.style.display = 'none';
+
+                const reportContainer = document.querySelector('.report-container');
+                
+                // Get positions of all major sections before capturing
+                const purchaseSections = Array.from(reportContainer.querySelectorAll('.purchase-details'));
+                const breakdownSections = Array.from(reportContainer.querySelectorAll('.breakdown-section'));
+                
+                // Combine all sections that should not be broken
+                const allProtectedSections = [...purchaseSections, ...breakdownSections].map(section => {
+                    return {
+                        element: section,
+                        top: section.offsetTop,
+                        bottom: section.offsetTop + section.offsetHeight,
+                        height: section.offsetHeight
+                    };
+                }).sort((a, b) => a.top - b.top);
+                
+                // Create canvas
+                const canvas = await html2canvas(reportContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: reportContainer.scrollWidth,
+                    height: reportContainer.scrollHeight
+                });
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageWidth = 210;
+                const pageHeight = 297;
+                const margin = 10;
+                const imgWidth = pageWidth - (2 * margin);
+                const usablePageHeight = pageHeight - (2 * margin);
+                
+                // Calculate conversion ratio
+                const pxToMm = imgWidth / canvas.width;
+                const pageHeightPx = usablePageHeight / pxToMm;
+                
+                let currentY = 0;
+                let pageNumber = 0;
+
+                while (currentY < canvas.height) {
+                    if (pageNumber > 0) {
+                        pdf.addPage();
+                    }
+                    
+                    let endY = Math.min(currentY + pageHeightPx, canvas.height);
+                    
+                    // Only adjust if not the last page
+                    if (endY < canvas.height) {
+                        // Check all protected sections
+                        for (const section of allProtectedSections) {
+                            const sectionTop = section.top;
+                            const sectionBottom = section.bottom;
+                            
+                            // If page break would split this section
+                            if (endY > sectionTop && endY < sectionBottom) {
+                                // Calculate how much of the page we've used
+                                const usedRatio = (endY - currentY) / pageHeightPx;
+                                
+                                // If section starts in first 60% of page, try to fit it
+                                if ((sectionTop - currentY) / pageHeightPx < 0.6) {
+                                    // Try to extend the page to include the whole section
+                                    const newEndY = sectionBottom;
+                                    // Only extend if it doesn't make page too long (max 110% of normal height)
+                                    if ((newEndY - currentY) <= pageHeightPx * 1.1) {
+                                        endY = newEndY;
+                                    } else {
+                                        // Too big to fit, break before this section
+                                        endY = sectionTop - 5; // 5px buffer before section
+                                    }
+                                } else {
+                                    // Section starts too late, push to next page
+                                    endY = sectionTop - 5; // 5px buffer before section
+                                }
+                                break;
+                            }
+                        }
+                        
+                        // Ensure we don't go backwards
+                        if (endY <= currentY) {
+                            endY = currentY + (pageHeightPx * 0.5); // Use at least 50% of page
+                        }
+                    }
+                    
+                    const heightToCopy = endY - currentY;
+                    
+                    // Create page canvas
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = Math.ceil(heightToCopy);
+                    
+                    const pageCtx = pageCanvas.getContext('2d');
+                    pageCtx.fillStyle = '#ffffff';
+                    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                    
+                    pageCtx.drawImage(
+                        canvas,
+                        0, currentY,
+                        canvas.width, pageCanvas.height,
+                        0, 0,
+                        canvas.width, pageCanvas.height
+                    );
+                    
+                    const pageImgData = pageCanvas.toDataURL('image/png');
+                    const pageImgHeight = pageCanvas.height * pxToMm;
+                    
+                    pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, pageImgHeight);
+                    
+                    currentY = endY;
+                    pageNumber++;
+                    
+                    if (pageNumber > 100) {
+                        throw new Error('Too many pages generated.');
+                    }
+                }
+
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                const filename = `Local_Purchase_Report_${dateStr}_${timeStr}.pdf`;
+
+                pdf.save(filename);
+                alert('PDF generated successfully!');
+
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('Error generating PDF: ' + error.message);
+            } finally {
+                pdfButton.disabled = false;
+                pdfButton.textContent = 'Generate PDF';
+                
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) {
+                    actionButtons.style.display = 'flex';
+                }
+            }
+        }
+
+        // Add print event listener for better print handling
+        window.addEventListener('beforeprint', function() {
+            document.body.classList.add('printing');
+        });
+
+        window.addEventListener('afterprint', function() {
+            document.body.classList.remove('printing');
+        });
+
+        // Prevent accidental page navigation
+        window.addEventListener('beforeunload', function(e) {
+            const hasData = document.querySelectorAll('.purchase-details').length > 0;
+            if (hasData && !window.isPrinting) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
