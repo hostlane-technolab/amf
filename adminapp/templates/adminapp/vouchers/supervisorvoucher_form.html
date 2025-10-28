@@ -1069,11 +1069,103 @@ document.addEventListener('DOMContentLoaded', function() {
     const paymentInput = document.getElementById('id_payment');
     const balanceInfo = document.getElementById('balanceInfo');
     const viewDetailsBtn = document.getElementById('viewSupervisorDetailsBtn');
+    const dateInput = document.getElementById('id_date');
     
     // Store supervisor data globally for modal
     let currentSupervisorData = null;
 
-    // Function to calculate and update amounts
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.getElementById('id_voucher_no'),
+        dateInput,
+        supervisorSelect,
+        document.getElementById('id_description'),
+        remainAmountInput,
+        totalAmountInput,
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+
+    // ===== AMOUNT CALCULATIONS =====
     function updateAmounts() {
         const remainAmount = parseFloat(remainAmountInput.value) || 0;
         const receipt = parseFloat(receiptInput.value) || 0;
@@ -1090,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('display-total-amount').textContent = newTotal.toFixed(2);
     }
 
-    // Function to fetch and display supervisor balance
+    // ===== SUPERVISOR BALANCE FETCH =====
     function fetchSupervisorBalance(supervisorId) {
         if (!supervisorId) {
             balanceInfo.style.display = 'none';
@@ -1164,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Function to populate and show modal
+    // ===== SUPERVISOR DETAILS MODAL =====
     function showSupervisorDetailsModal() {
         if (!currentSupervisorData) {
             alert('No supervisor data available');
@@ -1211,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.show();
     }
 
-    // Event listeners
+    // ===== EVENT LISTENERS =====
     supervisorSelect.addEventListener('change', function() {
         fetchSupervisorBalance(this.value);
     });
@@ -1239,5 +1331,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
 
 {% endblock %}

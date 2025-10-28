@@ -12389,6 +12389,11 @@ def create_tenant_voucher(request):
             voucher.save()
             messages.success(request, "Tenant Voucher created successfully ✅")
             return redirect("adminapp:tenantvoucher_list")
+        else:
+            # Log form errors for debugging
+            print("Form validation failed:")
+            print(form.errors)
+            messages.error(request, f"Form validation failed: {form.errors}")
     else:
         form = TenantVoucherForm()
 
@@ -14697,7 +14702,6 @@ def stock_adjustment(request):
                     item_quality = form.cleaned_data.get('item_quality')
                     unit = form.cleaned_data.get('unit')
                     glaze = form.cleaned_data.get('glaze')
-                    species = form.cleaned_data.get('species')
                     item_grade = form.cleaned_data.get('item_grade')
                     peeling_type = form.cleaned_data.get('peeling_type')
                     freezing_category = form.cleaned_data.get('freezing_category')
@@ -14718,7 +14722,6 @@ def stock_adjustment(request):
                             item_quality=item_quality,
                             unit=unit,
                             glaze=glaze,
-                            species=species,
                             item_grade=item_grade,
                             peeling_type=peeling_type
                         )
@@ -14742,7 +14745,6 @@ def stock_adjustment(request):
                             item_quality=item_quality,
                             unit=unit,
                             glaze=glaze,
-                            species=species,
                             item_grade=item_grade,
                             peeling_type=peeling_type,
                             freezing_category=freezing_category,
@@ -14802,7 +14804,6 @@ def get_current_stock(request):
         item_quality_id = request.GET.get('item_quality') or None
         unit_id = request.GET.get('unit') or None
         glaze_id = request.GET.get('glaze') or None
-        species_id = request.GET.get('species') or None
         item_grade_id = request.GET.get('item_grade') or None
         peeling_type_id = request.GET.get('peeling_type') or None
         
@@ -14813,8 +14814,6 @@ def get_current_stock(request):
             unit_id = None
         if glaze_id == '':
             glaze_id = None
-        if species_id == '':
-            species_id = None
         if item_grade_id == '':
             item_grade_id = None
         if peeling_type_id == '':
@@ -14828,7 +14827,6 @@ def get_current_stock(request):
                 item_quality_id=item_quality_id,
                 unit_id=unit_id,
                 glaze_id=glaze_id,
-                species_id=species_id,
                 item_grade_id=item_grade_id,
                 peeling_type_id=peeling_type_id
             )
@@ -14870,7 +14868,6 @@ def tenant_stock_adjustment(request):
                     item_quality = form.cleaned_data.get('item_quality')
                     unit = form.cleaned_data['unit']
                     glaze = form.cleaned_data['glaze']
-                    species = form.cleaned_data['species']
                     grade = form.cleaned_data['grade']
                     peeling_type = form.cleaned_data.get('peeling_type')
                     freezing_category = form.cleaned_data['freezing_category']
@@ -14892,7 +14889,6 @@ def tenant_stock_adjustment(request):
                         'brand': brand,
                         'unit': unit,
                         'glaze': glaze,
-                        'species': species,
                         'grade': grade,
                         'freezing_category': freezing_category,
                         'item_quality': item_quality,
@@ -14928,7 +14924,6 @@ def tenant_stock_adjustment(request):
                             item_quality=item_quality,
                             unit=unit,
                             glaze=glaze,
-                            species=species,
                             grade=grade,
                             peeling_type=peeling_type,
                             freezing_category=freezing_category,
@@ -14998,7 +14993,6 @@ def tenant_stock_adjustment(request):
     }
     return render(request, 'adminapp/TenantStock/tenant_stock_adjustment.html', context)
 
-
 def get_current_tenant_stock(request):
     """AJAX endpoint to get current tenant stock quantities"""
     if request.method == 'GET':
@@ -15007,7 +15001,6 @@ def get_current_tenant_stock(request):
         brand_id = request.GET.get('brand')
         unit_id = request.GET.get('unit')
         glaze_id = request.GET.get('glaze')
-        species_id = request.GET.get('species')
         grade_id = request.GET.get('grade')
         freezing_category_id = request.GET.get('freezing_category')
         
@@ -15034,7 +15027,6 @@ def get_current_tenant_stock(request):
                 brand_id=brand_id,
                 unit_id=unit_id,
                 glaze_id=glaze_id,
-                species_id=species_id,
                 grade_id=grade_id,
                 freezing_category_id=freezing_category_id,
                 item_quality_id=item_quality_id,

@@ -1631,15 +1631,507 @@ updateCalculationPreview();
 </script>
 
 
-<!-- Date Picker Scripts -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    flatpickr("#id_date", {
-        dateFormat: "d/m/Y",
-        defaultDate: "today"
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Peeling Shed Voucher Form - JavaScript Loaded");
+    
+    const shedSelect = document.getElementById('shed-select');
+    const previewDiv = document.getElementById('calculation-preview');
+    const previewContent = document.getElementById('preview-content');
+    const receiptInput = document.querySelector('input[name="receipt"]');
+    const paymentInput = document.querySelector('input[name="payment"]');
+    const totalAmountInput = document.querySelector('input[name="total_amount"]');
+    const remainAmountInput = document.querySelector('input[name="remain_amount"]');
+    const dateInput = document.getElementById('id_date');
+    
+    let calculationData = null;
+    
+    // Check if elements exist
+    if (!shedSelect || !previewDiv || !previewContent) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+    
+    console.log('All DOM elements found successfully');
+
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.querySelector('input[name="voucher_no"]'),
+        dateInput,
+        shedSelect,
+        document.querySelector('textarea[name="description"]'),
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
     });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+    
+    // ===== CALCULATION UPDATES =====
+    // Update the preview with current receipt/payment values
+    function updateCalculationPreview() {
+        if (!calculationData) return;
+        
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        // Recalculate totals
+        const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+        const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+        const finalRemaining = parseFloat(calculationData.base_amount) + totalReceipts - totalPayments;
+        
+        // Update form fields
+        if (totalAmountInput) {
+            totalAmountInput.value = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        if (remainAmountInput) {
+            remainAmountInput.value = finalRemaining.toFixed(2);
+        }
+        
+        // Update summary display elements
+        const baseWorkAmountElement = document.getElementById('base-work-amount');
+        const finalBalanceAmountElement = document.getElementById('final-balance-amount');
+        
+        if (baseWorkAmountElement) {
+            baseWorkAmountElement.textContent = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        
+        if (finalBalanceAmountElement) {
+            finalBalanceAmountElement.textContent = finalRemaining.toFixed(2);
+            // Add color coding based on balance
+            finalBalanceAmountElement.parentElement.className = finalRemaining < 0 ? 'summary-value total-highlight text-danger' : 
+                                                              finalRemaining === 0 ? 'summary-value total-highlight text-success' : 
+                                                              'summary-value total-highlight';
+        }
+        
+        // Update display elements if they exist (from calculation preview)
+        const elements = {
+            'current-receipt': `₹${currentReceipt.toFixed(2)}`,
+            'current-payment': `₹${currentPayment.toFixed(2)}`,
+            'total-receipts': `₹${totalReceipts.toFixed(2)}`,
+            'total-payments': `₹${totalPayments.toFixed(2)}`,
+            'final-remaining': `₹${finalRemaining.toFixed(2)}`
+        };
+        
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = elements[id];
+            }
+        });
+
+        // Update the balance status message
+        const balanceStatusElement = document.getElementById('balance-status-message');
+        if (balanceStatusElement) {
+            let statusMessage = '';
+            let statusClass = '';
+            
+            if (finalRemaining > 0) {
+                statusMessage = `₹${finalRemaining.toFixed(2)} owed to customer`;
+                statusClass = 'text-success';
+            } else if (finalRemaining < 0) {
+                statusMessage = `Customer owes ₹${Math.abs(finalRemaining).toFixed(2)}`;
+                statusClass = 'text-danger';
+            } else {
+                statusMessage = 'Account fully settled';
+                statusClass = 'text-success';
+            }
+            
+            balanceStatusElement.textContent = statusMessage;
+            balanceStatusElement.className = `fw-bold ${statusClass}`;
+        }
+    }
+    
+    // Function to update summary display
+    function updateSummaryDisplay() {
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        const baseWorkAmountElement = document.getElementById('base-work-amount');
+        const finalBalanceAmountElement = document.getElementById('final-balance-amount');
+        
+        if (calculationData) {
+            // If we have calculation data, use it
+            const baseAmount = parseFloat(calculationData.base_amount) || 0;
+            const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+            const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+            const finalBalance = baseAmount + totalReceipts - totalPayments;
+            
+            if (baseWorkAmountElement) {
+                baseWorkAmountElement.textContent = baseAmount.toFixed(2);
+            }
+            
+            if (finalBalanceAmountElement) {
+                finalBalanceAmountElement.textContent = finalBalance.toFixed(2);
+                // Add color coding based on balance
+                const parentElement = finalBalanceAmountElement.closest('.summary-value');
+                if (parentElement) {
+                    parentElement.className = finalBalance < 0 ? 'summary-value total-highlight text-danger' : 
+                                            finalBalance === 0 ? 'summary-value total-highlight text-success' : 
+                                            'summary-value total-highlight';
+                }
+            }
+        } else {
+            // If no calculation data, just show the receipt/payment difference
+            const simpleBalance = currentReceipt - currentPayment;
+            
+            if (baseWorkAmountElement) {
+                baseWorkAmountElement.textContent = '0.00';
+            }
+            
+            if (finalBalanceAmountElement) {
+                finalBalanceAmountElement.textContent = simpleBalance.toFixed(2);
+                // Add color coding based on balance
+                const parentElement = finalBalanceAmountElement.closest('.summary-value');
+                if (parentElement) {
+                    parentElement.className = simpleBalance < 0 ? 'summary-value total-highlight text-danger' : 
+                                            simpleBalance === 0 ? 'summary-value total-highlight text-success' : 
+                                            'summary-value total-highlight';
+                }
+            }
+        }
+    }
+
+    // Add event listeners to receipt and payment inputs
+    if (receiptInput) {
+        receiptInput.addEventListener('input', function() {
+            updateCalculationPreview();
+            updateSummaryDisplay();
+        });
+        console.log('Receipt input listener added');
+    }
+    if (paymentInput) {
+        paymentInput.addEventListener('input', function() {
+            updateCalculationPreview();
+            updateSummaryDisplay();
+        });
+        console.log('Payment input listener added');
+    }
+    
+    // Initial summary update
+    updateSummaryDisplay();
+    
+    // Handle shed selection change
+    shedSelect.addEventListener('change', function() {
+        const shedId = this.value;
+        console.log(`Shed selection changed to: ${shedId}`);
+        
+        if (shedId) {
+            // Show loading state
+            previewContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Calculating cumulative amounts...</p>
+                </div>
+            `;
+            previewDiv.style.display = 'block';
+            
+            // Get current input values
+            const currentReceipt = parseFloat(receiptInput?.value) || 0;
+            const currentPayment = parseFloat(paymentInput?.value) || 0;
+            
+            // Make AJAX call to get calculation preview
+            fetch(window.djangoData.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    'shed_id': shedId,
+                    'receipt': currentReceipt.toString(),
+                    'payment': currentPayment.toString()
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Calculation data received:', data);
+                
+                if (data.error) {
+                    previewContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${data.error}
+                        </div>
+                    `;
+                    calculationData = null;
+                } else if (data.success) {
+                    calculationData = data;
+                    
+let html = `
+    <h6 class="mb-3">Cumulative Calculation for: ${data.shed_name}</h6>
+    
+    <!-- Base Calculation Table -->
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Peeling Type</th>
+                    <th>Quantity (KG)</th>
+                    <th>Rate per KG</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+`;
+
+if (data.calculation_preview && data.calculation_preview.length > 0) {
+    data.calculation_preview.forEach(item => {
+        const rowClass = item.error ? 'table-warning' : '';
+        html += `
+            <tr class="${rowClass}">
+                <td>${item.peeling_type}</td>
+                <td>${item.quantity}</td>
+                <td>₹${item.rate}${item.error ? ' <i class="fas fa-exclamation-triangle text-warning" title="' + item.error + '"></i>' : ''}</td>
+                <td>₹${item.amount}</td>
+            </tr>
+        `;
+    });
+} else {
+    html += `
+        <tr>
+            <td colspan="4" class="text-center text-muted">No calculation data available</td>
+        </tr>
+    `;
+}
+
+html += `
+            </tbody>
+            <tfoot class="table-dark">
+                <tr>
+                    <th colspan="3">Base Amount</th>
+                    <th>₹${data.base_amount}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <!-- Cumulative Amount Summary -->
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box info-box">
+                <small>Base Amount</small>
+                <span class="h5">₹${data.base_amount}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box success-box">
+                <small>Previous Receipts</small>
+                <span class="h6">₹${data.cumulative_receipts}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box warning-box">
+                <small>Previous Payments</small>
+                <span class="h6">₹${data.cumulative_payments}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box light-box">
+                <small>Outstanding Balance</small>
+                <span class="h5" id="outstanding-balance">₹${data.previous_balance}</span>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-3">
+    
+    <!-- Current Transaction Boxes -->
+    <div class="row">
+        <div class="col-md-6 col-sm-6">
+            <div class="transaction-box receipt">
+                <small>+ Current Receipt</small>
+                <span class="h6" id="current-receipt">₹${data.current_receipt}</span>
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <div class="transaction-box payment">
+                <small>- Current Payment</small>
+                <span class="h6" id="current-payment">₹${data.current_payment}</span>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-3">
+    
+    <!-- Total Boxes -->
+    <div class="row">
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box total-receipts">
+                <small>Total Receipts</small>
+                <span class="h5" id="total-receipts">₹${data.new_total_receipts}</span>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box total-payments">
+                <small>Total Payments</small>
+                <span class="h5" id="total-payments">₹${data.new_total_payments}</span>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box final-remaining">
+                <small>Final Remaining</small>
+                <span class="h4" id="final-remaining">₹${data.new_balance}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Balance Status -->
+    <div class="mt-4 text-center">
+        <div class="mb-3">
+            <small class="text-muted">
+                <strong>Formula:</strong> Base Amount + Total Receipts - Total Payments = Final Remaining
+            </small>
+        </div>
+        <div class="balance-status">
+            <strong>Balance Status: </strong>
+            <span id="balance-status-message" class="fw-bold">${data.balance_status?.message || ''}</span>
+        </div>
+    </div>
+`;
+
+if (data.warnings && data.warnings.length > 0) {
+    html += `
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Warnings:</strong>
+            <ul class="mb-0 mt-2">
+                ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+if (data.stats) {
+    html += `
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Statistics:</strong> 
+            ${data.stats.total_peeling_types} peeling types, 
+            ${data.stats.total_work_entries} work entries, 
+            ${data.voucher_count} previous vouchers
+            ${data.stats.missing_rates > 0 ? `, ${data.stats.missing_rates} missing rates` : ''}
+        </div>
+    `;
+}
+
+previewContent.innerHTML = html;
+updateCalculationPreview();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching calculation:', error);
+                previewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading calculation: ${error.message}
+                        <br><small>Please check the server configuration and try again.</small>
+                    </div>
+                `;
+                calculationData = null;
+            });
+        } else {
+            previewDiv.style.display = 'none';
+            calculationData = null;
+            
+            // Reset form fields
+            if (totalAmountInput) totalAmountInput.value = '0.00';
+            if (remainAmountInput) remainAmountInput.value = '0.00';
+        }
+    });
+
+    // Trigger calculation preview if shed is already selected (for update form)
+    if (shedSelect.value && window.djangoData.isUpdate) {
+        shedSelect.dispatchEvent(new Event('change'));
+    }
+    
+    console.log('All event listeners attached successfully');
 });
 </script>
 

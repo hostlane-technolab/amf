@@ -821,7 +821,6 @@
         .submit-btn,
         .cancel-btn {
             width: 100%;
-y
         }
     }
 
@@ -961,15 +960,233 @@ y
     });
 </script>
 
-<!-- Date Picker Scripts -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        flatpickr("#id_date", {
-            dateFormat: "d/m/Y",
-            defaultDate: "today"
+document.addEventListener('DOMContentLoaded', function () {
+    const tenantSelect = document.getElementById('id_tenant');
+    const remainAmountInput = document.getElementById('id_remain_amount');
+    const totalAmountInput = document.getElementById('id_total_amount');
+    const receiptInput = document.getElementById('id_receipt');
+    const paymentInput = document.getElementById('id_payment');
+    const balanceInfo = document.getElementById('balanceInfo');
+    const dateInput = document.getElementById('id_date');
+
+    // Display elements
+    const previousBalanceDisplay = document.getElementById('previous-balance-display');
+    const newTotalDisplay = document.getElementById('new-total-display');
+
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.getElementById('id_voucher_no'),
+        dateInput,
+        tenantSelect,
+        document.getElementById('id_description'),
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
         });
     });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+
+    // ===== AMOUNT CALCULATIONS =====
+    // Function to calculate and update amounts
+    function updateAmounts() {
+        const remainAmount = parseFloat(remainAmountInput.value) || 0;
+        const receipt = parseFloat(receiptInput.value) || 0;
+        const payment = parseFloat(paymentInput.value) || 0;
+
+        const newTotal = remainAmount + receipt - payment;
+        totalAmountInput.value = newTotal.toFixed(2);
+
+        // Update display elements
+        if (previousBalanceDisplay) {
+            previousBalanceDisplay.textContent = remainAmount.toFixed(2);
+            // Color coding for previous balance
+            const prevBalanceParent = previousBalanceDisplay.closest('.summary-value');
+            if (prevBalanceParent) {
+                if (remainAmount > 0) {
+                    prevBalanceParent.classList.add('text-danger');
+                    prevBalanceParent.classList.remove('text-success', 'text-muted');
+                } else if (remainAmount < 0) {
+                    prevBalanceParent.classList.add('text-success');
+                    prevBalanceParent.classList.remove('text-danger', 'text-muted');
+                } else {
+                    prevBalanceParent.classList.add('text-muted');
+                    prevBalanceParent.classList.remove('text-danger', 'text-success');
+                }
+            }
+        }
+
+        if (newTotalDisplay) {
+            newTotalDisplay.textContent = newTotal.toFixed(2);
+            // Color coding for new total
+            const newTotalParent = newTotalDisplay.closest('.summary-value');
+            if (newTotalParent) {
+                if (newTotal > 0) {
+                    newTotalParent.classList.add('text-danger');
+                    newTotalParent.classList.remove('text-success', 'text-muted');
+                } else if (newTotal < 0) {
+                    newTotalParent.classList.add('text-success');
+                    newTotalParent.classList.remove('text-danger', 'text-muted');
+                } else {
+                    newTotalParent.classList.add('text-success');
+                    newTotalParent.classList.remove('text-danger', 'text-muted');
+                }
+            }
+        }
+    }
+
+    // ===== TENANT BALANCE FETCH =====
+    // Function to fetch and display tenant balance
+    function fetchTenantBalance(tenantId) {
+        if (!tenantId) {
+            balanceInfo.style.display = 'none';
+            remainAmountInput.value = '0.00';
+            updateAmounts();
+            return;
+        }
+
+        fetch(`{% url 'adminapp:get_tenant_balance' %}?tenant_id=${tenantId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    balanceInfo.style.display = 'none';
+                    return;
+                }
+
+                // Display balance information
+                document.getElementById('billsTotal').textContent = data.bills_total.toFixed(2);
+                document.getElementById('totalReceipts').textContent = data.total_receipt.toFixed(2);
+                document.getElementById('totalPayments').textContent = data.total_payment.toFixed(2);
+                document.getElementById('currentBalance').textContent = data.remain_amount.toFixed(2);
+                document.getElementById('tenantName').textContent = data.tenant_name || 'Unknown Tenant';
+
+                // Update balance color based on amount
+                const balanceElement = document.getElementById('currentBalance');
+                const balanceParent = balanceElement.closest('.summary-value');
+                if (balanceParent) {
+                    if (data.remain_amount > 0) {
+                        balanceParent.classList.add('text-danger');
+                        balanceParent.classList.remove('text-success', 'text-muted');
+                    } else if (data.remain_amount < 0) {
+                        balanceParent.classList.add('text-success');
+                        balanceParent.classList.remove('text-danger', 'text-muted');
+                    } else {
+                        balanceParent.classList.add('text-muted');
+                        balanceParent.classList.remove('text-danger', 'text-success');
+                    }
+                }
+
+                // Update remain amount field
+                remainAmountInput.value = data.remain_amount.toFixed(2);
+
+                // Show balance info
+                balanceInfo.style.display = 'block';
+
+                // Update total amount
+                updateAmounts();
+            })
+            .catch(error => {
+                console.error('Error fetching tenant balance:', error);
+                balanceInfo.style.display = 'none';
+            });
+    }
+
+    // ===== EVENT LISTENERS =====
+    tenantSelect.addEventListener('change', function () {
+        fetchTenantBalance(this.value);
+    });
+
+    receiptInput.addEventListener('input', updateAmounts);
+    paymentInput.addEventListener('input', updateAmounts);
+
+    // Initialize if tenant is already selected
+    if (tenantSelect.value) {
+        fetchTenantBalance(tenantSelect.value);
+    }
+
+    // Initial update
+    updateAmounts();
+});
 </script>
+
+
+
 {% endblock %}

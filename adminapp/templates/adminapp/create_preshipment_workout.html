@@ -606,7 +606,7 @@
           <table id="formset-table" class="modern-table">
             <thead>
               <tr>
-                <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th>
+                <!-- <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th> -->
                 <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling</div></th>
                 <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
                 <th><div class="header-content-table"><i class="fas fa-boxes header-icon"></i>Cartons</div></th>
@@ -625,7 +625,7 @@
             <tbody id="formset-body">
               {% for form in formset %}
                 <tr class="form-row table-row">
-                  <td>{{ form.species }}</td>
+                  <!-- <td>{{ form.species }}</td> -->
                   <td>{{ form.peeling_type }}</td>
                   <td>{{ form.grade }}</td>
                   <td>{{ form.cartons }}</td>
@@ -675,7 +675,7 @@
     <table style="display:none;">
       <tbody>
         <tr id="empty-form" class="form-row table-row">
-          <td>{{ formset.empty_form.species }}</td>
+          <!-- <td>{{ formset.empty_form.species }}</td> -->
           <td>{{ formset.empty_form.peeling_type }}</td>
           <td>{{ formset.empty_form.grade }}</td>
           <td>{{ formset.empty_form.cartons }}</td>

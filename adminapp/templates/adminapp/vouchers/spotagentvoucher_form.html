@@ -830,6 +830,11 @@
 
 </style>
 
+
+
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -839,8 +844,100 @@ document.addEventListener('DOMContentLoaded', function() {
     const receiptInput = document.getElementById('id_receipt');
     const paymentInput = document.getElementById('id_payment');
     const balanceInfo = document.getElementById('balanceInfo');
+    const dateInput = document.getElementById('id_date');
 
-    // Function to calculate and update amounts
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.getElementById('id_voucher_no'),
+        dateInput,
+        agentSelect,
+        document.getElementById('id_description'),
+        remainAmountInput,
+        totalAmountInput,
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+
+    // ===== AMOUNT CALCULATIONS =====
     function updateAmounts() {
         const remainAmount = parseFloat(remainAmountInput.value) || 0;
         const receipt = parseFloat(receiptInput.value) || 0;
@@ -850,7 +947,7 @@ document.addEventListener('DOMContentLoaded', function() {
         totalAmountInput.value = newTotal.toFixed(2);
     }
 
-    // Function to fetch and display agent balance
+    // ===== AGENT BALANCE FETCH =====
     function fetchAgentBalance(agentId) {
         if (!agentId) {
             balanceInfo.style.display = 'none';
@@ -868,31 +965,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Display balance information
                 document.getElementById('billsTotal').textContent = (data.bills_total || 0).toFixed(2);
                 document.getElementById('totalReceipts').textContent = (data.total_receipt || 0).toFixed(2);
                 document.getElementById('totalPayments').textContent = (data.total_payment || 0).toFixed(2);
                 document.getElementById('currentBalance').textContent = (data.remain_amount || 0).toFixed(2);
                 document.getElementById('agentName').textContent = data.agent_name || 'Unknown Agent';
                 
-                // Update balance color based on amount
                 const balanceElement = document.getElementById('currentBalance');
                 const remainAmount = data.remain_amount || 0;
                 if (remainAmount > 0) {
-                    balanceElement.className = 'calculated-value text-danger'; // Agent owes money
+                    balanceElement.className = 'calculated-value text-danger';
                 } else if (remainAmount < 0) {
-                    balanceElement.className = 'calculated-value text-success'; // We owe agent
+                    balanceElement.className = 'calculated-value text-success';
                 } else {
-                    balanceElement.className = 'calculated-value text-muted'; // Balanced
+                    balanceElement.className = 'calculated-value text-muted';
                 }
                 
-                // Update remain amount field
                 remainAmountInput.value = remainAmount.toFixed(2);
-                
-                // Show balance info
                 balanceInfo.style.display = 'block';
-                
-                // Update total amount
                 updateAmounts();
             })
             .catch(error => {
@@ -901,7 +991,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // Event listeners
+    // ===== EVENT LISTENERS =====
     agentSelect.addEventListener('change', function() {
         fetchAgentBalance(this.value);
     });
@@ -916,16 +1006,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Date Picker Scripts -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    flatpickr("#id_date", {
-        dateFormat: "d/m/Y",
-        defaultDate: "today"
-    });
-});
-</script>
 
 {% endblock %}

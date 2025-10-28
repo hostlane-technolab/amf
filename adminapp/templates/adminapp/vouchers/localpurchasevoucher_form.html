@@ -430,20 +430,7 @@
               </div>
             </div>
             
-            <div class="col-md-6">
-              <div class="form-group">
-                <label class="form-label payment-label">
-                  <i class="fas fa-minus-circle me-2"></i>{{ form.payment.label }} (-)
-                </label>
-                <div class="input-wrapper payment-wrapper">
-                  <i class="fas fa-minus input-icon"></i>
-                  {{ form.payment }}
-                </div>
-                {% if form.payment.errors %}
-                  <div class="validation-error">{{ form.payment.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -1000,15 +987,178 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Date Picker Scripts -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    flatpickr("#id_date", {
-        dateFormat: "d/m/Y",
-        defaultDate: "today"
+document.addEventListener('DOMContentLoaded', function() {
+    const partySelect = document.getElementById('id_party');
+    const remainAmountInput = document.getElementById('id_remain_amount');
+    const totalAmountInput = document.getElementById('id_total_amount');
+    const receiptInput = document.getElementById('id_receipt');
+    const paymentInput = document.getElementById('id_payment');
+    const balanceInfoCard = document.getElementById('balanceInfoCard');
+    const dateInput = document.getElementById('id_date');
+
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.getElementById('id_voucher_no'),
+        dateInput,
+        partySelect,
+        document.getElementById('id_description'),
+        remainAmountInput,
+        totalAmountInput,
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
     });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+
+    // ===== AMOUNT CALCULATIONS =====
+    function updateAmounts() {
+        const remainAmount = parseFloat(remainAmountInput.value) || 0;
+        const receipt = parseFloat(receiptInput.value) || 0;
+        const payment = parseFloat(paymentInput.value) || 0;
+        
+        const newTotal = remainAmount + receipt - payment;
+        totalAmountInput.value = newTotal.toFixed(2);
+
+        // Update display values in summary table
+        document.getElementById('display-remain-amount').textContent = remainAmount.toFixed(2);
+        document.getElementById('display-receipt-amount').textContent = receipt.toFixed(2);
+        document.getElementById('display-payment-amount').textContent = payment.toFixed(2);
+        document.getElementById('display-total-amount').textContent = newTotal.toFixed(2);
+    }
+
+    // ===== PARTY BALANCE FETCH =====
+    function fetchPartyBalance(partyId) {
+        if (!partyId) {
+            balanceInfoCard.style.display = 'none';
+            remainAmountInput.value = '0.00';
+            updateAmounts();
+            return;
+        }
+
+        fetch(`{% url 'adminapp:get_party_balance' %}?party_id=${partyId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    balanceInfoCard.style.display = 'none';
+                    return;
+                }
+
+                // Display balance information
+                document.getElementById('purchaseTotal').textContent = data.purchase_total.toFixed(2);
+                document.getElementById('totalReceipts').textContent = data.total_receipt.toFixed(2);
+                document.getElementById('totalPayments').textContent = data.total_payment.toFixed(2);
+                document.getElementById('currentBalance').textContent = data.remain_amount.toFixed(2);
+                
+                // Update remain amount field
+                remainAmountInput.value = data.remain_amount.toFixed(2);
+                
+                // Show balance info card
+                balanceInfoCard.style.display = 'block';
+                
+                // Update total amount
+                updateAmounts();
+            })
+            .catch(error => {
+                console.error('Error fetching party balance:', error);
+                balanceInfoCard.style.display = 'none';
+            });
+    }
+
+    // ===== EVENT LISTENERS =====
+    partySelect.addEventListener('change', function() {
+        fetchPartyBalance(this.value);
+    });
+
+    receiptInput.addEventListener('input', updateAmounts);
+    paymentInput.addEventListener('input', updateAmounts);
+    remainAmountInput.addEventListener('input', updateAmounts);
+
+    // Initialize if party is already selected
+    if (partySelect.value) {
+        fetchPartyBalance(partySelect.value);
+    } else {
+        updateAmounts(); // Initialize display values
+    }
 });
 </script>
 

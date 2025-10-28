@@ -278,7 +278,7 @@ class Species(BaseModel):
 
 class ItemGrade(BaseModel):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    species = models.ForeignKey(Species, on_delete=models.CASCADE)
+    species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True, blank=True)
     grade = models.CharField(max_length=100)
     date = models.DateField(auto_created=True, auto_now=True) 
 
@@ -740,7 +740,7 @@ class TenantStock(BaseModel):
     glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
     brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
-    species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    species = models.ForeignKey('Species', on_delete=models.CASCADE, null=True, blank=True)
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
     peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True)
     
@@ -805,7 +805,7 @@ class FreezingEntryTenantItem(BaseModel):
     glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
     brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
-    species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    species = models.ForeignKey('Species', on_delete=models.CASCADE, null=True, blank=True )
     peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True )
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
 
@@ -855,7 +855,7 @@ class ReturnTenantItem(BaseModel):
     glaze = models.ForeignKey('GlazePercentage', on_delete=models.CASCADE)
     freezing_category = models.ForeignKey('FreezingCategory', on_delete=models.CASCADE)
     brand = models.ForeignKey('ItemBrand', on_delete=models.CASCADE)
-    species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    species = models.ForeignKey('Species', on_delete=models.CASCADE, null=True, blank=True )
     peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True )
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
 
@@ -883,7 +883,7 @@ class PreShipmentWorkOut(BaseModel):
 
 class PreShipmentWorkOutItem(BaseModel):
     workout = models.ForeignKey(PreShipmentWorkOut, on_delete=models.CASCADE, related_name="items")
-    species = models.ForeignKey('Species', on_delete=models.CASCADE)
+    species = models.ForeignKey('Species', on_delete=models.CASCADE, null=True, blank=True)
     peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE)
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
     cartons = models.DecimalField(max_digits=100, decimal_places=2, default=0)
@@ -1324,7 +1324,7 @@ class SalesEntryItem(BaseModel):
     
     # Core Item Information (Yellow highlighted fields only)
   
-    species = models.ForeignKey(Species, on_delete=models.CASCADE)
+    species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True, blank=True)
     peeling_type = models.ForeignKey(ItemType, on_delete=models.SET_NULL, null=True, blank=True)
     grade = models.ForeignKey(ItemGrade, on_delete=models.SET_NULL, null=True, blank=True)
     

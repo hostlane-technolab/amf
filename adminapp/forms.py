@@ -179,6 +179,8 @@ class ItemGradeForm(forms.ModelForm):
     class Meta:
         model = ItemGrade
         fields = '__all__'
+        exclude = ['species']
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -197,10 +199,10 @@ class ItemGradeForm(forms.ModelForm):
         elif self.instance and self.instance.pk:
             item_id = self.instance.item_id
 
-        if item_id:
-            self.fields['species'].queryset = Species.objects.filter(item_id=item_id)
-        else:
-            self.fields['species'].queryset = Species.objects.none()
+        # if item_id:
+        #     self.fields['species'].queryset = Species.objects.filter(item_id=item_id)
+        # else:
+        #     self.fields['species'].queryset = Species.objects.none()
 
 class FreezingCategoryForm(forms.ModelForm):
     class Meta:
@@ -1049,16 +1051,14 @@ class PeelingShedVoucherForm(forms.ModelForm):
 class TenantVoucherForm(forms.ModelForm):
     class Meta:
         model = TenantVoucher
-        fields = ["voucher_no", "tenant", "date", "description", "remain_amount", "receipt", "payment", "total_amount"]
+        fields = ["voucher_no", "tenant", "date", "description", "receipt", "payment"]  # REMOVED remain_amount and total_amount
         widgets = {
             "voucher_no": forms.TextInput(attrs={"class": "form-control"}),
             "tenant": forms.Select(attrs={"class": "form-control"}),
             "date": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
             "description": forms.Textarea(attrs={"class": "form-control", "rows": 2}),
-            "remain_amount": forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
-            "receipt": forms.NumberInput(attrs={"class": "form-control"}),
-            "payment": forms.NumberInput(attrs={"class": "form-control"}),
-            "total_amount": forms.NumberInput(attrs={'readonly': 'readonly', 'class': 'form-control'}),
+            "receipt": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Receipt Amount"}),
+            "payment": forms.NumberInput(attrs={"class": "form-control", "placeholder": "Payment Amount"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1101,9 +1101,21 @@ class TenantVoucherForm(forms.ModelForm):
         
         # Update form choices
         self.fields['tenant'].choices = tenant_choices
-
-# temporary stock add 
-
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        receipt = cleaned_data.get('receipt') or 0
+        payment = cleaned_data.get('payment') or 0
+        
+        # Ensure at least one is provided
+        if receipt == 0 and payment == 0:
+            raise forms.ValidationError("Either receipt or payment must be provided")
+        
+        # Ensure only one is provided (optional business rule)
+        if receipt > 0 and payment > 0:
+            raise forms.ValidationError("Please provide either receipt OR payment, not both")
+        
+        return cleaned_data
 
     
 
@@ -1909,13 +1921,6 @@ class TenantStockAdjustmentForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'})
     )
     
-    species = forms.ModelChoiceField(
-        queryset=None,
-        required=True,
-        label="Species",
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
-    
     grade = forms.ModelChoiceField(
         queryset=None,
         required=True,
@@ -2011,7 +2016,6 @@ class TenantStockAdjustmentForm(forms.Form):
         self.fields['item_quality'].queryset = ItemQuality.objects.all()
         self.fields['unit'].queryset = PackingUnit.objects.all()
         self.fields['glaze'].queryset = GlazePercentage.objects.all()
-        self.fields['species'].queryset = Species.objects.all()
         self.fields['grade'].queryset = ItemGrade.objects.all()
         self.fields['processing_center'].queryset = ProcessingCenter.objects.all()
         self.fields['store'].queryset = Store.objects.all()

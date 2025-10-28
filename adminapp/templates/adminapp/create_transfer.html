@@ -379,12 +379,12 @@
                       <span class="header-text">Glaze</span>
                     </div>
                   </th>
-                  <th class="table-header">
+                  <!-- <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-fish header-icon"></i>
                       <span class="header-text">Species</span>
                     </div>
-                  </th>
+                  </th> -->
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-medal header-icon"></i>
@@ -451,12 +451,12 @@
                         <div class="validation-error">{{ form.glaze.errors }}</div>
                       {% endif %}
                     </td>
-                    <td class="table-cell">
+                    <!-- <td class="table-cell">
                       {{ form.species.as_widget }}
                       {% if form.species.errors %}
                         <div class="validation-error">{{ form.species.errors }}</div>
                       {% endif %}
-                    </td>
+                    </td> -->
                     <td class="table-cell">
                       {{ form.item_grade.as_widget }}
                       {% if form.item_grade.errors %}
@@ -537,7 +537,7 @@
       <td class="table-cell">{{ formset.empty_form.freezing_category.as_widget }}</td>
       <td class="table-cell">{{ formset.empty_form.unit.as_widget }}</td>
       <td class="table-cell">{{ formset.empty_form.glaze.as_widget }}</td>
-      <td class="table-cell">{{ formset.empty_form.species.as_widget }}</td>
+      <!-- <td class="table-cell">{{ formset.empty_form.species.as_widget }}</td> -->
       <td class="table-cell">{{ formset.empty_form.item_grade.as_widget }}</td>
       <td class="table-cell">{{ formset.empty_form.cs_quantity.as_widget }}</td>
       <td class="table-cell">{{ formset.empty_form.kg_quantity.as_widget }}</td>

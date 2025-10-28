@@ -409,7 +409,7 @@
           </div>
 
           <div class="row g-4 mt-1">
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
               <div class="form-group">
                 <label class="form-label">{{ form.species.label }}</label>
                 <div class="input-wrapper">
@@ -420,7 +420,7 @@
                   <div class="validation-error">{{ form.species.errors }}</div>
                 {% endif %}
               </div>
-            </div>
+            </div> -->
 
             <div class="col-md-4">
               <div class="form-group">
@@ -1771,7 +1771,6 @@ $(document).ready(function () {
         const itemQualityField = document.getElementById('id_item_quality');
         const unitField = document.getElementById('id_unit');
         const glazeField = document.getElementById('id_glaze');
-        const speciesField = document.getElementById('id_species');
         const itemGradeField = document.getElementById('id_item_grade');
         const peelingTypeField = document.getElementById('id_peeling_type');
         const freezingCategoryField = document.getElementById('id_freezing_category');
@@ -1839,7 +1838,6 @@ $(document).ready(function () {
             const itemQuality = itemQualityField.value;
             const unit = unitField.value;
             const glaze = glazeField.value;
-            const species = speciesField.value;
             const itemGrade = itemGradeField.value;
             const peelingType = peelingTypeField.value;
             const freezingCategory = freezingCategoryField.value;
@@ -1852,7 +1850,7 @@ $(document).ready(function () {
             }
 
             // Fetch current stock
-            const url = `/adminapp/get-current-stock/?store=${store}&brand=${brand}&item=${item}&item_quality=${itemQuality}&unit=${unit}&glaze=${glaze}&species=${species}&item_grade=${itemGrade}&peeling_type=${peelingType}&freezing_category=${freezingCategory}`;
+            const url = `/adminapp/get-current-stock/?store=${store}&brand=${brand}&item=${item}&item_quality=${itemQuality}&unit=${unit}&glaze=${glaze}&item_grade=${itemGrade}&peeling_type=${peelingType}&freezing_category=${freezingCategory}`;
             
             fetch(url)
                 .then(response => response.json())
@@ -1898,7 +1896,7 @@ $(document).ready(function () {
 
         // Attach event listeners to all fields
         [storeField, brandField, itemField, itemQualityField, unitField, 
-         glazeField, speciesField, itemGradeField, peelingTypeField, freezingCategoryField].forEach(field => {
+         glazeField, itemGradeField, peelingTypeField, freezingCategoryField].forEach(field => {
             if (field) {
                 field.addEventListener('change', checkCurrentStock);
             }
