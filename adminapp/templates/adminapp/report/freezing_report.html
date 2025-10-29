@@ -733,7 +733,7 @@
                                 <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
                                 <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
                                 <option value="month" {% if section_by == 'month' %}selected{% endif %}>Month</option>
-                                <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
+                                <option value="peeling_type" {% if section_by == 'peeling_type' %}selected{% endif %}>Peeling Type</option>
                                 <option value="processing_center" {% if section_by == 'processing_center' %}selected{% endif %}>Processing Center</option>
                                 <option value="grade" {% if section_by == 'grade' %}selected{% endif %}>Grade</option>
                                 <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
@@ -845,15 +845,15 @@
                             </div>
                         </div>
 
-                        <!-- Species -->
+                        <!-- Peeling -->
                         <div class="filter-section">
-                            <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
-                            <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
-                            <div class="options-container" id="speciesContainer">
-                                {% for spec in species %}
+                            <label>Peeling Types: <span id="peelingTypesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search peeling types..." id="peelingTypesSearch">
+                            <div class="options-container" id="peelingTypesContainer">
+                                {% for peeling_type in peeling_types %}
                                     <div class="option-item">
-                                        <input type="checkbox" name="species" value="{{ spec.id }}" id="species_{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}checked{% endif %}>
-                                        <label for="species_{{ spec.id }}">{{ spec.name }}</label>
+                                        <input type="checkbox" name="peeling_types" value="{{ peeling_type.id }}" id="peeling_type_{{ peeling_type.id }}" {% if peeling_type.id|stringformat:"s" in selected_peeling_types %}checked{% endif %}>
+                                        <label for="peeling_type_{{ peeling_type.id }}">{{ peeling_type.name }}</label>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -994,8 +994,8 @@
                         CATEGORY: {{ section_name|upper }}
                     {% elif section_by == 'brand' %}
                         BRAND: {{ section_name|upper }}
-                    {% elif section_by == 'species' %}
-                        SPECIES: {{ section_name|upper }}
+                    {% elif section_by == 'peeling_type' %}
+                        PEELING TYPE: {{ section_name|upper }}
                     {% elif section_by == 'grade' %}
                         GRADE: {{ section_name|upper }}
                     {% elif section_by == 'item' %}
@@ -1023,24 +1023,24 @@
                 INR: ₹{{ section_data.totals.total_inr_amount|floatformat:2 }}
             </div>
 
+<!-- Replace the table section in your template with this fixed version -->
+
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>S.NO</th>
                         <th>DATE</th>
+                        <th>TYPE</th>
                         <th>VOUCHER</th>
                         <th>ITEM SUB</th>
-                        <th>BRAND</th>
-                        <th>GRADE</th>
                         {% if units %}
                         <th>UNIT</th>
                         {% endif %}
                         {% if glazes %}
                         <th>GLAZE</th>
                         {% endif %}
-                        <th>CATEGORY</th>
-                        <th>SPECIES</th>
-                        <th>TYPE</th>
+                        <th>BRAND</th>
+                        <th>GRADE</th>
                         <th>QTY (KG)</th>
                         <th>USD AMT</th>
                         <th>INR AMT</th>
@@ -1051,34 +1051,41 @@
                     <tr>
                         <td class="center-col">{{ forloop.counter }}</td>
                         <td class="center-col">{{ item.freezing_entry__freezing_date|date:"d/m/Y" }}</td>
+                        <td class="center-col">{{ item.entry_type|upper }}</td>
                         <td class="center-col">{{ item.freezing_entry__voucher_number|default:"N/A" }}</td>
-                        <td>{{ item.item_quality__quality|default:"N/A"|truncatechars:20 }}</td>
-                        <td>{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
-                        <td class="center-col">{{ item.grade__grade|default:"N/A" }}</td>
+                        <td class="center-col">{{ item.item_quality__quality|default:"N/A"|truncatechars:20 }}</td>
                         {% if units %}
                         <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
                         {% endif %}
                         {% if glazes %}
                         <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}N/A{% endif %}</td>
                         {% endif %}
-                        <td>{{ item.item__category__name|default:"N/A"|truncatechars:15 }}</td>
-                        <td>{{ item.item__species__name|default:"N/A"|truncatechars:15 }}</td>
-                        <td class="center-col">{{ item.entry_type|upper }}</td>
+                        <td class="center-col">{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td class="center-col">{{ item.peeling_type__name|default:"N/A"|truncatechars:15 }} - {{ item.grade__grade|default:"N/A" }}</td>
                         <td class="number-col">{{ item.total_kg|floatformat:2 }}</td>
                         <td class="number-col">${{ item.total_usd_amount|floatformat:2 }}</td>
                         <td class="number-col">₹{{ item.total_inr_amount|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                     
-                    <!-- Section Total Row -->
+                    <!-- Section Total Row with proper colspan calculation -->
                     <tr class="section-total-row">
-                        <td colspan="{% if units and glazes %}11{% elif units or glazes %}10{% else %}9{% endif %}" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% if units and glazes %}
+                            <td colspan="9" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% elif units or glazes %}
+                            <td colspan="8" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% else %}
+                            <td colspan="7" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% endif %}
                         <td class="number-col"><strong>{{ section_data.totals.total_kg|floatformat:2 }}</strong></td>
                         <td class="number-col"><strong>${{ section_data.totals.total_usd_amount|floatformat:2 }}</strong></td>
                         <td class="number-col"><strong>₹{{ section_data.totals.total_inr_amount|floatformat:2 }}</strong></td>
                     </tr>
                 </tbody>
             </table>
+
+
+            
             {% empty %}
             <div class="no-data">
                 <h3>No Records Found</h3>
@@ -1215,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSearch('gradesSearch', 'gradesContainer', 'gradesCount');
     setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
     setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
-    setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
+    setupSearch('peelingTypesSearch', 'peelingTypesContainer', 'peelingTypesCount'); // CHANGED
     setupSearch('freezingCategoriesSearch', 'freezingCategoriesContainer', 'freezingCategoriesCount');
     setupSearch('processingCentersSearch', 'processingCentersContainer', 'processingCentersCount');
     setupSearch('storesSearch', 'storesContainer', 'storesCount');

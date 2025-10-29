@@ -606,7 +606,6 @@
           <table id="formset-table" class="modern-table">
             <thead>
               <tr>
-                <!-- <th><div class="header-content-table"><i class="fas fa-fish header-icon"></i>Species</div></th> -->
                 <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling</div></th>
                 <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
                 <th><div class="header-content-table"><i class="fas fa-boxes header-icon"></i>Cartons</div></th>
@@ -625,7 +624,6 @@
             <tbody id="formset-body">
               {% for form in formset %}
                 <tr class="form-row table-row">
-                  <!-- <td>{{ form.species }}</td> -->
                   <td>{{ form.peeling_type }}</td>
                   <td>{{ form.grade }}</td>
                   <td>{{ form.cartons }}</td>
@@ -675,7 +673,6 @@
     <table style="display:none;">
       <tbody>
         <tr id="empty-form" class="form-row table-row">
-          <!-- <td>{{ formset.empty_form.species }}</td> -->
           <td>{{ formset.empty_form.peeling_type }}</td>
           <td>{{ formset.empty_form.grade }}</td>
           <td>{{ formset.empty_form.cartons }}</td>
@@ -769,157 +766,6 @@
   });
   </script>
 
-  <script>
-    // Load Species and Peeling Types based on Parent Item
-  $(document).ready(function () {
-      console.log("PreShipment WorkOut AJAX ready");
-
-      // Function to update species and peeling for a formset row
-      function updateRowOptions(row, itemId) {
-          console.log("updateRowOptions called with itemId:", itemId);
-          
-          if (!itemId) {
-              // Clear dropdowns if no item selected
-              row.find("select[name*='species']").empty().append('<option value="">---------</option>');
-              row.find("select[name*='peeling_type']").empty().append('<option value="">---------</option>');
-              row.find("select[name*='grade']").empty().append('<option value="">---------</option>');
-              return;
-          }
-
-          // Fetch Species for this item
-          $.ajax({
-              url: "{% url 'adminapp:get_species_for_item' %}",
-              data: { item_id: itemId },
-              success: function (response) {
-                  console.log("Species response:", response);
-                  let speciesSelect = row.find("select[name*='species']");
-                  let currentValue = speciesSelect.val();
-                  
-                  speciesSelect.empty().append('<option value="">---------</option>');
-                  $.each(response.species, function (i, species) {
-                      speciesSelect.append('<option value="' + species.id + '">' + species.name + '</option>');
-                  });
-                  
-                  if (currentValue) {
-                      speciesSelect.val(currentValue);
-                  }
-                  console.log("✓ Species loaded for row");
-              },
-              error: function(xhr, status, error) {
-                  console.error("✗ Error loading species:", error);
-              }
-          });
-
-          // Fetch Peeling Types for this item
-          $.ajax({
-              url: "{% url 'adminapp:get_peeling_for_item' %}",
-              data: { item_id: itemId },
-              success: function (response) {
-                  console.log("Peeling response:", response);
-                  let peelingSelect = row.find("select[name*='peeling_type']");
-                  let currentValue = peelingSelect.val();
-                  
-                  peelingSelect.empty().append('<option value="">---------</option>');
-                  $.each(response.peeling_types, function (i, peeling) {
-                      peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
-                  });
-                  
-                  if (currentValue) {
-                      peelingSelect.val(currentValue);
-                  }
-                  console.log("✓ Peeling types loaded for row");
-              },
-              error: function(xhr, status, error) {
-                  console.error("✗ Error loading peeling types:", error);
-              }
-          });
-      }
-
-      // When main item changes, update all formset rows
-      $("#id_item").on("change", function() {
-          let itemId = $(this).val();
-          console.log("=== Main item changed to:", itemId, "===");
-          
-          // Update all existing formset rows in tbody
-          $("#formset-body tr.form-row").each(function() {
-              console.log("Updating row:", $(this).index());
-              updateRowOptions($(this), itemId);
-          });
-      });
-
-      // When add-row button is clicked
-      $("#add-row").on("click", function() {
-          console.log("Add row button clicked");
-          
-          // Wait a moment for the row to be added by the other script
-          setTimeout(function() {
-              let itemId = $("#id_item").val();
-              console.log("Checking for new row, itemId:", itemId);
-              
-              if (itemId) {
-                  // Update the last row (the newly added one)
-                  let lastRow = $("#formset-body tr.form-row").last();
-                  console.log("Updating newly added row");
-                  updateRowOptions(lastRow, itemId);
-              }
-          }, 100);
-      });
-
-      // Load options for existing rows on page load (for edit mode)
-      let itemId = $("#id_item").val();
-      if (itemId) {
-          console.log("=== Page loaded with item:", itemId, "===");
-          $("#formset-body tr.form-row").each(function() {
-              console.log("Initializing row:", $(this).index());
-              updateRowOptions($(this), itemId);
-          });
-      } else {
-          console.log("No item selected on page load");
-      }
-  });
-
-  // Load grade when species changes
-  $(document).on("change", "select[name*='species']", function () {
-      console.log("Species changed");
-      var speciesId = $(this).val();
-      var $gradeSelect = $(this).closest("tr").find("select[name*='grade']");
-
-      console.log("Species ID:", speciesId);
-
-      if (speciesId) {
-          $.ajax({
-              url: "{% url 'adminapp:get_grade_for_species' %}",
-              data: { "species_id": speciesId },
-              dataType: "json",
-              success: function (data) {
-                  console.log("Grades received:", data);
-                  let currentValue = $gradeSelect.val();
-                  
-                  $gradeSelect.empty();
-                  $gradeSelect.append($("<option>", { value: "", text: "---------" }));
-
-                  $.each(data.grades, function (index, grade) {
-                      $gradeSelect.append($("<option>", {
-                          value: grade.id,
-                          text: grade.grade
-                      }));
-                  });
-                  
-                  if (currentValue) {
-                      $gradeSelect.val(currentValue);
-                  }
-                  console.log("✓ Grades loaded");
-              },
-              error: function(xhr, status, error) {
-                  console.error("✗ Error loading grades:", error);
-              }
-          });
-      } else {
-          $gradeSelect.empty();
-          $gradeSelect.append($("<option>", { value: "", text: "---------" }));
-      }
-  });
-  </script>
 
   <!-- Script 2: Main Formset and Calculation Logic -->
   <script>
@@ -1062,17 +908,15 @@
           let workoutCategoryId = $("#id_category").val();
           let workoutBrandId = $("#id_brand").val();
           
-          let speciesId = $row.find("select[name$='species']").val();
           let peelingTypeId = $row.find("select[name$='peeling_type']").val();
           let gradeId = $row.find("select[name$='grade']").val();
           
-          if (!workoutItemId || !speciesId || !gradeId) {
+          if (!workoutItemId  || !gradeId) {
               return;
           }
           
           let requestData = {
               workout_item: workoutItemId,
-              species: speciesId,
               grade: gradeId
           };
           

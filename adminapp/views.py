@@ -722,7 +722,7 @@ class ItemGradeCreateView(CreateView):
     model = ItemGrade
     form_class = ItemGradeForm
     template_name = 'adminapp/forms/itemgrade_form.html'
-    success_url = reverse_lazy('adminapp:item_grade_list')
+    success_url = reverse_lazy('adminapp:item_grade_create')
 
 def load_species(request):
     item_id = request.GET.get('item_id')
@@ -4755,10 +4755,10 @@ def spot_purchase_report_print(request):
 
 
 
-# LOCAL PURCHASE REPORT - FIXED VERSION
+# LOCAL PURCHASE REPORT - FIXED VERSION WITH ITEM_TYPE (PEELING TYPE)
 @check_permission('report_view')
 def local_purchase_report(request):
-    # ✅ Only get items, grades, categories, species, and qualities that exist in LocalPurchaseItem
+    # ✅ Only get items, grades, categories, and qualities that exist in LocalPurchaseItem
     items = Item.objects.filter(
         id__in=LocalPurchaseItem.objects.values_list('item_id', flat=True).distinct()
     ).distinct()
@@ -4770,19 +4770,20 @@ def local_purchase_report(request):
     categories = ItemCategory.objects.filter(
         id__in=LocalPurchaseItem.objects.values_list('item__category_id', flat=True).distinct()
     ).distinct()
-    
-    species = Species.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('species_id', flat=True).distinct()
-    ).distinct()
 
-    # ✅ ADD: Get qualities that exist in LocalPurchaseItem
+    # ✅ Get qualities that exist in LocalPurchaseItem
     qualities = ItemQuality.objects.filter(
         id__in=LocalPurchaseItem.objects.values_list('item_quality_id', flat=True).distinct()
     ).distinct()
 
-    # ✅ FIXED: Added item_quality to select_related
+    # ✅ FIXED: Get ItemType (peeling types) that exist in LocalPurchaseItem
+    peeling_types = ItemType.objects.filter(
+        id__in=LocalPurchaseItem.objects.values_list('item_type_id', flat=True).distinct()
+    ).distinct()
+
+    # ✅ FIXED: Added item_quality and item_type to select_related
     queryset = LocalPurchaseItem.objects.select_related(
-        "purchase", "item", "grade", "item__category", "species", "item_quality", "purchase__party_name"
+        "purchase", "item", "grade", "item__category", "item_quality", "item_type", "purchase__party_name"
     )
 
     # ✅ Multi-select filters
@@ -4790,8 +4791,8 @@ def local_purchase_report(request):
     selected_grades = request.GET.getlist("grades")
     selected_categories = request.GET.getlist("categories")
     selected_parties = request.GET.getlist("parties")
-    selected_species = request.GET.getlist("species")
-    selected_qualities = request.GET.getlist("qualities")  # ✅ ADD: Quality filter
+    selected_qualities = request.GET.getlist("qualities")
+    selected_peeling_types = request.GET.getlist("peeling_types")  # ✅ Peeling type filter
     date_filter = request.GET.get("date_filter")
 
     # ✅ Date range filter
@@ -4807,10 +4808,10 @@ def local_purchase_report(request):
         queryset = queryset.filter(grade__id__in=selected_grades)
     if selected_categories:
         queryset = queryset.filter(item__category__id__in=selected_categories)
-    if selected_species:
-        queryset = queryset.filter(species__id__in=selected_species)
-    if selected_qualities:  # ✅ ADD: Quality filter
+    if selected_qualities:
         queryset = queryset.filter(item_quality__id__in=selected_qualities)
+    if selected_peeling_types:  # ✅ FIXED: Filter by item_type
+        queryset = queryset.filter(item_type__id__in=selected_peeling_types)
     if selected_parties:
         queryset = queryset.filter(purchase__party_name__id__in=selected_parties)
     if party_search:
@@ -4833,14 +4834,14 @@ def local_purchase_report(request):
         except:
             pass
 
-    # ✅ Group & summary - ADDED quality field
+    # ✅ FIXED: Group & summary - Using item_type__name for peeling type
     summary = (
         queryset.values(
             "item__name",
             "item__category__name",
-            "species__name",
             "grade__grade",
-            "item_quality__quality",  # ✅ ADD: Quality field
+            "item_quality__quality",
+            "item_type__name",  # ✅ FIXED: Using item_type instead of peeling_type
             "purchase__party_name__party",
             "purchase__party_name__district",
             "purchase__party_name__state",
@@ -4854,6 +4855,18 @@ def local_purchase_report(request):
         )
         .order_by("purchase__date")
     )
+
+    # ✅ Calculate statistics from queryset
+    from django.db.models import DecimalField
+    stats = queryset.aggregate(
+        total_qty=Sum("quantity"),
+        total_amt=Sum("amount")
+    )
+    
+    total_records = summary.count()
+    total_quantity = stats['total_qty'] or 0
+    total_amount = stats['total_amt'] or 0
+    avg_rate = (total_amount / total_quantity) if total_quantity > 0 else 0
 
     # ✅ Get unique parties for filter dropdown
     parties = LocalParty.objects.filter(
@@ -4880,8 +4893,8 @@ def local_purchase_report(request):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="local_purchase_report.csv"'
         writer = csv.writer(response)
-        # ✅ ADD: Quality column to CSV header
-        writer.writerow(["Date", "Voucher No", "Party", "District", "State", "Item", "Quality", "Grade", "Category", "Species", "Quantity", "Amount", "Avg Rate"])
+        # ✅ FIXED: Peeling Type column in CSV header
+        writer.writerow(["Date", "Voucher No", "Party", "District", "State", "Item", "Quality", "Grade", "Category", "Peeling Type", "Quantity", "Amount", "Avg Rate"])
         for row in summary:
             writer.writerow([
                 row["purchase__date"],
@@ -4890,10 +4903,10 @@ def local_purchase_report(request):
                 row["purchase__party_name__district"] or "N/A",
                 row["purchase__party_name__state"] or "N/A",
                 row["item__name"],
-                row["item_quality__quality"] or "N/A",  # ✅ ADD: Quality data
+                row["item_quality__quality"] or "N/A",
                 row["grade__grade"] or "N/A",
                 row["item__category__name"],
-                row["species__name"] or "N/A",
+                row["item_type__name"] or "N/A",  # ✅ FIXED: Using item_type__name
                 row["total_quantity"],
                 row["total_amount"],
                 round(row["avg_rate"], 2) if row["avg_rate"] else 0,
@@ -4905,8 +4918,8 @@ def local_purchase_report(request):
         workbook = xlsxwriter.Workbook(output, {"in_memory": True})
         worksheet = workbook.add_worksheet("Report")
 
-        # ✅ ADD: Quality column to Excel header
-        headers = ["Date", "Voucher No", "Party", "District", "State", "Item", "Quality", "Grade", "Category", "Species", "Quantity", "Amount", "Avg Rate"]
+        # ✅ FIXED: Peeling Type column in Excel header
+        headers = ["Date", "Voucher No", "Party", "District", "State", "Item", "Quality", "Grade", "Category", "Peeling Type", "Quantity", "Amount", "Avg Rate"]
         for col, header in enumerate(headers):
             worksheet.write(0, col, header)
 
@@ -4917,10 +4930,10 @@ def local_purchase_report(request):
             worksheet.write(row_idx, 3, row["purchase__party_name__district"] or "N/A")
             worksheet.write(row_idx, 4, row["purchase__party_name__state"] or "N/A")
             worksheet.write(row_idx, 5, row["item__name"])
-            worksheet.write(row_idx, 6, row["item_quality__quality"] or "N/A")  # ✅ ADD: Quality data
+            worksheet.write(row_idx, 6, row["item_quality__quality"] or "N/A")
             worksheet.write(row_idx, 7, row["grade__grade"] or "N/A")
             worksheet.write(row_idx, 8, row["item__category__name"])
-            worksheet.write(row_idx, 9, row["species__name"] or "N/A")
+            worksheet.write(row_idx, 9, row["item_type__name"] or "N/A")  # ✅ FIXED: Using item_type__name
             worksheet.write(row_idx, 10, row["total_quantity"])
             worksheet.write(row_idx, 11, row["total_amount"])
             worksheet.write(row_idx, 12, round(row["avg_rate"], 2) if row["avg_rate"] else 0)
@@ -4940,19 +4953,24 @@ def local_purchase_report(request):
             "items": items,
             "grades": grades,
             "categories": categories,
-            "species": species,
             "parties": parties,
-            "qualities": qualities,  # ✅ ADD: Pass qualities to template
+            "qualities": qualities,
+            "peeling_types": peeling_types,  # ✅ Pass peeling types (ItemType) to template
             "selected_items": selected_items,
             "selected_grades": selected_grades,
             "selected_categories": selected_categories,
-            "selected_species": selected_species,
             "selected_parties": selected_parties,
-            "selected_qualities": selected_qualities,  # ✅ ADD: Pass selected qualities
+            "selected_qualities": selected_qualities,
+            "selected_peeling_types": selected_peeling_types,  # ✅ Pass selected peeling types
             "date_filter": date_filter,
             "start_date": start_date,
             "end_date": end_date,
             "party_search": party_search,
+            # ✅ Add statistics to context
+            "total_records": total_records,
+            "total_quantity": total_quantity,
+            "total_amount": total_amount,
+            "avg_rate": avg_rate,
         },
     )
 
@@ -4972,13 +4990,9 @@ def local_purchase_report_print(request):
         id__in=LocalPurchaseItem.objects.values_list('item__category_id', flat=True).distinct()
     ).distinct()
     
-    species = Species.objects.filter(
-        id__in=LocalPurchaseItem.objects.values_list('species_id', flat=True).distinct()
-    ).distinct()
-
-    # ✅ FIXED: Added item_quality to select_related
+    # ✅ FIXED: Added item_quality and item_type to select_related
     queryset = LocalPurchaseItem.objects.select_related(
-        "purchase", "item", "grade", "item__category", "species", "item_quality", "purchase__party_name"
+        "purchase", "item", "grade", "item__category", "item_quality", "item_type", "purchase__party_name"
     )
 
     # Apply the same filters as main view
@@ -4986,8 +5000,8 @@ def local_purchase_report_print(request):
     selected_grades = request.GET.getlist("grades")
     selected_categories = request.GET.getlist("categories")
     selected_parties = request.GET.getlist("parties")
-    selected_species = request.GET.getlist("species")
-    selected_qualities = request.GET.getlist("qualities")  # ✅ ADD: Quality filter
+    selected_qualities = request.GET.getlist("qualities")
+    selected_peeling_types = request.GET.getlist("peeling_types")  # ✅ Peeling type filter
     date_filter = request.GET.get("date_filter")
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
@@ -4999,10 +5013,10 @@ def local_purchase_report_print(request):
         queryset = queryset.filter(grade__id__in=selected_grades)
     if selected_categories:
         queryset = queryset.filter(item__category__id__in=selected_categories)
-    if selected_species:
-        queryset = queryset.filter(species__id__in=selected_species)
-    if selected_qualities:  # ✅ ADD: Quality filter
+    if selected_qualities:
         queryset = queryset.filter(item_quality__id__in=selected_qualities)
+    if selected_peeling_types:  # ✅ FIXED: Filter by item_type
+        queryset = queryset.filter(item_type__id__in=selected_peeling_types)
     if selected_parties:
         queryset = queryset.filter(purchase__party_name__id__in=selected_parties)
     if party_search:
@@ -5023,14 +5037,14 @@ def local_purchase_report_print(request):
         except:
             pass
 
-    # ✅ FIXED: Added quality field to summary
+    # ✅ FIXED: Added item_type__name field to summary
     summary = (
         queryset.values(
             "item__name",
             "item__category__name",
-            "species__name",
             "grade__grade",
-            "item_quality__quality",  # ✅ ADD: Quality field
+            "item_quality__quality",
+            "item_type__name",  # ✅ FIXED: Using item_type instead of peeling_type
             "purchase__party_name__party",
             "purchase__party_name__district",
             "purchase__party_name__state",
@@ -5055,9 +5069,9 @@ def local_purchase_report_print(request):
             "selected_items": selected_items,
             "selected_grades": selected_grades,
             "selected_categories": selected_categories,
-            "selected_species": selected_species,
             "selected_parties": selected_parties,
-            "selected_qualities": selected_qualities,  # ✅ ADD: Pass selected qualities
+            "selected_qualities": selected_qualities,
+            "selected_peeling_types": selected_peeling_types,  # ✅ Pass selected peeling types
             "party_search": party_search,
         },
     )
@@ -5394,27 +5408,30 @@ def peeling_shed_supply_report_print(request):
 
 
 
-# FREEZING REPORT
+# FREEZING REPORT - Fixed with proper grade order_code sorting
 @check_permission('reports_view')
 def freezing_report(request):
-    # Get all master data
-    items = Item.objects.all()
-    grades = ItemGrade.objects.all()
-    categories = ItemCategory.objects.all()
-    species = Species.objects.all()
-    brands = ItemBrand.objects.all()
-    freezing_categories = FreezingCategory.objects.all()
-    processing_centers = ProcessingCenter.objects.all()
-    stores = Store.objects.all()
+    # Get all master data with proper ordering
+    items = Item.objects.all().order_by('name')
+    grades = ItemGrade.objects.all().order_by(
+        F('order_code').asc(nulls_last=True),
+        'grade'
+    )
+    categories = ItemCategory.objects.all().order_by('name')
+    peeling_types = ItemType.objects.all().order_by('name')
+    brands = ItemBrand.objects.all().order_by('name')
+    freezing_categories = FreezingCategory.objects.filter(is_active=True).order_by('name')
+    processing_centers = ProcessingCenter.objects.all().order_by('name')
+    stores = Store.objects.all().order_by('name')
     
-    # Get units and glazes
+    # Get units and glazes with ordering
     try:
-        units = PackingUnit.objects.all()
+        units = PackingUnit.objects.all().order_by('unit_code')
     except:
         units = []
     
     try:
-        glazes = GlazePercentage.objects.all()
+        glazes = GlazePercentage.objects.all().order_by('percentage')
     except:
         glazes = []
 
@@ -5422,7 +5439,7 @@ def freezing_report(request):
     selected_items = request.GET.getlist("items")
     selected_grades = request.GET.getlist("grades")
     selected_categories = request.GET.getlist("categories")
-    selected_species = request.GET.getlist("species")
+    selected_peeling_types = request.GET.getlist("peeling_types")
     selected_brands = request.GET.getlist("brands")
     selected_freezing_categories = request.GET.getlist("freezing_categories")
     selected_processing_centers = request.GET.getlist("processing_centers")
@@ -5453,9 +5470,9 @@ def freezing_report(request):
             if hasattr(test_spot, 'grade'):
                 spot_queryset = spot_queryset.select_related("grade")
                 local_queryset = local_queryset.select_related("grade")
-            if hasattr(test_spot, 'species'):
-                spot_queryset = spot_queryset.select_related("species")
-                local_queryset = local_queryset.select_related("species")
+            if hasattr(test_spot, 'peeling_type'):
+                spot_queryset = spot_queryset.select_related("peeling_type")
+                local_queryset = local_queryset.select_related("peeling_type")
             if hasattr(test_spot, 'brand'):
                 spot_queryset = spot_queryset.select_related("brand")
                 local_queryset = local_queryset.select_related("brand")
@@ -5486,8 +5503,8 @@ def freezing_report(request):
         if test_item:
             if hasattr(test_item, 'grade') and selected_grades:
                 queryset = queryset.filter(grade__id__in=selected_grades)
-            if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species__id__in=selected_species)
+            if hasattr(test_item, 'peeling_type') and selected_peeling_types:
+                queryset = queryset.filter(peeling_type__id__in=selected_peeling_types)
             if hasattr(test_item, 'brand') and selected_brands:
                 queryset = queryset.filter(brand__id__in=selected_brands)
             if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
@@ -5547,6 +5564,18 @@ def freezing_report(request):
     spot_queryset = apply_filters(spot_queryset)
     local_queryset = apply_filters(local_queryset)
 
+    # CRITICAL: Order by grade order_code, then date (at database level)
+    spot_queryset = spot_queryset.order_by(
+        F('grade__order_code').asc(nulls_last=True),
+        'freezing_entry__freezing_date',
+        'id'
+    )
+    local_queryset = local_queryset.order_by(
+        F('grade__order_code').asc(nulls_last=True),
+        'freezing_entry__freezing_date',
+        'id'
+    )
+
     # Process data
     all_data = []
 
@@ -5562,8 +5591,9 @@ def freezing_report(request):
                 'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
                 'entry_type': 'spot',
                 'item_count': 1,
-                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'peeling_type__name': item.peeling_type.name if hasattr(item, 'peeling_type') and item.peeling_type else None,
                 'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'grade__order_code': item.grade.order_code if hasattr(item, 'grade') and item.grade else None,
                 'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
                 'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
                 'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
@@ -5593,8 +5623,9 @@ def freezing_report(request):
                 'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
                 'entry_type': 'local',
                 'item_count': 1,
-                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'peeling_type__name': item.peeling_type.name if hasattr(item, 'peeling_type') and item.peeling_type else None,
                 'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'grade__order_code': item.grade.order_code if hasattr(item, 'grade') and item.grade else None,
                 'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
                 'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
                 'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
@@ -5627,8 +5658,8 @@ def freezing_report(request):
         elif section_by == "month":
             date_obj = item.get("freezing_entry__freezing_date")
             section_key = f"{date_obj.strftime('%B %Y')}" if date_obj else "No Date"
-        elif section_by == "species":
-            section_key = item.get("item__species__name") or "No Species"
+        elif section_by == "peeling_type":
+            section_key = item.get("peeling_type__name") or "No Peeling Type"
         elif section_by == "grade":
             section_key = item.get("grade__grade") or "No Grade"
         elif section_by == "item":
@@ -5670,7 +5701,31 @@ def freezing_report(request):
         totals['count'] += 1
         totals['item_count'] += int(item.get('item_count') or 0)
 
-    sectioned_data = dict(sorted(sectioned_data.items()))
+    # Sort sections and items by grade order_code
+    if section_by == "grade":
+        # Create grade order mapping from database
+        grade_order_map = {g.grade: (g.order_code or 999999, g.grade) for g in grades}
+        
+        # Sort sections by order_code
+        sectioned_data = dict(sorted(
+            sectioned_data.items(),
+            key=lambda x: grade_order_map.get(x[0], (999999, x[0]))
+        ))
+        
+        # Items within sections are already sorted from database query
+    else:
+        # For non-grade sections, sort by section name
+        sectioned_data = dict(sorted(sectioned_data.items()))
+        
+        # But still sort items within each section by grade order_code
+        for section_key in sectioned_data:
+            sectioned_data[section_key]['items'].sort(
+                key=lambda x: (
+                    x.get('grade__order_code') or 999999,
+                    x.get('freezing_entry__freezing_date') or datetime.min.date(),
+                    x.get('id') or 0
+                )
+            )
 
     # Calculate grand totals
     grand_totals = {
@@ -5712,7 +5767,7 @@ def freezing_report(request):
             "items": items,
             "grades": grades,
             "categories": categories,
-            "species": species,
+            "peeling_types": peeling_types,
             "brands": brands,
             "freezing_categories": freezing_categories,
             "processing_centers": processing_centers,
@@ -5723,7 +5778,7 @@ def freezing_report(request):
             "selected_items": selected_items,
             "selected_grades": selected_grades,
             "selected_categories": selected_categories,
-            "selected_species": selected_species,
+            "selected_peeling_types": selected_peeling_types,
             "selected_brands": selected_brands,
             "selected_freezing_categories": selected_freezing_categories,
             "selected_processing_centers": selected_processing_centers,
@@ -5742,13 +5797,13 @@ def freezing_report(request):
 
 @check_permission('reports_export')
 def freezing_report_print(request):
-    """Separate view specifically for print format"""
+    """Separate view specifically for print format with grade order_code sorting"""
     
     # Get filter parameters
     selected_items = request.GET.getlist("items")
     selected_grades = request.GET.getlist("grades")
     selected_categories = request.GET.getlist("categories")
-    selected_species = request.GET.getlist("species")
+    selected_peeling_types = request.GET.getlist("peeling_types")
     selected_brands = request.GET.getlist("brands")
     selected_freezing_categories = request.GET.getlist("freezing_categories")
     selected_processing_centers = request.GET.getlist("processing_centers")
@@ -5763,6 +5818,12 @@ def freezing_report_print(request):
     voucher_search = request.GET.get("voucher_search", "").strip()
     entry_type = request.GET.get("entry_type", "all")
     section_by = request.GET.get("section_by", "category")
+
+    # Get grades for sorting reference
+    grades = ItemGrade.objects.all().order_by(
+        F('order_code').asc(nulls_last=True),
+        'grade'
+    )
 
     # Start with minimal select_related
     spot_queryset = FreezingEntrySpotItem.objects.select_related(
@@ -5779,9 +5840,9 @@ def freezing_report_print(request):
             if hasattr(test_spot, 'grade'):
                 spot_queryset = spot_queryset.select_related("grade")
                 local_queryset = local_queryset.select_related("grade")
-            if hasattr(test_spot, 'species'):
-                spot_queryset = spot_queryset.select_related("species")
-                local_queryset = local_queryset.select_related("species")
+            if hasattr(test_spot, 'peeling_type'):
+                spot_queryset = spot_queryset.select_related("peeling_type")
+                local_queryset = local_queryset.select_related("peeling_type")
             if hasattr(test_spot, 'brand'):
                 spot_queryset = spot_queryset.select_related("brand")
                 local_queryset = local_queryset.select_related("brand")
@@ -5794,10 +5855,16 @@ def freezing_report_print(request):
             if hasattr(test_spot, 'store'):
                 spot_queryset = spot_queryset.select_related("store")
                 local_queryset = local_queryset.select_related("store")
+            if hasattr(test_spot, 'unit'):
+                spot_queryset = spot_queryset.select_related("unit")
+                local_queryset = local_queryset.select_related("unit")
+            if hasattr(test_spot, 'glaze'):
+                spot_queryset = spot_queryset.select_related("glaze")
+                local_queryset = local_queryset.select_related("glaze")
     except:
         pass
 
-    # Apply filters (same function as main view)
+    # Apply filters
     def apply_filters(queryset):
         if selected_items:
             queryset = queryset.filter(item__id__in=selected_items)
@@ -5806,8 +5873,8 @@ def freezing_report_print(request):
         if test_item:
             if hasattr(test_item, 'grade') and selected_grades:
                 queryset = queryset.filter(grade__id__in=selected_grades)
-            if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species__id__in=selected_species)
+            if hasattr(test_item, 'peeling_type') and selected_peeling_types:
+                queryset = queryset.filter(peeling_type__id__in=selected_peeling_types)
             if hasattr(test_item, 'brand') and selected_brands:
                 queryset = queryset.filter(brand__id__in=selected_brands)
             if hasattr(test_item, 'freezing_category') and selected_freezing_categories:
@@ -5867,7 +5934,19 @@ def freezing_report_print(request):
     spot_queryset = apply_filters(spot_queryset)
     local_queryset = apply_filters(local_queryset)
 
-    # Process data (same as main view)
+    # CRITICAL: Order by grade order_code at database level
+    spot_queryset = spot_queryset.order_by(
+        F('grade__order_code').asc(nulls_last=True),
+        'freezing_entry__freezing_date',
+        'id'
+    )
+    local_queryset = local_queryset.order_by(
+        F('grade__order_code').asc(nulls_last=True),
+        'freezing_entry__freezing_date',
+        'id'
+    )
+
+    # Process data
     all_data = []
 
     if entry_type in ['all', 'spot']:
@@ -5882,12 +5961,16 @@ def freezing_report_print(request):
                 'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
                 'entry_type': 'spot',
                 'item_count': 1,
-                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'peeling_type__name': item.peeling_type.name if hasattr(item, 'peeling_type') and item.peeling_type else None,
                 'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'grade__order_code': item.grade.order_code if hasattr(item, 'grade') and item.grade else None,
                 'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
                 'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
                 'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
                 'store__name': item.store.name if hasattr(item, 'store') and item.store else None,
+                'unit__description': item.unit.description if hasattr(item, 'unit') and item.unit else None,
+                'unit__unit_code': item.unit.unit_code if hasattr(item, 'unit') and item.unit else None,
+                'glaze__percentage': item.glaze.percentage if hasattr(item, 'glaze') and item.glaze else None,
                 'total_kg': float(getattr(item, 'kg', 0) or 0),
                 'total_slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
                 'total_c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
@@ -5910,12 +5993,16 @@ def freezing_report_print(request):
                 'freezing_entry__freezing_status': item.freezing_entry.freezing_status if item.freezing_entry else None,
                 'entry_type': 'local',
                 'item_count': 1,
-                'item__species__name': item.species.name if hasattr(item, 'species') and item.species else None,
+                'peeling_type__name': item.peeling_type.name if hasattr(item, 'peeling_type') and item.peeling_type else None,
                 'grade__grade': item.grade.grade if hasattr(item, 'grade') and item.grade else None,
+                'grade__order_code': item.grade.order_code if hasattr(item, 'grade') and item.grade else None,
                 'brand__name': item.brand.name if hasattr(item, 'brand') and item.brand else None,
                 'freezing_category__name': item.freezing_category.name if hasattr(item, 'freezing_category') and item.freezing_category else None,
                 'processing_center__name': item.processing_center.name if hasattr(item, 'processing_center') and item.processing_center else None,
                 'store__name': item.store.name if hasattr(item, 'store') and item.store else None,
+                'unit__description': item.unit.description if hasattr(item, 'unit') and item.unit else None,
+                'unit__unit_code': item.unit.unit_code if hasattr(item, 'unit') and item.unit else None,
+                'glaze__percentage': item.glaze.percentage if hasattr(item, 'glaze') and item.glaze else None,
                 'total_kg': float(getattr(item, 'kg', 0) or 0),
                 'total_slab_quantity': float(getattr(item, 'slab_quantity', 0) or 0),
                 'total_c_s_quantity': float(getattr(item, 'c_s_quantity', 0) or 0),
@@ -5926,7 +6013,7 @@ def freezing_report_print(request):
             }
             all_data.append(data_row)
 
-    # Sectioning logic (same as main view)
+    # Sectioning logic
     sectioned_data = {}
     
     for item in all_data:
@@ -5941,12 +6028,17 @@ def freezing_report_print(request):
         elif section_by == "month":
             date_obj = item.get("freezing_entry__freezing_date")
             section_key = f"{date_obj.strftime('%B %Y')}" if date_obj else "No Date"
-        elif section_by == "species":
-            section_key = item.get("item__species__name") or "No Species"
+        elif section_by == "peeling_type":
+            section_key = item.get("peeling_type__name") or "No Peeling Type"
         elif section_by == "grade":
             section_key = item.get("grade__grade") or "No Grade"
         elif section_by == "item":
             section_key = item.get("item__name") or "No Item"
+        elif section_by == "unit":
+            section_key = item.get("unit__description") or "No Unit"
+        elif section_by == "glaze":
+            glaze_pct = item.get("glaze__percentage")
+            section_key = f"{glaze_pct}%" if glaze_pct is not None else "No Glaze"
         elif section_by == "entry_type":
             section_key = item.get("entry_type", "Unknown").title()
         elif section_by == "status":
@@ -5979,7 +6071,29 @@ def freezing_report_print(request):
         totals['count'] += 1
         totals['item_count'] += int(item.get('item_count') or 0)
 
-    sectioned_data = dict(sorted(sectioned_data.items()))
+    # Sort sections and items by grade order_code
+    if section_by == "grade":
+        # Create grade order mapping
+        grade_order_map = {g.grade: (g.order_code or 999999, g.grade) for g in grades}
+        
+        # Sort sections by order_code
+        sectioned_data = dict(sorted(
+            sectioned_data.items(),
+            key=lambda x: grade_order_map.get(x[0], (999999, x[0]))
+        ))
+    else:
+        # Sort sections alphabetically
+        sectioned_data = dict(sorted(sectioned_data.items()))
+        
+        # Sort items within each section by grade order_code
+        for section_key in sectioned_data:
+            sectioned_data[section_key]['items'].sort(
+                key=lambda x: (
+                    x.get('grade__order_code') or 999999,
+                    x.get('freezing_entry__freezing_date') or datetime.min.date(),
+                    x.get('id') or 0
+                )
+            )
 
     # Calculate grand totals
     grand_totals = {
@@ -6016,8 +6130,7 @@ def freezing_report_print(request):
             "section_by": section_by,
             "date_filter": date_filter,
         },
-    ) 
-
+    )
 
 
 # Tenant Freezing Entry Views
@@ -8378,7 +8491,6 @@ def process_stock_transfer(transfer, transfer_item):
         'freezing_category': transfer_item.freezing_category,
         'unit': transfer_item.unit,
         'glaze': transfer_item.glaze,
-        'species': transfer_item.species,
         'item_grade': transfer_item.item_grade,
     }
     
@@ -8445,7 +8557,7 @@ def transfer_detail(request, pk):
     """View transfer details"""
     transfer = get_object_or_404(StoreTransfer, pk=pk)
     items = StoreTransferItem.objects.filter(transfer=transfer).select_related(
-        'item', 'brand', 'item_quality', 'species', 'item_grade', 'freezing_category'
+        'item', 'brand', 'item_quality', 'item_grade', 'freezing_category'
     )
     
     context = {
@@ -9045,13 +9157,13 @@ def stock_quick_info(request, pk):
 
 
 
-# STOCK REPORT
 
+# STOCK REPORT
 @check_permission('reports_view')
 def stock_report(request):
     """Main stock report view with filters and sectioning"""
     
-    # Get all master data
+    # Get all master data with proper ordering
     items = Item.objects.all()
     categories = ItemCategory.objects.all()
     stores = Store.objects.all()
@@ -9069,12 +9181,16 @@ def stock_report(request):
         glazes = []
         
     try:
-        species = Species.objects.all()
+        peeling_types = ItemType.objects.all()
     except:
-        species = []
+        peeling_types = []
         
     try:
-        item_grades = ItemGrade.objects.all()
+        # Order item_grades by order_code
+        item_grades = ItemGrade.objects.all().order_by(
+            F('order_code').asc(nulls_last=True),
+            'grade'
+        )
     except:
         item_grades = []
         
@@ -9084,7 +9200,7 @@ def stock_report(request):
         item_qualities = []
         
     try:
-        freezing_categories = FreezingCategory.objects.all()
+        freezing_categories = FreezingCategory.objects.filter(is_active=True)
     except:
         freezing_categories = []
 
@@ -9095,7 +9211,7 @@ def stock_report(request):
     selected_brands = request.GET.getlist("brands")
     selected_units = request.GET.getlist("units")
     selected_glazes = request.GET.getlist("glazes")
-    selected_species = request.GET.getlist("species")
+    selected_peeling_types = request.GET.getlist("peeling_types")
     selected_item_grades = request.GET.getlist("item_grades")
     selected_item_qualities = request.GET.getlist("item_qualities")
     selected_freezing_categories = request.GET.getlist("freezing_categories")
@@ -9121,8 +9237,8 @@ def stock_report(request):
                 stock_queryset = stock_queryset.select_related("unit")
             if hasattr(test_stock, 'glaze'):
                 stock_queryset = stock_queryset.select_related("glaze")
-            if hasattr(test_stock, 'species'):
-                stock_queryset = stock_queryset.select_related("species")
+            if hasattr(test_stock, 'peeling_type'):
+                stock_queryset = stock_queryset.select_related("peeling_type")
             if hasattr(test_stock, 'item_grade'):
                 stock_queryset = stock_queryset.select_related("item_grade")
     except:
@@ -9149,8 +9265,8 @@ def stock_report(request):
                 queryset = queryset.filter(unit__id__in=selected_units)
             if hasattr(test_item, 'glaze') and selected_glazes:
                 queryset = queryset.filter(glaze__id__in=selected_glazes)
-            if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species__id__in=selected_species)
+            if hasattr(test_item, 'peeling_type') and selected_peeling_types:
+                queryset = queryset.filter(peeling_type__id__in=selected_peeling_types)
             if hasattr(test_item, 'item_grade') and selected_item_grades:
                 queryset = queryset.filter(item_grade__id__in=selected_item_grades)
             if hasattr(test_item, 'item_quality') and selected_item_qualities:
@@ -9183,6 +9299,12 @@ def stock_report(request):
 
     stock_queryset = apply_filters(stock_queryset)
 
+    # CRITICAL: Order by grade order_code at database level
+    stock_queryset = stock_queryset.order_by(
+        F('item_grade__order_code').asc(nulls_last=True),
+        'id'
+    )
+
     # Process data
     all_data = []
 
@@ -9194,8 +9316,9 @@ def stock_report(request):
             'store__name': stock.store.name if stock.store else None,
             'brand__name': stock.brand.name if stock.brand else None,
             'stock_count': 1,
-            'species__name': stock.species.name if hasattr(stock, 'species') and stock.species else None,
+            'peeling_type__name': stock.peeling_type.name if hasattr(stock, 'peeling_type') and stock.peeling_type else None,
             'item_grade__grade': stock.item_grade.grade if hasattr(stock, 'item_grade') and stock.item_grade else None,
+            'item_grade__order_code': stock.item_grade.order_code if hasattr(stock, 'item_grade') and stock.item_grade else None,
             'item_quality__quality': stock.item_quality.quality if hasattr(stock, 'item_quality') and stock.item_quality else None,
             'freezing_category__name': stock.freezing_category.name if hasattr(stock, 'freezing_category') and stock.freezing_category else None,
             'unit__description': stock.unit.description if hasattr(stock, 'unit') and stock.unit else None,
@@ -9231,8 +9354,8 @@ def stock_report(request):
             section_key = stock.get("brand__name") or "No Brand"
         elif section_by == "store":
             section_key = stock.get("store__name") or "No Store"
-        elif section_by == "species":
-            section_key = stock.get("species__name") or "No Species"
+        elif section_by == "peeling_type":
+            section_key = stock.get("peeling_type__name") or "No Peeling Type"
         elif section_by == "item_grade":
             section_key = stock.get("item_grade__grade") or "No Grade"
         elif section_by == "item":
@@ -9282,7 +9405,30 @@ def stock_report(request):
         elif stock.get('stock_status') == 'Out of Stock':
             totals['zero_stock_count'] += 1
 
-    sectioned_data = dict(sorted(sectioned_data.items()))
+    # Sort sections and items by grade order_code
+    if section_by == "item_grade":
+        # Create grade order mapping from database
+        grade_order_map = {g.grade: (g.order_code or 999999, g.grade) for g in item_grades}
+        
+        # Sort sections by order_code
+        sectioned_data = dict(sorted(
+            sectioned_data.items(),
+            key=lambda x: grade_order_map.get(x[0], (999999, x[0]))
+        ))
+        
+        # Items within sections are already sorted from database query
+    else:
+        # For non-grade sections, sort by section name
+        sectioned_data = dict(sorted(sectioned_data.items()))
+        
+        # But still sort items within each section by grade order_code
+        for section_key in sectioned_data:
+            sectioned_data[section_key]['items'].sort(
+                key=lambda x: (
+                    x.get('item_grade__order_code') or 999999,
+                    x.get('id') or 0
+                )
+            )
 
     # Calculate grand totals
     grand_totals = {
@@ -9324,7 +9470,7 @@ def stock_report(request):
             "brands": brands,
             "units": units,
             "glazes": glazes,
-            "species": species,
+            "peeling_types": peeling_types,
             "item_grades": item_grades,
             "item_qualities": item_qualities,
             "freezing_categories": freezing_categories,
@@ -9334,7 +9480,7 @@ def stock_report(request):
             "selected_brands": selected_brands,
             "selected_units": selected_units,
             "selected_glazes": selected_glazes,
-            "selected_species": selected_species,
+            "selected_peeling_types": selected_peeling_types,
             "selected_item_grades": selected_item_grades,
             "selected_item_qualities": selected_item_qualities,
             "selected_freezing_categories": selected_freezing_categories,
@@ -9350,6 +9496,15 @@ def stock_report(request):
 def stock_report_print(request):
     """Separate view specifically for print format"""
     
+    # Get item_grades for ordering
+    try:
+        item_grades = ItemGrade.objects.all().order_by(
+            F('order_code').asc(nulls_last=True),
+            'grade'
+        )
+    except:
+        item_grades = []
+    
     # Get filter parameters
     selected_items = request.GET.getlist("items")
     selected_categories = request.GET.getlist("categories")
@@ -9357,7 +9512,7 @@ def stock_report_print(request):
     selected_brands = request.GET.getlist("brands")
     selected_units = request.GET.getlist("units")
     selected_glazes = request.GET.getlist("glazes")
-    selected_species = request.GET.getlist("species")
+    selected_peeling_types = request.GET.getlist("peeling_types")
     selected_item_grades = request.GET.getlist("item_grades")
     selected_item_qualities = request.GET.getlist("item_qualities")
     selected_freezing_categories = request.GET.getlist("freezing_categories")
@@ -9383,8 +9538,8 @@ def stock_report_print(request):
                 stock_queryset = stock_queryset.select_related("unit")
             if hasattr(test_stock, 'glaze'):
                 stock_queryset = stock_queryset.select_related("glaze")
-            if hasattr(test_stock, 'species'):
-                stock_queryset = stock_queryset.select_related("species")
+            if hasattr(test_stock, 'peeling_type'):
+                stock_queryset = stock_queryset.select_related("peeling_type")
             if hasattr(test_stock, 'item_grade'):
                 stock_queryset = stock_queryset.select_related("item_grade")
     except:
@@ -9411,8 +9566,8 @@ def stock_report_print(request):
                 queryset = queryset.filter(unit__id__in=selected_units)
             if hasattr(test_item, 'glaze') and selected_glazes:
                 queryset = queryset.filter(glaze__id__in=selected_glazes)
-            if hasattr(test_item, 'species') and selected_species:
-                queryset = queryset.filter(species__id__in=selected_species)
+            if hasattr(test_item, 'peeling_type') and selected_peeling_types:
+                queryset = queryset.filter(peeling_type__id__in=selected_peeling_types)
             if hasattr(test_item, 'item_grade') and selected_item_grades:
                 queryset = queryset.filter(item_grade__id__in=selected_item_grades)
             if hasattr(test_item, 'item_quality') and selected_item_qualities:
@@ -9445,6 +9600,12 @@ def stock_report_print(request):
 
     stock_queryset = apply_filters(stock_queryset)
 
+    # CRITICAL: Order by grade order_code at database level
+    stock_queryset = stock_queryset.order_by(
+        F('item_grade__order_code').asc(nulls_last=True),
+        'id'
+    )
+
     # Process data (same as main view)
     all_data = []
 
@@ -9456,8 +9617,9 @@ def stock_report_print(request):
             'store__name': stock.store.name if stock.store else None,
             'brand__name': stock.brand.name if stock.brand else None,
             'stock_count': 1,
-            'species__name': stock.species.name if hasattr(stock, 'species') and stock.species else None,
+            'peeling_type__name': stock.peeling_type.name if hasattr(stock, 'peeling_type') and stock.peeling_type else None,
             'item_grade__grade': stock.item_grade.grade if hasattr(stock, 'item_grade') and stock.item_grade else None,
+            'item_grade__order_code': stock.item_grade.order_code if hasattr(stock, 'item_grade') and stock.item_grade else None,
             'item_quality__quality': stock.item_quality.quality if hasattr(stock, 'item_quality') and stock.item_quality else None,
             'freezing_category__name': stock.freezing_category.name if hasattr(stock, 'freezing_category') and stock.freezing_category else None,
             'unit__description': stock.unit.description if hasattr(stock, 'unit') and stock.unit else None,
@@ -9493,8 +9655,8 @@ def stock_report_print(request):
             section_key = stock.get("brand__name") or "No Brand"
         elif section_by == "store":
             section_key = stock.get("store__name") or "No Store"
-        elif section_by == "species":
-            section_key = stock.get("species__name") or "No Species"
+        elif section_by == "peeling_type":
+            section_key = stock.get("peeling_type__name") or "No Peeling Type"
         elif section_by == "item_grade":
             section_key = stock.get("item_grade__grade") or "No Grade"
         elif section_by == "item":
@@ -9544,7 +9706,30 @@ def stock_report_print(request):
         elif stock.get('stock_status') == 'Out of Stock':
             totals['zero_stock_count'] += 1
 
-    sectioned_data = dict(sorted(sectioned_data.items()))
+    # Sort sections and items by grade order_code
+    if section_by == "item_grade":
+        # Create grade order mapping from database
+        grade_order_map = {g.grade: (g.order_code or 999999, g.grade) for g in item_grades}
+        
+        # Sort sections by order_code
+        sectioned_data = dict(sorted(
+            sectioned_data.items(),
+            key=lambda x: grade_order_map.get(x[0], (999999, x[0]))
+        ))
+        
+        # Items within sections are already sorted from database query
+    else:
+        # For non-grade sections, sort by section name
+        sectioned_data = dict(sorted(sectioned_data.items()))
+        
+        # But still sort items within each section by grade order_code
+        for section_key in sectioned_data:
+            sectioned_data[section_key]['items'].sort(
+                key=lambda x: (
+                    x.get('item_grade__order_code') or 999999,
+                    x.get('id') or 0
+                )
+            )
 
     # Calculate grand totals
     grand_totals = {
@@ -9627,7 +9812,7 @@ def stock_report_amt(request):
         item_qualities = []
         
     try:
-        freezing_categories = FreezingCategory.objects.all()
+        freezing_categories = FreezingCategory.objects.filter(is_active=True)
     except NameError:
         freezing_categories = []
 

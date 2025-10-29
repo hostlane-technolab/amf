@@ -385,13 +385,13 @@
                 <thead>
                     <tr>
                         <th>S.NO</th>
-                        <th>QUALITY</th>
-                        <th>BRAND</th>
                         <th>STORE</th>
-                        <th>SPECIES</th>
-                        <th>GRADE</th>
+                        <th>ITEM</th>
                         <th>UNIT</th>
                         <th>GLAZE</th>
+                        <th>BRAND</th>
+                        <th>CATEGORY</th>
+                        <th>GRADE</th>
                         <th>CS QTY</th>
                         <th>KG QTY</th>
                         <th>STATUS</th>
@@ -401,13 +401,13 @@
                     {% for item in section_data.items %}
                     <tr>
                         <td class="center-col">{{ forloop.counter }}</td>
-                        <td>{{ item.item_quality__quality|default:"N/A"|truncatechars:15 }}</td>
-                        <td>{{ item.brand__name|default:"N/A"|truncatechars:12 }}</td>
-                        <td>{{ item.store__name|default:"N/A"|truncatechars:12 }}</td>
-                        <td>{{ item.species__name|default:"N/A"|truncatechars:12 }}</td>
-                        <td class="center-col">{{ item.item_grade__grade|default:"N/A" }}</td>
+                        <td class="center-col">{{ item.store__name|default:"N/A"|truncatechars:12 }}</td>
+                        <td class="center-col">{{ item.item_quality__quality|default:"N/A"|truncatechars:15 }}</td>
                         <td class="center-col">{{ item.unit__unit_code|default:"N/A" }}</td>
                         <td class="center-col">{{ item.glaze__percentage|default:"0" }}%</td>
+                        <td class="center-col">{{ item.brand__name|default:"N/A"|truncatechars:12 }}</td>
+                        <td class="center-col">{{ item.freezing_category__name|default:"N/A"|truncatechars:12 }}</td>
+                        <td class="center-col">{{ item.peeling_type__name|default:"N/A"|truncatechars:12 }} - {{ item.item_grade__grade|default:"N/A" }}</td>
                         <td class="number-col">{{ item.total_cs_quantity|floatformat:2 }}</td>
                         <td class="number-col">{{ item.total_kg_quantity|floatformat:2 }}</td>
                         <td class="center-col">

@@ -226,7 +226,7 @@ class PurchasingSupervisor(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.name} - {self.mobile}"
+        return f"{self.name}"
 
 
 
@@ -280,6 +280,7 @@ class ItemGrade(BaseModel):
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     species = models.ForeignKey(Species, on_delete=models.CASCADE, null=True, blank=True)
     grade = models.CharField(max_length=100)
+    order_code = models.PositiveIntegerField(null=True, blank=True)
     date = models.DateField(auto_created=True, auto_now=True) 
 
     def __str__(self):

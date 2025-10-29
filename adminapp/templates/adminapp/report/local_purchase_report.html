@@ -839,15 +839,15 @@
                                 </div>
                             </div>
     
-                            <!-- Add Species Filter -->
+
                             <div class="filter-section">
-                                <label style="font-size: 1.1rem !important;">Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
-                                <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
-                                <div class="options-container" id="speciesContainer">
-                                    {% for s in species %}
+                                <label style="font-size: 1.1rem !important;">Peeling Type: <span id="peelingTypeCount" class="selected-count" style="display: none;">0</span></label>
+                                <input type="text" class="search-box" placeholder="Search peeling type..." id="peelingTypeSearch">
+                                <div class="options-container" id="peelingTypeContainer">
+                                    {% for pt in peeling_types %}
                                         <div class="option-item">
-                                            <input type="checkbox" name="species" value="{{ s.id }}" id="species_{{ s.id }}" {% if s.id|stringformat:"s" in selected_species %}checked{% endif %}>
-                                            <label for="species_{{ s.id }}">{{ s.name }}</label>
+                                            <input type="checkbox" name="peeling_types" value="{{ pt.id }}" id="peeling_type_{{ pt.id }}" {% if pt.id|stringformat:"s" in selected_peeling_types %}checked{% endif %}>
+                                            <label for="peeling_type_{{ pt.id }}">{{ pt.name }}</label>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -894,22 +894,22 @@
                 <div class="stats-grid">
                     <div class="stat-item">
                         <div class="stat-label">Total Records</div>
-                        <div class="stat-value" id="totalRecords">{{ summary|length }}</div>
+                        <div class="stat-value">{{ total_records }}</div>
                         <div style="font-size: 1rem;" class="stat-change positive">Active</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-label">Total Quantity</div>
-                        <div class="stat-value" id="totalQuantity">0</div>
+                        <div class="stat-value">{{ total_quantity|floatformat:2 }}</div>
                         <div style="font-size: 1rem;" class="stat-change">Units</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-label">Total Amount</div>
-                        <div class="stat-value" id="totalAmount">₹0.00</div>
+                        <div class="stat-value">₹{{ total_amount|floatformat:2 }}</div>
                         <div style="font-size: 1rem;" class="stat-change">Revenue</div>
                     </div>
                     <div class="stat-item">
                         <div class="stat-label">Average Rate</div>
-                        <div class="stat-value" id="avgRate">₹0.00</div>
+                        <div class="stat-value">₹{{ avg_rate|floatformat:2 }}</div>
                         <div style="font-size: 1rem;" class="stat-change">Per Unit</div>
                     </div>
                 </div>
@@ -941,7 +941,7 @@
                                 <th>Item Sub</th>
                                 <th>Grade</th>
 
-                                <th>Species</th>
+                                <th>Peeling Type</th>
                                 <th>Total Quantity</th>
                                 <th>Total Amount</th>
                                 <th>Average Rate</th>
@@ -955,8 +955,7 @@
                                 <td>{{ row.purchase__party_name__party}}</td>
                                 <td>{{ row.item_quality__quality|default:"No Quality" }}</td>
                                 <td>{{ row.grade__grade|default:"N/A" }}</td>
-
-                                <td>{{ row.species__name|default:"N/A" }}</td>
+                                <td>{{ row.item_type__name|default:"N/A" }}</td>
                                 <td>{{ row.total_quantity }}</td>
                                 <td>₹{{ row.total_amount|floatformat:2 }}</td>
                                 <td>₹{{ row.avg_rate|floatformat:2 }}</td>
@@ -1123,7 +1122,7 @@
             setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
             setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
             setupSearch('gradesSearch', 'gradesContainer', 'gradesCount');
-            setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
+            setupSearch('peelingTypeSearch', 'peelingTypeContainer', 'peelingTypeCount');
 
             // Update export links initially
             updateExportLinks();

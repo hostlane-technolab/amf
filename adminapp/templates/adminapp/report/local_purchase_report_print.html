@@ -471,7 +471,7 @@
                 <th>Voucher No</th>
                 <th>Party</th>
                 <th>Item Sub</th>
-                <th>Species</th>
+                <th>Peeling Type</th>
                 <th>Grade</th>
                 <th>Quantity</th>
                 <th>Amount</th>
@@ -486,10 +486,10 @@
                 <td class="party-cell">{{ row.purchase__party_name__party }}</td>
                 <td class="item-cell">{{ row.item_quality__quality }}</td>
                 <td>
-                    {% if row.species__name %}
-                        <span class="species-cell">{{ row.species__name }}</span>
+                    {% if row.item_type__name %}
+                        <span class="species-cell">{{ row.item_type__name }}</span>
                     {% else %}
-                        N/A
+                       
                     {% endif %}
                 </td>
                 <td>

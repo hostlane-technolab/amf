@@ -335,8 +335,8 @@
                     {{ section_name }}
                 {% elif section_by == 'brand' %}
                     BRAND: {{ section_name|upper }}
-                {% elif section_by == 'species' %}
-                    SPECIES: {{ section_name|upper }}
+                {% elif section_by == 'peeling type' %}
+                    PEELING TYPE: {{ section_name|upper }}
                 {% elif section_by == 'grade' %}
                     GRADE: {{ section_name|upper }}
                 {% elif section_by == 'item' %}
@@ -364,12 +364,17 @@
                     <tr>
                         <th>S.NO</th>
                         <th>DATE</th>
+                        <th>TYPE</th>
                         <th>VOUCHER</th>
                         <th>ITEM SUB</th>
+                        {% if units %}
+                        <th>UNIT</th>
+                        {% endif %}
+                        {% if glazes %}
+                        <th>GLAZE</th>
+                        {% endif %}
                         <th>BRAND</th>
                         <th>GRADE</th>
-                        <th>SPECIES</th>
-                        <th>TYPE</th>
                         <th>QTY (KG)</th>
                         <th>USD AMT</th>
                         <th>INR AMT</th>
@@ -380,21 +385,32 @@
                     <tr>
                         <td class="center-col">{{ forloop.counter }}</td>
                         <td class="center-col">{{ item.freezing_entry__freezing_date|date:"d/m/Y" }}</td>
-                        <td class="center-col">{{ item.freezing_entry__voucher_number|default:"N/A" }}</td>
-                        <td>{{ item.item_quality__quality|default:"N/A"|truncatechars:20 }}</td>
-                        <td>{{ item.brand__name|default:"N/A"|truncatechars:12 }}</td>
-                        <td class="center-col">{{ item.grade__grade|default:"N/A" }}</td>
-                        <td>{{ item.item__species__name|default:"N/A"|truncatechars:12 }}</td>
                         <td class="center-col">{{ item.entry_type|upper }}</td>
+                        <td class="center-col">{{ item.freezing_entry__voucher_number|default:"N/A" }}</td>
+                        <td class="center-col">{{ item.item_quality__quality|default:"N/A"|truncatechars:20 }}</td>
+                        {% if units %}
+                        <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
+                        {% endif %}
+                        {% if glazes %}
+                        <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}N/A{% endif %}</td>
+                        {% endif %}
+                        <td class="center-col">{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td class="center-col">{{ item.peeling_type__name|default:"N/A"|truncatechars:15 }} - {{ item.grade__grade|default:"N/A" }}</td>
                         <td class="number-col">{{ item.total_kg|floatformat:2 }}</td>
-                        <td class="number-col">${{ item.total_usd_amount|default:0|floatformat:2 }}</td>
-                        <td class="number-col">₹{{ item.total_inr_amount|default:0|floatformat:2 }}</td>
+                        <td class="number-col">${{ item.total_usd_amount|floatformat:2 }}</td>
+                        <td class="number-col">₹{{ item.total_inr_amount|floatformat:2 }}</td>
                     </tr>
                     {% endfor %}
                     
-                    <!-- Section Total Row -->
+                    <!-- Section Total Row with proper colspan calculation -->
                     <tr class="section-total-row">
-                        <td colspan="8" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% if units and glazes %}
+                            <td colspan="9" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% elif units or glazes %}
+                            <td colspan="8" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% else %}
+                            <td colspan="7" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% endif %}
                         <td class="number-col"><strong>{{ section_data.totals.total_kg|floatformat:2 }}</strong></td>
                         <td class="number-col"><strong>${{ section_data.totals.total_usd_amount|floatformat:2 }}</strong></td>
                         <td class="number-col"><strong>₹{{ section_data.totals.total_inr_amount|floatformat:2 }}</strong></td>

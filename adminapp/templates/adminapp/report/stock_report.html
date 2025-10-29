@@ -779,7 +779,7 @@
                                 <option value="category" {% if section_by == 'category' %}selected{% endif %}>Category</option>
                                 <option value="brand" {% if section_by == 'brand' %}selected{% endif %}>Brand</option>
                                 <option value="store" {% if section_by == 'store' %}selected{% endif %}>Store</option>
-                                <option value="species" {% if section_by == 'species' %}selected{% endif %}>Species</option>
+                                <option value="peeling_type" {% if section_by == 'peeling_type' %}selected{% endif %}>Peeling Type</option>
                                 <option value="item_grade" {% if section_by == 'item_grade' %}selected{% endif %}>Grade</option>
                                 <option value="item" {% if section_by == 'item' %}selected{% endif %}>Item</option>
                                 <option value="stock_status" {% if section_by == 'stock_status' %}selected{% endif %}>Stock Status</option>
@@ -864,16 +864,16 @@
                             </div>
                         </div>
 
-                        {% if species %}
-                        <!-- Species -->
+                        {% if peeling_types %}
+                        <!-- Peeling Types -->
                         <div class="filter-section">
-                            <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
-                            <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
-                            <div class="options-container" id="speciesContainer">
-                                {% for spec in species %}
+                            <label>Peeling Types: <span id="peelingTypesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search peeling types..." id="peelingTypesSearch">
+                            <div class="options-container" id="peelingTypesContainer">
+                                {% for peeling_type in peeling_types %}
                                     <div class="option-item">
-                                        <input type="checkbox" name="species" value="{{ spec.id }}" id="species_{{ spec.id }}" {% if spec.id|stringformat:"s" in selected_species %}checked{% endif %}>
-                                        <label for="species_{{ spec.id }}">{{ spec.name }}</label>
+                                        <input type="checkbox" name="peeling_types" value="{{ peeling_type.id }}" id="peeling_type_{{ peeling_type.id }}" {% if peeling_type.id|stringformat:"s" in selected_peeling_types %}checked{% endif %}>
+                                        <label for="peeling_type_{{ peeling_type.id }}">{{ peeling_type.name }}</label>
                                     </div>
                                 {% endfor %}
                             </div>
@@ -1022,8 +1022,8 @@
                         BRAND: {{ section_name|upper }}
                     {% elif section_by == 'store' %}
                         STORE: {{ section_name|upper }}
-                    {% elif section_by == 'species' %}
-                        SPECIES: {{ section_name|upper }}
+                    {% elif section_by == 'peeling_type' %}
+                        PEELING TYPE: {{ section_name|upper }}
                     {% elif section_by == 'item_grade' %}
                         GRADE: {{ section_name|upper }}
                     {% elif section_by == 'item' %}
@@ -1061,9 +1061,6 @@
                         <th>ITEM NAME</th>
                         <th>BRAND</th>
                         <th>STORE</th>
-                        {% if species %}
-                        <th>SPECIES</th>
-                        {% endif %}
                         {% if item_grades %}
                         <th>GRADE</th>
                         {% endif %}
@@ -1072,9 +1069,6 @@
                         {% endif %}
                         {% if glazes %}
                         <th>GLAZE</th>
-                        {% endif %}
-                        {% if item_qualities %}
-                        <th>QUALITY</th>
                         {% endif %}
                         {% if freezing_categories %}
                         <th>FREEZING CAT</th>
@@ -1091,20 +1085,14 @@
                         <td>{{ item.item__name|default:"N/A"|truncatechars:20 }}</td>
                         <td>{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
                         <td>{{ item.store__name|default:"N/A"|truncatechars:15 }}</td>
-                        {% if species %}
-                        <td>{{ item.species__name|default:"N/A"|truncatechars:15 }}</td>
-                        {% endif %}
                         {% if item_grades %}
-                        <td class="center-col">{{ item.item_grade__grade|default:"N/A" }}</td>
+                        <td class="center-col">{{ item.peeling_type__name|default:"" }} - {% if item.peeling_type__name %} - {% endif %}{{ item.item_grade__grade|default:"N/A" }}</td>
                         {% endif %}
                         {% if units %}
                         <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
                         {% endif %}
                         {% if glazes %}
                         <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}N/A{% endif %}</td>
-                        {% endif %}
-                        {% if item_qualities %}
-                        <td>{{ item.item_quality__quality|default:"N/A"|truncatechars:12 }}</td>
                         {% endif %}
                         {% if freezing_categories %}
                         <td>{{ item.freezing_category__name|default:"N/A"|truncatechars:12 }}</td>
@@ -1121,7 +1109,7 @@
                     
                     <!-- Section Total Row -->
                     <tr class="section-total-row">
-                        <td colspan="{% if species and item_grades and units and glazes and item_qualities and freezing_categories %}10{% elif species or item_grades or units or glazes or item_qualities or freezing_categories %}8{% else %}4{% endif %}" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        <td colspan="{% if item_grades and units and glazes and freezing_categories %}8{% elif item_grades or units or glazes or freezing_categories %}{% if item_grades %}{% if units %}{% if glazes %}{% if freezing_categories %}8{% else %}7{% endif %}{% elif freezing_categories %}7{% else %}6{% endif %}{% elif glazes %}{% if freezing_categories %}7{% else %}6{% endif %}{% elif freezing_categories %}6{% else %}5{% endif %}{% elif units %}{% if glazes %}{% if freezing_categories %}7{% else %}6{% endif %}{% elif freezing_categories %}6{% else %}5{% endif %}{% elif glazes %}{% if freezing_categories %}6{% else %}5{% endif %}{% elif freezing_categories %}5{% else %}4{% endif %}{% else %}4{% endif %}" class="center-col"><strong>SECTION TOTAL</strong></td>
                         <td class="number-col"><strong>{{ section_data.totals.total_cs_quantity|floatformat:2 }}</strong></td>
                         <td class="number-col"><strong>{{ section_data.totals.total_kg_quantity|floatformat:2 }}</strong></td>
                         <td class="center-col"><strong>-</strong></td>
@@ -1273,8 +1261,8 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
     
     // Setup conditional sections
-    if (document.getElementById('speciesSearch')) {
-        setupSearch('speciesSearch', 'speciesContainer', 'speciesCount');
+    if (document.getElementById('peelingTypesSearch')) {
+        setupSearch('peelingTypesSearch', 'peelingTypesContainer', 'peelingTypesCount');
     }
     if (document.getElementById('itemGradesSearch')) {
         setupSearch('itemGradesSearch', 'itemGradesContainer', 'itemGradesCount');
