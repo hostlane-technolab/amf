@@ -2208,11 +2208,12 @@
         });
     </script>
 
-    <!-- Total Calculation -->
+    <!-- Total Calculation with CORRECTED Yield Percentage -->
     <script>
         function calculateTotals() {
-            let totalYield = 0, totalUSD = 0, totalINR = 0, totalSlab = 0, totalCS = 0, totalKG = 0;
-            let validYieldCount = 0; // Count forms with valid yield percentages
+            let totalUSD = 0, totalINR = 0, totalSlab = 0, totalCS = 0, totalKG = 0;
+            let totalInputKG = 0;   // Total received at shed (denominator)
+            let totalOutputKG = 0;  // Total produced (numerator)
 
             $('.formset-form').each(function () {
                 // Skip deleted forms
@@ -2232,26 +2233,47 @@
                 const csQty = getVal('c_s_quantity');
                 const kgWeight = getVal('kg');
 
-                // Only sum yield if it's a valid number > 0
-                if (yieldPercentage > 0) {
-                    totalYield += yieldPercentage;
-                    validYieldCount++;
-                }
-                
+                // Accumulate totals for other fields (these are simple sums)
                 totalUSD += usdRate;
                 totalINR += inrRate;
                 totalSlab += slabQty;
                 totalCS += csQty;
                 totalKG += kgWeight;
+
+                // For yield calculation, we need to reconstruct input/output
+                // Based on your yield formula: (Output / Input) × 100
+                // Output = slabQty × 2 (each slab = 2kg)
+                // Input = we need to reverse-calculate from yield percentage
+                
+                if (yieldPercentage > 0) {
+                    const outputKG = slabQty * 2; // Produced weight
+                    const inputKG = (outputKG / yieldPercentage) * 100; // Reverse calculation
+                    
+                    totalOutputKG += outputKG;
+                    totalInputKG += inputKG;
+                }
             });
 
+            // Calculate the CORRECT total yield percentage
+            // Total Yield = (Total Output / Total Input) × 100
+            let totalYieldPercentage = 0;
+            if (totalInputKG > 0) {
+                totalYieldPercentage = (totalOutputKG / totalInputKG) * 100;
+            }
+
             // Update the total fields
-            $('#id_total_yield_percentage').val(totalYield.toFixed(2));
+            $('#id_total_yield_percentage').val(totalYieldPercentage.toFixed(2));
             $('#id_total_usd').val(totalUSD.toFixed(2));
             $('#id_total_inr').val(totalINR.toFixed(2));
             $('#id_total_slab').val(totalSlab.toFixed(2));
             $('#id_total_c_s').val(totalCS.toFixed(2));
             $('#id_total_kg').val(totalKG.toFixed(2));
+
+            // Debug logging
+            console.log('📊 Total Yield Calculation:');
+            console.log(`  Total Output: ${totalOutputKG.toFixed(2)}kg`);
+            console.log(`  Total Input: ${totalInputKG.toFixed(2)}kg`);
+            console.log(`  Total Yield: ${totalYieldPercentage.toFixed(2)}%`);
         }
 
         // Trigger calculation on any input change
