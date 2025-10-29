@@ -284,7 +284,7 @@ class ItemGrade(BaseModel):
     date = models.DateField(auto_created=True, auto_now=True) 
 
     def __str__(self):
-        return f"{self.species} - {self.grade}"
+        return f"{self.grade}"
     
 class FreezingCategory(BaseModel):
     name = models.CharField(max_length=100)
