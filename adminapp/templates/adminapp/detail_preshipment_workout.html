@@ -328,19 +328,34 @@
               <tbody>
                 <tr class="table-row">
                   <td class="table-cell">
-                    <strong>{{ workout.item.name }}</strong>
+                    <div class="expense-display">
+                      <i class="fa-solid fa-fish-fins yield-icon"></i>
+                      <span class="expense-value">{{ workout.item.name }}</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="voucher-badge">{{ workout.unit.unit_code }}</span>
+                    <div class="boxes-display">
+                      <i class="fas fa-weight yield-icon"></i>
+                      <span class="boxes-value">{{ workout.unit.unit_code }}</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="balance-badge">{{ workout.glaze.percentage }}%</span>
+                    <div class="expense-display">
+                      <i class="fas fa-percentage yield-icon"></i>
+                      <span class="expense-value">{{ workout.glaze.percentage }}%</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="boxes-badge">{{ workout.category.name }}</span>
+                    <div class="boxes-display">
+                      <i class="fas fa-tags yield-icon"></i>
+                      <span class="boxes-value">{{ workout.category.name }}</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="quantity-badge">{{ workout.brand.name }}</span>
+                    <div class="date-display">
+                      <i class="fas fa-trademark yield-icon"></i>
+                      <span class="date-value">{{ workout.brand.name }}</span>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -386,19 +401,71 @@
               <tbody>
                 {% for item in items %}
                 <tr class="table-row">
-                  <td class="table-cell"><span class="item-name">{{ item.species.name }}</span></td>
-                  <td class="table-cell">{{ item.peeling_type.name }}</td>
-                  <td class="table-cell"><span class="voucher-badge">{{ item.grade.grade }}</span></td>
-                  <td class="table-cell"><span class="boxes-badge">{{ item.cartons }}</span></td>
-                  <td class="table-cell"><span class="quantity-badge">{{ item.quantity }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg_get|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item_get|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr_get|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="weight-value">${{ item.profit|indian_comma }}</span></td>
-                  <td class="table-cell"><span class="balance-badge">${{ item.loss|indian_comma }}</span></td>
+                  <td class="table-cell">
+                    <div class="date-display">
+                      <span class="date-value">{{ item.species.name }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="date-display">
+                      <span class="date-value">{{ item.peeling_type.name }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="boxes-display">
+                      <span class="boxes-value">{{ item.grade.grade }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="boxes-display">
+                      <span class="boxes-value">{{ item.cartons }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="date-display">
+                      <span class="date-value">{{ item.quantity }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="amount-display">
+                      <span class="amount-value">$ {{ item.usd_rate_per_kg|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="amount-display">
+                      <span class="amount-value">$ {{ item.usd_rate_item|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="amount-display">
+                      <span class="amount-value">₹ {{ item.usd_rate_item_to_inr|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="amount-display">
+                      <span class="amount-value">$ {{ item.usd_rate_per_kg_get|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="amount-display">
+                      <span class="amount-value">$ {{ item.usd_rate_item_get|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="amount-display">
+                      <span class="amount-value">₹ {{ item.usd_rate_item_to_inr_get|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="expense-display">
+                      <span class="expense-value">$ {{ item.profit|indian_comma }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="expense-display">
+                      <span class="expense-value">$ {{ item.loss|indian_comma }}</span>
+                    </div>
+                  </td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -800,6 +867,109 @@
 </div>
 
 <style>
+          /* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+    /* expense display */
+.expense-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
+}
+
+.expense-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.expense-display .expense-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+      /* boxes Display - Updated Design */
+.boxes-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ffcc80;
+  border-radius: 25px;
+  color: #e65100;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+  white-space: nowrap;
+}
+
+.boxes-value {
+  color: #e65100;
+}
+
+.boxes-unit {
+  color: #e65100;
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+    /* Amount Display - Updated Design */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.currency-symbol {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.amount-value {
+  color: #2e7d32;
+}
+
 small.unit {
   font-size: 0.8rem;        
   font-weight: 600;        

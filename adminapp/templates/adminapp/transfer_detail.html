@@ -319,15 +319,51 @@
               <tbody>
                 {% for item in items %}
                 <tr class="table-row">
-                  <td class="table-cell"><span class="item-name">{{ item.item.name }}</span></td>
-                  <td class="table-cell">{{ item.brand.name }}</td>
-                  <td class="table-cell"><span class="voucher-badge">{{ item.unit }}</span></td>
-                  <td class="table-cell"><span class="balance-badge">{{ item.glaze }}%</span></td>
-                  <td class="table-cell">{{ item.species }}</td>
-                  <td class="table-cell"><span class="voucher-badge">{{ item.item_grade }}</span></td>
-                  <td class="table-cell">{{ item.item_quality.quality }}</td>
-                  <td class="table-cell"><span class="quantity-badge">{{ item.cs_quantity }}</span></td>
-                  <td class="table-cell"><span class="weight-value">{{ item.kg_quantity }} kg</span></td>
+                  <td class="table-cell">
+                    <div class="boxes-display">
+                      <span class="boxes-value">{{ item.item.name }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="date-display">
+                      <span class="date-value">{{ item.brand.name }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="boxes-display">
+                      <span class="boxes-value">{{ item.unit }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="expense-display">
+                      <span class="expense-value">{{ item.glaze }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="date-display">
+                      <span class="date-value">{{ item.species }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="boxes-display">
+                      <span class="boxes-value">{{ item.item_grade }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="boxes-display">
+                      <span class="boxes-value">{{ item.item_quality.quality }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="expense-display">
+                      <span class="expense-value">{{ item.cs_quantity }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="expense-display">
+                      <span class="expense-value">{{ item.kg_quantity }} kg</span>
+                    </div>
+                  </td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -360,6 +396,108 @@
 </div>
 
 <style>
+            /* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+    /* expense display */
+.expense-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
+}
+
+.expense-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.expense-display .expense-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+      /* boxes Display - Updated Design */
+.boxes-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ffcc80;
+  border-radius: 25px;
+  color: #e65100;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+  white-space: nowrap;
+}
+
+.boxes-value {
+  color: #e65100;
+}
+
+.boxes-unit {
+  color: #e65100;
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+    /* Amount Display - Updated Design */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.currency-symbol {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.amount-value {
+  color: #2e7d32;
+}
 small.unit {
   font-size: 0.8rem;        
   font-weight: 600;        
@@ -730,6 +868,7 @@ small.unit {
 }
 
 /* Action Buttons */
+      /* Form Actions */
 .form-actions {
   display: flex;
   justify-content: center;
@@ -737,37 +876,34 @@ small.unit {
   margin-top: 40px;
 }
 
+.form-actions .row {
+  width: 100%;
+}
+
 .action-btn {
-  background: #28a745;
+  background: #007bff;
   color: white;
-  border: 2px solid #28a745;
+  border: 2px solid #007bff;
   padding: 15px 30px;
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 16px;
   transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
   text-decoration: none;
+  width: 100%;
 }
 
 .action-btn:hover {
-  color: white;
-  text-decoration: none;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+            background: #0056b3;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
 }
 
-.btn-edit {
-  background: #007bff;
-  border-color: #007bff;
-}
-
-.btn-edit:hover {
-  background: #0056b3;
-  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
-}
 
 .btn-print {
   background: #6f42c1;
@@ -777,6 +913,16 @@ small.unit {
 .btn-print:hover {
   background: #5a32a3;
   box-shadow: 0 8px 25px rgba(111, 66, 193, 0.3);
+}
+
+.btn-delete {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
 }
 
 /* Print Styles */

@@ -2,373 +2,472 @@
 {%block title%} Admin Panel{%endblock%}
 {% block content %}
 
-<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8" style="margin-top: 5rem;">
-  <div class="max-w-8xl mx-auto">
-    
-    <!-- Header -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
-            <i class="fas fa-chart-line text-white text-2xl"></i>
-          </div>
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
-            <p class="text-base text-slate-500 font-medium mt-1">AMF Management System</p>
-          </div>
-        </div>
-        
-        <div class="flex items-center gap-3">
-          <button class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-base">
-            <i class="fas fa-cog mr-2"></i>
-            Manage
-          </button>
-          <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-base">
-            <i class="fas fa-plus mr-2"></i>
-            Add Customer
-          </button>
-        </div>
-      </div>
-    </div>
- 
-    </div>
-
-
-        <!-- Management Section Cards (Sidebar Items as Cards) -->
-    <div class="mb-8 mt-5">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <!-- User Management Card -->
-        {% if user_permissions.can_manage_users %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-user text-indigo-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">User Management</h3>
-              <p class="text-md text-slate-500">Manage system users and permissions</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="flex gap-2">
-              <a href="{% url 'adminapp:users_list' %}" class="flex-1 px-4 py-2.5 bg-indigo-50 text-indigo-700 text-md font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">
-                <i class="fas fa-list mr-1"></i> List
-              </a>
-              <a href="{% url 'adminapp:create_user' %}" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-md font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
-                <i class="fas fa-plus mr-1"></i> Add
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-                <!-- Processing Operations Card -->
-        {% if user_permissions.can_view_processing %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-gear text-amber-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Processing Operations</h3>
-              <p class="text-md text-slate-500">Manage peeling shed operations</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="flex gap-2">
-              <a href="{% url 'adminapp:peeling_shed_supply_list' %}" class="flex-1 px-4 py-2.5 bg-amber-50 text-amber-700 text-md font-semibold rounded-lg hover:bg-amber-100 transition-colors text-center">
-                <i class="fas fa-list mr-1"></i> List
-              </a>
-              <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="flex-1 px-4 py-2.5 bg-amber-600 text-white text-md font-semibold rounded-lg hover:bg-amber-700 transition-colors text-center">
-                <i class="fas fa-plus mr-1"></i> Create
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-                <!-- Master Dashboard Card -->
-        {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
-              <i class="fas fa-tachometer-alt text-purple-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Master Dashboard</h3>
-              <p class="text-md text-slate-500">Configure master data and settings</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <a href="{% url 'adminapp:master' %}" class="block w-full px-4 py-2.5 bg-purple-600 text-white text-md font-semibold rounded-lg hover:bg-purple-700 transition-colors text-center">
-              <i class="fas fa-arrow-right mr-2"></i> Open Dashboard
-            </a>
-          </div>
-        </div>
-        {% endif %}
-
-        <!-- Purchase Management Card -->
-        {% if user_permissions.can_view_purchasing or user_permissions.can_add_purchasing %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
-              <i class="fas fa-shopping-cart text-blue-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Purchase Management</h3>
-              <p class="text-md text-slate-500">Handle spot and local purchases</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:spot_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-location-dot mr-2 text-blue-600"></i>Spot Purchase</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:local_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-store mr-2 text-blue-600"></i>Local Purchase</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-                <!-- Billing Operations Card -->
-        {% if user_permissions.can_view_billing %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-file text-pink-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Billing Operations</h3>
-              <p class="text-md text-slate-500">Manage tenant and main stock bills</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:bill_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-shop mr-2 text-pink-600"></i>Tenant Bill</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:sales_entry_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-file-import mr-2 text-pink-600"></i>Main Stock Bill</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-
-
-        <!-- Shipping Operations Card -->
-        {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-truck-fast text-green-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Shipping Operations</h3>
-              <p class="text-md text-slate-500">Pre-shipment and stock transfers</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:preshipment_workout_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-shop mr-2 text-green-600"></i>Pre Shipment</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:store_transfer_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-tent-arrow-left-right mr-2 text-green-600"></i>Stock Transaction</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-
-
-
-        <!-- Voucher Card -->
-        {% if user_permissions.can_view_voucher or user_permissions.can_add_voucher %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-file-invoice-dollar text-rose-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Voucher Management</h3>
-              <p class="text-md text-slate-500">Manage all types of vouchers</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Spot Agent</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Supervisor</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Local Purchase</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Peeling Shed</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:tenantvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Tenat Voucher</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-                <!-- Freezing Operations Card -->
-        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-cyan-100 rounded-lg flex items-center justify-center group-hover:bg-cyan-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-snowflake text-cyan-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Freezing Operations</h3>
-              <p class="text-md text-slate-500">Manage freezing entries and workflow</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-shop mr-2 text-cyan-600"></i>Spot Freezing</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-shopping-cart mr-2 text-cyan-600"></i>Local Freezing</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:list_freezing_entry_tenant' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-store mr-2 text-cyan-600"></i>Tenant Freezing Entry</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:list_return_tenant' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-store mr-2 text-cyan-600"></i>Return Tenant Freezing</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:freezing_workout' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-warehouse mr-2 text-cyan-600"></i>Freezing Workout</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-                <!-- Stock Adjustment Card -->
-        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-snowflake text-purple-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Stock Adjustment</h3>
-              <p class="text-md text-slate-500">Manage stock adjustment</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:stock_adjustment' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fa-solid fa-shop mr-2 text-purple-600"></i>Main Stocks Adjustment</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:tenant_stock_adjustment' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-shopping-cart mr-2 text-purple-600"></i>Tenant Stocks Adjustment</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              
-            </div>
-          </div>
-        </div>
-        {% endif %}
-
-      </div>
-    </div>
-
-
-
-<!-- Spot Freezing Analytics Section -->
-<div class="mb-8">
-  <h2 class="text-2xl font-bold text-slate-900 mb-6">Spot Freezing Analytics</h2>
-  
-  <!-- Charts Grid -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    
-    <!-- Monthly Trends Chart -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-slate-900">Monthly Freezing Trends</h3>
-        <div class="flex gap-2">
-          <button onclick="changeChartView('entries')" class="chart-view-btn active px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="entries">
-            Entries
-          </button>
-          <button onclick="changeChartView('kg')" class="chart-view-btn px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="kg">
-            Weight (KG)
-          </button>
-          <button onclick="changeChartView('usd')" class="chart-view-btn px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="usd">
-            Value (USD)
-          </button>
-        </div>
-      </div>
-      <div class="h-80">
-        <canvas id="monthlyTrendsChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Status Distribution Chart -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Freezing Status Distribution</h3>
-      <div class="h-80 flex items-center justify-center">
-        <canvas id="statusPieChart"></canvas>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Bottom Charts -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    
-    <!-- Weekly Activity Chart -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Weekly Activity (Last 8 Weeks)</h3>
-      <div class="h-80">
-        <canvas id="weeklyActivityChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Top Items Chart -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-      <h3 class="text-lg font-bold text-slate-900 mb-4">Top 5 Items by Weight</h3>
-      <div class="h-80">
-        <canvas id="topItemsChart"></canvas>
-      </div>
-    </div>
-
-  </div>
-</div>
-
 <style>
+/* Dashboard Styles */
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 32px 16px;
+  margin-top: 5rem;
+}
+
+.dashboard-max-width {
+  max-width: 1536px;
+  margin: 0 auto;
+}
+
+/* Header Card */
+.header-card {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icon-box {
+  width: 64px;
+  height: 64px;
+  background-color: #3b82f6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.header-icon-box i {
+  color: white;
+  font-size: 24px;
+}
+
+.header-title h1 {
+  font-size: 25px;
+  font-weight: bold;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.header-title p {
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-manage {
+  padding: 12px 24px;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-weight: 600;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.btn-manage:hover {
+  background-color: #f8fafc;
+}
+
+.btn-manage i {
+  margin-right: 8px;
+}
+
+.btn-add {
+  padding: 12px 24px;
+  background-color: #2563eb;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+}
+
+.btn-add:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-add i {
+  margin-right: 8px;
+}
+
+/* Management Cards Grid */
+.cards-section {
+  margin-bottom: 32px;
+  margin-top: 20px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.management-card {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.management-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.card-icon-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+  flex-shrink: 0;
+}
+
+.card-icon-box i {
+  font-size: 24px;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.card-content p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+.card-actions {
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.action-link {
+  flex: 1;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  display: inline-block;
+}
+
+.action-link i {
+  margin-right: 4px;
+}
+
+.action-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.action-nav-link:hover {
+  background-color: #f8fafc;
+}
+
+.action-nav-link span i {
+  margin-right: 8px;
+}
+
+.action-nav-link .chevron {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Color Schemes for Cards */
+.indigo .card-icon-box {
+  background-color: #e0e7ff;
+}
+
+.indigo .card-icon-box i {
+  color: #4f46e5;
+}
+
+.indigo .action-link.list-btn {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
+
+.indigo .action-link.list-btn:hover {
+  background-color: #e0e7ff;
+}
+
+.indigo .action-link.add-btn {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.indigo .action-link.add-btn:hover {
+  background-color: #4338ca;
+}
+
+.indigo .action-nav-link span i {
+  color: #4f46e5;
+}
+
+.indigo:hover .card-icon-box {
+  background-color: #c7d2fe;
+}
+
+.amber .card-icon-box {
+  background-color: #fef3c7;
+}
+
+.amber .card-icon-box i {
+  color: #d97706;
+}
+
+.amber .action-link.list-btn {
+  background-color: #fffbeb;
+  color: #b45309;
+}
+
+.amber .action-link.list-btn:hover {
+  background-color: #fef3c7;
+}
+
+.amber .action-link.add-btn {
+  background-color: #d97706;
+  color: white;
+}
+
+.amber .action-link.add-btn:hover {
+  background-color: #b45309;
+}
+
+.amber .action-nav-link span i {
+  color: #d97706;
+}
+
+.amber:hover .card-icon-box {
+  background-color: #fde68a;
+}
+
+.purple .card-icon-box {
+  background-color: #f3e8ff;
+}
+
+.purple .card-icon-box i {
+  color: #9333ea;
+}
+
+.purple .action-link.dashboard-btn {
+  background-color: #9333ea;
+  color: white;
+  width: 100%;
+}
+
+.purple .action-link.dashboard-btn:hover {
+  background-color: #7e22ce;
+}
+
+.purple:hover .card-icon-box {
+  background-color: #e9d5ff;
+}
+
+.blue .card-icon-box {
+  background-color: #dbeafe;
+}
+
+.blue .card-icon-box i {
+  color: #2563eb;
+}
+
+.blue .action-nav-link span i {
+  color: #2563eb;
+}
+
+.blue:hover .card-icon-box {
+  background-color: #bfdbfe;
+}
+
+.pink .card-icon-box {
+  background-color: #fce7f3;
+}
+
+.pink .card-icon-box i {
+  color: #ec4899;
+}
+
+.pink .action-nav-link span i {
+  color: #ec4899;
+}
+
+.pink:hover .card-icon-box {
+  background-color: #fbcfe8;
+}
+
+.green .card-icon-box {
+  background-color: #d1fae5;
+}
+
+.green .card-icon-box i {
+  color: #059669;
+}
+
+.green .action-nav-link span i {
+  color: #059669;
+}
+
+.green:hover .card-icon-box {
+  background-color: #a7f3d0;
+}
+
+.rose .card-icon-box {
+  background-color: #ffe4e6;
+}
+
+.rose .card-icon-box i {
+  color: #e11d48;
+}
+
+.rose .action-nav-link span i {
+  color: #e11d48;
+}
+
+.rose:hover .card-icon-box {
+  background-color: #fecdd3;
+}
+
+.cyan .card-icon-box {
+  background-color: #cffafe;
+}
+
+.cyan .card-icon-box i {
+  color: #0891b2;
+}
+
+.cyan .action-nav-link span i {
+  color: #0891b2;
+}
+
+.cyan:hover .card-icon-box {
+  background-color: #a5f3fc;
+}
+
+/* Analytics Section */
+.analytics-section {
+  margin-bottom: 32px;
+}
+
+.analytics-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #0f172a;
+  margin-bottom: 24px;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 24px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #0f172a;
+  margin: 0;
+}
+
+.chart-view-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 .chart-view-btn {
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
   background-color: #f1f5f9;
   color: #64748b;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .chart-view-btn:hover {
@@ -380,7 +479,400 @@
   background-color: #3b82f6;
   color: white;
 }
+
+.chart-container {
+  height: 320px;
+}
+
+.chart-container-centered {
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .dashboard-container {
+    padding: 32px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 </style>
+
+<div class="dashboard-container">
+  <div class="dashboard-max-width">
+    
+    <!-- Header -->
+    <div class="header-card">
+      <div class="header-content">
+        <div class="header-left">
+          <div class="header-icon-box">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="header-title">
+            <h1>Admin Dashboard</h1>
+            <p>AMF Management System</p>
+          </div>
+        </div>
+        
+        <div class="header-buttons">
+          <button class="btn-manage">
+            <i class="fas fa-cog"></i>
+            Manage
+          </button>
+          <button class="btn-add">
+            <i class="fas fa-plus"></i>
+            Add Customer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Management Section Cards -->
+    <div class="cards-section">
+      <div class="cards-grid">
+        
+        <!-- User Management Card -->
+        {% if user_permissions.can_manage_users %}
+        <div class="management-card indigo">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="card-content">
+              <h3>User Management</h3>
+              <p>Manage system users and permissions</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-buttons">
+              <a href="{% url 'adminapp:users_list' %}" class="action-link list-btn">
+                <i class="fas fa-list"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_user' %}" class="action-link add-btn">
+                <i class="fas fa-plus"></i> Add
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Processing Operations Card -->
+        {% if user_permissions.can_view_processing %}
+        <div class="management-card amber">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-gear"></i>
+            </div>
+            <div class="card-content">
+              <h3>Processing Operations</h3>
+              <p>Manage peeling shed operations</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-buttons">
+              <a href="{% url 'adminapp:peeling_shed_supply_list' %}" class="action-link list-btn">
+                <i class="fas fa-list"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="action-link add-btn">
+                <i class="fas fa-plus"></i> Create
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Master Dashboard Card -->
+        {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
+        <div class="management-card purple">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div class="card-content">
+              <h3>Master Dashboard</h3>
+              <p>Configure master data and settings</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="{% url 'adminapp:master' %}" class="action-link dashboard-btn">
+              <i class="fas fa-arrow-right"></i> Open Dashboard
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Purchase Management Card -->
+        {% if user_permissions.can_view_purchasing or user_permissions.can_add_purchasing %}
+        <div class="management-card blue">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="card-content">
+              <h3>Purchase Management</h3>
+              <p>Handle spot and local purchases</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-links">
+              <a href="{% url 'adminapp:spot_purchase_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-location-dot"></i>Spot Purchase</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:local_purchase_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-store"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Billing Operations Card -->
+        {% if user_permissions.can_view_billing %}
+        <div class="management-card pink">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-file"></i>
+            </div>
+            <div class="card-content">
+              <h3>Billing Operations</h3>
+              <p>Manage tenant and main stock bills</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-links">
+              <a href="{% url 'adminapp:bill_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-shop"></i>Tenant Bill</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:sales_entry_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-file-import"></i>Main Stock Bill</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Shipping Operations Card -->
+        {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
+        <div class="management-card green">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-truck-fast"></i>
+            </div>
+            <div class="card-content">
+              <h3>Shipping Operations</h3>
+              <p>Pre-shipment and stock transfers</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-links">
+              <a href="{% url 'adminapp:preshipment_workout_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-shop"></i>Pre Shipment</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:store_transfer_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-tent-arrow-left-right"></i>Stock Transaction</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Voucher Card -->
+        {% if user_permissions.can_view_voucher or user_permissions.can_add_voucher %}
+        <div class="management-card rose">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+            </div>
+            <div class="card-content">
+              <h3>Voucher Management</h3>
+              <p>Manage all types of vouchers</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-links">
+              <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-file-invoice"></i>Spot Agent</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-file-invoice"></i>Supervisor</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-file-invoice"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-file-invoice"></i>Peeling Shed</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:tenantvoucher_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-file-invoice"></i>Tenat Voucher</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Freezing Operations Card -->
+        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+        <div class="management-card cyan">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-snowflake"></i>
+            </div>
+            <div class="card-content">
+              <h3>Freezing Operations</h3>
+              <p>Manage freezing entries and workflow</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-links">
+              <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-shop"></i>Spot Freezing</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="action-nav-link">
+                <span><i class="fas fa-shopping-cart"></i>Local Freezing</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:list_freezing_entry_tenant' %}" class="action-nav-link">
+                <span><i class="fas fa-store"></i>Tenant Freezing Entry</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:list_return_tenant' %}" class="action-nav-link">
+                <span><i class="fas fa-store"></i>Return Tenant Freezing</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_workout' %}" class="action-nav-link">
+                <span><i class="fas fa-warehouse"></i>Freezing Workout</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Stock Adjustment Card -->
+        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+        <div class="management-card purple">
+          <div class="card-header">
+            <div class="card-icon-box">
+              <i class="fa-solid fa-snowflake"></i>
+            </div>
+            <div class="card-content">
+              <h3>Stock Adjustment</h3>
+              <p>Manage stock adjustment</p>
+            </div>
+          </div>
+          <div class="card-actions">
+            <div class="action-links">
+              <a href="{% url 'adminapp:stock_adjustment' %}" class="action-nav-link">
+                <span><i class="fa-solid fa-shop"></i>Main Stocks Adjustment</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:tenant_stock_adjustment' %}" class="action-nav-link">
+                <span><i class="fas fa-shopping-cart"></i>Tenant Stocks Adjustment</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Spot Freezing Analytics Section -->
+    <div class="analytics-section">
+      <h2 class="analytics-title">Spot Freezing Analytics</h2>
+      
+      <!-- Charts Grid -->
+      <div class="charts-grid">
+        
+        <!-- Monthly Trends Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Monthly Freezing Trends</h3>
+            <div class="chart-view-buttons">
+              <button onclick="changeChartView('entries')" class="chart-view-btn active" data-view="entries">
+                Entries
+              </button>
+              <button onclick="changeChartView('kg')" class="chart-view-btn" data-view="kg">
+                Weight (KG)
+              </button>
+              <button onclick="changeChartView('usd')" class="chart-view-btn" data-view="usd">
+                Value (USD)
+              </button>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="monthlyTrendsChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Status Distribution Chart -->
+        <div class="chart-card">
+          <h3 class="chart-title">Freezing Status Distribution</h3>
+          <div class="chart-container-centered">
+            <canvas id="statusPieChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Charts -->
+      <div class="charts-grid">
+        
+        <!-- Weekly Activity Chart -->
+        <div class="chart-card">
+          <h3 class="chart-title">Weekly Activity (Last 8 Weeks)</h3>
+          <div class="chart-container">
+            <canvas id="weeklyActivityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Top Items Chart -->
+        <div class="chart-card">
+          <h3 class="chart-title">Top 5 Items by Weight</h3>
+          <div class="chart-container">
+            <canvas id="topItemsChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 

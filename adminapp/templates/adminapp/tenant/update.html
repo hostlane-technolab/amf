@@ -1862,5 +1862,116 @@ small.unit {
     </script>
 
 
+<!-- Arrow key navigation for form fields -->
+    <script>
+        $(document).ready(function() {
+            // Get all focusable form elements
+            function getFocusableElements() {
+                return $('input:not([type="hidden"]), select, textarea').filter(':visible');
+            }
 
+            // Check if input type should navigate on arrow keys
+            function shouldNavigate(element, direction) {
+                const $elem = $(element);
+                const inputType = $elem.attr('type');
+                
+                // Always navigate for select, date, and number inputs
+                if ($elem.is('select') || inputType === 'date' || inputType === 'number') {
+                    return true;
+                }
+                
+                // For text inputs, check cursor position
+                if ($elem.is('input') && inputType === 'text') {
+                    try {
+                        const cursorPos = element.selectionStart;
+                        const valueLength = element.value.length;
+                        
+                        // Left arrow: navigate if cursor at beginning
+                        if (direction === 'left' && cursorPos === 0) {
+                            return true;
+                        }
+                        
+                        // Right arrow: navigate if cursor at end
+                        if (direction === 'right' && cursorPos === valueLength) {
+                            return true;
+                        }
+                    } catch(e) {
+                        // If selectionStart fails, just navigate
+                        return true;
+                    }
+                }
+                
+                // For textarea, don't navigate (allow normal arrow key behavior)
+                if ($elem.is('textarea')) {
+                    return false;
+                }
+                
+                return false;
+            }
+
+            $(document).on('keydown', 'input, select, textarea', function(e) {
+                // Left arrow key (keyCode 37)
+                if (e.keyCode === 37 || e.which === 37) {
+                    if (shouldNavigate(this, 'left')) {
+                        e.preventDefault();
+                        let focusableElements = getFocusableElements();
+                        let currentIndex = focusableElements.index(this);
+                        
+                        // Move to previous field
+                        if (currentIndex > 0) {
+                            focusableElements.eq(currentIndex - 1).focus().select();
+                        }
+                        return false;
+                    }
+                }
+                
+                // Right arrow key (keyCode 39)
+                if (e.keyCode === 39 || e.which === 39) {
+                    if (shouldNavigate(this, 'right')) {
+                        e.preventDefault();
+                        let focusableElements = getFocusableElements();
+                        let currentIndex = focusableElements.index(this);
+                        
+                        // Move to next field
+                        if (currentIndex < focusableElements.length - 1) {
+                            focusableElements.eq(currentIndex + 1).focus().select();
+                        }
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+
+<!-- Limit date input year to 4 digits -->
+<script>
+$(document).ready(function() {
+    $(document).on('input','input[type="date"]',function(){
+        let d=$(this).val();
+        // Only check if we have at least the year part (first 4 characters)
+        if(d && d.length>=4){
+            let y=parseInt(d.substring(0,4));
+            // Only validate if year has 4 digits AND is complete
+            if(d.length>=4 && y.toString().length===4){
+                if(y<1900||y>2100){
+                    // Clear only the year part, allow user to re-enter
+                    $(this).val('');
+                }
+            }
+        }
+    });
+    
+    // Final validation on blur
+    $(document).on('blur','input[type="date"]',function(){
+        let d=$(this).val();
+        if(d && d.length===10){
+            let y=parseInt(d.split('-')[0]);
+            if(y<1900||y>2100){
+                alert('Please enter a valid year (1900-2100)');
+                $(this).val('');
+            }
+        }
+    });
+});
+</script>
 {% endblock %}

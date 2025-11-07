@@ -166,6 +166,123 @@
 </style>
 
 <style>
+           /* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+    /* expense display */
+.expense-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
+}
+
+.expense-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.expense-display .expense-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+      /* boxes Display - Updated Design */
+.boxes-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ffcc80;
+  border-radius: 25px;
+  color: #e65100;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+  white-space: nowrap;
+}
+
+.boxes-value {
+  color: #e65100;
+}
+
+.boxes-unit {
+  color: #e65100;
+  font-size: 16px;
+  font-weight: 500;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+    /* Amount Display - Updated Design */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  padding: 10px 18px;
+  justify-content: center;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.currency-symbol {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.amount-value {
+  color: #2e7d32;
+}
+
 small.unit {
   font-size: 0.8rem;
   font-weight: 600;
@@ -527,11 +644,44 @@ small.unit {
 }
 
 .text-danger {
-  color: #dc3545 !important;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
 }
 
 .text-success {
-  color: #28a745 !important;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #81c784;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.text-danger .currency-symbols,
+.text-success .currency-symbols {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.text-danger .calculated-value,
+.text-success .calculated-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 /* Action Buttons */
@@ -904,16 +1054,24 @@ small.unit {
               <tbody>
                 <tr class="table-row">
                   <td class="table-cell">
-                    <span class="amount-badge total-badge">₹{{ voucher.total_amount|floatformat:2 }}</span>
+                    <div class="amount-display">
+                      <span class="amount-value">₹ {{ voucher.total_amount|floatformat:2 }}</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="amount-badge receipt-badge">₹{{ voucher.receipt|floatformat:2 }}</span>
+                    <div class="amount-display">
+                      <span class="amount-value">₹ {{ voucher.receipt|floatformat:2 }}</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="amount-badge payment-badge">₹{{ voucher.payment|floatformat:2 }}</span>
+                    <div class="amount-display">
+                      <span class="amount-value">₹ {{ voucher.payment|floatformat:2 }}</span>
+                    </div>
                   </td>
                   <td class="table-cell">
-                    <span class="amount-badge remain-badge">₹{{ voucher.remain_amount|floatformat:2 }}</span>
+                    <div class="amount-display">
+                      <span class="amount-value">₹ {{ voucher.remain_amount|floatformat:2 }}</span>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -951,7 +1109,7 @@ small.unit {
                   <td class="table-cell">
                     <div class="summary-value">
                       <span class="calculated-value {% if voucher.remain_amount > 0 %}text-danger{% else %}text-success{% endif %}">
-                        ₹{{ voucher.remain_amount|floatformat:2|default:"0.00" }}
+                        ₹ {{ voucher.remain_amount|floatformat:2|default:"0.00" }}
                       </span>
                       <small class="unit">balance</small>
                     </div>
@@ -959,23 +1117,23 @@ small.unit {
                   <td class="table-cell">
                     <div class="summary-value">
                       {% if voucher.remain_amount == 0 %}
-                        <span class="status-badge status-complete">
-                          <i class="fas fa-check-circle"></i> Settled
+                        <span class="amount-display status-complete">
+                          <i class="fas fa-check-circle yield-icon"></i> Settled
                         </span>
                       {% else %}
-                        <span class="status-badge status-pending">
-                          <i class="fas fa-clock"></i> Pending
+                        <span class="boxes-display status-pending">
+                          <i class="fas fa-clock yield-icon"></i> Pending
                         </span>
                       {% endif %}
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="summary-value total-highlight">
-                      <span class="calculated-value">
+                      <span class="amount-display">
                         {% if voucher.total_amount > 0 %}
-                          {% widthratio voucher.payment voucher.total_amount 100 %}%
+                          {% widthratio voucher.payment voucher.total_amount 100 %} %
                         {% else %}
-                          0%
+                          0 %
                         {% endif %}
                       </span>
                       <small class="unit">settled</small>
