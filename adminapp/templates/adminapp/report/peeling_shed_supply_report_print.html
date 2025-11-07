@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Peeling Shed Supply Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Load required libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0.5in;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 25px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.4;
+            color: #000000;
+            background: white;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2563eb;
+        }
+
+        .company-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .report-title {
+            font-size: 26px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+
+        .report-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #000000;
+        }
+
+        .date-range {
+            font-weight: 600;
+            color: #000000;
+            font-size: 20px;
+        }
+
+        .print-date {
+            font-style: italic;
+            color: #000000;
+            font-size: 18px;
+        }
+
+        .filter-summary {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        .filter-summary h4 {
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .filter-item {
+            margin-bottom: 5px;
+        }
+
+        .summary-stats {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #000000;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 11px;
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .data-table th {
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            vertical-align: middle;
+        }
+
+        .data-table th:last-child {
+            border-right: none;
+        }
+
+        .data-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 10px;
+            vertical-align: top;
+            color: #000000;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #eff6ff;
+        }
+
+        .amount-cell {
+            text-align: right;
+            font-weight: 700;
+            color: #059669;
+            background-color: #d1fae5;
+        }
+
+        .quantity-cell {
+            text-align: center;
+            font-weight: 700;
+            color: #dc2626;
+            background-color: #fecaca;
+        }
+
+        .date-cell {
+            font-weight: 600;
+            color: #000000;
+            white-space: nowrap;
+            background-color: #dbeafe;
+        }
+
+        .item-cell {
+            font-weight: 700;
+            color: #000000;
+            max-width: 100px;
+            word-wrap: break-word;
+        }
+
+        .category-cell {
+            background-color: #dbeafe;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .species-cell {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            font-weight: 600;
+        }
+
+        .grade-cell {
+            background-color: #fef3c7;
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .item-type-cell {
+            background-color: #f3e8ff;
+            color: #7c3aed;
+            font-weight: 600;
+        }
+
+        .shed-cell {
+            color: #7c2d12;
+            font-weight: 600;
+            background-color: #fed7aa;
+        }
+
+        .vehicle-cell {
+            color: #581c87;
+            font-weight: 600;
+            background-color: #e9d5ff;
+        }
+
+        .voucher-cell {
+            color: #0891b2;
+            font-weight: 600;
+            background-color: #cffafe;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #000000;
+            font-style: italic;
+            font-size: 18px;
+        }
+
+        .report-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        .footer-left, .footer-right {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .page-number {
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            gap: 10px;
+        }
+
+        .print-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+        }
+
+        .pdf-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.success {
+            background: #10b981;
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        /* PDF rendering styles */
+        .pdf-rendering {
+            color: #000000 !important;
+            opacity: 1 !important;
+        }
+
+        .pdf-rendering * {
+            color: #000000 !important;
+            opacity: 1 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .pdf-rendering .data-table th {
+            color: #ffffff !important;
+            background-color: #2563eb !important;
+            opacity: 1 !important;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: #000000 !important;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+            
+            .data-table {
+                page-break-inside: avoid;
+            }
+            
+            .data-table thead {
+                display: table-header-group;
+            }
+            
+            .data-table tbody tr {
+                page-break-inside: avoid;
+            }
+            
+            .report-header, .summary-stats {
+                page-break-after: avoid;
+            }
+
+            * {
+                color: #000000 !important;
+                opacity: 1 !important;
+            }
+
+            .data-table th {
+                color: white !important;
+                background-color: #2563eb !important;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 1400px) {
+            body {
+                padding: 15px;
+                font-size: 14px;
+            }
+            
+            .data-table {
+                font-size: 9px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 6px 4px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .report-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .company-name {
+                font-size: 24px;
+            }
+
+            .report-title {
+                font-size: 20px;
+            }
+
+            .data-table {
+                font-size: 8px;
+                overflow-x: auto;
+                display: block;
+            }
+
+            .data-table thead,
+            .data-table tbody,
+            .data-table th,
+            .data-table td,
+            .data-table tr {
+                display: block;
+            }
+
+            .data-table thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            .data-table tr {
+                border: 1px solid #ccc;
+                margin-bottom: 10px;
+                padding: 10px;
+            }
+
+            .data-table td {
+                border: none;
+                position: relative;
+                padding-left: 50% !important;
+                text-align: left !important;
+            }
+
+            .data-table td:before {
+                content: attr(data-label) ": ";
+                position: absolute;
+                left: 6px;
+                width: 45%;
+                text-align: left;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <div class="company-name">BAHRAYA EXPORTS </div>
+        <div class="report-title">Peeling Shed Supply Report</div>
+        
+        <div class="report-info">
+            <div class="date-range">
+                {% if start_date and end_date %}
+                    Period: {{ start_date|date:"d/m/Y" }} to {{ end_date|date:"d/m/Y" }}
+                {% else %}
+                    Period: All Records
+                {% endif %}
+            </div>
+            <div class="print-date">Generated on: <span id="currentDate"></span></div>
+        </div>
+    </div>
+
+    <!-- Filter Summary -->
+    {% if selected_items or selected_sheds or voucher_search or vehicle_search %}
+    <div class="filter-summary">
+        <h4>Applied Filters:</h4>
+        {% if selected_items %}
+            <div class="filter-item"><strong>Items:</strong> {{ selected_items|length }} selected</div>
+        {% endif %}
+        {% if selected_item_types %}
+            <div class="filter-item"><strong>Item Types:</strong> {{ selected_item_types|length }} selected</div>
+        {% endif %}
+        {% if selected_sheds %}
+            <div class="filter-item"><strong>Sheds:</strong> {{ selected_sheds|length }} selected</div>
+        {% endif %}
+        {% if selected_spot_purchases %}
+            <div class="filter-item"><strong>Spot Purchases:</strong> {{ selected_spot_purchases|length }} selected</div>
+        {% endif %}
+        {% if voucher_search %}
+            <div class="filter-item"><strong>Voucher Search:</strong> "{{ voucher_search }}"</div>
+        {% endif %}
+        {% if vehicle_search %}
+            <div class="filter-item"><strong>Vehicle Search:</strong> "{{ vehicle_search }}"</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Summary Statistics -->
+    <div class="summary-stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value" id="totalRecords">{{ summary|length }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Boxes Purchased</div>
+                <div class="stat-value" id="totalBoxesPurchase">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Quantity Purchased</div>
+                <div class="stat-value" id="totalQuantityPurchase">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Boxes Received</div>
+                <div class="stat-value" id="totalBoxesReceived">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Quantity Received</div>
+                <div class="stat-value" id="totalQuantityReceived">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Voucher No</th>
+                <th>Shed</th>
+                <th>Vehicle</th>
+                <th>Spot Purchase Date</th>
+                <th>Spot Voucher</th>
+                <th>Item</th>
+                <th>Species</th>
+                <th>Grade</th>
+                <th>Item Type</th>
+                <th>Purchase Boxes</th>
+                <th>Purchase Qty</th>
+                <th>Avg Box Weight</th>
+                <th>Boxes Received</th>
+                <th>Qty Received</th>
+
+            </tr>
+        </thead>
+        <tbody id="dataTableBody">
+            {% for row in summary %}
+            <tr>
+                <td class="date-cell" data-label="Date">{{ row.date|date:"d/m/Y" }}</td>
+                <td class="voucher-cell" data-label="Voucher No">{{ row.voucher_number }}</td>
+                <td class="shed-cell" data-label="Shed">{{ row.shed__name }}</td>
+                <td class="vehicle-cell" data-label="Vehicle">{{ row.vehicle_number }}</td>
+                <td class="date-cell" data-label="Spot Purchase Date">{{ row.spot_purchase_date|date:"d/m/Y"|default:"N/A" }}</td>
+                <td class="voucher-cell" data-label="Spot Voucher">{{ row.spot_purchase__voucher_number|default:"N/A" }}</td>
+                <td class="item-cell" data-label="Item">{{ row.spot_purchase_item__item__name|default:"N/A" }}</td>
+                <td class="species-cell" data-label="Species">{{ row.spot_purchase_item__item__species__name|default:"N/A" }}</td>
+                <td class="grade-cell" data-label="Grade">{{ row.spot_purchase_item__item__itemgrade__grade|default:"N/A" }}</td>
+                <td class="item-type-cell" data-label="Item Type">{{ row.spot_purchase_item__item__itemtype__name|default:"N/A" }}</td>
+                <td class="quantity-cell" data-label="Purchase Boxes">{{ row.total_boxes_purchase|default:0 }}</td>
+                <td class="quantity-cell" data-label="Purchase Qty">{{ row.total_quantity_purchase|default:0|floatformat:0 }}</td>
+                <td class="quantity-cell" data-label="Avg Box Weight">{{ row.avg_box_weight|floatformat:2|default:"0.00" }}</td>
+                <td class="quantity-cell" data-label="Boxes Received">{{ row.boxes_received|default:0 }}</td>
+                <td class="quantity-cell" data-label="Qty Received">{{ row.quantity_received|default:0|floatformat:0 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="15" class="no-data">
+                    No records found matching the selected criteria.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Export Action Buttons -->
+    <div class="action-buttons">
+        <button type="button" onclick="window.print()" class="action-btn print-btn">
+            🖨️ Print Report
+        </button>
+        <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
+            <span class="loading-spinner" id="pdfSpinner"></span>
+            📄 Generate PDF
+        </button>
+    </div>
+
+    <!-- Report Footer -->
+    <div class="report-footer">
+        <div class="footer-left">
+            <div><strong>Generated by:</strong> Peeling Shed Supply System</div>
+            <div><strong>Report Type:</strong> Comprehensive Supply Summary</div>
+        </div>
+        <div class="footer-right">
+            <div class="page-number">Page 1 of 1</div>
+            <div><strong>Total Records:</strong> {{ summary|length }}</div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN');
+            
+            // Calculate statistics
+            setTimeout(function() {
+                calculateStatistics();
+            }, 100);
+        });
+
+        function calculateStatistics() {
+            const rows = document.querySelectorAll('#dataTableBody tr:not(:has(.no-data))');
+            let totalBoxesPurchase = 0;
+            let totalQuantityPurchase = 0;
+            let totalBoxesReceived = 0;
+            let totalQuantityReceived = 0;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 15 && !cells[0].classList.contains('no-data')) {
+                    // Column indices based on your table structure:
+                    // 0: Date, 1: Voucher No, 2: Shed, 3: Vehicle, 4: Spot Purchase Date, 
+                    // 5: Spot Voucher, 6: Item, 7: Species, 8: Grade, 9: Item Type,
+                    // 10: Purchase Boxes, 11: Purchase Qty, 12: Avg Box Weight, 
+                    // 13: Boxes Received, 14: Qty Received
+                    
+                    const purchaseBoxes = parseFloat(cells[10].textContent) || 0;
+                    const purchaseQty = parseFloat(cells[11].textContent) || 0;
+                    const boxesReceived = parseFloat(cells[13].textContent) || 0;
+                    const qtyReceived = parseFloat(cells[14].textContent) || 0;
+                    
+                    totalBoxesPurchase += purchaseBoxes;
+                    totalQuantityPurchase += purchaseQty;
+                    totalBoxesReceived += boxesReceived;
+                    totalQuantityReceived += qtyReceived;
+                }
+            });
+
+            // Update the summary statistics
+            document.getElementById('totalBoxesPurchase').textContent = totalBoxesPurchase.toLocaleString('en-IN');
+            document.getElementById('totalQuantityPurchase').textContent = totalQuantityPurchase.toLocaleString('en-IN');
+            document.getElementById('totalBoxesReceived').textContent = totalBoxesReceived.toLocaleString('en-IN');
+            document.getElementById('totalQuantityReceived').textContent = totalQuantityReceived.toLocaleString('en-IN');
+        }
+
+        async function generatePDF() {
+            const pdfButton = document.querySelector('.pdf-btn');
+            const spinner = document.getElementById('pdfSpinner');
+            
+            try {
+                // Show loading state
+                spinner.style.display = 'inline-block';
+                pdfButton.style.pointerEvents = 'none';
+                pdfButton.style.opacity = '0.7';
+
+                // Wait for libraries to ensure they're loaded
+                if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+
+                if (typeof window.jspdf === 'undefined') {
+                    throw new Error('jsPDF library failed to load. Please refresh the page and try again.');
+                }
+
+                if (typeof html2canvas === 'undefined') {
+                    throw new Error('html2canvas library failed to load. Please refresh the page and try again.');
+                }
+
+                // Add PDF rendering class
+                document.body.classList.add('pdf-rendering');
+
+                // Hide action buttons for PDF
+                const actionButtons = document.querySelector('.action-buttons');
+                actionButtons.style.display = 'none';
+
+                // Create canvas
+                const canvas = await html2canvas(document.body, {
+                    scale: 1.5,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: document.body.scrollWidth,
+                    height: document.body.scrollHeight,
+                    scrollX: 0,
+                    scrollY: 0,
+                    ignoreElements: function(element) {
+                        return element.classList.contains('action-buttons');
+                    }
+                });
+
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                
+                // Create jsPDF instance - landscape for wider table
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const imgWidth = 297; // A4 landscape width in mm
+                const pageHeight = 210; // A4 landscape height in mm  
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                // Add first page
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pageHeight;
+
+                // Add additional pages if needed
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+                    heightLeft -= pageHeight;
+                }
+
+                // Generate filename with timestamp
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toTimeString().split(' ')[0].replace(/:/g, '-');
+                const filename = `Peeling_Shed_Supply_Report_${dateStr}_${timeStr}.pdf`;
+
+                // Save the PDF
+                pdf.save(filename);
+                
+                showNotification('PDF generated successfully!', 'success');
+
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                
+                let errorMessage = 'Error generating PDF: ';
+                if (error.message.includes('jsPDF')) {
+                    errorMessage += 'PDF library not loaded. Please refresh the page.';
+                } else if (error.message.includes('html2canvas')) {
+                    errorMessage += 'Canvas library not loaded. Please refresh the page.';
+                } else {
+                    errorMessage += error.message || 'Unknown error occurred.';
+                }
+                
+                showNotification(errorMessage, 'error');
+            } finally {
+                // Restore button state
+                spinner.style.display = 'none';
+                pdfButton.style.pointerEvents = 'auto';
+                pdfButton.style.opacity = '1';
+                
+                // Remove PDF rendering class
+                document.body.classList.remove('pdf-rendering');
+                
+                // Show action buttons again
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) {
+                    actionButtons.style.display = 'flex';
+                }
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // Print event handlers
+        window.addEventListener('beforeprint', function() {
+            document.body.style.backgroundColor = 'white';
+        });
+
+        window.addEventListener('afterprint', function() {
+            document.body.style.backgroundColor = '';
+        });
+    </script>
+</body>
+</html>

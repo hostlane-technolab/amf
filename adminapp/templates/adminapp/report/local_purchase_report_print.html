@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Purchase Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+<style>
+        @page {
+            size: A4;
+            margin: 0.5in;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 25px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 20px;
+            line-height: 1.4;
+            color: #000000;
+            background: white;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #2563eb;
+        }
+
+        .company-name {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .report-title {
+            font-size: 26px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+        }
+
+        .report-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 20px;
+            color: #000000;
+        }
+
+        .date-range {
+            font-weight: 600;
+            color: #000000;
+            font-size: 22px;
+        }
+
+        .print-date {
+            font-style: italic;
+            color: #000000;
+            font-size: 20px;
+        }
+
+        .summary-stats {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 20px;
+            color: #000000;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table thead {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+        }
+
+        .data-table th {
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .data-table th:last-child {
+            border-right: none;
+        }
+
+        .data-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 20px;
+            vertical-align: top;
+            color: #000000;
+            font-weight: 600;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #eff6ff;
+        }
+
+        .amount-cell {
+            background-color: #ff54549b;
+            text-align: right;
+            font-weight: 700;
+            color: #000000;
+            font-size: 22px;
+        }
+
+        .quantity-cell {
+            text-align: center;
+            font-weight: 700;
+            color: #000000;
+            font-size: 22px;
+        }
+
+        .date-cell {
+            background-color: #98e5ff;
+            font-weight: 600;
+            color: #000000;
+            white-space: nowrap;
+            font-size: 20px;
+        }
+
+        .voucher-cell, .party-cell, .item-cell {
+            font-weight: 700;
+            color: #000000;
+            font-size: 20px;
+        }
+
+        .grade-cell {
+            color: #000000;
+            font-weight: 600;
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-block;
+            font-size: 20px;
+        }
+
+        .species-cell {
+            color: #000000;
+            font-weight: 600;
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-block;
+            font-size: 20px;
+        }
+
+        .rate-cell {
+            text-align: right;
+            font-weight: 600;
+            color: #000000;
+            font-size: 22px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #000000;
+            font-style: italic;
+            font-size: 24px;
+        }
+
+        .report-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 20px;
+            color: #000000;
+        }
+
+        .footer-left, .footer-right {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .page-number {
+            font-weight: 600;
+            color: #000000;
+            font-size: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            gap: 10px;
+        }
+
+        .pdf-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.success {
+            background: #10b981;
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                color: #000000;
+            }
+            
+            .action-buttons {
+                display: none;
+            }
+            
+            .data-table {
+                page-break-inside: avoid;
+            }
+            
+            .data-table thead {
+                display: table-header-group;
+            }
+            
+            .data-table tbody tr {
+                page-break-inside: avoid;
+            }
+            
+            .report-header, .summary-stats {
+                page-break-after: avoid;
+            }
+
+            * {
+                color: #000000;
+            }
+
+            .data-table th {
+                color: white;
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                font-size: 20px;
+            }
+            
+            .data-table {
+                font-size: 20px;
+            }
+            
+            .data-table th, .data-table td {
+                padding: 10px 8px;
+                font-size: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .report-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .action-btn {
+                width: 250px;
+                justify-content: center;
+            }
+
+            .company-name {
+                font-size: 28px;
+            }
+
+            .report-title {
+                font-size: 22px;
+            }
+        }
+
+        /* PDF rendering styles */
+        .pdf-rendering {
+            color: #000000;
+            opacity: 1;
+        }
+
+        .pdf-rendering *:not(.data-table th) {
+            color: #000000;
+            opacity: 1;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .pdf-rendering .data-table th {
+            color: #ffffff;
+            opacity: 1;
+        }
+
+        .pdf-rendering .data-table td {
+            color: #000000;
+            opacity: 1;
+            font-weight: 700;
+        }
+</style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="report-header">
+        <div class="company-name">BAHRAYA EXPORTS </div>
+        <div class="report-title">Local Purchase Report</div>
+        
+        <div class="report-info">
+            <div class="date-range">
+                {% if start_date and end_date %}
+                    Period: {{ start_date|date:"d/m/Y" }} to {{ end_date|date:"d/m/Y" }}
+                {% else %}
+                    Period: All Records
+                {% endif %}
+            </div>
+            <div class="print-date">Generated on: <span id="currentDate"></span></div>
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="summary-stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value" id="totalRecords">{{ summary|length }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Quantity</div>
+                <div class="stat-value" id="totalQuantity">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Amount</div>
+                <div class="stat-value" id="totalAmount">₹0.00</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Average Rate</div>
+                <div class="stat-value" id="avgRate">₹0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Voucher No</th>
+                <th>Party</th>
+                <th>Item Sub</th>
+                <th>Peeling Type</th>
+                <th>Grade</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Avg Rate</th>
+            </tr>
+        </thead>
+        <tbody id="dataTableBody">
+            {% for row in summary %}
+            <tr>
+                <td class="date-cell">{{ row.purchase__date|date:"d/m/Y" }}</td>
+                <td class="voucher-cell">{{ row.purchase__voucher_number }}</td>
+                <td class="party-cell">{{ row.purchase__party_name__party }}</td>
+                <td class="item-cell">{{ row.item_quality__quality }}</td>
+                <td>
+                    {% if row.item_type__name %}
+                        <span class="species-cell">{{ row.item_type__name }}</span>
+                    {% else %}
+                       
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row.grade__grade %}
+                        <span class="grade-cell">{{ row.grade__grade }}</span>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td class="quantity-cell">{{ row.total_quantity|floatformat:0 }}</td>
+                <td class="amount-cell">₹{{ row.total_amount|floatformat:2 }}</td>
+                <td class="rate-cell">₹{{ row.avg_rate|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9" class="no-data">
+                    No records found matching the selected criteria.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Export Action Buttons -->
+    <div class="action-buttons">
+        <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
+            <span class="loading-spinner" id="pdfSpinner"></span>
+            📄 Generate PDF
+        </button>
+    </div>
+
+    <!-- Report Footer -->
+    <div class="report-footer">
+        <div class="footer-left">
+            <div><strong>Generated by:</strong> Local Purchase System</div>
+            <div><strong>Report Type:</strong> Comprehensive Purchase Summary</div>
+        </div>
+        <div class="footer-right">
+            <div class="page-number">Page 1 of 1</div>
+            <div><strong>Total Records:</strong> {{ summary|length }}</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN');
+            calculateStatistics();
+        });
+
+        function calculateStatistics() {
+            const rows = document.querySelectorAll('#dataTableBody tr:not(.no-data tr)');
+            let totalQuantity = 0;
+            let totalAmount = 0;
+            let validRows = 0;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 9) {
+                    const quantityText = cells[6].textContent.trim();
+                    const amountText = cells[7].textContent.replace('₹', '').replace(/,/g, '').trim();
+                    
+                    const quantity = parseFloat(quantityText) || 0;
+                    const amount = parseFloat(amountText) || 0;
+                    
+                    totalQuantity += quantity;
+                    totalAmount += amount;
+                    validRows++;
+                }
+            });
+
+            const avgRate = validRows > 0 && totalQuantity > 0 ? totalAmount / totalQuantity : 0;
+
+            document.getElementById('totalQuantity').textContent = totalQuantity.toLocaleString('en-IN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            document.getElementById('totalAmount').textContent = '₹' + totalAmount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2
+            });
+            document.getElementById('avgRate').textContent = '₹' + avgRate.toLocaleString('en-IN', {
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2
+            });
+        }
+
+        async function generatePDF() {
+            const pdfButton = document.querySelector('.pdf-btn');
+            const spinner = document.getElementById('pdfSpinner');
+            
+            try {
+                spinner.style.display = 'inline-block';
+                pdfButton.style.pointerEvents = 'none';
+                pdfButton.style.opacity = '0.7';
+
+                document.body.classList.add('pdf-rendering');
+
+                const actionButtons = document.querySelector('.action-buttons');
+                const originalDisplay = actionButtons.style.display;
+                actionButtons.style.display = 'none';
+
+                if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                    throw new Error('PDF libraries not loaded');
+                }
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const canvas = await html2canvas(document.body, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    allowTaint: false,
+                    foreignObjectRendering: false,
+                    imageTimeout: 15000,
+                    letterRendering: true,
+                    onclone: function(clonedDoc) {
+                        clonedDoc.body.style.color = '#000000';
+                        clonedDoc.body.style.opacity = '1';
+                        
+                        const allTextElements = clonedDoc.querySelectorAll('*');
+                        allTextElements.forEach(el => {
+                            if (!el.closest('thead')) {
+                                el.style.color = '#000000';
+                                el.style.opacity = '1';
+                                el.style.webkitPrintColorAdjust = 'exact';
+                                el.style.printColorAdjust = 'exact';
+                                
+                                if (el.tagName === 'TD') {
+                                    el.style.fontWeight = '700';
+                                    el.style.color = '#000000';
+                                    el.style.opacity = '1';
+                                }
+                            }
+                        });
+                        
+                        const tableCells = clonedDoc.querySelectorAll('.data-table td');
+                        tableCells.forEach(td => {
+                            td.style.color = '#000000';
+                            td.style.opacity = '1';
+                            td.style.fontWeight = '700';
+                        });
+                        
+                        const headerCells = clonedDoc.querySelectorAll('.data-table th');
+                        headerCells.forEach(th => {
+                            th.style.color = '#ffffff';
+                            th.style.opacity = '1';
+                            th.style.fontWeight = '700';
+                        });
+                    }
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210;
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const filename = `Local_Purchase_Report_${dateStr}.pdf`;
+
+                pdf.save(filename);
+                
+                showNotification('PDF generated successfully!', 'success');
+
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                showNotification('Error generating PDF. Please try using the print function.', 'error');
+            } finally {
+                spinner.style.display = 'none';
+                pdfButton.style.pointerEvents = 'auto';
+                pdfButton.style.opacity = '1';
+                
+                document.body.classList.remove('pdf-rendering');
+                
+                actionButtons.style.display = originalDisplay || 'flex';
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        window.addEventListener('beforeprint', function() {
+            document.body.style.backgroundColor = 'white';
+        });
+
+        window.addEventListener('afterprint', function() {
+            document.body.style.backgroundColor = '';
+        });
+    </script>
+
+</body>
+</html>

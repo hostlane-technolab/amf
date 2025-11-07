@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Report with Amount - Print View</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 9px;
+            line-height: 1.3;
+            color: #000;
+            background: white;
+        }
+
+        @page {
+            size: A4 landscape;
+            margin: 10mm 8mm;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            border: 2px solid #059669;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #059669;
+            text-transform: uppercase;
+        }
+
+        .report-subtitle {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .company-info {
+            background: #f0fdf4;
+            padding: 8px;
+            border: 1px solid #059669;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 3px;
+            color: #065f46;
+        }
+
+        .company-location {
+            font-size: 10px;
+            text-align: center;
+            margin-bottom: 2px;
+            color: #065f46;
+        }
+
+        .date-range {
+            font-size: 11px;
+            margin-top: 6px;
+            font-weight: bold;
+            color: #059669;
+        }
+
+        /* Section Styling */
+        .stock-section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+        }
+
+        .section-number {
+            font-size: 14px;
+            font-weight: bold;
+            color: #059669;
+            margin-bottom: 8px;
+            padding: 6px 10px;
+            background: #d1fae5;
+            border-left: 4px solid #059669;
+            border-radius: 4px;
+        }
+
+        .section-header-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+            background: #f0fdf4;
+            padding: 10px;
+            border: 1px solid #d1fae5;
+            border-radius: 4px;
+        }
+
+        .section-info-box {
+            text-align: center;
+        }
+
+        .section-info-label {
+            font-size: 9px;
+            font-weight: bold;
+            color: #6c757d;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .section-info-value {
+            font-size: 11px;
+            font-weight: bold;
+            color: #065f46;
+        }
+
+        /* Table Styling */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            border: 2px solid #059669;
+            background-color: white;
+            font-size: 8px;
+        }
+
+        .data-table th {
+            background: #059669;
+            color: white;
+            border: 1px solid #047857;
+            padding: 6px 3px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 7px;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 4px 3px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 8px;
+        }
+
+        .data-table .number-col {
+            text-align: right;
+            padding-right: 5px;
+            font-weight: 600;
+        }
+
+        .data-table .center-col {
+            text-align: center;
+        }
+
+        .data-table .currency-col {
+            background-color: #fef3c7;
+        }
+
+        .data-table .amount-header {
+            background: #f59e0b !important;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .data-table tbody tr:nth-child(even) .currency-col {
+            background-color: #fde68a;
+        }
+
+        .section-total-row {
+            background: #d1fae5 !important;
+            font-weight: bold;
+        }
+
+        .section-total-row td {
+            border-top: 2px solid #059669;
+            border-bottom: 2px solid #059669;
+            font-weight: bold;
+            padding: 6px 3px;
+            color: #065f46;
+            font-size: 8px;
+        }
+
+        .section-total-row .currency-col {
+            background: #fde68a !important;
+        }
+
+        /* Grand Total Section */
+        .grand-total-section {
+            margin-top: 20px;
+            border: 2px solid #059669;
+            border-radius: 6px;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+
+        .grand-total-header {
+            background: #059669;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .grand-total-content {
+            background: white;
+        }
+
+        .grand-total-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #059669;
+        }
+
+        .grand-total-row:last-child {
+            border-bottom: none;
+        }
+
+        .grand-total-label {
+            background: #d1fae5;
+            padding: 8px 15px;
+            font-weight: bold;
+            color: #065f46;
+            border-right: 1px solid #059669;
+            font-size: 10px;
+        }
+
+        .grand-total-value {
+            padding: 8px 15px;
+            text-align: right;
+            font-weight: bold;
+            font-size: 11px;
+            color: #212529;
+        }
+
+        .amount-row {
+            background: #fef3c7 !important;
+        }
+
+        .amount-row .grand-total-label {
+            background: #fde68a;
+            color: #92400e;
+        }
+
+        .amount-row .grand-total-value {
+            color: #92400e;
+            font-size: 13px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px 20px;
+            font-style: italic;
+            color: #6c757d;
+            font-size: 12px;
+            border: 2px dashed #dee2e6;
+            margin: 20px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .footer {
+            margin-top: 15px;
+            padding-top: 8px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .stock-section {
+                page-break-inside: avoid;
+            }
+
+            .data-table {
+                page-break-inside: auto;
+            }
+
+            .data-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .grand-total-section {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media screen {
+            body {
+                background: #e0e0e0;
+                padding: 20px;
+            }
+
+            .print-container {
+                background: white;
+                max-width: 297mm;
+                margin: 0 auto;
+                padding: 12mm 10mm;
+                box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            }
+
+            .no-print {
+                text-align: center;
+                padding: 15px;
+                background: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+                margin-bottom: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            }
+
+            .no-print button {
+                padding: 12px 24px;
+                font-size: 14px;
+                background: white;
+                color: #059669;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                margin: 0 8px;
+                font-weight: bold;
+                transition: all 0.3s ease;
+            }
+
+            .no-print button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            }
+
+            .no-print button:disabled {
+                background: #999;
+                color: white;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            #status {
+                margin-top: 10px;
+                font-size: 13px;
+                color: white;
+                font-weight: 600;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-container">
+        <div class="no-print">
+            <button id="generatePdfBtn" onclick="generatePDF()">📄 Generate PDF</button>
+            <button onclick="window.print()">🖨️ Print</button>
+            <button onclick="window.close()">❌ Close</button>
+            <div id="status"></div>
+        </div>
+
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title">STOCK REPORT WITH AMOUNT</div>
+            <div class="report-subtitle">Comprehensive Inventory with USD & INR Valuations</div>
+            
+            <div class="company-info">
+                <div class="company-name">BAHRAYA EXPORTS </div>
+                <div class="company-location">VANDANAM, ALAPPUZHA</div>
+                <div class="company-location">KERALA, INDIA</div>
+            </div>
+            
+            <div class="date-range">
+                Generated: {% now "d-M-Y H:i" %}
+                {% if start_date and end_date %}
+                | Period: {{ start_date }} to {{ end_date }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sectioned Stock Data -->
+        <div id="report-content">
+            {% for section_key, section_data in sectioned_data.items %}
+            <div class="stock-section">
+                
+                <!-- Section Number -->
+                <div class="section-number">Section {{ forloop.counter }}</div>
+                
+                <!-- Section Header Info -->
+                <div class="section-header-row">
+                    <div class="section-info-box">
+                        <div class="section-info-label">Item Sub</div>
+                        <div class="section-info-value">{{ section_data.item_quality }}</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Unit</div>
+                        <div class="section-info-value">{{ section_data.unit_code }}</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Glaze</div>
+                        <div class="section-info-value">{{ section_data.glaze }}%</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Category</div>
+                        <div class="section-info-value">{{ section_data.category }}</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Brand</div>
+                        <div class="section-info-value">{{ section_data.brand }}</div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">No.</th>
+                            <th rowspan="2">Grade</th>
+                            <th rowspan="2">Opening</th>
+                            <th rowspan="2">Freezing</th>
+                            <th rowspan="2">Shipment</th>
+                            <th rowspan="2">Transfer IN</th>
+                            <th rowspan="2">Transfer OUT</th>
+                            <th colspan="2">Adjustment</th>
+                            <th rowspan="2">Total KG</th>
+                            <th rowspan="2">Total Case</th>
+                            <th colspan="2" class="amount-header">Rate/KG</th>
+                            <th colspan="2" class="amount-header">Amount</th>
+                        </tr>
+                        <tr>
+                            <th>(+)</th>
+                            <th>(-)</th>
+                            <th class="amount-header">USD</th>
+                            <th class="amount-header">INR</th>
+                            <th class="amount-header">USD</th>
+                            <th class="amount-header">INR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in section_data.items %}
+                        <tr>
+                            <td class="center-col">{{ forloop.counter }}</td>
+                            <td class="center-col">{{ item.grade }}</td>
+                            <td class="number-col">{{ item.opening|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.freezing|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.shipment|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.transfer_in|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.transfer_out|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.adjustment_plus|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.adjustment_minus|floatformat:2 }}</td>
+                            <td class="number-col"><strong>{{ item.total_slab|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ item.total_case|floatformat:2 }}</strong></td>
+                            <td class="number-col currency-col">{{ item.usd_rate_per_kg|floatformat:2 }}</td>
+                            <td class="number-col currency-col">{{ item.inr_rate_per_kg|floatformat:2 }}</td>
+                            <td class="number-col currency-col"><strong>${{ item.usd_amount|floatformat:2 }}</strong></td>
+                            <td class="number-col currency-col"><strong>₹{{ item.inr_amount|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Section Total Row -->
+                        <tr class="section-total-row">
+                            <td colspan="2"><strong>SECTION TOTAL</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.opening|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.freezing|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.shipment|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.transfer_in|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.transfer_out|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.adjustment_plus|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.adjustment_minus|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.total_slab|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.total_case|floatformat:2 }}</strong></td>
+                            <td colspan="2" class="center-col currency-col"><strong>Total Amount:</strong></td>
+                            <td class="number-col currency-col"><strong>${{ section_data.totals.total_usd_amount|floatformat:2 }}</strong></td>
+                            <td class="number-col currency-col"><strong>₹{{ section_data.totals.total_inr_amount|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% empty %}
+            <div class="no-data">
+                <h3>📦 No Stock Data Available</h3>
+                <p>No stock records found matching your filter criteria.</p>
+            </div>
+            {% endfor %}
+
+            <!-- Grand Total -->
+            {% if sectioned_data %}
+            <div class="grand-total-section">
+                <div class="grand-total-header">GRAND TOTAL SUMMARY</div>
+                <div class="grand-total-content">
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Sections:</div>
+                        <div class="grand-total-value">{{ grand_totals.section_count }}</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Opening:</div>
+                        <div class="grand-total-value">{{ grand_totals.opening|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Freezing:</div>
+                        <div class="grand-total-value">{{ grand_totals.freezing|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Shipment:</div>
+                        <div class="grand-total-value">{{ grand_totals.shipment|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Transfer IN:</div>
+                        <div class="grand-total-value">{{ grand_totals.transfer_in|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Transfer OUT:</div>
+                        <div class="grand-total-value">{{ grand_totals.transfer_out|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Adjustment (+):</div>
+                        <div class="grand-total-value">{{ grand_totals.adjustment_plus|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Adjustment (-):</div>
+                        <div class="grand-total-value">{{ grand_totals.adjustment_minus|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">📦 Total KG:</div>
+                        <div class="grand-total-value" style="font-size: 13px; color: #059669;">{{ grand_totals.total_slab|floatformat:2 }} KG</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">📦 TOTAL CASE:</div>
+                        <div class="grand-total-value" style="font-size: 13px; color: #059669;">{{ grand_totals.total_case|floatformat:2 }}</div>
+                    </div>
+                    <div class="grand-total-row amount-row">
+                        <div class="grand-total-label">💰 TOTAL USD AMOUNT:</div>
+                        <div class="grand-total-value">${{ grand_totals.total_usd_amount|floatformat:2 }}</div>
+                    </div>
+                    <div class="grand-total-row amount-row">
+                        <div class="grand-total-label">💰 TOTAL INR AMOUNT:</div>
+                        <div class="grand-total-value">₹{{ grand_totals.total_inr_amount|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            Generated on {% now "d-M-Y H:i" %} | BAHRAYA EXPORTS - Stock Report with Amount
+        </div>
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const button = document.getElementById('generatePdfBtn');
+            const status = document.getElementById('status');
+            
+            button.disabled = true;
+            button.textContent = '⏳ Generating PDF...';
+            status.textContent = 'Please wait, this may take a moment...';
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const element = document.querySelector('.print-container');
+                
+                const noPrintSection = document.querySelector('.no-print');
+                noPrintSection.style.display = 'none';
+                
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+                
+                noPrintSection.style.display = 'block';
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('l', 'mm', 'a4'); // 'l' for landscape
+                
+                const pdfWidth = 297; // A4 landscape width
+                const pdfHeight = 210; // A4 landscape height
+                const imgWidth = pdfWidth;
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                if (imgHeight <= pdfHeight) {
+                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                } else {
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+                    
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pdfHeight;
+                    }
+                }
+                
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0];
+                const filename = `Stock_Report_Amount_${dateStr}.pdf`;
+                
+                pdf.save(filename);
+                
+                status.textContent = '✅ PDF generated successfully!';
+                button.textContent = '📄 Generate PDF';
+                button.disabled = false;
+                
+                setTimeout(() => {
+                    status.textContent = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                status.textContent = '❌ Error generating PDF. Please try again.';
+                button.textContent = '📄 Generate PDF';
+                button.disabled = false;
+            }
+        }
+
+        // Auto-print function (optional)
+        window.onload = function() {
+            // Uncomment next line to auto-print on load
+            // window.print();
+        };
+    </script>
+</body>
+</html>

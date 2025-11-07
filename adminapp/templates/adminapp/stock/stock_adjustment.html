@@ -1,0 +1,2023 @@
+{% extends 'admin_base.html' %}
+
+{% load static %}
+
+{% block title %}Stock Adjustment{% endblock %}
+
+{% block content %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Stock Management</h3>
+            <p class="ph-header-subtitle">Adjust inventory stock levels</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:list' %}" class="ph-breadcrumb-link">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock List</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>{{ action }} Stock</span>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats"></div>
+      </div>
+    </div>
+
+    <form method="post" id="stockAdjustmentForm" class="purchase-form">
+      {% csrf_token %}
+      
+      <!-- Display form errors -->
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger mb-4">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <!-- Current Stock Display -->
+      <div id="currentStockDisplay" class="form-card mb-4" style="display: none;">
+        <div class="card-header" style="background: linear-gradient(135deg, #fef3c7 0%, #fef9e3 100%); border-bottom: 2px solid #fbbf24;">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4" style="background: #f59e0b; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.2);">
+              <i class="fas fa-warehouse"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Current Stock for Selected Combination</h4>
+              <p class="text-muted mb-0">View existing stock levels</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="stock-info-box">
+                <label class="stock-label">CS Quantity:</label>
+                <span id="currentCS" class="stock-value">0</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stock-info-box">
+                <label class="stock-label">KG Quantity:</label>
+                <span id="currentKG" class="stock-value">0</span>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-12">
+              <div class="after-adjustment-box">
+                <i class="fas fa-arrow-right me-2"></i>
+                <strong>After adjustment: </strong>
+                <strong>CS: <span id="afterCS">0</span></strong> | 
+                <strong>KG: <span id="afterKG">0</span></strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="newStockDisplay" class="form-card mb-4" style="display: none;">
+        <div class="card-header" style="background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%); border-bottom: 2px solid #10b981;">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4" style="background: #10b981; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2);">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">New Stock Will Be Created</h4>
+              <p class="text-muted mb-0">This combination does not exist. A new stock entry will be created with your adjustment values.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Store, Brand & Item Selection Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Primary Selection</h3>
+              <p class="text-muted mb-0">Select store, brand and item</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.store.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-store input-icon"></i>
+                  {{ form.store }}
+                </div>
+                {% if form.store.errors %}
+                  <div class="validation-error">{{ form.store.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.brand.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-tag input-icon"></i>
+                  {{ form.brand }}
+                </div>
+                {% if form.brand.errors %}
+                  <div class="validation-error">{{ form.brand.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.item.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-box input-icon"></i>
+                  {{ form.item }}
+                </div>
+                {% if form.item.errors %}
+                  <div class="validation-error">{{ form.item.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item Attributes Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-sliders-h"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Item Attributes</h4>
+              <p class="text-muted mb-0">Optional item specifications</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+
+
+            <div class="col-md-4 col-lg-3">
+                <div class="form-group">
+                    <label class="form-label">{{ form.item_quality.label }}</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-star input-icon"></i>
+                        {{ form.item_quality }}
+                    </div>
+                    {% if form.item_quality.errors %}
+                    <div class="validation-error">{{ form.item_quality.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.freezing_category.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-snowflake input-icon"></i>
+                  {{ form.freezing_category }}
+                </div>
+                {% if form.freezing_category.errors %}
+                  <div class="validation-error">{{ form.freezing_category.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.unit.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-ruler input-icon"></i>
+                  {{ form.unit }}
+                </div>
+                {% if form.unit.errors %}
+                  <div class="validation-error">{{ form.unit.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.glaze.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-tint input-icon"></i>
+                  {{ form.glaze }}
+                </div>
+                {% if form.glaze.errors %}
+                  <div class="validation-error">{{ form.glaze.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-4 mt-1">
+            <!-- <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.species.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-fish input-icon"></i>
+                  {{ form.species }}
+                </div>
+                {% if form.species.errors %}
+                  <div class="validation-error">{{ form.species.errors }}</div>
+                {% endif %}
+              </div>
+            </div> -->
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.item_grade.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-medal input-icon"></i>
+                  {{ form.item_grade }}
+                </div>
+                {% if form.item_grade.errors %}
+                  <div class="validation-error">{{ form.item_grade.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.peeling_type.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-cut input-icon"></i>
+                  {{ form.peeling_type }}
+                </div>
+                {% if form.peeling_type.errors %}
+                  <div class="validation-error">{{ form.peeling_type.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Adjustment Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-balance-scale"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Stock Adjustment</h4>
+              <p class="text-muted mb-0">Enter adjustment quantities (use negative values to reduce stock)</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">CS Adjustment *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-cubes input-icon"></i>
+                  {{ form.cs_adjustment }}
+                </div>
+                <div class="form-text-help">{{ form.cs_adjustment.help_text }}</div>
+                {% if form.cs_adjustment.errors %}
+                  <div class="validation-error">{{ form.cs_adjustment.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">KG Adjustment *</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-weight-hanging input-icon"></i>
+                  {{ form.kg_adjustment }}
+                </div>
+                <div class="form-text-help">{{ form.kg_adjustment.help_text }}</div>
+                {% if form.kg_adjustment.errors %}
+                  <div class="validation-error">{{ form.kg_adjustment.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rates Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Rate Information</h4>
+              <p class="text-muted mb-0">Enter pricing rates</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.usd_rate_per_kg.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-dollar-sign input-icon"></i>
+                  {{ form.usd_rate_per_kg }}
+                </div>
+                {% if form.usd_rate_per_kg.errors %}
+                  <div class="validation-error">{{ form.usd_rate_per_kg.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.usd_rate_item.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-dollar-sign input-icon"></i>
+                  {{ form.usd_rate_item }}
+                </div>
+                {% if form.usd_rate_item.errors %}
+                  <div class="validation-error">{{ form.usd_rate_item.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.usd_rate_item_to_inr.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-rupee-sign input-icon"></i>
+                  {{ form.usd_rate_item_to_inr }}
+                </div>
+                {% if form.usd_rate_item_to_inr.errors %}
+                  <div class="validation-error">{{ form.usd_rate_item_to_inr.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-check me-2"></i>{{ action }} Stock
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Help Text */
+.form-text-help {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Stock Info Boxes */
+.stock-info-box {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.stock-label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.stock-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.after-adjustment-box {
+  background: #f0f9ff;
+  border: 2px solid #3b82f6;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.form-actions .row {
+  width: 100%;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Animation for updated fields */
+.updated {
+  animation: highlight 0.6s ease;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.2); }
+  100% { background-color: transparent; }
+}
+
+/* Border color classes for adjustment inputs */
+.border-success {
+  border-color: #28a745 !important;
+}
+
+.border-danger {
+  border-color: #dc3545 !important;
+}
+
+.border-warning {
+  border-color: #ffc107 !important;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#currentStockDisplay, #newStockDisplay {
+  animation: fadeIn 0.5s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- quality script -->
+<script>
+$(document).ready(function() {
+    console.log('✅ Item Quality Script Loaded');
+    
+    const itemSelect = $('#id_item');
+    const qualitySelect = $('#id_item_quality');
+    
+    // IMPORTANT: Clear all options except the first one on page load
+    // This prevents the form from showing all qualities initially
+    const firstOption = qualitySelect.find('option:first').clone();
+    qualitySelect.empty().append(firstOption);
+    
+    // Function to load qualities
+    function loadItemQualities(itemId) {
+        console.log('🔄 Loading qualities for item ID:', itemId);
+        
+        // Reset quality select
+        qualitySelect.empty().append('<option value="">Select Item Quality (Optional)</option>');
+        qualitySelect.prop('disabled', true);
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided');
+            return;
+        }
+
+        // Show loading state
+        qualitySelect.empty().append('<option value="">Loading qualities...</option>');
+
+        // Use $.get() like your working script
+        $.get("{% url 'adminapp:get_item_qualities' %}", { item_id: itemId })
+            .done(function(data) {
+                console.log('✅ Quality data received:', data);
+                
+                // Clear and add default option
+                qualitySelect.empty().append('<option value="">Select Item Quality (Optional)</option>');
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(function(quality) {
+                        qualitySelect.append(`<option value="${quality.id}">${quality.quality}</option>`);
+                    });
+                    qualitySelect.prop('disabled', false);
+                    console.log(`✅ Loaded ${data.length} qualities successfully`);
+                } else {
+                    console.log('⚠️ No qualities found for item:', itemId);
+                    qualitySelect.append('<option value="">No qualities available</option>');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ AJAX Error:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText,
+                    statusCode: xhr.status
+                });
+                
+                qualitySelect.empty()
+                    .append('<option value="">Select Item Quality (Optional)</option>')
+                    .append('<option value="">Error loading qualities</option>');
+                
+                if (xhr.status !== 404) {
+                    alert('Error loading item qualities. Please refresh and try again.');
+                }
+            });
+    }
+    
+    // Event listener for item selection change - using .on() like your working script
+    itemSelect.on('change', function() {
+        const itemId = $(this).val();
+        console.log('📦 Item changed → ID:', itemId);
+        
+        if (itemId) {
+            loadItemQualities(itemId);
+        } else {
+            // Reset quality if no item selected
+            qualitySelect.empty()
+                .append('<option value="">Select Item Quality (Optional)</option>')
+                .prop('disabled', true);
+        }
+    });
+    
+    // Check if item is already selected on page load
+    const initialItemId = itemSelect.val();
+    if (initialItemId) {
+        console.log('🔄 Loading qualities for pre-selected item:', initialItemId);
+        loadItemQualities(initialItemId);
+    }
+    
+    // Debug: Log when selects are interacted with
+    itemSelect.on('focus', function() {
+        console.log('🎯 Item select focused');
+    });
+    
+    qualitySelect.on('focus', function() {
+        console.log('🎯 Quality select focused');
+    });
+});
+</script>
+
+<!-- Load Item Grades (Fixed with Better Debugging) -->
+<script>
+$(document).ready(function() {
+    console.log('✅ Item → Grade Script Loaded');
+    
+    const itemSelect = $('#id_item');
+    const gradeSelect = $('#id_item_grade');
+    
+    console.log('🔍 Finding selects...');
+    console.log('Item select found:', itemSelect.length);
+    console.log('Grade select found:', gradeSelect.length);
+    
+    if (itemSelect.length === 0) {
+        console.error('❌ Item select (#id_item) not found!');
+        return;
+    }
+    
+    if (gradeSelect.length === 0) {
+        console.error('❌ Grade select (#id_item_grade) not found!');
+        return;
+    }
+    
+    console.log('✅ Both selects found successfully');
+    
+    // Clear grade options on page load (keep only first option)
+    const defaultOption = gradeSelect.find('option:first').clone();
+    gradeSelect.empty().append(defaultOption).prop('disabled', true);
+    console.log('🧹 Grade select cleared on page load');
+    
+    // Function to load grades
+    function loadItemGrades(itemId) {
+        console.log('🔍 loadItemGrades() called with itemId:', itemId);
+        
+        // Reset grade select
+        gradeSelect.empty().append('<option value="">Select Item Grade (Optional)</option>');
+        gradeSelect.prop('disabled', true);
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        gradeSelect.empty().append('<option value="">Loading grades...</option>');
+        console.log('⏳ Loading state set, making AJAX request...');
+
+        const ajaxUrl = "{% url 'adminapp:get_item_grades' %}";
+        console.log('📡 AJAX URL:', ajaxUrl);
+        console.log('📡 Request params:', { item_id: itemId });
+        
+        // Use $.get() like your working quality script
+        $.get(ajaxUrl, { item_id: itemId })
+            .done(function(data) {
+                console.log('✅ Grade AJAX SUCCESS! Raw data:', data);
+                console.log('📊 Data type:', typeof data);
+                console.log('📊 Is array?:', Array.isArray(data));
+                console.log('📊 Data length:', data.length);
+                
+                // Clear and add default option
+                gradeSelect.empty().append('<option value="">Select Item Grade (Optional)</option>');
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    console.log(`📦 Processing ${data.length} grades...`);
+                    
+                    data.forEach(function(grade, index) {
+                        console.log(`  Grade ${index + 1}:`, grade);
+                        const option = `<option value="${grade.id}">${grade.grade}</option>`;
+                        console.log(`  Adding option:`, option);
+                        gradeSelect.append(option);
+                    });
+                    
+                    gradeSelect.prop('disabled', false);
+                    console.log('✅ ALL GRADES ADDED! Total options:', gradeSelect.find('option').length);
+                    console.log('✅ Grade select enabled:', !gradeSelect.prop('disabled'));
+                } else {
+                    console.log('⚠️ No grades found or empty array');
+                    console.log('⚠️ Keeping grade select disabled');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Status Code:', xhr.status);
+                console.error('❌ Response Text:', xhr.responseText);
+                
+                gradeSelect.empty()
+                    .append('<option value="">Select Item Grade (Optional)</option>')
+                    .append('<option value="">Error loading grades</option>');
+            });
+    }
+    
+    // Event listener for item selection change
+    itemSelect.on('change', function() {
+        const itemId = $(this).val();
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 ITEM SELECT CHANGED!');
+        console.log('📦 New Item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+        
+        if (itemId) {
+            loadItemGrades(itemId);
+        } else {
+            console.log('⚠️ No item selected, resetting grade select');
+            // Reset grade if no item selected
+            gradeSelect.empty()
+                .append('<option value="">Select Item Grade (Optional)</option>')
+                .prop('disabled', true);
+        }
+    });
+    
+    // Check if item is already selected on page load
+    const initialItemId = itemSelect.val();
+    if (initialItemId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('🔄 PRE-SELECTED ITEM DETECTED ON PAGE LOAD');
+        console.log('🔄 Item ID:', initialItemId);
+        console.log('═══════════════════════════════════════');
+        loadItemGrades(initialItemId);
+    }
+    
+    console.log('✅ Item Grade Script fully initialized');
+    console.log('');
+});
+</script>
+
+<!-- Load Grades with Species (Fixed with Better Debugging) -->
+<script>
+$(document).ready(function() {
+    console.log('✅ Species → Grade Script Loaded');
+    
+    const speciesSelect = $('#id_species');
+    const gradeSelect = $('#id_item_grade');
+    
+    console.log('🔍 Finding selects...');
+    console.log('Species select found:', speciesSelect.length);
+    console.log('Grade select found:', gradeSelect.length);
+    
+    if (speciesSelect.length === 0) {
+        console.error('❌ Species select (#id_species) not found!');
+        return;
+    }
+    
+    if (gradeSelect.length === 0) {
+        console.error('❌ Grade select (#id_item_grade) not found!');
+        return;
+    }
+    
+    console.log('✅ Both selects found successfully');
+    
+    // Function to load grades for species
+    function loadGradesForSpecies(speciesId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('🐟 Loading grades for species ID:', speciesId);
+        console.log('═══════════════════════════════════════');
+        
+        if (!speciesId) {
+            console.log('⚠️ No species ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        const currentOptions = gradeSelect.html(); // Save current options
+        gradeSelect.empty().append('<option value="">Loading grades for species...</option>');
+        console.log('⏳ Loading state set, making AJAX request...');
+
+        const ajaxUrl = "{% url 'adminapp:get_grade_for_species' %}";
+        console.log('📡 AJAX URL:', ajaxUrl);
+        console.log('📡 Request params:', { species_id: speciesId });
+        
+        $.get(ajaxUrl, { species_id: speciesId })
+            .done(function(data) {
+                console.log('✅ Species Grade AJAX SUCCESS! Raw data:', data);
+                console.log('📊 Data type:', typeof data);
+                console.log('📊 Has grades property?:', 'grades' in data);
+                
+                // Clear and add default option
+                gradeSelect.empty().append('<option value="">Select Item Grade (Optional)</option>');
+                
+                // Handle the response structure {grades: [...]}
+                const grades = data.grades || [];
+                console.log('📊 Grades array:', grades);
+                console.log('📊 Grades length:', grades.length);
+                
+                if (grades.length > 0) {
+                    console.log(`📦 Processing ${grades.length} grades for species...`);
+                    
+                    grades.forEach(function(grade, index) {
+                        console.log(`  Grade ${index + 1}:`, grade);
+                        const option = `<option value="${grade.id}">${grade.grade}</option>`;
+                        console.log(`  Adding option:`, option);
+                        gradeSelect.append(option);
+                    });
+                    
+                    gradeSelect.prop('disabled', false);
+                    console.log('✅ ALL SPECIES GRADES ADDED! Total options:', gradeSelect.find('option').length);
+                    console.log('✅ Grade select enabled:', !gradeSelect.prop('disabled'));
+                } else {
+                    console.log('⚠️ No grades found for this species');
+                    gradeSelect.prop('disabled', true);
+                    console.log('⚠️ Grade select disabled');
+                }
+            })
+            .fail(function(xhr, status, error) {
+                console.error('❌ SPECIES AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Status Code:', xhr.status);
+                console.error('❌ Response Text:', xhr.responseText);
+                
+                // Restore previous options on error
+                gradeSelect.html(currentOptions);
+            });
+    }
+    
+    // Event listener for species selection change
+    speciesSelect.on('change', function() {
+        const speciesId = $(this).val();
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('🐟 SPECIES SELECT CHANGED!');
+        console.log('🐟 New Species ID:', speciesId);
+        console.log('═══════════════════════════════════════');
+        
+        if (speciesId) {
+            loadGradesForSpecies(speciesId);
+        }
+        // Note: We don't reset grades if species is cleared, 
+        // because item might have already populated grades
+    });
+    
+    console.log('✅ Species Grade Script fully initialized');
+    console.log('');
+});
+</script>
+
+
+ <!-- Load Species and Peeling based on Item (FIXED)  -->
+<script>
+$(document).ready(function () {
+    console.log("✅ Item → Species/Peeling Script Loaded");
+
+    // Get the item, species, and peeling selects
+    const itemSelect = $('#id_item');
+    const speciesSelect = $('#id_species');
+    const peelingSelect = $('#id_peeling_type');
+
+    console.log('🔍 Finding item select:', itemSelect.length);
+    console.log('🔍 Finding species select:', speciesSelect.length);
+    console.log('🔍 Finding peeling select:', peelingSelect.length);
+
+    // Function to load species for item
+    function loadSpeciesForItem(itemId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 Loading species for item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        const currentOptions = speciesSelect.html();
+        speciesSelect.empty().append('<option value="">Loading species...</option>');
+        console.log('⏳ Loading species...');
+
+        $.ajax({
+            url: "{% url 'adminapp:get_species_for_item' %}",
+            data: { item_id: itemId },
+            success: function (response) {
+                console.log('✅ Species AJAX SUCCESS! Raw data:', response);
+                
+                // Clear and add default option
+                speciesSelect.empty().append('<option value="">---------</option>');
+                
+                const species = response.species || [];
+                console.log('📊 Species array:', species);
+                console.log('📊 Species count:', species.length);
+
+                if (species.length > 0) {
+                    console.log(`📦 Processing ${species.length} species for item...`);
+                    
+                    $.each(species, function (i, speciesItem) {
+                        console.log(`  Species ${i + 1}:`, speciesItem);
+                        speciesSelect.append('<option value="' + speciesItem.id + '">' + speciesItem.name + '</option>');
+                    });
+                    
+                    speciesSelect.prop('disabled', false);
+                    console.log('✅ ALL SPECIES ADDED! Total options:', speciesSelect.find('option').length);
+                } else {
+                    console.log('⚠️ No species found for this item');
+                    speciesSelect.prop('disabled', true);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ SPECIES AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Response:', xhr.responseText);
+                
+                // Restore previous options on error
+                speciesSelect.html(currentOptions);
+            }
+        });
+    }
+
+    // Function to load peeling types for item
+    function loadPeelingForItem(itemId) {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 Loading peeling types for item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+
+        if (!itemId) {
+            console.log('⚠️ No item ID provided, stopping');
+            return;
+        }
+
+        // Show loading state
+        const currentOptions = peelingSelect.html();
+        peelingSelect.empty().append('<option value="">Loading peeling types...</option>');
+        console.log('⏳ Loading peeling types...');
+
+        $.ajax({
+            url: "{% url 'adminapp:get_peeling_for_item' %}",
+            data: { item_id: itemId },
+            success: function (response) {
+                console.log('✅ Peeling AJAX SUCCESS! Raw data:', response);
+                
+                // Clear and add default option
+                peelingSelect.empty().append('<option value="">---------</option>');
+                
+                const peelingTypes = response.peeling_types || [];
+                console.log('📊 Peeling types array:', peelingTypes);
+                console.log('📊 Peeling types count:', peelingTypes.length);
+
+                if (peelingTypes.length > 0) {
+                    console.log(`📦 Processing ${peelingTypes.length} peeling types for item...`);
+                    
+                    $.each(peelingTypes, function (i, peeling) {
+                        console.log(`  Peeling ${i + 1}:`, peeling);
+                        peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
+                    });
+                    
+                    peelingSelect.prop('disabled', false);
+                    console.log('✅ ALL PEELING TYPES ADDED! Total options:', peelingSelect.find('option').length);
+                } else {
+                    console.log('⚠️ No peeling types found for this item');
+                    peelingSelect.prop('disabled', true);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ PEELING AJAX FAILED!');
+                console.error('❌ Status:', status);
+                console.error('❌ Error:', error);
+                console.error('❌ Response:', xhr.responseText);
+                
+                // Restore previous options on error
+                peelingSelect.html(currentOptions);
+            }
+        });
+    }
+
+    // Listen for item change
+    itemSelect.on('change', function() {
+        const itemId = $(this).val();
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('📦 ITEM SELECT CHANGED!');
+        console.log('📦 New Item ID:', itemId);
+        console.log('═══════════════════════════════════════');
+        
+        if (itemId) {
+            loadSpeciesForItem(itemId);
+            loadPeelingForItem(itemId);
+        } else {
+            console.log('⚠️ Item cleared, resetting dependent fields');
+            speciesSelect.empty().append('<option value="">---------</option>');
+            peelingSelect.empty().append('<option value="">---------</option>');
+        }
+    });
+
+    console.log('✅ Item → Species/Peeling Script fully initialized');
+    console.log('');
+});
+</script>
+
+
+
+<!-- Stock Adjustment Calculation Script -->
+<script>
+$(document).ready(function () {
+    console.log('✅ Stock Adjustment Calculation Script Loaded');
+    
+    let precision = 0;
+    let factor = 0;
+    let lastEditedField = null; // Track which field was last edited by user
+
+    // Fetch unit details when unit is selected - USE THE CORRECT ID
+    $('#id_unit').on('change', function () {
+        let unitId = $(this).val();
+        
+        if (!unitId) {
+            console.log('⚠️ No unit selected, clearing precision and factor');
+            precision = 0;
+            factor = 0;
+            return;
+        }
+
+        console.log('📡 Fetching unit details for stock adjustment, Unit ID:', unitId);
+        $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+            console.log('✅ Unit details for stock adjustment:', data);
+            precision = parseFloat(data.precision) || 0;
+            factor = parseFloat(data.factor) || 0;
+            console.log('📊 Precision:', precision, 'Factor:', factor);
+        }).fail(function(xhr, status, error) {
+            console.log('❌ Could not fetch unit details for stock adjustment');
+            console.log('❌ Error:', error);
+        });
+    });
+
+    // Trigger unit fetch on page load if unit is already selected
+    const initialUnit = $('#id_unit').val();
+    if (initialUnit) {
+        console.log('🔄 Unit already selected on load:', initialUnit);
+        $('#id_unit').trigger('change');
+    }
+
+    // Track when user focuses on a field (they want to edit it manually)
+    $('#id_cs_adjustment').on('focus', function() {
+        lastEditedField = 'cs';
+        console.log('👆 User focused on CS field');
+    });
+
+    $('#id_kg_adjustment').on('focus', function() {
+        lastEditedField = 'kg';
+        console.log('👆 User focused on KG field');
+    });
+
+    // Auto-calculate KG when CS is entered (but only if CS was the last edited field)
+    $('#id_cs_adjustment').on('input', function () {
+        // Only auto-calculate if CS is the field being edited
+        if (lastEditedField !== 'cs') {
+            return;
+        }
+        
+        let csValue = parseFloat($(this).val()) || 0;
+        
+        if (csValue === 0) {
+            console.log('🧹 CS cleared, clearing KG');
+            $('#id_kg_adjustment').val('');
+            $('#id_kg_adjustment').trigger('input');
+            return;
+        }
+
+        if (!precision || !factor) {
+            console.log('⚠️ Cannot calculate KG: precision or factor not available');
+            console.log('⚠️ Current precision:', precision, 'factor:', factor);
+            return;
+        }
+
+        // Calculate KG from CS
+        // CS = Slab / Precision, so Slab = CS * Precision
+        // KG = Slab * Factor
+        let slabValue = csValue * precision;
+        let kgValue = (slabValue * factor).toFixed(2);
+        
+        console.log('🔄 CS to KG calculation:', {
+            cs: csValue,
+            precision: precision,
+            factor: factor,
+            calculatedSlab: slabValue,
+            calculatedKG: kgValue
+        });
+
+        // Temporarily change last edited field to prevent circular calculation
+        let tempField = lastEditedField;
+        lastEditedField = null;
+        $('#id_kg_adjustment').val(kgValue);
+        $('#id_kg_adjustment').trigger('input');
+        lastEditedField = tempField;
+    });
+
+    // Auto-calculate CS when KG is entered (but only if KG was the last edited field)
+    $('#id_kg_adjustment').on('input', function () {
+        // Only auto-calculate if KG is the field being edited
+        if (lastEditedField !== 'kg') {
+            return;
+        }
+        
+        let kgValue = parseFloat($(this).val()) || 0;
+        
+        if (kgValue === 0) {
+            console.log('🧹 KG cleared, clearing CS');
+            $('#id_cs_adjustment').val('');
+            $('#id_cs_adjustment').trigger('input');
+            return;
+        }
+
+        if (!precision || !factor) {
+            console.log('⚠️ Cannot calculate CS: precision or factor not available');
+            console.log('⚠️ Current precision:', precision, 'factor:', factor);
+            return;
+        }
+
+        // Calculate CS from KG
+        // KG = Slab * Factor, so Slab = KG / Factor
+        // CS = Slab / Precision
+        let slabValue = kgValue / factor;
+        let csValue = (slabValue / precision).toFixed(2);
+        
+        console.log('🔄 KG to CS calculation:', {
+            kg: kgValue,
+            precision: precision,
+            factor: factor,
+            calculatedSlab: slabValue,
+            calculatedCS: csValue
+        });
+
+        // Temporarily change last edited field to prevent circular calculation
+        let tempField = lastEditedField;
+        lastEditedField = null;
+        $('#id_cs_adjustment').val(csValue);
+        $('#id_cs_adjustment').trigger('input');
+        lastEditedField = tempField;
+    });
+
+    console.log('✅ Stock Adjustment Calculation Script Initialized');
+    console.log('💡 Tip: Click on a field to edit it. The other field will auto-calculate based on your input.');
+});
+</script>
+
+
+<!-- USD Rate Calculation Script for Stock Adjustment -->
+<script>
+$(document).ready(function () {
+    console.log('✅ USD Rate Calculation Script Loaded');
+    
+    // Log all field IDs to verify they exist
+    console.log('🔍 Checking field IDs:');
+    console.log('  KG adjustment field:', $('#id_kg_adjustment').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    console.log('  USD per KG field:', $('#id_usd_rate_per_kg').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    console.log('  USD rate item field:', $('#id_usd_rate_item').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    console.log('  USD to INR field:', $('#id_usd_rate_item_to_inr').length > 0 ? '✓ Found' : '✗ NOT FOUND');
+    
+    let dollarRate = 0;
+    
+    // Fetch dollar rate on page load
+    console.log('📡 Fetching dollar rate...');
+    $.getJSON("{% url 'adminapp:get_dollar_rate' %}", function (data) {
+        console.log('✅ Dollar rate response:', data);
+        if (data.dollar_rate_to_inr) {
+            dollarRate = parseFloat(data.dollar_rate_to_inr);
+            console.log('💵 Dollar Rate Loaded:', dollarRate);
+            // Recalculate if values are present
+            calculateUSDRates();
+        }
+    }).fail(function(xhr, status, error) {
+        console.log('❌ Could not fetch dollar rate');
+        console.log('  Status:', status);
+        console.log('  Error:', error);
+    });
+    
+    // Function to calculate USD rates based on KG
+    function calculateUSDRates() {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('💰 CALCULATING USD RATES');
+        console.log('═══════════════════════════════════════');
+        
+        let kgValue = parseFloat($('#id_kg_adjustment').val()) || 0;
+        let usdPerKg = parseFloat($('#id_usd_rate_per_kg').val()) || 0;
+        
+        console.log('📊 Input values:', {
+            kgAdjustment: kgValue,
+            usdPerKg: usdPerKg,
+            dollarRate: dollarRate
+        });
+        
+        // If no KG or no USD rate, clear the fields
+        if (!kgValue || !usdPerKg) {
+            console.log('⚠️ Missing KG or USD per KG');
+            $('#id_usd_rate_item').val('');
+            $('#id_usd_rate_item_to_inr').val('');
+            console.log('🧹 USD rate fields cleared');
+            return;
+        }
+        
+        // Calculate USD Rate Item = KG × USD per KG
+        let usdRateItem = (kgValue * usdPerKg).toFixed(2);
+        $('#id_usd_rate_item').val(usdRateItem);
+        console.log('✅ USD Rate Item calculated and set:', usdRateItem);
+        console.log('   Formula: KG (' + kgValue + ') × USD per KG (' + usdPerKg + ') = ' + usdRateItem);
+        
+        // Calculate USD Rate Item to INR
+        if (dollarRate > 0) {
+            let usdRateItemInr = (parseFloat(usdRateItem) * dollarRate).toFixed(2);
+            $('#id_usd_rate_item_to_inr').val(usdRateItemInr);
+            console.log('✅ USD Rate Item to INR calculated and set:', usdRateItemInr);
+            console.log('   Formula: USD Item (' + usdRateItem + ') × Dollar Rate (' + dollarRate + ') = ' + usdRateItemInr);
+        } else {
+            console.log('⚠️ Dollar rate not available (value: ' + dollarRate + '), cannot calculate INR');
+        }
+        
+        console.log('═══════════════════════════════════════');
+        console.log('');
+    }
+    
+    // Recalculate when KG adjustment changes
+    $('#id_kg_adjustment').on('input', function() {
+        let value = $(this).val();
+        console.log('🔄 KG adjustment input event triggered, value:', value);
+        calculateUSDRates();
+    });
+    
+    // Recalculate when USD per KG changes
+    $('#id_usd_rate_per_kg').on('input', function() {
+        let value = $(this).val();
+        console.log('💵 USD per KG input event triggered, value:', value);
+        calculateUSDRates();
+    });
+    
+    // Initial calculation if values are already present on page load
+    setTimeout(function() {
+        let kgVal = $('#id_kg_adjustment').val();
+        let usdVal = $('#id_usd_rate_per_kg').val();
+        if (kgVal || usdVal) {
+            console.log('🔄 Initial values detected on load:');
+            console.log('  KG:', kgVal);
+            console.log('  USD per KG:', usdVal);
+            calculateUSDRates();
+        }
+    }, 500); // Wait 500ms to ensure dollar rate is loaded
+    
+    console.log('✅ USD Rate Calculation Script Fully Initialized');
+    console.log('');
+});
+</script>
+
+<style>
+/* Add visual feedback for total updates */
+.total-field.updated {
+    animation: total-pulse 0.4s ease;
+}
+
+@keyframes total-pulse {
+    0%, 100% { 
+        background-color: transparent;
+        transform: scale(1);
+    }
+    50% { 
+        background-color: rgba(40, 167, 69, 0.1);
+        transform: scale(1.01);
+    }
+}
+
+/* Style for total fields */
+.total-field {
+    transition: all 0.3s ease;
+}
+</style>
+
+<!-- USD Rate Calculation Script for Stock Adjustment -->
+<script>
+$(document).ready(function () {
+    console.log('✅ USD Rate Calculation Script Loaded');
+    
+    let dollarRate = 0;
+    let currentStockKG = 0; // Store current stock KG
+    
+    // Fetch dollar rate on page load
+    console.log('📡 Fetching dollar rate...');
+    $.getJSON("{% url 'adminapp:get_dollar_rate' %}", function (data) {
+        console.log('✅ Dollar rate response:', data);
+        if (data.dollar_rate_to_inr) {
+            dollarRate = parseFloat(data.dollar_rate_to_inr);
+            console.log('💵 Dollar Rate Loaded:', dollarRate);
+            calculateUSDRates();
+        }
+    }).fail(function(xhr, status, error) {
+        console.log('❌ Could not fetch dollar rate');
+        console.log('  Status:', status);
+        console.log('  Error:', error);
+    });
+    
+    // Watch for current stock display updates to get the current KG
+    const observer = new MutationObserver(function(mutations) {
+        const currentKGElement = document.getElementById('currentKG');
+        if (currentKGElement && currentKGElement.textContent) {
+            currentStockKG = parseFloat(currentKGElement.textContent) || 0;
+            console.log('📦 Current Stock KG Updated:', currentStockKG);
+            calculateUSDRates();
+        }
+    });
+    
+    // Observe changes to current stock display
+    const currentStockDisplay = document.getElementById('currentStockDisplay');
+    if (currentStockDisplay) {
+        observer.observe(currentStockDisplay, { 
+            childList: true, 
+            subtree: true,
+            characterData: true 
+        });
+    }
+    
+    // Also check immediately on load
+    const currentKGElement = document.getElementById('currentKG');
+    if (currentKGElement && currentKGElement.textContent) {
+        currentStockKG = parseFloat(currentKGElement.textContent) || 0;
+        console.log('📦 Initial Current Stock KG:', currentStockKG);
+    }
+    
+    // Function to calculate USD rates based on TOTAL KG (current + adjustment)
+    function calculateUSDRates() {
+        console.log('');
+        console.log('═══════════════════════════════════════');
+        console.log('💰 CALCULATING USD RATES');
+        console.log('═══════════════════════════════════════');
+        
+        let kgAdjustment = parseFloat($('#id_kg_adjustment').val()) || 0;
+        let usdPerKg = parseFloat($('#id_usd_rate_per_kg').val()) || 0;
+        
+        // Calculate TOTAL KG = Current Stock + Adjustment
+        let totalKG = currentStockKG + kgAdjustment;
+        
+        console.log('📊 Calculation values:', {
+            currentStockKG: currentStockKG,
+            kgAdjustment: kgAdjustment,
+            totalKG: totalKG,
+            usdPerKg: usdPerKg,
+            dollarRate: dollarRate
+        });
+        
+        // If no USD rate, clear the fields
+        if (!usdPerKg) {
+            console.log('⚠️ No USD per KG rate provided');
+            $('#id_usd_rate_item').val('');
+            $('#id_usd_rate_item_to_inr').val('');
+            return;
+        }
+        
+        // If total KG is negative or zero, clear fields
+        if (totalKG <= 0) {
+            console.log('⚠️ Total KG is zero or negative:', totalKG);
+            $('#id_usd_rate_item').val('0.00');
+            $('#id_usd_rate_item_to_inr').val('0.00');
+            return;
+        }
+        
+        // Calculate USD Rate Item = TOTAL KG × USD per KG
+        let usdRateItem = (totalKG * usdPerKg).toFixed(2);
+        $('#id_usd_rate_item').val(usdRateItem);
+        console.log('✅ USD Rate Item calculated:', usdRateItem);
+        console.log('   Formula: Total KG (' + totalKG + ') × USD per KG (' + usdPerKg + ') = ' + usdRateItem);
+        
+        // Calculate USD Rate Item to INR
+        if (dollarRate > 0) {
+            let usdRateItemInr = (parseFloat(usdRateItem) * dollarRate).toFixed(2);
+            $('#id_usd_rate_item_to_inr').val(usdRateItemInr);
+            console.log('✅ USD Rate Item to INR calculated:', usdRateItemInr);
+            console.log('   Formula: USD Item (' + usdRateItem + ') × Dollar Rate (' + dollarRate + ') = ' + usdRateItemInr);
+        } else {
+            console.log('⚠️ Dollar rate not available, cannot calculate INR');
+        }
+        
+        console.log('═══════════════════════════════════════');
+        console.log('');
+    }
+    
+    // Recalculate when KG adjustment changes
+    $('#id_kg_adjustment').on('input', function() {
+        let value = $(this).val();
+        console.log('🔄 KG adjustment changed:', value);
+        calculateUSDRates();
+    });
+    
+    // Recalculate when USD per KG changes
+    $('#id_usd_rate_per_kg').on('input', function() {
+        let value = $(this).val();
+        console.log('💵 USD per KG changed:', value);
+        calculateUSDRates();
+    });
+    
+    // Initial calculation
+    setTimeout(function() {
+        calculateUSDRates();
+    }, 500);
+    
+    console.log('✅ USD Rate Calculation Script Fully Initialized');
+    console.log('');
+});
+</script>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const storeField = document.getElementById('id_store');
+        const brandField = document.getElementById('id_brand');
+        const itemField = document.getElementById('id_item');
+        const itemQualityField = document.getElementById('id_item_quality');
+        const unitField = document.getElementById('id_unit');
+        const glazeField = document.getElementById('id_glaze');
+        const itemGradeField = document.getElementById('id_item_grade');
+        const peelingTypeField = document.getElementById('id_peeling_type');
+        const freezingCategoryField = document.getElementById('id_freezing_category');
+        
+        const csAdjustment = document.getElementById('{{ form.cs_adjustment.id_for_label }}');
+        const kgAdjustment = document.getElementById('{{ form.kg_adjustment.id_for_label }}');
+        
+        const currentStockDisplay = document.getElementById('currentStockDisplay');
+        const newStockDisplay = document.getElementById('newStockDisplay');
+        const currentCS = document.getElementById('currentCS');
+        const currentKG = document.getElementById('currentKG');
+        const afterCS = document.getElementById('afterCS');
+        const afterKG = document.getElementById('afterKG');
+
+        let currentStockData = {
+            cs_quantity: 0,
+            kg_quantity: 0,
+            exists: false
+        };
+
+        // Add visual feedback for positive/negative values
+        function updateInputStyle(input) {
+            const value = parseFloat(input.value) || 0;
+            input.classList.remove('border-success', 'border-danger', 'border-warning');
+            
+            if (value > 0) {
+                input.classList.add('border-success');
+            } else if (value < 0) {
+                input.classList.add('border-danger');
+            } else {
+                input.classList.add('border-warning');
+            }
+        }
+
+        function updateAfterValues() {
+            const csAdj = parseFloat(csAdjustment.value) || 0;
+            const kgAdj = parseFloat(kgAdjustment.value) || 0;
+            
+            afterCS.textContent = (currentStockData.cs_quantity + csAdj).toFixed(2);
+            afterKG.textContent = (currentStockData.kg_quantity + kgAdj).toFixed(2);
+            
+            // Color code the "after" values
+            afterCS.className = (currentStockData.cs_quantity + csAdj) < 0 ? 'text-danger fw-bold' : 'text-success fw-bold';
+            afterKG.className = (currentStockData.kg_quantity + kgAdj) < 0 ? 'text-danger fw-bold' : 'text-success fw-bold';
+        }
+        
+        if (csAdjustment) {
+            csAdjustment.addEventListener('input', function() {
+                updateInputStyle(this);
+                updateAfterValues();
+            });
+        }
+        
+        if (kgAdjustment) {
+            kgAdjustment.addEventListener('input', function() {
+                updateInputStyle(this);
+                updateAfterValues();
+            });
+        }
+
+        function checkCurrentStock() {
+            const store = storeField.value;
+            const brand = brandField.value;
+            const item = itemField.value;
+            const itemQuality = itemQualityField.value;
+            const unit = unitField.value;
+            const glaze = glazeField.value;
+            const itemGrade = itemGradeField.value;
+            const peelingType = peelingTypeField.value;
+            const freezingCategory = freezingCategoryField.value;
+
+            // Check if required fields are filled
+            if (!store || !brand || !item) {
+                currentStockDisplay.style.display = 'none';
+                newStockDisplay.style.display = 'none';
+                return;
+            }
+
+            // Fetch current stock
+            const url = `/adminapp/get-current-stock/?store=${store}&brand=${brand}&item=${item}&item_quality=${itemQuality}&unit=${unit}&glaze=${glaze}&item_grade=${itemGrade}&peeling_type=${peelingType}&freezing_category=${freezingCategory}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.exists) {
+                        currentStockData.cs_quantity = data.cs_quantity;
+                        currentStockData.kg_quantity = data.kg_quantity;
+                        currentStockData.exists = true;
+                        
+                        currentCS.textContent = data.cs_quantity.toFixed(2);
+                        currentKG.textContent = data.kg_quantity.toFixed(2);
+                        
+                        currentStockDisplay.style.display = 'block';
+                        newStockDisplay.style.display = 'none';
+                        
+                        // Populate rates if they exist
+                        if (data.usd_rate_per_kg) {
+                            document.getElementById('id_usd_rate_per_kg').value = data.usd_rate_per_kg;
+                        }
+                        if (data.usd_rate_item) {
+                            document.getElementById('id_usd_rate_item').value = data.usd_rate_item;
+                        }
+                        if (data.usd_rate_item_to_inr) {
+                            document.getElementById('id_usd_rate_item_to_inr').value = data.usd_rate_item_to_inr;
+                        }
+                        
+                        updateAfterValues();
+                    } else {
+                        currentStockData.cs_quantity = 0;
+                        currentStockData.kg_quantity = 0;
+                        currentStockData.exists = false;
+                        
+                        currentStockDisplay.style.display = 'none';
+                        newStockDisplay.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching stock:', error);
+                    currentStockDisplay.style.display = 'none';
+                    newStockDisplay.style.display = 'none';
+                });
+        }
+
+        // Attach event listeners to all fields
+        [storeField, brandField, itemField, itemQualityField, unitField, 
+         glazeField, itemGradeField, peelingTypeField, freezingCategoryField].forEach(field => {
+            if (field) {
+                field.addEventListener('change', checkCurrentStock);
+            }
+        });
+    });
+</script>
+
+
+
+<script>
+  // Arrow Key Navigation Script - FIXED for Disabled/Readonly Fields
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('✅ Arrow Key Navigation Script Loaded');
+    
+    // Get all form inputs in order
+    const formInputs = [
+        document.getElementById('id_store'),
+        document.getElementById('id_brand'),
+        document.getElementById('id_item'),
+        document.getElementById('id_item_quality'),
+        document.getElementById('id_freezing_category'),
+        document.getElementById('id_unit'),
+        document.getElementById('id_glaze'),
+        document.getElementById('id_species'),
+        document.getElementById('id_item_grade'),
+        document.getElementById('id_peeling_type'),
+        document.getElementById('id_cs_adjustment'),
+        document.getElementById('id_kg_adjustment'),
+        document.getElementById('id_usd_rate_per_kg'),
+        document.getElementById('id_usd_rate_item'),
+        document.getElementById('id_usd_rate_item_to_inr')
+    ].filter(input => input !== null);
+
+    console.log('📋 Found', formInputs.length, 'form inputs for navigation');
+
+    // SOLUTION: Use readonly instead of disabled for navigation to work
+    // Also add tabindex to make fields focusable
+    formInputs.forEach((input) => {
+        // Make all fields focusable
+        if (!input.hasAttribute('tabindex')) {
+            input.setAttribute('tabindex', '0');
+        }
+        
+        // If field is disabled, convert to readonly for arrow key navigation
+        if (input.disabled) {
+            input.disabled = false;
+            input.readOnly = true;
+            input.style.backgroundColor = '#e9ecef'; // Keep disabled look
+            input.style.cursor = 'not-allowed';
+        }
+    });
+
+    // Add keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    const prevField = formInputs[index - 1];
+                    prevField.focus();
+                    
+                    setTimeout(() => {
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT' && !prevField.readOnly) {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                    
+                    console.log('⬅️ Moved to:', prevField.id || prevField.name);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    const nextField = formInputs[index + 1];
+                    nextField.focus();
+                    
+                    setTimeout(() => {
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT' && !nextField.readOnly) {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                    
+                    console.log('➡️ Moved to:', nextField.id || nextField.name);
+                }
+            }
+        });
+    });
+
+    // Watch for dynamically disabled fields and convert them to readonly
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'disabled') {
+                const input = mutation.target;
+                if (formInputs.includes(input) && input.disabled) {
+                    console.log('🔄 Converting disabled to readonly:', input.id);
+                    input.disabled = false;
+                    input.readOnly = true;
+                    input.style.backgroundColor = '#e9ecef';
+                    input.style.cursor = 'not-allowed';
+                }
+            }
+        });
+    });
+
+    // Observe all form inputs for disabled attribute changes
+    formInputs.forEach(input => {
+        observer.observe(input, { attributes: true });
+    });
+
+    console.log('✅ Arrow Key Navigation Initialized');
+    console.log('💡 Disabled fields converted to readonly for navigation');
+    console.log('💡 Use ← → to navigate between all fields');
+});
+</script>
+
+{% endblock %}

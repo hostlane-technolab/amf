@@ -1,0 +1,1186 @@
+{% extends 'admin_base.html' %}
+{% block title %} Local Freezing Entry List {% endblock %}
+{% block content %}
+{% load indian_numbers %}
+
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+</style>
+
+<style>
+  /* Yield Badge */
+  .yield-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(108, 92, 231, 0.1);
+    color: #6c5ce7;
+    border: 2px solid rgba(108, 92, 231, 0.2);
+  }
+
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* Amount Display */
+  .amount-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #28a745;
+  }
+
+  .currency-symbol {
+    font-size: 14px;
+    margin-right: 2px;
+  }
+
+  /* Quantity Display */
+  .quantity-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #007bff;
+  }
+
+  .quantity-unit {
+    font-size: 12px;
+    color: #6c757d;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+  .custom-table th:nth-child(1),
+  .custom-table td:nth-child(1),
+    .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2) {
+    width: 20%;
+    min-width: 200px;
+  }
+
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3){
+    width: 25%;
+    min-width: 300px;
+  }
+
+  .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4),
+  .custom-table th:nth-child(5),
+  .custom-table td:nth-child(5),
+  .custom-table th:nth-child(6),
+  .custom-table td:nth-child(6){
+    width: 15%;
+    min-width: 170px;
+  }
+
+  .custom-table th:nth-child(7),
+  .custom-table td:nth-child(7) {
+    width: 12%;
+    min-width: 120px;
+  }
+</style>
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-snowflake"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Freezing Operations</h3>
+            <p class="ph-header-subtitle">Manage your freezing operations.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <a href="{%url 'adminapp:freezing_entry_local_list'%}" >
+
+                <span>Local Freezing Entries</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+                           <a href="{%url 'adminapp:freezing_entry_local_create'%}" class="ph-breadcrumb-link">
+                                            <i class="fa-solid fa-snowflake"></i>
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-wrapper me-4">
+                  <i class="fas fa-snowflake"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Local Freezing Entries</h3>
+                  <p class="text-muted mb-0 fs-6">Manage your local freezing entry transactions</p>
+                </div>
+              </div>
+              
+              <!-- Search Box -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search entries...">
+                    <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="stats-badge">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fas fa-cube me-2"></i><span id="entryCount">{{ entries|length }}</span> Entries
+                  </span>
+                </div>
+
+                <a href="{% url 'adminapp:freezing_entry_local_create' %}" class="add-new-btn">
+                  <i class="fas fa-plus me-2"></i>Add New Entry
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table id="multi-filter" class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-calendar-alt header-icon"></i>
+                        <span class="header-text">Freezing Date</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-calendar-day header-icon"></i>
+                        <span class="header-text">Purchase Date</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-map-marker-alt header-icon"></i>
+                        <span class="header-text">Spot</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fa-solid fa-box header-icon"></i>
+                        <span class="header-text">Items</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
+                        <span class="header-text">Total INR</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-weight header-icon"></i>
+                        <span class="header-text">Total Qty</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-info-circle header-icon"></i>
+                        <span class="header-text">Status</span>
+                      </div>
+                    </th>
+                    <th class="table-header text-center">
+                      <div class="header-content justify-content-center">
+                        <i class="fas fa-tools header-icon"></i>
+                        <span class="header-text">Actions</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="tableBody">
+                  {% for entry in entries %}
+
+                  
+                  <tr class="table-row" data-searchable="{{ entry.party|lower }} {{ entry.local_purchase_date }} {{ entry.freezing_date }} {{ entry.total_yield_percentage }} {{ entry.total_inr }} {{ entry.total_kg }} {{ entry.freezing_status|lower }}">                    <td class="table-cell">
+                      
+                    <div class="date-display">
+                        <i class="fas fa-snowflake me-2 text-secondary"></i>
+                        <span class="date-text">{{ entry.freezing_date }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="date-display">
+                        <i class="fas fa-calendar-day me-2 text-secondary"></i>
+                        <span class="date-text">{{ entry.local_purchase_date }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="spot-info">
+                        <div class="spot-avatar">
+                          <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="spot-details">
+                          <div class="spot-name">{{ entry.party }}</div>
+                          <div class="spot-meta">Location</div>
+                        </div>
+                      </div>
+                    </td>
+                    
+
+                    
+                    <td class="table-cell">
+                      <div class="yield-badge">
+                        <i class="fa-solid fa-box yield"></i>
+                        <span class="yield-text">{{ entry.items.count }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="amount-display">
+                        <span class="currency-symbol">₹</span>
+                        <span class="amount-value">{{ entry.total_inr|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <i class="fa-solid fa-weight-hanging yield-icon"></i>
+                        <span class="quantity-value">{{ entry.total_kg|floatformat:2|indian_comma }}</span>
+                        <span class="quantity-unit">kg</span>
+                      </div>
+                    </td>
+                    
+                    
+                    <td class="table-cell">
+                      <div class="status-wrapper">
+                        <span class="status-badge {% if entry.freezing_status == 'complete' %}status-active{% elif entry.freezing_status == 'inccomplete' %}status-pending{% else %}status-inactive{% endif %}">
+                          <i class="fas fa-circle status-dot"></i>
+                          {{ entry.freezing_status }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    
+                    <td class="table-cell">
+                      <div class="action-buttons">
+                        <a href="{% url 'adminapp:freezing_entry_local_detail' entry.id %}" 
+                           class="action-btn view-btn" 
+                           title="View Entry">
+                          <i class="fas fa-eye"></i>
+                          <!-- <span>Detail</span> -->
+                        </a>
+                        <a href="{% url 'adminapp:freezing_entry_local_update' entry.id %}" 
+                           class="action-btn edit-btn" 
+                           title="Edit Entry">
+                          <i class="fas fa-edit"></i>
+                          <!-- <span>Edit</span> -->
+                        </a>
+                        <form method="post" action="{% url 'adminapp:delete_freezing_entry_local' entry.pk %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" 
+                                  class="action-btn delete-btn" 
+                                  title="Delete Entry"
+                                  onclick="return confirm('Are you sure you want to delete this freezing entry? This action cannot be undone.')">
+                            <i class="fas fa-trash-alt"></i>
+                            <!-- <span>Delete</span> -->
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="8" class="empty-state-cell">
+                      <div class="empty-state-content">
+                        <i class="fas fa-snowflake empty-state-icon"></i>
+                        <h4>No Freezing Entries Found</h4>
+                        <p>There are no freezing entries to display yet.</p>
+                        <a href="{% url 'adminapp:freezing_entry_local_create' %}" class="add-new-btn">Create Your First Entry</a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- No Results Message -->
+              <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No entries found</h4>
+                  <p>Try adjusting your search terms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #6c5ce7;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.2);
+  }
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+  /* Add New Button */
+  .add-new-btn {
+    background: #6c5ce7;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid #6c5ce7;
+    font-size: 14px;
+  }
+
+  .add-new-btn:hover {
+    background: #5a4fcf;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.3);
+  }
+
+  /* Search Box Styling */
+  .search-controls {
+    min-width: 300px;
+  }
+
+  .search-box-wrapper {
+    position: relative;
+  }
+
+  .search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    width: 280px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #6c5ce7;
+    box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+    background: #ffffff;
+  }
+
+  .search-input::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  .stats-badge .badge {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  /* Table Styling */
+  .custom-table {
+    font-size: 15px;
+  }
+
+  .table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  /* Row Styling */
+  .table-row {
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.02) 0%, rgba(108, 92, 231, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+
+  .table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  /* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+  /* Spot Info */
+  .spot-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .spot-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .spot-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .spot-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Yield Badge */
+  .yield-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(108, 92, 231, 0.1);
+    color: #6c5ce7;
+    border: 2px solid rgba(108, 92, 231, 0.2);
+  }
+
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* Amount Display - Updated Design */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.currency-symbol {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.amount-value {
+  color: #2e7d32;
+}
+
+  /* Quantity Display - Updated Design */
+.quantity-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ffcc80;
+  border-radius: 25px;
+  color: #e65100;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+  white-space: nowrap;
+}
+
+.quantity-value {
+  color: #e65100;
+}
+
+.quantity-unit {
+  color: #e65100;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 4px;
+  flex-shrink: 0;
+}
+
+  /* Status Badge */
+  .status-wrapper {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-dot {
+    font-size: 8px;
+    margin-right: 8px;
+  }
+
+  .status-active {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .status-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  .status-inactive {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 2px solid rgba(220, 53, 69, 0.2);
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  .action-btn i {
+    /* margin-right: 8px; */
+    font-size: 16px;
+  }
+
+  /* Empty State Styling */
+  .empty-state-cell {
+    padding: 60px 20px !important;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .empty-state-content h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state-content p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results Styling */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .card-header .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+    }
+
+    .card-header .d-flex>.d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+      margin-bottom: 20px;
+    }
+
+    .search-controls {
+      min-width: auto;
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 0;
+    }
+
+    .search-input {
+      width: 500px;
+    }
+
+    .card-title {
+      font-size: 22px;
+    }
+
+
+
+
+    .supplier-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+
+
+    .supplier-details {
+      flex: 1;
+    }
+
+  }
+
+</style>
+<script>
+  // Enhanced search functionality for the freezing entry table
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const entryCount = document.getElementById('entryCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    // Enhanced search data extraction
+    function getSearchableText(row) {
+        const searchableElements = [
+            // Freezing Date
+            row.querySelector('.date-display .date-text')?.textContent || '',
+            // Purchase Date  
+            row.querySelectorAll('.date-display .date-text')[1]?.textContent || '',
+            // Party/Spot name
+            row.querySelector('.spot-name')?.textContent || '',
+            // Yield percentage
+            row.querySelector('.yield-text')?.textContent || '',
+            // Amount
+            row.querySelector('.amount-value')?.textContent || '',
+            // Quantity
+            row.querySelector('.quantity-value')?.textContent || '',
+            // Status
+            row.querySelector('.status-badge')?.textContent || ''
+        ];
+        
+        return searchableElements.join(' ').toLowerCase().trim();
+    }
+
+    // Update counter display
+    function updateCounter(visibleCount) {
+        entryCount.textContent = visibleCount;
+    }
+
+    // Show/hide clear button
+    function showClearButton(show) {
+        clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    // Main filter function
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        console.log('Search term:', searchTerm); // Debug log
+
+        if (searchTerm === '') {
+            // Show all rows
+            allRows.forEach(row => {
+                row.style.display = '';
+                visibleCount++;
+            });
+            noResults.style.display = 'none';
+            showClearButton(false);
+        } else {
+            // Filter rows
+            allRows.forEach(row => {
+                // Get searchable text from data attribute or extract it
+                let searchableText = row.getAttribute('data-searchable');
+                
+                // If data-searchable doesn't exist or is empty, extract text
+                if (!searchableText) {
+                    searchableText = getSearchableText(row);
+                    row.setAttribute('data-searchable', searchableText); // Cache it
+                }
+                
+                console.log('Row searchable text:', searchableText); // Debug log
+                
+                if (searchableText.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0 && totalCount > 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+            
+            showClearButton(true);
+        }
+
+        updateCounter(visibleCount);
+        console.log('Visible rows:', visibleCount); // Debug log
+    }
+
+    // Clear search function
+    function clearSearch() {
+        searchInput.value = '';
+        filterTable();
+        searchInput.focus();
+    }
+
+    // Enhanced delete confirmation for local freezing entries
+    function enhancedDeleteConfirm(event) {
+        const row = event.target.closest('tr');
+        const party = row.querySelector('.spot-name')?.textContent?.trim() || 'Unknown';
+        const dateElements = row.querySelectorAll('.date-text');
+        const freezingDate = dateElements[0]?.textContent?.trim() || 'Unknown';
+        const purchaseDate = dateElements[1]?.textContent?.trim() || 'Unknown';
+        const quantity = row.querySelector('.quantity-value')?.textContent?.trim() || 'Unknown';
+        
+        const confirmMessage = `Are you sure you want to delete this freezing entry?\n\nParty: ${party}\nFreezing Date: ${freezingDate}\nPurchase Date: ${purchaseDate}\nQuantity: ${quantity}\n\nThis action cannot be undone.`;
+        
+        return confirm(confirmMessage);
+    }
+
+    // Event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', filterTable);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Add enhanced delete confirmation to all delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', enhancedDeleteConfirm);
+    });
+
+    // Keyboard navigation for table rows
+    allRows.forEach(row => {
+        row.setAttribute('tabindex', '0');
+        row.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const viewLink = this.querySelector('.view-btn');
+                if (viewLink) {
+                    viewLink.click();
+                }
+            }
+        });
+    });
+
+    // Initialize counter
+    updateCounter(totalCount);
+
+    // Test search functionality on page load
+    console.log('Search initialized. Total rows:', totalCount);
+    console.log('Search input element:', searchInput);
+    console.log('Table body element:', tableBody);
+});
+</script>
+
+{% endblock %}

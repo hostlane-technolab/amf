@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Automatic Billing</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-cog"></i> Setup Automatic Billing Schedule
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Automatic Billing:</strong> Configure regular bill generation for tenants. 
+                            Bills will only be generated when freezing data exists for the billing period.
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="form-group">
+                                <label for="{{ form.tenant.id_for_label }}">
+                                    <i class="fas fa-building"></i> Tenant
+                                </label>
+                                {{ form.tenant }}
+                                <small class="form-text text-muted">{{ form.tenant.help_text }}</small>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_count.id_for_label }}">
+                                            <i class="fas fa-calendar"></i> Billing Interval (Days)
+                                        </label>
+                                        {{ form.day_count }}
+                                        <small class="form-text text-muted">{{ form.day_count.help_text }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.start_date.id_for_label }}">
+                                            <i class="fas fa-calendar-alt"></i> Start Date
+                                        </label>
+                                        {{ form.start_date }}
+                                        <small class="form-text text-muted">{{ form.start_date.help_text }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Billing Preview -->
+                            <div class="card bg-light mt-3" id="billing-preview" style="display: none;">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-eye"></i> Billing Schedule Preview
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="preview-content">
+                                        <!-- Preview will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Common Intervals Helper -->
+                            <div class="card mt-3">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-lightbulb"></i> Common Billing Intervals
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm btn-block preset-btn" data-days="7">
+                                                Weekly (7 days)
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm btn-block preset-btn" data-days="15">
+                                                Bi-weekly (15 days)
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm btn-block preset-btn" data-days="30">
+                                                Monthly (30 days)
+                                            </button>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm btn-block preset-btn" data-days="90">
+                                                Quarterly (90 days)
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save"></i> Setup Automatic Billing
+                                </button>
+                                <a href="{% url 'adminapp:auto_billing_list' %}" class="btn btn-secondary btn-lg ml-2">
+                                    <i class="fas fa-arrow-left"></i> Back to Schedules
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('id_start_date');
+        const dayCountInput = document.getElementById('id_day_count');
+        const tenantSelect = document.getElementById('id_tenant');
+        const billingPreview = document.getElementById('billing-preview');
+        const previewContent = document.getElementById('preview-content');
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        
+        // Set default values
+        if (!startDateInput.value) {
+            startDateInput.value = new Date().toISOString().split('T')[0];
+        }
+        if (!dayCountInput.value) {
+            dayCountInput.value = '30';
+        }
+        
+        // Preset button handlers
+        presetButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                dayCountInput.value = this.dataset.days;
+                updatePreview();
+                
+                // Visual feedback
+                presetButtons.forEach(b => b.classList.remove('btn-primary'));
+                presetButtons.forEach(b => b.classList.add('btn-outline-secondary'));
+                this.classList.remove('btn-outline-secondary');
+                this.classList.add('btn-primary');
+            });
+        });
+        
+        function updatePreview() {
+            if (startDateInput.value && dayCountInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const dayCount = parseInt(dayCountInput.value);
+                const tenantText = tenantSelect.value ? 
+                    tenantSelect.options[tenantSelect.selectedIndex].text : 
+                    'ALL TENANTS';
+                
+                // Calculate next few billing dates
+                const billingDates = [];
+                for (let i = 0; i < 5; i++) {
+                    const nextDate = new Date(startDate);
+                    nextDate.setDate(startDate.getDate() + (dayCount * i));
+                    billingDates.push(nextDate);
+                }
+                
+                let previewHtml = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Target:</strong> ${tenantText}<br>
+                            <strong>Frequency:</strong> Every ${dayCount} days<br>
+                            <strong>Start Date:</strong> ${startDate.toLocaleDateString()}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Next 5 Billing Dates:</strong>
+                            <ul class="mb-0 mt-1">
+                `;
+                
+                billingDates.forEach((date, index) => {
+                    const dateStr = date.toLocaleDateString();
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    const isPast = date < new Date() && !isToday;
+                    
+                    let className = '';
+                    if (isToday) className = 'text-warning font-weight-bold';
+                    else if (isPast) className = 'text-muted';
+                    else if (index === 0) className = 'text-success font-weight-bold';
+                    
+                    previewHtml += `<li class="${className}">${dateStr}</li>`;
+                });
+                
+                previewHtml += `
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                previewContent.innerHTML = previewHtml;
+                billingPreview.style.display = 'block';
+            } else {
+                billingPreview.style.display = 'none';
+            }
+        }
+        
+        // Event listeners
+        startDateInput.addEventListener('change', updatePreview);
+        dayCountInput.addEventListener('input', updatePreview);
+        tenantSelect.addEventListener('change', updatePreview);
+        
+        // Initial preview
+        updatePreview();
+        
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            if (!startDateInput.value) {
+                e.preventDefault();
+                alert('Please select a start date.');
+                startDateInput.focus();
+                return;
+            }
+            
+            if (!dayCountInput.value || parseInt(dayCountInput.value) < 1) {
+                e.preventDefault();
+                alert('Please enter a valid number of days (minimum 1).');
+                dayCountInput.focus();
+                return;
+            }
+            
+            const dayCount = parseInt(dayCountInput.value);
+            const tenantText = tenantSelect.value ? 
+                tenantSelect.options[tenantSelect.selectedIndex].text : 
+                'all tenants';
+                
+            const confirmMessage = `This will setup automatic billing for ${tenantText} every ${dayCount} days starting from ${new Date(startDateInput.value).toLocaleDateString()}. Continue?`;
+            
+            if (!confirm(confirmMessage)) {
+                e.preventDefault();
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting up...';
+            submitBtn.disabled = true;
+        });
+        
+        // Add custom styling
+        const style = document.createElement('style');
+        style.textContent = `
+            .preset-btn {
+                margin-bottom: 5px;
+                transition: all 0.2s;
+            }
+            .preset-btn:hover {
+                transform: translateY(-1px);
+            }
+            .form-control {
+                border-radius: 0.375rem;
+            }
+            .btn {
+                border-radius: 0.375rem;
+            }
+            .card {
+                border-radius: 0.5rem;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .bg-light {
+                background-color: #f8f9fa !important;
+            }
+        `;
+        document.head.appendChild(style);
+    });
+    </script>
+
+</body>
+</html>

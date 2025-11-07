@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setup Billing Configuration</title>
+</head>
+<body>
+    <h1>Setup Billing Configuration</h1>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">💾 Save Configuration</button>
+    </form>
+
+    <p><a href="{% url 'adminapp:billing_config_list' %}">← Back to Config List</a></p>
+</body>
+</html>

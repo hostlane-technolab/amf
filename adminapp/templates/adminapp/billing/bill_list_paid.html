@@ -1,0 +1,1027 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  /* Main Container */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Page Header */
+  .page-header {
+    margin-bottom: 30px;
+  }
+
+  .page-header h3 {
+    color: #2c3e50;
+    font-size: 28px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+  }
+
+  .page-header h3 i {
+    color: #68d391;
+    font-size: 30px;
+    margin-right: 15px;
+  }
+
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+    margin-bottom: 30px;
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 30px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(104, 211, 145, 0.2);
+    margin-right: 20px;
+  }
+
+  .header-text h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+  }
+
+  .header-text p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* Controls Section */
+  .controls-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Add Button */
+  .add-new-btn {
+    background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(104, 211, 145, 0.3);
+    border: none;
+    cursor: pointer;
+  }
+
+  .add-new-btn:hover {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(104, 211, 145, 0.4);
+  }
+
+  /* Filter Buttons Container */
+  .filter-buttons-container {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+
+  /* Filter Button Group */
+  .filter-btn-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    width: 100%;
+  }
+
+  /* Individual Filter Button */
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 24px;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: #f8f9fd;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-height: 65px;
+    gap: 12px;
+  }
+
+  .filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+  }
+
+  .filter-btn:hover::before {
+    left: 100%;
+  }
+
+  .filter-btn i {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+  }
+
+  .filter-btn:hover i {
+    transform: scale(1.1);
+  }
+
+  /* Button Badge */
+  .filter-badge {
+    background: rgba(108, 117, 125, 0.2);
+    color: #495057;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: auto;
+    min-width: 35px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  /* All Bills Button */
+  .filter-btn.btn-all {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border-color: rgba(102, 126, 234, 0.2);
+  }
+
+  .filter-btn.btn-all:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #667eea;
+  }
+
+  /* Finalized Button */
+  .filter-btn.btn-finalized {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .filter-btn.btn-finalized:hover {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-color: #28a745;
+  }
+
+  /* Sent Button */
+  .filter-btn.btn-sent {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .filter-btn.btn-sent:hover {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-color: #007bff;
+  }
+
+  /* Paid Button - Active State */
+  .filter-btn.btn-paid {
+    background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+    color: white;
+    border-color: rgba(104, 211, 145, 0.3);
+    box-shadow: 0 8px 25px rgba(104, 211, 145, 0.3);
+  }
+
+  .filter-btn.btn-paid:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(104, 211, 145, 0.4);
+    color: white;
+    text-decoration: none;
+  }
+
+  .filter-btn.btn-paid.active {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(104, 211, 145, 0.5);
+  }
+
+  .filter-btn.btn-paid .filter-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  /* Cancelled Button */
+  .filter-btn.btn-outline-cancelled {
+    background: rgba(252, 129, 129, 0.1);
+    color: #fc8181;
+    border-color: rgba(252, 129, 129, 0.2);
+  }
+
+  .filter-btn.btn-outline-cancelled:hover {
+    background: linear-gradient(135deg, #fc8181 0%, #e53e3e 100%);
+    color: white;
+    border-color: #fc8181;
+  }
+
+  /* Outline Badge Colors */
+  .filter-btn.btn-all .filter-badge {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+  }
+
+  .filter-btn.btn-finalized .filter-badge {
+    background: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+  }
+
+  .filter-btn.btn-sent .filter-badge {
+    background: rgba(0, 123, 255, 0.15);
+    color: #007bff;
+  }
+
+  .filter-btn.btn-outline-cancelled .filter-badge {
+    background: rgba(252, 129, 129, 0.15);
+    color: #fc8181;
+  }
+
+  /* Button Text */
+  .filter-btn-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+  }
+
+  .filter-btn-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-btn-subtitle {
+    font-size: 12px;
+    opacity: 0.8;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Animation for active state */
+  .filter-btn.active {
+    animation: pulseGlow 2s infinite;
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 8px 25px rgba(104, 211, 145, 0.3); }
+    50% { box-shadow: 0 12px 35px rgba(104, 211, 145, 0.5); }
+  }
+
+  /* Table Styling */
+  .table-responsive {
+    background: white;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin: 0;
+  }
+
+  .modern-table th {
+    background: #f8f9fd;
+    padding: 20px;
+    text-align: left;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    border: none;
+  }
+
+  .header-content-table {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .modern-table td {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  .table-row {
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(104, 211, 145, 0.02) 0%, rgba(104, 211, 145, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+
+  /* Company Display */
+  .company-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .company-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .company-details .company-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .company-details .company-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Date Display */
+  .date-display {
+    display: flex;
+    align-items: center;
+    color: #495057;
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: 'Monaco', 'Consolas', monospace;
+  }
+
+  .date-display i {
+    margin-right: 8px;
+    color: #68d391;
+  }
+
+  /* Weight Display */
+  .weight-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #68d391;
+  }
+
+  .weight-unit {
+    font-size: 12px;
+    color: #6c757d;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-paid {
+    background: rgba(104, 211, 145, 0.1);
+    color: #68d391;
+    border: 2px solid rgba(104, 211, 145, 0.2);
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border-color: rgba(108, 117, 125, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    color: #68d391;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  .empty-state h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* Pagination */
+  .pagination-wrapper {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    padding: 20px 30px;
+    background: #f8f9fd;
+    border-top: 2px solid #f1f3f7;
+  }
+
+  .results-info {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .pagination {
+    display: flex;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .page-item {
+    margin: 0;
+  }
+
+  .page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    color: #6c757d;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: white;
+  }
+
+  .page-link:hover {
+    background: #68d391;
+    color: white;
+    border-color: #68d391;
+    transform: translateY(-2px);
+  }
+
+  .page-item.active .page-link {
+    background: #68d391;
+    color: white;
+    border-color: #68d391;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1200px) {
+    .filter-btn-group {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+    
+    .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .filter-btn-group {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .filter-btn {
+      padding: 15px 20px;
+      min-height: 60px;
+    }
+    
+    .filter-btn-title {
+      font-size: 14px;
+    }
+    
+    .filter-btn-subtitle {
+      font-size: 11px;
+    }
+    
+    .filter-badge {
+      padding: 3px 10px;
+      font-size: 11px;
+    }
+
+    .modern-table th,
+    .modern-table td {
+      padding: 15px 10px;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .filter-btn-group {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-btn {
+      padding: 18px 24px;
+    }
+    
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .header-text h3 {
+      font-size: 20px;
+    }
+  }
+</style>
+
+<div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h3>
+            <i class="fas fa-money-check-alt"></i>
+            Paid Bills
+        </h3>
+    </div>
+
+    <!-- Filter Buttons Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="header-content">
+                <div class="header-info">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-money-check-alt"></i>
+                    </div>
+                    <div class="header-text">
+                        <h3>Paid Bills</h3>
+                        <p>View and manage all paid tenant billing records</p>
+                    </div>
+                </div>
+                <div class="controls-section">
+                    <a href="{% url 'adminapp:generate_manual_bill' %}" class="add-new-btn">
+                        <i class="fas fa-plus-circle"></i> Generate Bill
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-buttons-container">
+            <div class="filter-btn-group">
+                <!-- All Bills Button -->
+                <a href="{% url 'adminapp:bill_list' %}" 
+                   class="filter-btn btn-all">
+                    <i class="fas fa-list-ul"></i>
+                    <div class="filter-btn-text">
+                        <span class="filter-btn-title">All Bills</span>
+                        <span class="filter-btn-subtitle">Complete overview</span>
+                    </div>
+                    {% if bill_counts.total %}
+                        <span class="filter-badge">{{ bill_counts.total }}</span>
+                    {% else %}
+                        <span class="filter-badge">0</span>
+                    {% endif %}
+                </a>
+
+                <!-- Finalized Button -->
+                <a href="{% url 'adminapp:bill_list_finalized' %}" 
+                   class="filter-btn btn-finalized">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="filter-btn-text">
+                        <span class="filter-btn-title">Finalized</span>
+                        <span class="filter-btn-subtitle">Ready to send</span>
+                    </div>
+                    {% if bill_counts.finalized %}
+                        <span class="filter-badge">{{ bill_counts.finalized }}</span>
+                    {% else %}
+                        <span class="filter-badge">0</span>
+                    {% endif %}
+                </a>
+
+                <!-- Sent Button -->
+                <a href="{% url 'adminapp:bill_list_sent' %}" 
+                   class="filter-btn btn-sent">
+                    <i class="fas fa-paper-plane"></i>
+                    <div class="filter-btn-text">
+                        <span class="filter-btn-title">Sent</span>
+                        <span class="filter-btn-subtitle">Awaiting payment</span>
+                    </div>
+                    {% if bill_counts.sent %}
+                        <span class="filter-badge">{{ bill_counts.sent }}</span>
+                    {% else %}
+                        <span class="filter-badge">0</span>
+                    {% endif %}
+                </a>
+
+                <!-- Paid Button - Active -->
+                <a href="{% url 'adminapp:bill_list_paid' %}" 
+                   class="filter-btn btn-paid active">
+                    <i class="fas fa-money-check-alt"></i>
+                    <div class="filter-btn-text">
+                        <span class="filter-btn-title">Paid</span>
+                        <span class="filter-btn-subtitle">Payment received</span>
+                    </div>
+                    {% if bill_counts.paid %}
+                        <span class="filter-badge">{{ bill_counts.paid }}</span>
+                    {% else %}
+                        <span class="filter-badge">{{ bills.count|default:0 }}</span>
+                    {% endif %}
+                </a>
+
+                <!-- Cancelled Button -->
+                <a href="{% url 'adminapp:bill_list_cancelled' %}" 
+                   class="filter-btn btn-outline-cancelled">
+                    <i class="fas fa-times-circle"></i>
+                    <div class="filter-btn-text">
+                        <span class="filter-btn-title">Cancelled</span>
+                        <span class="filter-btn-subtitle">Voided bills</span>
+                    </div>
+                    {% if bill_counts.cancelled %}
+                        <span class="filter-badge">{{ bill_counts.cancelled }}</span>
+                    {% else %}
+                        <span class="filter-badge">0</span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Bills Table -->
+        <div class="table-responsive">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th><div class="header-content-table"><i class="fas fa-file-invoice header-icon"></i>Bill Details</div></th>
+                        <th><div class="header-content-table"><i class="fas fa-building header-icon"></i>Tenant</div></th>
+                        <th><div class="header-content-table"><i class="fas fa-calendar header-icon"></i>Period</div></th>
+                        <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>Amount</div></th>
+                        <th><div class="header-content-table"><i class="fas fa-info-circle header-icon"></i>Status</div></th>
+                        <th><div class="header-content-table"><i class="fas fa-clock header-icon"></i>Created</div></th>
+                        <th><div class="header-content-table"><i class="fas fa-cogs header-icon"></i>Actions</div></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                    <tr class="table-row">
+                        <td>
+                            <div class="company-info">
+                                <div class="company-avatar">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <div class="company-details">
+                                    <div class="company-name">{{ bill.bill_number|default:bill.id }}</div>
+                                    {% if bill.is_overdue %}
+                                        <div class="company-meta text-danger">
+                                            <i class="fas fa-clock"></i> Overdue
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="company-info">
+                                <div class="company-avatar">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="company-details">
+                                    <div class="company-name">{{ bill.tenant.company_name }}</div>
+                                    {% if bill.tenant.contact_person %}
+                                        <div class="company-meta">{{ bill.tenant.contact_person }}</div>
+                                    {% endif %}
+                                    {% if bill.tenant.phone %}
+                                        <div class="company-meta">
+                                            <i class="fas fa-phone"></i> {{ bill.tenant.phone }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="date-display">
+                                <i class="fas fa-calendar"></i>
+                                <div>
+                                    <strong>{{ bill.from_date|date:"M d" }} - {{ bill.to_date|date:"M d, Y" }}</strong>
+                                    <br><small class="text-muted">{{ bill.from_date|timesince:bill.to_date }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="weight-display">
+                                ₹{{ bill.total_amount|floatformat:2 }}
+                                {% if bill.total_kg %}
+                                    <div class="weight-unit">{{ bill.total_kg }} kg</div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-paid">{{ bill.get_status_display|default:bill.status }}</span>
+                        </td>
+                        <td>
+                            <div class="date-display">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <strong>{{ bill.created_at|date:"M d, Y" }}</strong>
+                                    <br><small class="text-muted">{{ bill.created_at|time:"g:i A" }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="{% url 'adminapp:view_bill' bill.id %}" class="action-btn view-btn" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'adminapp:bill_pdf' bill.id %}" class="action-btn edit-btn" title="Download PDF" target="_blank">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <i class="fas fa-money-check-alt fa-4x"></i>
+                                </div>
+                                <h4>No Paid Bills Found</h4>
+                                <p>No paid bills match your current filters. Bills that have been paid by tenants will appear here.</p>
+                                <a href="{% url 'adminapp:generate_manual_bill' %}" class="add-new-btn">
+                                    <i class="fas fa-plus"></i> Generate New Bill
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="pagination-wrapper">
+                <div class="results-info">
+                    Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">&laquo;</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">&raquo;</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add loading animation on click
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            // Add loading class
+            this.classList.add('loading');
+            
+            // Remove after navigation starts
+            setTimeout(() => {
+                this.classList.remove('loading');
+            }, 1000);
+        });
+    });
+
+    // Add ripple effect
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.cssText = `
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.6);
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+
+    // Add CSS for ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .filter-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .loading {
+            pointer-events: none;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    // Table row hover effect enhancement
+    const tableRows = document.querySelectorAll('.table-row');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    });
+});
+</script>
+
+{% endblock %}

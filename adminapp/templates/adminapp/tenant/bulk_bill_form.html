@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Bill Generation</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0">
+                            <i class="fas fa-file-invoice-dollar"></i> Generate Bills for Multiple Tenants
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Bulk Bill Generation:</strong> Enter start date and day count to generate draft bills for all tenants at once.
+                            You can also setup automatic billing to generate bills regularly based on your specified interval.
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.start_date.id_for_label }}">
+                                            <i class="fas fa-calendar-alt"></i> Start Date
+                                        </label>
+                                        {{ form.start_date }}
+                                        <small class="form-text text-muted">{{ form.start_date.help_text }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.day_count.id_for_label }}">
+                                            <i class="fas fa-hashtag"></i> Number of Days
+                                        </label>
+                                        {{ form.day_count }}
+                                        <small class="form-text text-muted">{{ form.day_count.help_text }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Auto-billing Setup -->
+                            <div class="card mt-3">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-sync-alt"></i> Automatic Billing Setup
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        {{ form.setup_auto_billing }}
+                                        <label class="form-check-label" for="{{ form.setup_auto_billing.id_for_label }}">
+                                            <strong>Setup Automatic Billing</strong>
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">{{ form.setup_auto_billing.help_text }}</small>
+                                    
+                                    <div id="auto-billing-info" class="alert alert-warning mt-2" style="display: none;">
+                                        <i class="fas fa-robot"></i>
+                                        <strong>Auto-billing will be configured to:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Generate bills automatically every <span id="day-count-display">X</span> days</li>
+                                            <li>Only create bills when freezing data exists for the period</li>
+                                            <li>Create draft bills that you can review before saving</li>
+                                            <li>Start from the next period after this initial generation</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tenant Selection -->
+                            <div class="form-group mt-4">
+                                <label>
+                                    <i class="fas fa-building"></i> Tenants (Optional)
+                                </label>
+                                <div class="alert alert-light">
+                                    <p><strong>Leave empty to generate for ALL tenants</strong></p>
+                                    <div class="row">
+                                        {% for choice in form.tenants %}
+                                            <div class="col-md-6 col-lg-4">
+                                                <div class="form-check">
+                                                    {{ choice.tag }}
+                                                    <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                        {{ choice.choice_label }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-magic"></i> Generate Draft Bills
+                                </button>
+                                <a href="{% url 'adminapp:billing_dashboard' %}" class="btn btn-secondary btn-lg ml-2">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Actions Card -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt"></i> Quick Actions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <form method="post" action="{% url 'adminapp:auto_generate_next_bills' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-block">
+                                        <i class="fas fa-forward"></i> Auto-Generate Next Period
+                                        <small class="d-block">For tenants with existing bills</small>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{% url 'adminapp:tenant_bill_unsaved_list' %}" class="btn btn-info btn-block">
+                                    <i class="fas fa-list"></i> View Draft Bills
+                                    <small class="d-block">Review and save pending bills</small>
+                                </a>
+                            </div>
+                            <div class="col-md-4">
+                                <a href="{% url 'adminapp:auto_billing_list' %}" class="btn btn-warning btn-block">
+                                    <i class="fas fa-cogs"></i> Manage Auto-Billing
+                                    <small class="d-block">Setup and manage schedules</small>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <form method="post" action="{% url 'adminapp:run_automatic_billing' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-primary btn-block">
+                                        <i class="fas fa-play"></i> Run Auto-Billing Now
+                                        <small class="d-block">Generate bills for due tenants</small>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'adminapp:auto_billing_setup_form' %}" class="btn btn-outline-secondary btn-block">
+                                    <i class="fas fa-plus"></i> Setup New Schedule
+                                    <small class="d-block">Configure auto-billing for tenants</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Auto-Billing Status -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-chart-line"></i> Auto-Billing Status
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h4 class="text-primary">{{ active_schedules|default:0 }}</h4>
+                                        <small>Active Schedules</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h4 class="text-warning">{{ due_schedules|default:0 }}</h4>
+                                        <small>Due for Billing</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h4 class="text-success">{{ total_draft_bills|default:0 }}</h4>
+                                        <small>Draft Bills</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.min.js"></script>
+    
+    <script>
+    // Auto-calculate end date when start date or day count changes
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('id_start_date');
+        const dayCountInput = document.getElementById('id_day_count');
+        const autoBillingCheckbox = document.getElementById('id_setup_auto_billing');
+        const autoBillingInfo = document.getElementById('auto-billing-info');
+        const dayCountDisplay = document.getElementById('day-count-display');
+        
+        function showEndDate() {
+            if (startDateInput.value && dayCountInput.value) {
+                const startDate = new Date(startDateInput.value);
+                const dayCount = parseInt(dayCountInput.value);
+                const endDate = new Date(startDate.getTime() + (dayCount - 1) * 24 * 60 * 60 * 1000);
+                
+                const endDateStr = endDate.toISOString().split('T')[0];
+                
+                // Show end date info
+                let infoDiv = document.getElementById('date-info');
+                if (!infoDiv) {
+                    infoDiv = document.createElement('div');
+                    infoDiv.id = 'date-info';
+                    infoDiv.className = 'alert alert-success mt-2';
+                    dayCountInput.parentNode.appendChild(infoDiv);
+                }
+                
+                infoDiv.innerHTML = `
+                    <i class="fas fa-calendar-check"></i> 
+                    <strong>End Date:</strong> ${endDate.toLocaleDateString()} 
+                    <small>(${dayCount} days from ${startDate.toLocaleDateString()})</small>
+                `;
+                
+                // Update auto-billing display
+                dayCountDisplay.textContent = dayCount;
+            }
+        }
+        
+        function toggleAutoBillingInfo() {
+            if (autoBillingCheckbox.checked) {
+                autoBillingInfo.style.display = 'block';
+            } else {
+                autoBillingInfo.style.display = 'none';
+            }
+        }
+        
+        // Event listeners
+        startDateInput.addEventListener('change', showEndDate);
+        dayCountInput.addEventListener('input', function() {
+            showEndDate();
+            dayCountDisplay.textContent = this.value;
+        });
+        autoBillingCheckbox.addEventListener('change', toggleAutoBillingInfo);
+        
+        // Set default values
+        if (!startDateInput.value) {
+            const today = new Date();
+            startDateInput.value = today.toISOString().split('T')[0];
+        }
+        if (!dayCountInput.value) {
+            dayCountInput.value = '30';
+        }
+        
+        // Initial setup
+        showEndDate();
+        toggleAutoBillingInfo();
+        
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            if (!startDateInput.value) {
+                e.preventDefault();
+                alert('Please select a start date.');
+                startDateInput.focus();
+                return;
+            }
+            
+            if (!dayCountInput.value || parseInt(dayCountInput.value) < 1) {
+                e.preventDefault();
+                alert('Please enter a valid number of days (minimum 1).');
+                dayCountInput.focus();
+                return;
+            }
+            
+            if (autoBillingCheckbox.checked) {
+                const confirmMessage = `This will setup automatic billing to generate bills every ${dayCountInput.value} days. Are you sure?`;
+                if (!confirm(confirmMessage)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+        });
+        
+        // Show loading state on form submission
+        form.addEventListener('submit', function() {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Bills...';
+            submitBtn.disabled = true;
+        });
+    });
+    
+    // Add some styling for better UX
+    const style = document.createElement('style');
+    style.textContent = `
+        .form-control {
+            border-radius: 0.375rem;
+        }
+        .btn {
+            border-radius: 0.375rem;
+        }
+        .card {
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .alert {
+            border-radius: 0.375rem;
+        }
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        .text-primary { color: #007bff !important; }
+        .text-warning { color: #ffc107 !important; }
+        .text-success { color: #28a745 !important; }
+        
+        @media (max-width: 768px) {
+            .btn-block {
+                margin-bottom: 10px;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    </script>
+
+</body>
+</html>

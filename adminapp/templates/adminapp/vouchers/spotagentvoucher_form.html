@@ -1,0 +1,1010 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Spot Agent Voucher{% endblock %}
+
+{% block content %}
+
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="ph-icon-wrapper">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">Voucher Operations</h3>
+                        <p class="ph-header-subtitle">Manage your voucher operations.</p>
+                    </div>
+                </div>
+
+      <!-- Breadcrumbs -->
+      <nav class="ph-breadcrumb-nav">
+        <ol class="ph-breadcrumb-list">
+          <li class="ph-breadcrumb-item">
+            <a href="#" class="ph-breadcrumb-link">
+              <i class="icon-home"></i>
+              <span>Home</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="ph-breadcrumb-item">
+            <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="ph-breadcrumb-link">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <span>Spot Agent Vouchers</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="ph-breadcrumb-item active">
+            <a href="">
+              <span>Create</span>
+            </a>
+          </li>
+        </ol>
+      </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+
+    <!-- Display Django Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" id="voucherForm" class="purchase-form">
+        {% csrf_token %}
+
+        <!-- Voucher Details Card -->
+        <div class="form-card mb-4">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title mb-0">Voucher Details</h3>
+                            <p class="text-muted mb-0">Enter basic voucher information</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="add-btn">
+                        <i class="fas fa-list me-2"></i>View All Vouchers
+                    </a>
+                </div>
+            </div>
+            
+            <div class="form-card" style="padding: 20px;">
+                <div class="row g-4">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.voucher_no.label }} <span class="text-danger">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-hashtag input-icon"></i>
+                                {{ form.voucher_no }}
+                            </div>
+                            {% if form.voucher_no.errors %}
+                                <div class="validation-error">{{ form.voucher_no.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.date.label }} <span class="text-danger">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calendar-alt input-icon"></i>
+                                {{ form.date }}
+                            </div>
+                            {% if form.date.errors %}
+                                <div class="validation-error">{{ form.date.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.agent.label }} <span class="text-danger">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-user input-icon"></i>
+                                {{ form.agent }}
+                            </div>
+                            {% if form.agent.errors %}
+                                <div class="validation-error">{{ form.agent.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Balance Information Display -->
+        <div class="form-card mb-4" id="balanceInfo" style="display: none;">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper me-4">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h4 class="card-title mb-0">Agent Balance Information</h4>
+                        <p class="text-muted mb-0">Current balance summary for selected agent</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Total Bills</th>
+                                <th class="table-header">Total Receipts</th>
+                                <th class="table-header">Total Payments</th>
+                                <th class="table-header">Outstanding Balance</th>
+                                <th class="table-header">Agent Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="summary-row">
+                                <td class="table-cell">
+                                    <div class="summary-value">
+                                        <span class="currency">₹</span>
+                                        <span id="billsTotal" class="calculated-value">0.00</span>
+                                    </div>
+                                </td>
+                                <td class="table-cell">
+                                    <div class="summary-value">
+                                        <span class="currency">₹</span>
+                                        <span id="totalReceipts" class="calculated-value">0.00</span>
+                                    </div>
+                                </td>
+                                <td class="table-cell">
+                                    <div class="summary-value">
+                                        <span class="currency">₹</span>
+                                        <span id="totalPayments" class="calculated-value">0.00</span>
+                                    </div>
+                                </td>
+                                <td class="table-cell">
+                                    <div class="summary-value total-highlight">
+                                        <span class="currency">₹</span>
+                                        <span id="currentBalance" class="calculated-value">0.00</span>
+                                    </div>
+                                </td>
+                                <td class="table-cell">
+                                    <div class="summary-value">
+                                        <i class="fas fa-user-tie me-2"></i>
+                                        <span id="agentName" class="calculated-value">-</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Details Card -->
+        <div class="form-card mb-4">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper me-4">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div>
+                        <h4 class="card-title mb-0">Transaction Details</h4>
+                        <p class="text-muted mb-0">Enter description and amount details</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-card" style="padding: 20px;">
+                <div class="row g-4">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.description.label }}</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-align-left input-icon"></i>
+                                {{ form.description }}
+                            </div>
+                            {% if form.description.errors %}
+                                <div class="validation-error">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.remain_amount.label }}</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-balance-scale input-icon"></i>
+                                {{ form.remain_amount }}
+                            </div>
+                            {% if form.remain_amount.errors %}
+                                <div class="validation-error">{{ form.remain_amount.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 col-lg-4">
+                        <div class="form-group">
+                            <label class="form-label">{{ form.total_amount.label }}</label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-calculator input-icon"></i>
+                                {{ form.total_amount }}
+                            </div>
+                            {% if form.total_amount.errors %}
+                                <div class="validation-error">{{ form.total_amount.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Details Card -->
+        <div class="form-card mb-4">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="icon-wrapper me-4">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div>
+                        <h4 class="card-title mb-0">Payment Details</h4>
+                        <p class="text-muted mb-0">Enter receipt and payment amounts</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-card" style="padding: 20px;">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label text-success">
+                                <i class="fas fa-plus-circle me-1"></i>{{ form.receipt.label }} (+)
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-rupee-sign input-icon"></i>
+                                {{ form.receipt }}
+                            </div>
+                            {% if form.receipt.errors %}
+                                <div class="validation-error">{{ form.receipt.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Amount received from agent</small>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label text-danger">
+                                <i class="fas fa-minus-circle me-1"></i>{{ form.payment.label }} (-)
+                            </label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-rupee-sign input-icon"></i>
+                                {{ form.payment }}
+                            </div>
+                            {% if form.payment.errors %}
+                                <div class="validation-error">{{ form.payment.errors }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Amount paid to agent</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+              <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save me-2"></i>Create Voucher
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:spot_purchase_list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Add Button */
+.add-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.add-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  text-decoration: none;
+}
+
+/* Table Styling */
+.summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+/* Summary Table Styling */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+/* Form Actions */
+.form-actions {
+
+  margin-top: 40px;
+}
+
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Text Color Overrides */
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 12px;
+  border: none;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.alert-success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.1);
+  color: #055160;
+  border-left: 4px solid #0dcaf0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  color: inherit;
+  opacity: 0.5;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Small text styling */
+.form-text {
+  font-size: 12px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+
+
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+
+  .add-btn{
+    display: none;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+
+</style>
+
+
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const agentSelect = document.getElementById('id_agent');
+    const remainAmountInput = document.getElementById('id_remain_amount');
+    const totalAmountInput = document.getElementById('id_total_amount');
+    const receiptInput = document.getElementById('id_receipt');
+    const paymentInput = document.getElementById('id_payment');
+    const balanceInfo = document.getElementById('balanceInfo');
+    const dateInput = document.getElementById('id_date');
+
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.getElementById('id_voucher_no'),
+        dateInput,
+        agentSelect,
+        document.getElementById('id_description'),
+        remainAmountInput,
+        totalAmountInput,
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+
+    // ===== AMOUNT CALCULATIONS =====
+    function updateAmounts() {
+        const remainAmount = parseFloat(remainAmountInput.value) || 0;
+        const receipt = parseFloat(receiptInput.value) || 0;
+        const payment = parseFloat(paymentInput.value) || 0;
+        
+        const newTotal = remainAmount + receipt - payment;
+        totalAmountInput.value = newTotal.toFixed(2);
+    }
+
+    // ===== AGENT BALANCE FETCH =====
+    function fetchAgentBalance(agentId) {
+        if (!agentId) {
+            balanceInfo.style.display = 'none';
+            remainAmountInput.value = '0.00';
+            updateAmounts();
+            return;
+        }
+
+        fetch(`{% url 'adminapp:get_agent_balance' %}?agent_id=${agentId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    balanceInfo.style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('billsTotal').textContent = (data.bills_total || 0).toFixed(2);
+                document.getElementById('totalReceipts').textContent = (data.total_receipt || 0).toFixed(2);
+                document.getElementById('totalPayments').textContent = (data.total_payment || 0).toFixed(2);
+                document.getElementById('currentBalance').textContent = (data.remain_amount || 0).toFixed(2);
+                document.getElementById('agentName').textContent = data.agent_name || 'Unknown Agent';
+                
+                const balanceElement = document.getElementById('currentBalance');
+                const remainAmount = data.remain_amount || 0;
+                if (remainAmount > 0) {
+                    balanceElement.className = 'calculated-value text-danger';
+                } else if (remainAmount < 0) {
+                    balanceElement.className = 'calculated-value text-success';
+                } else {
+                    balanceElement.className = 'calculated-value text-muted';
+                }
+                
+                remainAmountInput.value = remainAmount.toFixed(2);
+                balanceInfo.style.display = 'block';
+                updateAmounts();
+            })
+            .catch(error => {
+                console.error('Error fetching agent balance:', error);
+                balanceInfo.style.display = 'none';
+            });
+    }
+
+    // ===== EVENT LISTENERS =====
+    agentSelect.addEventListener('change', function() {
+        fetchAgentBalance(this.value);
+    });
+
+    receiptInput.addEventListener('input', updateAmounts);
+    paymentInput.addEventListener('input', updateAmounts);
+
+    // Initialize if agent is already selected
+    if (agentSelect.value) {
+        fetchAgentBalance(agentSelect.value);
+    }
+});
+</script>
+
+
+{% endblock %}

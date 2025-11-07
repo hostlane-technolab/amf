@@ -1,0 +1,1765 @@
+{% extends 'master2base.html' %}
+{%block title%} Create Item Species {%endblock%}
+
+{% block content %}
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+<div class="container">
+  <div class="page-inner">
+    <!-- Page Header -->
+           <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-boxes-packing"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Item & Product Masters</h3>
+            <p class="ph-header-subtitle">Manage your Item & Products.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:species_list'%}" class="ph-breadcrumb-link">
+                  <i class="fas fa-dna"></i>
+                <span>Item Species</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="{%url 'adminapp:species_create'%}" >
+                                            
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Form Card -->
+    <div class="form-container">
+      <div class="form-card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="card-header-content">
+            <div class="card-icon">
+              <i class="fa-solid fa-list"></i>
+            </div>
+            <div class="card-title-section">
+              <h4 class="card-title">Create Item Species</h4>
+              <p class="card-description">Fill in the details to create item species.</p>
+            </div>
+          </div>
+          <div class="progress-indicator">
+            <div class="progress-step active" data-step="1">
+              <div class="step-number">1</div>
+              <span class="step-label">Details</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" class="grade-form" id="gradeForm">
+            {% csrf_token %}
+            
+            <div class="form-grid">
+              {% for field in form %}
+                <div class="form-group-wrapper">
+                  <div class="form-group">
+                    <!-- Field Label -->
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                      <span  class="label-text">{{ field.label }}</span>
+                      {% if field.field.required %}
+                        <span class="required-indicator">*</span>
+                      {% endif %}
+                    </label>
+
+                    <!-- Input Container -->
+                    <div class="input-container">
+                      <!-- Textarea Field -->
+                      {% if field.field.widget.input_type == 'textarea' %}
+                        <div class="textarea-wrapper">
+                          <textarea 
+                            class="form-input textarea-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                            {% if field.field.widget.attrs.rows %}rows="{{ field.field.widget.attrs.rows }}"{% else %}rows="4"{% endif %}
+                          >{{ field.value|default_if_none:"" }}</textarea>
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Select Field -->
+                      {% elif field.field.widget.input_type == 'select' %}
+                        <div class="select-wrapper">
+                          <select 
+                            class="form-input select-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.field.required %}required{% endif %}
+                          >
+                            {% if not field.field.required %}
+                              <option value="" class="placeholder-option">Choose {{ field.label|lower }}...</option>
+                            {% endif %}
+                            {% for choice_value, choice_label in field.field.choices %}
+                              <option value="{{ choice_value }}" {% if choice_value == field.value %}selected{% endif %}>
+                                {{ choice_label }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                          <div class="select-icon">
+                            <i class="fas fa-chevron-down"></i>
+                          </div>
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Checkbox Field -->
+                      {% elif field.field.widget.input_type == 'checkbox' %}
+                        <div class="checkbox-wrapper">
+                          <input 
+                            class="checkbox-input{% if field.errors %} error{% endif %}" 
+                            type="checkbox" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.value %}checked{% endif %}
+                          >
+                          <label class="checkbox-label" for="{{ field.id_for_label }}">
+                            <div class="checkbox-custom">
+                              <i class="fas fa-check checkbox-check"></i>
+                            </div>
+                            <span class="checkbox-text">Is this item peeling?</span>
+                          </label>
+                        </div>
+                      
+                      <!-- Radio Field -->
+                      {% elif field.field.widget.input_type == 'radio' %}
+                        <div class="radio-group">
+                          {% for choice_value, choice_label in field.field.choices %}
+                            <div class="radio-wrapper">
+                              <input 
+                                class="radio-input{% if field.errors %} error{% endif %}" 
+                                type="radio" 
+                                name="{{ field.name }}" 
+                                id="{{ field.name }}_{{ forloop.counter }}" 
+                                value="{{ choice_value }}"
+                                {% if choice_value == field.value %}checked{% endif %}
+                              >
+                              <label class="radio-label" for="{{ field.name }}_{{ forloop.counter }}">
+                                <div class="radio-custom">
+                                  <div class="radio-dot"></div>
+                                </div>
+                                <span class="radio-text">{{ choice_label }}</span>
+                              </label>
+                            </div>
+                          {% endfor %}
+                        </div>
+                      
+                      <!-- File Field -->
+                      {% elif field.field.widget.input_type == 'file' %}
+                        <div class="file-wrapper">
+                          <input 
+                            type="file" 
+                            class="file-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.accept %}accept="{{ field.field.widget.attrs.accept }}"{% endif %}
+                          >
+                          <label for="{{ field.id_for_label }}" class="file-label">
+                            <div class="file-content">
+                              <i class="fas fa-cloud-upload-alt file-icon"></i>
+                              <span class="file-text">Choose file or drag here</span>
+                              <span class="file-subtext">Supported formats: JPG, PNG, PDF</span>
+                            </div>
+                          </label>
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Date Field -->
+                      {% elif field.field.widget.input_type == 'date' %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            <i class="fa-solid fa-calendar-days"></i>
+                          </div>
+                          <input 
+                            type="date" 
+                            class="form-input date-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|date:"Y-m-d"|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Number Field -->
+                      {% elif field.field.widget.input_type == 'number' %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            <i class="fas fa-hashtag"></i>
+                          </div>
+                          <input 
+                            type="number" 
+                            class="form-input number-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.min %}min="{{ field.field.widget.attrs.min }}"{% endif %}
+                            {% if field.field.widget.attrs.max %}max="{{ field.field.widget.attrs.max }}"{% endif %}
+                            {% if field.field.widget.attrs.step %}step="{{ field.field.widget.attrs.step }}"{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Email Field -->
+                      {% elif field.field.widget.input_type == 'email' %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                          </div>
+                          <input 
+                            type="email" 
+                            class="form-input email-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Default Text Field -->
+                    {% else %}
+                      <div class="input-wrapper">
+                    <div class="input-icon">
+                      {% if "name" in field.label|lower %}
+                        <i class="fa-solid fa-tags"></i>
+                      {% elif "mobile" in field.label|lower or "phone" in field.label|lower %}
+                        <i class="fas fa-phone"></i>
+                      {% elif "description" in field.label|lower %}
+                        <i class="fas fa-align-left header-icon"></i>
+                      {% elif "peeling" in field.label|lower %}
+                        <i class="fa-solid fa-scissors"></i>
+                      {% elif "code" in field.label|lower %}
+                        <i class="fa-solid fa-hashtag"></i>
+                      {% else %}
+                        <i class="fas fa-keyboard"></i>
+                      {% endif %}
+                    </div>
+
+                        <input 
+                          type="text" 
+                          class="form-input text-input{% if field.errors %} error{% endif %}" 
+                          name="{{ field.name }}" 
+                          id="{{ field.id_for_label }}"
+                          value="{{ field.value|default_if_none:"" }}"
+                          {% if field.field.required %}required{% endif %}
+                          {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                          {% if field.field.widget.attrs.maxlength %}maxlength="{{ field.field.widget.attrs.maxlength }}"{% endif %}
+                        >
+                        <div class="input-border"></div>
+                      </div>
+                    {% endif %}
+
+                    </div>
+
+                    <!-- Help Text -->
+                    {% if field.help_text %}
+                      <div class="help-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span>{{ field.help_text }}</span>
+                      </div>
+                    {% endif %}
+
+                    <!-- Error Messages -->
+                    {% if field.errors %}
+                      <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="error-text">
+                          {% for error in field.errors %}
+                            <span>{{ error }}</span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <div class="action-buttons">
+                <button type="button" class="btn-secondary" onclick="history.back()">
+                  <i class="fas fa-arrow-left"></i>
+                  <span>Cancel</span>
+                </button>
+                <button type="submit" class="btn-primary" id="submitBtn">
+                  <i class="fas fa-save"></i>
+                  <span>Create Species</span>
+                  <div class="btn-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Base Variables */
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #64748b;
+  --success-color: #059669;
+  --error-color: #dc2626;
+  --warning-color: #d97706;
+  --info-color: #0891b2;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-accent: #e2e8f0;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #ffffff;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --border-focus: #3b82f6;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.header-content {
+  display: flex;
+  justify-content: between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: #6f42c1;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 28px;
+  /* font-weight: 800; */
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.header-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.header-stats {
+  margin-left: auto;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Breadcrumbs */
+.breadcrumb-nav {
+  margin-top: var(--spacing-lg);
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.breadcrumb-link:hover {
+  background: var(--bg-accent);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.breadcrumb-item.active span {
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 6px 12px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.breadcrumb-separator {
+  color: var(--text-light);
+  margin: 0 4px;
+  font-size: 12px;
+}
+
+/* Form Container */
+.form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.form-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* Card Header */
+.card-header {
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.card-header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--success-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.card-title {
+  font-size: 22px;
+  /* font-weight: 700; */
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.card-description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: var(--bg-accent);
+  border: 2px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.progress-step.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.step-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Card Body */
+.card-body {
+  padding: var(--spacing-2xl);
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+/* Form Groups */
+.form-group-wrapper {
+  position: relative;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.required-indicator {
+  color: var(--error-color);
+  font-weight: 700;
+}
+
+/* Input Container */
+.input-container {
+  position: relative;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Base Input Styling */
+.form-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all 0.3s ease;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.form-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: var(--bg-primary);
+}
+
+.form-input.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+/* Input Wrapper for Icons */
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .form-input {
+  padding-left: 52px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 16px;
+  z-index: 2;
+}
+
+.form-input:focus + .input-border,
+.input-wrapper .form-input:focus ~ .input-border {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.input-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Select Input */
+.select-wrapper {
+  position: relative;
+}
+
+.select-input {
+  appearance: none;
+  background-image: none;
+  cursor: pointer;
+  padding-right: 52px;
+}
+
+.select-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.select-input:focus ~ .select-icon {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.placeholder-option {
+  color: var(--text-light);
+}
+
+/* Textarea */
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Checkbox Styling */
+.checkbox-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  margin-top: var(--spacing-xs);
+}
+
+.checkbox-input {
+  display: none;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkbox-check {
+  font-size: 12px;
+  color: white;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+}
+
+.checkbox-input:checked + .checkbox-label .checkbox-custom {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkbox-input:checked + .checkbox-label .checkbox-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.checkbox-input:checked + .checkbox-label .checkbox-text {
+  color: var(--text-primary);
+}
+
+/* Radio Styling */
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+}
+
+.radio-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.radio-input {
+  display: none;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs) 0;
+}
+
+.radio-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.radio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  transform: scale(0);
+  transition: transform 0.2s ease;
+}
+
+.radio-input:checked + .radio-label .radio-custom {
+  border-color: var(--primary-color);
+}
+
+.radio-input:checked + .radio-label .radio-dot {
+  transform: scale(1);
+}
+
+.radio-input:checked + .radio-label .radio-text {
+  color: var(--text-primary);
+}
+
+/* File Input */
+.file-wrapper {
+  position: relative;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-label {
+  display: block;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--bg-secondary);
+}
+
+.file-label:hover {
+  border-color: var(--primary-color);
+  background: rgba(37, 99, 235, 0.02);
+}
+
+.file-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.file-icon {
+  font-size: 32px;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.file-text {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.file-subtext {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Help Text */
+.help-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.help-text i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Error Messages */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--error-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-message i {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.error-text {
+  flex: 1;
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 2px solid var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Button Styling */
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 16px 32px;
+  border: 2px solid;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: white !important;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--secondary-color);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Loading State */
+.btn-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.btn-primary.loading .btn-loading {
+  opacity: 1;
+  visibility: visible;
+}
+
+.btn-primary.loading span,
+.btn-primary.loading i:not(.btn-loading i) {
+  opacity: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .progress-indicator {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-xs: 6px;
+    --spacing-sm: 10px;
+    --spacing-md: 14px;
+    --spacing-lg: 20px;
+    --spacing-xl: 28px;
+    --spacing-2xl: 40px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-left {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .header-stats {
+    margin-left: 0;
+    align-self: center;
+  }
+  
+  .icon-wrapper {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+  
+  .header-title {
+    font-size: 24px;
+  }
+  
+  .card-body {
+    padding: var(--spacing-xl);
+  }
+  
+  .form-grid {
+    gap: var(--spacing-lg);
+  }
+  
+  .action-buttons {
+    justify-content: stretch;
+    flex-direction: column-reverse;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .breadcrumb-list {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .card-header {
+    padding: var(--spacing-lg);
+  }
+  
+  .card-body {
+    padding: var(--spacing-lg);
+  }
+  
+  .header-content {
+    gap: var(--spacing-md);
+  }
+  
+  .card-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .progress-indicator {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-input {
+    padding: 14px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .input-wrapper .form-input {
+    padding-left: 48px;
+  }
+  
+  .input-icon {
+    left: 16px;
+  }
+  
+  .select-icon {
+    right: 16px;
+  }
+}
+
+/* Focus States for Accessibility */
+.form-input:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Animation for Form Loading */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Hover Effects */
+.form-group-wrapper:hover .form-label {
+  color: var(--primary-color);
+}
+
+.form-group-wrapper:hover .input-icon {
+  color: var(--primary-color);
+}
+
+/* Custom Scrollbar for Select and Textarea */
+.select-input::-webkit-scrollbar,
+.textarea-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.select-input::-webkit-scrollbar-track,
+.textarea-input::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.select-input::-webkit-scrollbar-thumb,
+.textarea-input::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.select-input::-webkit-scrollbar-thumb:hover,
+.textarea-input::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
+}
+
+/* Print Styles */
+@media print {
+  .form-card {
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    display: none;
+  }
+  
+  .form-actions {
+    display: none;
+  }
+}
+
+/* Beautiful White/Off-White Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Pure white and cream backgrounds for elegance */
+    --bg-primary: #ffffff;
+    --bg-secondary: #fefefe;
+    --bg-tertiary: #f9f9f9;
+    --bg-accent: #f5f5f5;
+    
+    /* Refined neutral text colors */
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #6a6a6a;
+    --text-light: #8a8a8a;
+    
+    /* Subtle light borders */
+    --border-color: #e8e8e8;
+    --border-focus: #3b82f6;
+    
+    /* Enhanced shadows for depth */
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 20px -3px rgba(0, 0, 0, 0.15), 0 4px 8px -2px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 24px 32px -5px rgba(0, 0, 0, 0.18), 0 12px 16px -5px rgba(0, 0, 0, 0.10);
+  }
+  
+  /* Override form inputs for clean white appearance */
+  .form-input {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+  }
+  
+  .form-input:focus {
+    background: var(--bg-primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+  }
+  
+  .checkbox-custom,
+  .radio-custom {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+  }
+  
+  .file-label {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+  }
+  
+  .file-label:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-color);
+  }
+  
+  /* Enhanced card styling for white theme */
+  .form-card {
+    background: var(--bg-primary);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-color);
+  }
+  
+  .card-header {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  }
+  
+  /* Beautiful breadcrumb styling */
+  .breadcrumb-link {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+  }
+  
+  .breadcrumb-link:hover {
+    background: var(--bg-accent);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Icon wrapper with subtle gradient */
+  .icon-wrapper {
+    background: #6f42c1;
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Enhanced stat badge */
+  .stat-badge {
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-accent) 100%);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  /* Progress indicator enhancement */
+  .progress-step {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .progress-step.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+    box-shadow: var(--shadow-md);
+  }
+  
+  /* Button enhancements */
+  .btn-secondary {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .btn-secondary:hover {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000000;
+    --text-primary: #000000;
+    --bg-primary: #ffffff;
+  }
+  
+  .form-input {
+    border-width: 3px;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    border-width: 3px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Enhanced form submission with loading state
+    $('#gradeForm').on('submit', function(e) {
+        const submitBtn = $('#submitBtn');
+        submitBtn.addClass('loading');
+        submitBtn.prop('disabled', true);
+        
+        // Remove loading state after 3 seconds if form is still processing
+        setTimeout(() => {
+            submitBtn.removeClass('loading');
+            submitBtn.prop('disabled', false);
+        }, 3000);
+    });
+
+    // Enhanced AJAX for dependent dropdowns
+    $('#id_item').change(function() {
+        const itemId = $(this).val();
+        const speciesDropdown = $('#id_species');
+        const speciesWrapper = speciesDropdown.closest('.form-group');
+        
+        // Show loading state
+        speciesWrapper.addClass('loading');
+        speciesDropdown.prop('disabled', true);
+
+        if (itemId) {
+            $.ajax({
+                url: "{% url 'adminapp:ajax_load_species' %}",
+                data: { 'item_id': itemId },
+                success: function(data) {
+                    speciesDropdown.empty();
+                    speciesDropdown.append('<option value="">Choose species...</option>');
+                    
+                    data.forEach(function(species) {
+                        speciesDropdown.append(
+                            $('<option></option>')
+                                .attr('value', species.id)
+                                .text(species.name)
+                        );
+                    });
+                },
+                error: function() {
+                    speciesDropdown.empty();
+                    speciesDropdown.append('<option value="">Error loading species</option>');
+                },
+                complete: function() {
+                    speciesWrapper.removeClass('loading');
+                    speciesDropdown.prop('disabled', false);
+                }
+            });
+        } else {
+            speciesDropdown.empty();
+            speciesDropdown.append('<option value="">Choose species...</option>');
+            speciesWrapper.removeClass('loading');
+            speciesDropdown.prop('disabled', false);
+        }
+    });
+
+    // Form validation enhancement
+    $('.form-input').on('blur', function() {
+        const field = $(this);
+        const value = field.val().trim();
+        const isRequired = field.prop('required');
+        
+        if (isRequired && !value) {
+            field.addClass('error');
+            showFieldError(field, 'This field is required');
+        } else {
+            field.removeClass('error');
+            hideFieldError(field);
+        }
+    });
+
+    // Real-time validation for email fields
+    $('input[type="email"]').on('input', function() {
+        const field = $(this);
+        const email = field.val().trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email && !emailPattern.test(email)) {
+            field.addClass('error');
+            showFieldError(field, 'Please enter a valid email address');
+        } else {
+            field.removeClass('error');
+            hideFieldError(field);
+        }
+    });
+
+    // File upload enhancement
+    $('.file-input').on('change', function() {
+        const file = this.files[0];
+        const label = $(this).siblings('.file-label');
+        const fileText = label.find('.file-text');
+        
+        if (file) {
+            fileText.text(`Selected: ${file.name}`);
+            label.addClass('file-selected');
+        } else {
+            fileText.text('Choose file or drag here');
+            label.removeClass('file-selected');
+        }
+    });
+
+    // Drag and drop for file inputs
+    $('.file-label').on('dragover', function(e) {
+        e.preventDefault();
+        $(this).addClass('drag-over');
+    });
+
+    $('.file-label').on('dragleave', function(e) {
+        e.preventDefault();
+        $(this).removeClass('drag-over');
+    });
+
+    $('.file-label').on('drop', function(e) {
+        e.preventDefault();
+        $(this).removeClass('drag-over');
+        
+        const files = e.originalEvent.dataTransfer.files;
+        if (files.length > 0) {
+            const fileInput = $(this).siblings('.file-input')[0];
+            fileInput.files = files;
+            $(fileInput).trigger('change');
+        }
+    });
+
+    // Auto-resize textarea
+    $('.textarea-input').each(function() {
+        this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
+    }).on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Helper functions for validation
+    function showFieldError(field, message) {
+        hideFieldError(field);
+        const errorDiv = $(`
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="error-text"><span>${message}</span></div>
+            </div>
+        `);
+        field.closest('.form-group').append(errorDiv);
+    }
+
+    function hideFieldError(field) {
+        field.closest('.form-group').find('.error-message').remove();
+    }
+
+    // Smooth scroll to first error on form submit
+    $('#gradeForm').on('invalid', function() {
+        const firstError = $('.form-input.error').first();
+        if (firstError.length) {
+            $('html, body').animate({
+                scrollTop: firstError.offset().top - 100
+            }, 500);
+        }
+    });
+
+    // Add loading class for dependent fields
+    const style = document.createElement('style');
+    style.textContent = `
+        .form-group.loading .form-input {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .file-label.drag-over {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .file-label.file-selected {
+            border-color: var(--success-color);
+            background: rgba(5, 150, 105, 0.05);
+        }
+        
+        @keyframes spin {
+            to { background-position-x: right -16px center; }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}

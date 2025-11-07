@@ -1,0 +1,780 @@
+{% extends 'admin_base.html' %}
+{% block title %} Peeling Shed Supply Report {% endblock %}
+{% block content %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .page-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            padding: 24px 32px;
+            color: white;
+            position: relative;
+        }
+
+        .card-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 32px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .filter-section {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 24px;
+            border: 2px solid transparent;
+            transition: all 0.4s ease;
+        }
+
+        .filter-section:hover {
+            border-color: rgba(124, 58, 237, 0.2);
+            box-shadow: 0 12px 30px rgba(124, 58, 237, 0.1);
+            transform: translateY(-3px);
+        }
+
+        .filter-section label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+        }
+
+        .selected-count {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        .search-box, .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-bottom: 16px;
+            background: white;
+            font-weight: 500;
+        }
+
+        .search-box:focus, .search-input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+
+        .options-container {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .option-item:last-child {
+            border-bottom: none;
+        }
+
+        .option-item:hover {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(168, 85, 247, 0.08));
+        }
+
+        .option-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #7c3aed;
+            cursor: pointer;
+        }
+
+        .option-item label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 0.9rem;
+            color: #475569;
+            font-weight: 500;
+        }
+
+        .search-section {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .date-section {
+            background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+            display: flex;
+            gap: 32px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .date-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .date-section label {
+            display: block;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .date-section select,
+        .date-section input[type="date"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .apply-button {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .apply-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px rgba(124, 58, 237, 0.4);
+        }
+
+        .summary-stats {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .stats-header {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            padding: 20px 32px;
+            color: white;
+        }
+
+        .stats-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0;
+        }
+
+        .stat-item {
+            padding: 24px;
+            text-align: center;
+            border-right: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+        }
+
+        .stat-item:hover {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(168, 85, 247, 0.05));
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 4px;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #059669, #10b981);
+            padding: 24px 32px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .table-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 10px 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+        }
+
+        .export-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(168, 85, 247, 0.05));
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .search-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .date-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .page-header h2 {
+                font-size: 2rem;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            th, td {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>🏭 Peeling Shed Supply Report</h2>
+            <!-- <p>Comprehensive supply tracking and analysis dashboard</p> -->
+        </div>
+
+        <!-- Filters Card -->
+        <div class="card">
+            <div class="card-header">
+                <h3>🔍 Advanced Filters</h3>
+            </div>
+            
+            <div class="card-body">
+                <form method="get" id="filterForm">
+                    <div class="filters-grid">
+                        <!-- Items Filter -->
+                        <div class="filter-section">
+                            <label>Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
+                            <div class="options-container" id="itemsContainer">
+                                {% for item in items %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="items" value="{{ item.id }}" id="item_{{ item.id }}" 
+                                               {% if item.id|stringformat:"s" in selected_items %}checked{% endif %}>
+                                        <label for="item_{{ item.id }}">{{ item.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Item Types Filter -->
+                        <div class="filter-section">
+                            <label>Item Types: <span id="itemTypesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search item types..." id="itemTypesSearch">
+                            <div class="options-container" id="itemTypesContainer">
+                                {% for item_type in item_types %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="item_types" value="{{ item_type.id }}" id="item_type_{{ item_type.id }}" 
+                                               {% if item_type.id|stringformat:"s" in selected_item_types %}checked{% endif %}>
+                                        <label for="item_type_{{ item_type.id }}">{{ item_type.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Sheds Filter -->
+                        <div class="filter-section">
+                            <label>Sheds: <span id="shedsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search sheds..." id="shedsSearch">
+                            <div class="options-container" id="shedsContainer">
+                                {% for shed in sheds %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="sheds" value="{{ shed.id }}" id="shed_{{ shed.id }}" 
+                                               {% if shed.id|stringformat:"s" in selected_sheds %}checked{% endif %}>
+                                        <label for="shed_{{ shed.id }}">{{ shed.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Spot Purchases Filter -->
+                        <div class="filter-section">
+                            <label>Spot Purchases: <span id="spotPurchasesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search spot purchases..." id="spotPurchasesSearch">
+                            <div class="options-container" id="spotPurchasesContainer">
+                                {% for spot_purchase in spot_purchases %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="spot_purchases" value="{{ spot_purchase.id }}" id="spot_purchase_{{ spot_purchase.id }}" 
+                                               {% if spot_purchase.id|stringformat:"s" in selected_spot_purchases %}checked{% endif %}>
+                                        <label for="spot_purchase_{{ spot_purchase.id }}">{{ spot_purchase.voucher_number }} - {{ spot_purchase.date }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Sections -->
+                    <div class="search-section">
+                        <div>
+                            <label>Voucher Search:</label>
+                            <input type="text" name="voucher_search" value="{{ voucher_search }}" class="search-input" 
+                                   placeholder="Search by voucher number..." list="voucher-suggestions">
+                            <datalist id="voucher-suggestions">
+                                {% for voucher in vouchers %}
+                                    <option value="{{ voucher }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+
+                        <div>
+                            <label>Vehicle Search:</label>
+                            <input type="text" name="vehicle_search" value="{{ vehicle_search }}" class="search-input" 
+                                   placeholder="Search by vehicle number..." list="vehicle-suggestions">
+                            <datalist id="vehicle-suggestions">
+                                {% for vehicle in vehicles %}
+                                    <option value="{{ vehicle }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <!-- Date Section -->
+                    <div class="date-section">
+                        <div class="date-group">
+                            <label>Quick Date:</label>
+                            <select name="date_filter">
+                                <option value="">All</option>
+                                <option value="week" {% if date_filter == "week" %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == "month" %}selected{% endif %}>This Month</option>
+                                <option value="year" {% if date_filter == "year" %}selected{% endif %}>This Year</option>
+                            </select>
+                        </div>
+
+                        <div class="date-group">
+                            <label>From Date:</label>
+                            <input type="date" name="start_date" value="{{ start_date }}">
+                        </div>
+
+                        <div class="date-group">
+                            <label>To Date:</label>
+                            <input type="date" name="end_date" value="{{ end_date }}">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="apply-button">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="summary-stats">
+            <div class="stats-header">
+                <h3>📊 Supply Summary Statistics</h3>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Total Records</div>
+                    <div class="stat-value" id="totalRecords">{{ summary|length }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Boxes</div>
+                    <div class="stat-value" id="totalBoxes">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Quantity</div>
+                    <div class="stat-value" id="totalQuantity">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Peeling Amount</div>
+                    <div class="stat-value" id="totalPeelingAmount">₹0.00</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Box Weight</div>
+                    <div class="stat-value" id="avgBoxWeight">0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="card">
+            <div class="table-header">
+                <h3>🏭 Peeling Shed Supply Data</h3>
+                <div class="export-buttons">
+                    <button class="export-btn" onclick="printReport()">🖨️ Print</button>
+                    <a href="?action=csv&{{ request.GET.urlencode }}" class="export-btn">📊 CSV</a>
+                    <a href="?action=excel&{{ request.GET.urlencode }}" class="export-btn">📋 Excel</a>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Voucher No</th>
+                            <th>Shed</th>
+                            <th>Vehicle</th>
+                            <th>Spot Purchase Date</th>
+                            <th>Spot Voucher</th>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th>Species</th>
+                            <th>Purchase Boxes</th>
+                            <th>Purchase Quantity</th>
+                            <th>Avg Box Weight</th>
+                            <th>Boxes Received</th>
+                            <th>Quantity Received</th>
+                            <th>Total Peeling Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in summary %}
+                        <tr>
+                            <td>{{ row.date|date:"d M Y" }}</td>
+                            <td>{{ row.voucher_number }}</td>
+                            <td>{{ row.shed__name }}</td>
+                            <td>{{ row.vehicle_number }}</td>
+                            <td>{{ row.spot_purchase_date|date:"d M Y"|default:"N/A" }}</td>
+                            <td>{{ row.spot_purchase__voucher_number|default:"N/A" }}</td>
+                            <td>{{ row.spot_purchase_item__item__name|default:"N/A" }}</td>
+                            <td>{{ row.spot_purchase_item__item__category__name|default:"N/A" }}</td>
+                            <td>{{ row.spot_purchase_item__item__species__name|default:"N/A" }}</td>
+                            <td>{{ row.total_boxes_purchase|default:0 }}</td>
+                            <td>{{ row.total_quantity_purchase|default:0 }}</td>
+                            <td>{{ row.avg_box_weight|floatformat:2|default:"0.00" }}</td>
+                            <td>{{ row.boxes_received|default:0 }}</td>
+                            <td>{{ row.quantity_received|default:0 }}</td>
+                            <td>₹{{ row.total_peeling_amount|floatformat:2|default:"0.00" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr class="empty-state">
+                            <td colspan="15">🔍 No records found matching your criteria</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to open print view in new window
+        function printReport() {
+            // Get current form parameters
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const urlParams = new URLSearchParams();
+            
+            // Add all form data to URL parameters
+            for (let [key, value] of formData.entries()) {
+                urlParams.append(key, value);
+            }
+            
+            // Build print URL with current filters
+            const printUrl = "{% url 'adminapp:peeling_shed_supply_report_print' %}" + '?' + urlParams.toString();
+            
+            // Open print view in new window
+            const printWindow = window.open(printUrl, '_blank', 'width=1200,height=800');
+            
+            // Focus on the new window
+            if (printWindow) {
+                printWindow.focus();
+            }
+        }
+
+        // Alternative function to open print view in same tab
+        function printReportSameTab() {
+            const form = document.getElementById('filterForm');
+            const formData = new FormData(form);
+            const urlParams = new URLSearchParams();
+            
+            for (let [key, value] of formData.entries()) {
+                urlParams.append(key, value);
+            }
+            
+            const printUrl = "{% url 'adminapp:peeling_shed_supply_report_print' %}" + '?' + urlParams.toString();
+            window.location.href = printUrl;
+        }
+
+        // Search functionality for filter sections
+        function setupSearch(searchId, containerId, countId) {
+            const searchInput = document.getElementById(searchId);
+            const container = document.getElementById(containerId);
+            const countSpan = document.getElementById(countId);
+            
+            if (!searchInput || !container || !countSpan) return;
+            
+            const options = container.querySelectorAll('.option-item');
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                options.forEach(option => {
+                    const label = option.querySelector('label').textContent.toLowerCase();
+                    option.style.display = label.includes(searchTerm) ? 'flex' : 'none';
+                });
+            });
+
+            // Count selected items
+            function updateCount() {
+                const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+                const count = checkedBoxes.length;
+                countSpan.textContent = count;
+                countSpan.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+
+            // Add event listeners to checkboxes
+            options.forEach(option => {
+                const checkbox = option.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.addEventListener('change', updateCount);
+                }
+
+                // Click anywhere on option item to toggle checkbox
+                option.addEventListener('click', function(e) {
+                    if (e.target.type !== 'checkbox') {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        if (checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                            updateCount();
+                        }
+                    }
+                });
+            });
+
+            // Initial count update
+            updateCount();
+        }
+
+        // Calculate and display summary statistics
+        function updateSummaryStats() {
+            const rows = document.querySelectorAll('table tbody tr:not(.empty-state)');
+            let totalBoxesPurchase = 0;
+            let totalQuantityPurchase = 0;
+            let totalBoxesReceived = 0;
+            let totalQuantityReceived = 0;
+            let totalPeelingAmount = 0;
+            let totalBoxWeight = 0;
+            let weightCount = 0;
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 15) {
+                    totalBoxesPurchase += parseFloat(cells[9].textContent) || 0;
+                    totalQuantityPurchase += parseFloat(cells[10].textContent) || 0;
+                    const avgBoxWeight = parseFloat(cells[11].textContent) || 0;
+                    totalBoxesReceived += parseFloat(cells[12].textContent) || 0;
+                    totalQuantityReceived += parseFloat(cells[13].textContent) || 0;
+                    totalPeelingAmount += parseFloat(cells[14].textContent.replace('₹', '').replace(',', '')) || 0;
+                    
+                    if (avgBoxWeight > 0) {
+                        totalBoxWeight += avgBoxWeight;
+                        weightCount++;
+                    }
+                }
+            });
+
+            // Update the summary statistics
+            document.getElementById('totalBoxes').textContent = totalBoxesReceived.toLocaleString();
+            document.getElementById('totalQuantity').textContent = totalQuantityReceived.toLocaleString();
+            document.getElementById('totalPeelingAmount').textContent = '₹' + totalPeelingAmount.toLocaleString('en-IN', {
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2
+            });
+            document.getElementById('avgBoxWeight').textContent = (weightCount > 0 ? totalBoxWeight / weightCount : 0).toFixed(2);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup search for all filter sections
+            setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
+            setupSearch('itemTypesSearch', 'itemTypesContainer', 'itemTypesCount');
+            setupSearch('shedsSearch', 'shedsContainer', 'shedsCount');
+            setupSearch('spotPurchasesSearch', 'spotPurchasesContainer', 'spotPurchasesCount');
+
+            // Update summary statistics
+            updateSummaryStats();
+        });
+    </script>
+
+{%endblock%}

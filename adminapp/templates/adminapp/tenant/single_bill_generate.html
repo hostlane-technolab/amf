@@ -1,0 +1,130 @@
+<!-- SINGLE TENANT BILL GENERATION TEMPLATE -->
+<!-- adminapp/tenant/single_bill_generate.html -->
+{% extends "adminapp/tenant/billing_base.html" %}
+
+{% block title %}Generate Bill - {{ tenant.name }}{% endblock %}
+
+{% block page_title %}Generate Bill for {{ tenant.name }}{% endblock %}
+{% block page_subtitle %}Create a custom bill for this tenant{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>
+                    Single Tenant Bill Generation
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" data-loading>
+                    {% csrf_token %}
+                    
+                    <!-- Tenant Information -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading mb-2">
+                                    <i class="fas fa-building me-2"></i>{{ tenant.name }}
+                                </h6>
+                                <p class="mb-0">Generating bill for this tenant only.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label">
+                                    <i class="fas fa-calendar-alt me-2"></i>Start Date
+                                </label>
+                                <input type="date" class="form-control" id="start_date" 
+                                       name="start_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="end_date" class="form-label">
+                                    <i class="fas fa-calendar-check me-2"></i>End Date
+                                </label>
+                                <input type="date" class="form-control" id="end_date" 
+                                       name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Date Presets -->
+                    <div class="mb-4">
+                        <label class="form-label">Quick Presets:</label>
+                        <div class="btn-group-sm d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-secondary" onclick="setDateRange(7)">
+                                Last 7 Days
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setDateRange(30)">
+                                Last 30 Days
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setThisMonth()">
+                                This Month
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setLastMonth()">
+                                Last Month
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'adminapp:billing_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-cog me-2"></i>Generate Bill
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function setDateRange(days) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+    
+    document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+    document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
+}
+
+function setThisMonth() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = new Date();
+    
+    document.getElementById('start_date').value = start.toISOString().split('T')[0];
+    document.getElementById('end_date').value = end.toISOString().split('T')[0];
+}
+
+function setLastMonth() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0);
+    
+    document.getElementById('start_date').value = start.toISOString().split('T')[0];
+    document.getElementById('end_date').value = end.toISOString().split('T')[0];
+}
+
+// Validate end date is after start date
+document.getElementById('end_date').addEventListener('change', function() {
+    const startDate = new Date(document.getElementById('start_date').value);
+    const endDate = new Date(this.value);
+    
+    if (endDate <= startDate) {
+        alert('End date must be after start date.');
+        this.value = '';
+    }
+});
+</script>
+{% endblock %}

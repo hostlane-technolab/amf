@@ -1,0 +1,1566 @@
+{% extends 'admin_base.html' %}
+{% block title %} User Profile {% endblock %}
+{% block content %}
+{% load static %}
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">User Profile</h3>
+            <p class="ph-header-subtitle">View user details and permissions</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:users_list' %}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-users"></i>
+                <span>Users</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <a href="">
+                <span>Profile</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+          {% if user.is_active %}
+          <span class="ph-stat-badge" style="background: #d4edda; color: #155724; border-color: #c3e6cb;">
+            <i class="fas fa-check-circle me-2"></i>Active
+          </span>
+          {% else %}
+          <span class="ph-stat-badge" style="background: #f8d7da; color: #721c24; border-color: #f5c6cb;">
+            <i class="fas fa-times-circle me-2"></i>Inactive
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="myclass">
+      <!-- Profile Header Card -->
+      <div class="form-card mb-4 profile-header-card">
+        <div class="card-body">
+          <div class="profile-header-content">
+            <div class="profile-image-wrapper">
+                {% if user.is_superuser %}
+                    {# Show special admin profile photo #}
+                    <img src="{% static 'img/admin.jpg' %}" alt="Admin" class="profile-image">
+                {% else %}
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.full_name }}" class="profile-image">
+                    {% else %}
+                        <div class="profile-image-placeholder">
+                            <img src="{% static 'img/default_user.jpg' %}" alt="">
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+              <div class="profile-status-indicator {% if user.is_active %}active{% else %}inactive{% endif %}"></div>
+            </div>
+            <div class="profile-header-info">
+              <h2 class="profile-name2">{{ user.full_name }}</h2>
+              <p class="profile-role">
+                <i class="fas fa-briefcase"></i>
+                {{ user.role|default:"No Role Assigned"|capfirst }}
+
+              </p>
+              <div class="profile-meta">
+                <span class="meta-item">
+                  <i class="fas fa-calendar-alt"></i>
+                  Joined {{ user.date_joined|date:"M d, Y" }}
+                </span>
+                <span class="meta-item">
+                  <i class="fas fa-key"></i>
+                  ID: {{ user.id }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Information Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-address-card"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Contact Information</h3>
+              <p class="text-muted mb-0">User contact details</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="user-info-grid">
+            <div class="info-card email-card">
+              <div class="info-background">
+                <i class="fas fa-envelope bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Email Address</div>
+                <div class="info-value">{{ user.email }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-at"></i>
+                  <span>Primary</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card mobile-card">
+              <div class="info-background">
+                <i class="fas fa-mobile-alt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Mobile Number</div>
+                <div class="info-value">{{ user.mobile }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-phone"></i>
+                  <span>Contact</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card address-card">
+              <div class="info-background">
+                <i class="fas fa-map-marker-alt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Address</div>
+                <div class="info-value">{{ user.address|default:"No address provided" }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-location-dot"></i>
+                  <span>Location</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Status Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Account Status</h4>
+              <p class="text-muted mb-0">Account permissions and access</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="status-table">
+              <tbody>
+                <tr class="table-row">
+                  <td class="status-label">
+                    <i class="fas fa-power-off status-icon"></i>
+                    <span>Account Status</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    {% if user.is_active %}
+                    <span class="status-badge active">
+                      <i class="fas fa-check-circle"></i>Active
+                    </span>
+                    {% else %}
+                    <span class="status-badge inactive">
+                      <i class="fas fa-times-circle"></i>Inactive
+                    </span>
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="status-label">
+                    <i class="fas fa-user-shield status-icon"></i>
+                    <span>Staff Member</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    {% if user.is_staff %}
+                    <span class="status-badge staff-yes">
+                      <i class="fas fa-check"></i>Yes
+                    </span>
+                    {% else %}
+                    <span class="status-badge staff-no">
+                      <i class="fas fa-times"></i>No
+                    </span>
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="status-label">
+                    <i class="fas fa-crown status-icon"></i>
+                    <span>Superuser</span>
+                  </td>
+                  <td class="table-cell text-end">
+                    {% if user.is_superuser %}
+                    <span class="status-badge superuser-yes">
+                      <i class="fas fa-star"></i>Yes
+                    </span>
+                    {% else %}
+                    <span class="status-badge superuser-no">
+                      <i class="fas fa-user"></i>Regular User
+                    </span>
+                    {% endif %}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Permissions Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-lock"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">User Permissions</h4>
+              <p class="text-muted mb-0">Module access and permissions</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          {% if user.user_permissions.all %}
+          <div class="permissions-grid">
+            {% for permission in user.user_permissions.all %}
+            <div class="permission-card">
+              <div class="permission-icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+              <div class="permission-content">
+                <h5 class="permission-name">{{ permission.name }}</h5>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="no-permissions">
+            <i class="fas fa-info-circle no-permissions-icon"></i>
+            <h5>No Specific Permissions</h5>
+            <p>This user has no specific permissions assigned. Access may be granted through user groups or role-based permissions.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+                <button onclick="printProfileIsolated()" class="action-btn btn-print">
+          <i class="fas fa-print me-2"></i>Print Profile
+        </button>
+        <a href="{% url 'adminapp:users_list' %}" class="action-btn btn-back">
+          <i class="fas fa-arrow-left me-2"></i>Back to Users
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.myclass {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #2563eb;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Profile Header Card */
+.profile-header-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.profile-header-content {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.profile-image-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profile-image,
+.profile-image-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.profile-image {
+  object-fit: cover;
+}
+
+.profile-image-placeholder {
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.profile-status-indicator {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.profile-status-indicator.active {
+  background: #28a745;
+}
+
+.profile-status-indicator.inactive {
+  background: #dc3545;
+}
+
+.profile-header-info {
+  flex: 1;
+  min-width: 250px;
+}
+
+.profile-name2 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: white;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-role {
+  font-size: 18px;
+  margin: 0 0 15px 0;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-role i {
+  font-size: 16px;
+}
+
+.profile-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.meta-item i {
+  font-size: 12px;
+}
+
+/* User Information Grid */
+.user-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+.info-card {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fd 100%);
+  border-radius: 20px;
+  padding: 25px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  cursor: pointer;
+}
+
+.info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #2563eb 0%, #4f46e5 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.info-card:hover::before {
+  transform: scaleX(1);
+}
+
+.info-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(37, 99, 235, 0.15);
+  border-color: rgba(37, 99, 235, 0.3);
+}
+
+.info-background {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(37, 99, 235, 0.02) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-icon {
+  font-size: 40px;
+  color: rgba(37, 99, 235, 0.1);
+  transform: rotate(-15deg);
+}
+
+.info-content {
+  position: relative;
+  z-index: 2;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.info-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.info-badge i {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+/* Specific card variations */
+.email-card:hover {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff);
+}
+
+.email-card .info-background {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(0, 123, 255, 0.02) 100%);
+}
+
+.email-card .bg-icon {
+  color: rgba(0, 123, 255, 0.15);
+}
+
+.email-card .info-badge {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.mobile-card:hover {
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9);
+}
+
+.mobile-card .info-background {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+}
+
+.mobile-card .bg-icon {
+  color: rgba(40, 167, 69, 0.15);
+}
+
+.mobile-card .info-badge {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.address-card:hover {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffeaa7);
+}
+
+.address-card .info-background {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%);
+}
+
+.address-card .bg-icon {
+  color: rgba(255, 193, 7, 0.2);
+}
+
+.address-card .info-badge {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+}
+
+/* Status Table */
+.status-table {
+  width: 100%;
+  margin: 0;
+}
+
+.status-label {
+  padding: 20px;
+  border-bottom: 1px solid #f1f3f7;
+  font-weight: 600;
+  color: #495057;
+  width: 60%;
+}
+
+.status-icon {
+  color: #2563eb;
+  margin-right: 12px;
+  font-size: 16px;
+}
+
+.table-cell {
+  padding: 20px;
+  border-bottom: 1px solid #f1f3f7;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.inactive {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-badge.staff-yes,
+.status-badge.superuser-yes {
+  background: #cfe2ff;
+  color: #084298;
+}
+
+.status-badge.staff-no,
+.status-badge.superuser-no {
+  background: #f8f9fa;
+  color: #6c757d;
+}
+
+/* Permissions Grid */
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.permission-card {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border: 1px solid #e9ecef;
+  border-left: 4px solid #2563eb;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  transition: all 0.3s ease;
+}
+
+.permission-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.1);
+  border-left-color: #1d4ed8;
+}
+
+.permission-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+}
+
+.permission-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.permission-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.permission-code {
+  font-size: 12px;
+  color: #6c757d;
+  font-family: 'Courier New', monospace;
+  background: #f8f9fa;
+  padding: 2px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 0;
+}
+
+/* No Permissions */
+.no-permissions {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.no-permissions-icon {
+  font-size: 48px;
+  color: #dee2e6;
+  margin-bottom: 20px;
+}
+
+.no-permissions h5 {
+  color: #495057;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.no-permissions p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+/* Action Buttons */
+.form-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  background: #2563eb;
+  color: white;
+  border: 2px solid #2563eb;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.action-btn:hover {
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.3);
+}
+
+.btn-back {
+  background: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-back:hover {
+  background: #5a6268;
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+}
+
+.btn-print {
+  background: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-print:hover {
+  background: #5a32a3;
+}
+
+/* Utilities */
+.d-flex {
+  display: flex;
+}
+
+.align-items-center {
+  align-items: center;
+}
+
+.me-2 {
+  margin-right: 0.5rem;
+}
+
+.me-4 {
+  margin-right: 1.5rem;
+}
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.text-end {
+  text-align: right;
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-row {
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.02) 0%, rgba(37, 99, 235, 0.05) 100%);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .profile-header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-header-info {
+    align-items: center;
+  }
+
+  .profile-role,
+  .profile-meta {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+
+  .profile-name2 {
+    font-size: 26px;
+  }
+
+  .profile-role {
+    font-size: 16px;
+  }
+
+  .user-info-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+  }
+
+  .permissions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+
+  .profile-image,
+  .profile-image-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-image-placeholder {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+
+  .profile-name2 {
+    font-size: 22px;
+  }
+
+  .user-info-grid {
+    padding: 15px;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .info-value {
+    font-size: 16px;
+  }
+
+  .status-label,
+  .table-cell {
+    padding: 15px 10px;
+    font-size: 14px;
+  }
+
+  .permission-card {
+    padding: 15px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .form-actions,
+  .page-header-section {
+    display: none !important;
+  }
+  
+  .form-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    margin-bottom: 20px !important;
+    page-break-inside: avoid;
+  }
+  
+  .card-header {
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+  
+  .myclass {
+    margin-top: 0 !important;
+  }
+
+  .profile-header-card {
+    background: #f8f9fa !important;
+    color: #2c3e50 !important;
+  }
+
+  .profile-name2,
+  .profile-role,
+  .meta-item {
+    color: #2c3e50 !important;
+  }
+
+  .info-card,
+  .permission-card {
+    page-break-inside: avoid;
+  }
+}
+</style>
+
+<script>
+// Print functionality with professional styling
+function printProfileIsolated() {
+    const myclassElement = document.querySelector('.myclass');
+    const clonedContent = myclassElement.cloneNode(true);
+    
+    // Remove action buttons from cloned content
+    const actionButtons = clonedContent.querySelector('.form-actions');
+    if (actionButtons) {
+        actionButtons.remove();
+    }
+    
+    const printWindow = window.open('', '_blank', 'width=1024,height=768');
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>User Profile - Print</title>
+            <meta charset="utf-8">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                /* Reset and Base Styles */
+                * { 
+                    margin: 0; 
+                    padding: 0; 
+                    box-sizing: border-box; 
+                }
+                
+                @page { 
+                    margin: 15mm;
+                    size: A4 portrait;
+                }
+                
+                body { 
+                    font-family: 'Inter', 'Segoe UI', Arial, sans-serif; 
+                    background: white; 
+                    color: #1a1a1a; 
+                    font-size: 11pt; 
+                    line-height: 1.5;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                /* Header Styles */
+                .print-header {
+                    text-align: center;
+                    margin-bottom: 25px;
+                    padding-bottom: 15px;
+                    border-bottom: 3px solid #2563eb;
+                }
+                
+                .print-header h1 {
+                    font-size: 24pt;
+                    color: #2c3e50;
+                    margin-bottom: 5px;
+                    font-weight: 700;
+                }
+                
+                .print-header p {
+                    font-size: 10pt;
+                    color: #6c757d;
+                }
+                
+                /* Card Styles */
+                .form-card { 
+                    background: white; 
+                    border: 1.5px solid #dee2e6; 
+                    margin-bottom: 20px; 
+                    border-radius: 8px;
+                    page-break-inside: avoid;
+                    overflow: hidden;
+                }
+                
+                .card-header { 
+                    background: #f8f9fa;
+                    padding: 12px 18px; 
+                    border-bottom: 2px solid #2563eb;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }
+                
+                .card-header .icon-wrapper {
+                    width: 48px;
+                    height: 48px;
+                    background: #2563eb;
+                    border-radius: 12px;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 20pt;
+                }
+                
+                .card-title { 
+                    font-size: 14pt; 
+                    color: #2c3e50; 
+                    margin: 0;
+                    font-weight: 700;
+                }
+                
+                .card-body { 
+                    padding: 18px; 
+                }
+                
+                /* Profile Header */
+                .profile-header-card {
+                    background: #f8f9fa !important;
+                }
+
+                .profile-header-content {
+                    display: flex;
+                    align-items: center;
+                    gap: 30px;
+                }
+
+                .profile-image,
+                .profile-image-placeholder {
+                    width: 100px;
+                    height: 100px;
+                    border-radius: 50%;
+                    border: 3px solid #dee2e6;
+                }
+
+                .profile-image-placeholder {
+                    background: #e9ecef;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 40px;
+                    color: #6c757d;
+                }
+
+                .profile-status-indicator {
+                    display: none;
+                }
+
+                .profile-name2 {
+                    font-size: 20pt;
+                    font-weight: 700;
+                    color: #2c3e50;
+                    margin: 0 0 8px 0;
+                }
+
+                .profile-role {
+                    font-size: 12pt;
+                    color: #6c757d;
+                    margin: 0 0 10px 0;
+                }
+
+                .profile-meta {
+                    display: flex;
+                    gap: 15px;
+                    flex-wrap: wrap;
+                }
+
+                .meta-item {
+                    font-size: 10pt;
+                    color: #6c757d;
+                    background: #f8f9fa;
+                    padding: 4px 10px;
+                    border-radius: 4px;
+                }
+                
+                /* Info Grid */
+                .user-info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                    padding: 0;
+                }
+                
+                .info-card {
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    border-left: 4px solid #2563eb;
+                    border-radius: 6px;
+                    padding: 12px 15px;
+                    page-break-inside: avoid;
+                }
+                
+                .info-background {
+                    display: none;
+                }
+                
+                .info-label {
+                    font-size: 8pt;
+                    color: #6c757d;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    margin-bottom: 4px;
+                }
+                
+                .info-value {
+                    font-size: 11pt;
+                    font-weight: 700;
+                    color: #2c3e50;
+                    word-break: break-word;
+                }
+                
+                .info-badge {
+                    display: inline-block;
+                    background: #e9ecef;
+                    color: #495057;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 7pt;
+                    font-weight: 600;
+                    margin-top: 4px;
+                }
+                
+                /* Tables */
+                table { 
+                    width: 100%; 
+                    border-collapse: collapse;
+                    font-size: 10pt;
+                }
+                
+                .status-label,
+                .table-cell { 
+                    padding: 10px 12px;
+                    border: 1px solid #dee2e6;
+                }
+
+                .status-label {
+                    font-weight: 600;
+                    color: #495057;
+                    width: 60%;
+                }
+                
+                .status-icon {
+                    color: #2563eb;
+                    margin-right: 8px;
+                }
+
+                .status-badge {
+                    display: inline-block;
+                    padding: 4px 12px;
+                    border-radius: 4px;
+                    font-weight: 600;
+                    font-size: 9pt;
+                }
+
+                .status-badge.active {
+                    background: #d4edda;
+                    color: #155724;
+                }
+
+                .status-badge.inactive {
+                    background: #f8d7da;
+                    color: #721c24;
+                }
+
+                .status-badge.staff-yes,
+                .status-badge.superuser-yes {
+                    background: #cfe2ff;
+                    color: #084298;
+                }
+
+                .status-badge.staff-no,
+                .status-badge.superuser-no {
+                    background: #f8f9fa;
+                    color: #6c757d;
+                }
+                
+                /* Permissions */
+                .permissions-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 10px;
+                }
+                
+                .permission-card {
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    border-left: 4px solid #2563eb;
+                    border-radius: 6px;
+                    padding: 12px;
+                    display: flex;
+                    gap: 10px;
+                    page-break-inside: avoid;
+                }
+                
+                .permission-icon {
+                    width: 35px;
+                    height: 35px;
+                    background: #2563eb;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 14px;
+                    flex-shrink: 0;
+                }
+                
+                .permission-name {
+                    font-size: 10pt;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    margin: 0 0 4px 0;
+                }
+                
+                .permission-code {
+                    font-size: 8pt;
+                    color: #6c757d;
+                    font-family: 'Courier New', monospace;
+                    background: #fff;
+                    padding: 2px 6px;
+                    border-radius: 3px;
+                    margin: 0;
+                }
+
+                .no-permissions {
+                    text-align: center;
+                    padding: 30px;
+                    color: #6c757d;
+                }
+
+                .no-permissions-icon {
+                    font-size: 36pt;
+                    color: #dee2e6;
+                    margin-bottom: 10px;
+                }
+                
+                /* Footer */
+                .print-footer {
+                    margin-top: 30px;
+                    padding-top: 15px;
+                    border-top: 2px solid #dee2e6;
+                    text-align: center;
+                    font-size: 9pt;
+                    color: #6c757d;
+                }
+
+                /* Utilities */
+                .d-flex { display: flex; align-items: center; }
+                .me-4 { margin-right: 1rem; }
+                .mb-0 { margin-bottom: 0; }
+                .text-muted { color: #6c757d; }
+                .text-end { text-align: right; }
+                .p-0 { padding: 0; }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <h1>User Profile</h1>
+                <p>Generated on ${new Date().toLocaleDateString('en-IN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })}</p>
+            </div>
+            
+            ${clonedContent.innerHTML}
+            
+            <div class="print-footer">
+                <p>This is a computer-generated document. No signature is required.</p>
+                <p style="margin-top: 5px; font-size: 8pt;">© ${new Date().getFullYear()} User Management System. All rights reserved.</p>
+            </div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    printWindow.onload = function() {
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            
+            // Close after printing
+            printWindow.onafterprint = function() {
+                printWindow.close();
+            };
+        }, 250);
+    };
+}
+
+// Add accessibility features
+document.addEventListener('DOMContentLoaded', function() {
+    // Make cards focusable
+    const infoCards = document.querySelectorAll('.info-card, .permission-card');
+    infoCards.forEach(card => {
+        card.setAttribute('tabindex', '0');
+    });
+    
+    // Keyboard support for buttons
+    const actionBtns = document.querySelectorAll('.action-btn');
+    actionBtns.forEach(btn => {
+        btn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

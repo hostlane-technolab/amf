@@ -1,0 +1,1786 @@
+{% extends 'master2base.html' %}
+{% load widget_tweaks %}
+{%block title%} Create Shed{%endblock%}
+
+{% block content %}
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+<div class="container">
+  <div class="page-inner">
+    <!-- Page Header -->
+                  <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Location Masters</h3>
+            <p class="ph-header-subtitle">Manage your operations location.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:peeling_center_list'%}" class="ph-breadcrumb-link">
+                          <i class="fas fa-warehouse"></i>
+                <span>Peeling Centers</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="{%url 'adminapp:create_shed'%}" >
+                                            
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Form Card -->
+    <div class="form-container">
+      <div class="form-card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="card-header-content">
+            <div class="card-icon">
+              <i class="fa-solid fa-warehouse"></i>
+            </div>
+            <div class="card-title-section">
+              <h4 class="card-title">Create Shed Information</h4>
+              <p class="card-description">Fill in the details to create a new shed and manage its items</p>
+            </div>
+          </div>
+          <div class="progress-indicator">
+            <div class="progress-step active" data-step="1">
+              <div class="step-number">1</div>
+              <span class="step-label">Details</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" class="shed-form" id="shedForm">
+            {% csrf_token %}
+            
+            <!-- Main Shed Form Fields -->
+            {{ form.non_field_errors }}
+            <div class="form-grid">
+              {% for field in form %}
+                <div class="form-group-wrapper">
+                  <div class="form-group">
+                    <!-- Field Label -->
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                      <span class="label-text">{{ field.label }}</span>
+                      {% if field.field.required %}
+                        <span class="required-indicator">*</span>
+                      {% endif %}
+                    </label>
+
+                    <!-- Input Container -->
+                    <div class="input-container">
+                      <!-- Textarea Field -->
+                      {% if field.field.widget.input_type == 'textarea' %}
+                        <div class="textarea-wrapper">
+                          <textarea 
+                            class="form-input textarea-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                            {% if field.field.widget.attrs.rows %}rows="{{ field.field.widget.attrs.rows }}"{% else %}rows="3"{% endif %}
+                          >{{ field.value|default_if_none:"" }}</textarea>
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Select Field -->
+                      {% elif field.field.widget.input_type == 'select' %}
+                        <div class="select-wrapper">
+                          <select 
+                            class="form-input select-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.field.required %}required{% endif %}
+                          >
+                            {% if not field.field.required %}
+                              <option value="" class="placeholder-option">Choose {{ field.label|lower }}...</option>
+                            {% endif %}
+                            {% for choice_value, choice_label in field.field.choices %}
+                              <option value="{{ choice_value }}" {% if choice_value == field.value %}selected{% endif %}>
+                                {{ choice_label }}
+                              </option>
+                            {% endfor %}
+                          </select>
+                          <div class="select-icon">
+                            <i class="fas fa-chevron-down"></i>
+                          </div>
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Number Field -->
+                      {% elif field.field.widget.input_type == 'number' %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            <i class="fas fa-hashtag"></i>
+                          </div>
+                          <input 
+                            type="number" 
+                            class="form-input number-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.min %}min="{{ field.field.widget.attrs.min }}"{% endif %}
+                            {% if field.field.widget.attrs.max %}max="{{ field.field.widget.attrs.max }}"{% endif %}
+                            {% if field.field.widget.attrs.step %}step="{{ field.field.widget.attrs.step }}"{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Default Text Field -->
+                      {% else %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            {% if "name" in field.label|lower %}
+                              <i class="fa-solid fa-warehouse"></i>
+                            {% elif "mobile" in field.label|lower or "phone" in field.label|lower or "contact" in field.label|lower %}
+                              <i class="fas fa-phone"></i>
+                            {% elif "email" in field.label|lower %}
+                              <i class="fas fa-envelope"></i>
+                            {% elif "date" in field.label|lower %}
+                              <i class="fas fa-calendar-alt"></i>
+                            {% elif "address" in field.label|lower %}
+                              <i class="fa-solid fa-location-dot"></i>
+                            {% elif "code" in field.label|lower %}
+                              <i class="fa-solid fa-hashtag"></i>
+                            {% else %}
+                              <!-- <i class="fas fa-keyboard"></i> -->
+                            {% endif %}
+                          </div>
+                          <input 
+                            type="text" 
+                            class="form-input text-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                            {% if field.field.widget.attrs.maxlength %}maxlength="{{ field.field.widget.attrs.maxlength }}"{% endif %}
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Help Text -->
+                    {% if field.help_text %}
+                      <div class="help-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span>{{ field.help_text }}</span>
+                      </div>
+                    {% endif %}
+
+                    <!-- Error Messages -->
+                    {% if field.errors %}
+                      <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="error-text">
+                          {% for error in field.errors %}
+                            <span>{{ error }}</span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Shed Items Formset Section -->
+            <div class="formset-section">
+              <div class="formset-card">
+                <!-- Formset Header -->
+                <div class="formset-header">
+                  <div class="formset-header-content">
+                    <div class="formset-icon">
+                      <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="formset-title-section">
+                      <h4 class="formset-title">Shed Items</h4>
+                      <p class="formset-description">Manage items associated with this shed</p>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-primary formset-add-btn" id="add-more">
+                    <i class="fas fa-plus"></i>
+                    <span>Add Item</span>
+                  </button>
+                </div>
+
+                <!-- Formset Body -->
+                <div class="formset-body">
+                  <div id="formset-container">
+                    {{ formset.management_form }}
+                    {{ formset.non_form_errors }}
+                    
+                    {% for form in formset %}
+                      <div class="formset-item">
+                        <div class="formset-item-header">
+                          <div class="item-number">
+                            <span class="item-label">Item {{ forloop.counter }}</span>
+                          </div>
+                          <button type="button" class="btn-danger-small delete-row">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </div>
+                        
+                        <div class="formset-item-content">
+                          {{ form.non_field_errors }}
+                          <div class="formset-grid">
+                            {% for field in form.visible_fields %}
+                              <div class="formset-field-wrapper">
+                                <div class="formset-field">
+                                  <label for="{{ field.id_for_label }}" class="formset-label">{{ field.label }}</label>
+                                  <div class="formset-input-container">
+                                    {% if field.field.widget.input_type == 'select' %}
+                                      <div class="select-wrapper">
+                                        {{ field|add_class:"form-input select-input" }}
+                                        <div class="select-icon">
+                                          <i class="fas fa-chevron-down"></i>
+                                        </div>
+                                        <div class="input-border"></div>
+                                      </div>
+                                    {% elif field.field.widget.input_type == 'number' %}
+                                      <div class="input-wrapper">
+                                        <div class="input-icon">
+                                          <i class="fas fa-hashtag"></i>
+                                        </div>
+                                        {{ field|add_class:"form-input number-input" }}
+                                        <div class="input-border"></div>
+                                      </div>
+                                    {% elif field.field.widget.input_type == 'text' %}
+                                      <div class="input-wrapper">
+                                        <div class="input-icon">
+                                          <i class="fa-solid fa-weight-hanging"></i>
+                                        </div>
+                                        {{ field|add_class:"form-input text-input" }}
+                                        <div class="input-border"></div>
+                                      </div>
+                                    {% endif %}
+                                  </div>
+                                  
+                                  {% if field.help_text %}
+                                    <div class="help-text">
+                                      <i class="fas fa-info-circle"></i>
+                                      <span>{{ field.help_text }}</span>
+                                    </div>
+                                  {% endif %}
+
+                                  {% if field.errors %}
+                                    <div class="error-message">
+                                      <i class="fas fa-exclamation-triangle"></i>
+                                      <div class="error-text">
+                                        {% for error in field.errors %}
+                                          <span>{{ error }}</span>
+                                        {% endfor %}
+                                      </div>
+                                    </div>
+                                  {% endif %}
+                                </div>
+                              </div>
+                            {% endfor %}
+                          </div>
+                          
+                          <!-- Hidden fields for formset -->
+                          {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <div class="action-buttons">
+                <button type="button" class="btn-secondary" onclick="history.back()">
+                  <i style="color: white;" class="fas fa-arrow-left"></i>
+                  <span style="color: white;">Cancel</span>
+                </button>
+                <button type="submit" class="btn-primary" id="submitBtn">
+                  <i class="fas fa-save"></i>
+                  <span>Create Shed</span>
+                  <div class="btn-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden empty form template -->
+<div id="empty-form-template" style="display: none;">
+    {% with formset.empty_form as form %}
+    <div class="formset-item">
+      <div class="formset-item-header">
+        <div class="item-number">
+          <span class="item-label">New Item</span>
+        </div>
+        <button type="button" class="btn-danger-small delete-row">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+      
+      <div class="formset-item-content">
+        <div class="formset-grid">
+          {% for field in form.visible_fields %}
+            <div class="formset-field-wrapper">
+              <div class="formset-field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <div class="formset-input-container">
+                  {% if field.field.widget.input_type == 'select' %}
+                    <div class="select-wrapper">
+                      {{ field|add_class:"form-input select-input" }}
+                      <div class="select-icon">
+                        <i class="fas fa-chevron-down"></i>
+                      </div>
+                      <div class="input-border"></div>
+                    </div>
+                  {% elif field.field.widget.input_type == 'number' %}
+                    <div class="input-wrapper">
+                      <div class="input-icon">
+                        <i class="fas fa-hashtag"></i>
+                      </div>
+                      {{ field|add_class:"form-input number-input" }}
+                      <div class="input-border"></div>
+                    </div>
+                  {% else %}
+                    <div class="input-wrapper">
+                      <div class="input-icon">
+                        <!-- <i class="fas fa-keyboard"></i> -->
+                      </div>
+                      {{ field|add_class:"form-input text-input" }}
+                      <div class="input-border"></div>
+                    </div>
+                  {% endif %}
+                </div>
+                
+                {% if field.help_text %}
+                  <div class="help-text">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{ field.help_text }}</span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        {% for hidden in form.hidden_fields %}
+          {{ hidden }}
+        {% endfor %}
+      </div>
+    </div>
+    {% endwith %}
+</div>
+
+<style>
+/* Base Variables */
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #64748b;
+  --success-color: #059669;
+  --error-color: #dc2626;
+  --warning-color: #d97706;
+  --info-color: #0891b2;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-accent: #e2e8f0;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --border-focus: #3b82f6;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: var(--primary-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 28px;
+  /* font-weight: 700; */
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.header-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.header-stats {
+  margin-left: auto;
+}
+
+.stat-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Breadcrumbs */
+.breadcrumb-nav {
+  margin-top: var(--spacing-lg);
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.breadcrumb-link:hover {
+  background: var(--bg-accent);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.breadcrumb-item.active span {
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 6px 12px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.breadcrumb-separator {
+  color: var(--text-light);
+  margin: 0 4px;
+  font-size: 12px;
+}
+
+/* Form Container */
+.form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.form-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* Card Header */
+.card-header {
+  background: var(--bg-secondary);
+  padding: var(--spacing-xl);
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.card-header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--success-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.card-title {
+  font-size: 22px;
+  /* font-weight: 700; */
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.card-description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: var(--bg-accent);
+  border: 2px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.progress-step.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.step-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Card Body */
+.card-body {
+  padding: var(--spacing-2xl);
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+/* Form Groups */
+.form-group-wrapper {
+  position: relative;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.required-indicator {
+  color: var(--error-color);
+  font-weight: 700;
+}
+
+/* Input Container */
+.input-container {
+  position: relative;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Base Input Styling */
+.form-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all 0.3s ease;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.form-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: var(--bg-primary);
+}
+
+.form-input.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+/* Input Wrapper for Icons */
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .form-input {
+  padding-left: 52px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 16px;
+  z-index: 2;
+}
+
+.form-input:focus + .input-border,
+.input-wrapper .form-input:focus ~ .input-border {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.input-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Select Input */
+.select-wrapper {
+  position: relative;
+}
+
+.select-input {
+  appearance: none;
+  background-image: none;
+  cursor: pointer;
+  padding-right: 52px;
+}
+
+.select-icon {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 14px;
+  pointer-events: none;
+  z-index: 2;
+  transition: transform 0.2s ease;
+}
+
+.select-input:focus ~ .select-icon {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.placeholder-option {
+  color: var(--text-light);
+}
+
+/* Textarea */
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Formset Section */
+.formset-section {
+  margin-top: var(--spacing-2xl);
+}
+
+.formset-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+}
+
+/* Formset Header */
+.formset-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1d4ed8 100%);
+  padding: var(--spacing-xl);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.formset-header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.formset-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.formset-title {
+  font-size: 20px;
+  /* font-weight: 700; */
+  margin: 0 0 4px 0;
+}
+
+.formset-description {
+  font-size: 14px;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 400;
+}
+
+.formset-add-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.formset-add-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* Formset Body */
+.formset-body {
+  padding: var(--spacing-xl);
+}
+
+/* Formset Items */
+.formset-item {
+  background: var(--bg-primary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.formset-item:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-color);
+}
+
+.formset-item-header {
+  background: var(--bg-tertiary);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-number {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.item-label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.btn-danger-small {
+  background: var(--error-color);
+  border: 2px solid var(--error-color);
+  color: white;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-danger-small:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.formset-item-content {
+  padding: var(--spacing-lg);
+}
+
+/* Formset Grid */
+.formset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.formset-field-wrapper {
+  position: relative;
+}
+
+.formset-field {
+  position: relative;
+}
+
+.formset-label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.formset-input-container {
+  position: relative;
+}
+
+/* Help Text */
+.help-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.help-text i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Error Messages */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--error-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-message i {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.error-text {
+  flex: 1;
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 2px solid var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Button Styling */
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 16px 32px;
+  border: 2px solid;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--secondary-color);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Loading State */
+.btn-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.btn-primary.loading .btn-loading {
+  opacity: 1;
+  visibility: visible;
+}
+
+.btn-primary.loading span,
+.btn-primary.loading i:not(.btn-loading i) {
+  opacity: 0;
+}
+
+/* Hide DELETE checkbox styling */
+input[name$="-DELETE"] {
+  display: none !important;
+}
+
+label[for*="-DELETE"] {
+  display: none !important;
+}
+
+.form-group:has(input[name$="-DELETE"]) {
+  display: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .formset-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+  
+  .card-header,
+  .formset-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .progress-indicator {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-xs: 6px;
+    --spacing-sm: 10px;
+    --spacing-md: 14px;
+    --spacing-lg: 20px;
+    --spacing-xl: 28px;
+    --spacing-2xl: 40px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-left {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .header-stats {
+    margin-left: 0;
+    align-self: center;
+  }
+  
+  .icon-wrapper {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+  
+  .header-title {
+    font-size: 24px;
+  }
+  
+  .card-body,
+  .formset-body {
+    padding: var(--spacing-xl);
+  }
+  
+  .form-grid,
+  .formset-grid {
+    gap: var(--spacing-lg);
+  }
+  
+  .action-buttons {
+    justify-content: stretch;
+    flex-direction: column-reverse;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .breadcrumb-list {
+    flex-wrap: wrap;
+  }
+  
+  .formset-header {
+    padding: var(--spacing-lg);
+  }
+  
+  .formset-item-content {
+    padding: var(--spacing-md);
+  }
+  
+  .formset-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-grid,
+  .formset-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .card-header,
+  .formset-header {
+    padding: var(--spacing-lg);
+  }
+  
+  .card-body,
+  .formset-body {
+    padding: var(--spacing-lg);
+  }
+  
+  .header-content {
+    gap: var(--spacing-md);
+  }
+  
+  .card-header-content,
+  .formset-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .progress-indicator {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-input {
+    padding: 14px 16px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  .input-wrapper .form-input {
+    padding-left: 48px;
+  }
+  
+  .input-icon {
+    left: 16px;
+  }
+  
+  .select-icon {
+    right: 16px;
+  }
+}
+
+/* Focus States for Accessibility */
+.form-input:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.formset-add-btn:focus-visible,
+.btn-danger-small:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Animation for Form Loading */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-card,
+.formset-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.formset-item {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Hover Effects */
+.form-group-wrapper:hover .form-label,
+.formset-field-wrapper:hover .formset-label {
+  color: var(--primary-color);
+}
+
+.form-group-wrapper:hover .input-icon,
+.formset-field-wrapper:hover .input-icon {
+  color: var(--primary-color);
+}
+
+/* Custom Scrollbar */
+.select-input::-webkit-scrollbar,
+.textarea-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.select-input::-webkit-scrollbar-track,
+.textarea-input::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.select-input::-webkit-scrollbar-thumb,
+.textarea-input::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.select-input::-webkit-scrollbar-thumb:hover,
+.textarea-input::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
+}
+
+/* Beautiful White/Off-White Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #fefefe;
+    --bg-tertiary: #f9f9f9;
+    --bg-accent: #f5f5f5;
+    
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #6a6a6a;
+    --text-light: #8a8a8a;
+    
+    --border-color: #e8e8e8;
+    --border-focus: #3b82f6;
+    
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 20px -3px rgba(0, 0, 0, 0.15), 0 4px 8px -2px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 24px 32px -5px rgba(0, 0, 0, 0.18), 0 12px 16px -5px rgba(0, 0, 0, 0.10);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .form-card,
+  .formset-card {
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+  }
+  
+  .btn-primary,
+  .btn-secondary,
+  .formset-add-btn,
+  .btn-danger-small {
+    display: none;
+  }
+  
+  .form-actions {
+    display: none;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Enhanced form submission with loading state
+    $('#shedForm').on('submit', function(e) {
+        const submitBtn = $('#submitBtn');
+        submitBtn.addClass('loading');
+        submitBtn.prop('disabled', true);
+        
+        // Remove loading state after 3 seconds if form is still processing
+        setTimeout(() => {
+            submitBtn.removeClass('loading');
+            submitBtn.prop('disabled', false);
+        }, 3000);
+    });
+
+    // Form validation enhancement
+    $('.form-input').on('blur', function() {
+        const field = $(this);
+        const value = field.val().trim();
+        const isRequired = field.prop('required');
+        
+        if (isRequired && !value) {
+            field.addClass('error');
+            showFieldError(field, 'This field is required');
+        } else {
+            field.removeClass('error');
+            hideFieldError(field);
+        }
+    });
+
+    // Real-time validation for email fields
+    $('input[type="email"]').on('input', function() {
+        const field = $(this);
+        const email = field.val().trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (email && !emailPattern.test(email)) {
+            field.addClass('error');
+            showFieldError(field, 'Please enter a valid email address');
+        } else {
+            field.removeClass('error');
+            hideFieldError(field);
+        }
+    });
+
+    // Auto-resize textarea
+    $('.textarea-input').each(function() {
+        this.setAttribute('style', 'height:' + (this.scrollHeight) + 'px;overflow-y:hidden;');
+    }).on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Helper functions for validation
+    function showFieldError(field, message) {
+        hideFieldError(field);
+        const errorDiv = $(`
+            <div class="error-message">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="error-text"><span>${message}</span></div>
+            </div>
+        `);
+        field.closest('.form-group, .formset-field').append(errorDiv);
+    }
+
+    function hideFieldError(field) {
+        field.closest('.form-group, .formset-field').find('.error-message').remove();
+    }
+
+    // Smooth scroll to first error on form submit
+    $('#shedForm').on('invalid', function() {
+        const firstError = $('.form-input.error').first();
+        if (firstError.length) {
+            $('html, body').animate({
+                scrollTop: firstError.offset().top - 100
+            }, 500);
+        }
+    });
+
+    // Formset item numbering update
+    function updateItemNumbers() {
+        $('#formset-container .formset-item').each(function(index) {
+            $(this).find('.item-label').text('Item ' + (index + 1));
+        });
+    }
+
+    // Initial numbering
+    updateItemNumbers();
+});
+
+// Formset Management
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('formset-container');
+    const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+    const maxFormsInput = document.querySelector('input[name$="-MAX_NUM_FORMS"]');
+    const minFormsInput = document.querySelector('input[name$="-MIN_NUM_FORMS"]');
+    
+    // Update item numbers
+    function updateItemNumbers() {
+        const items = container.querySelectorAll('.formset-item:not([style*="display: none"])');
+        items.forEach((item, index) => {
+            const label = item.querySelector('.item-label');
+            if (label) {
+                label.textContent = 'Item ' + (index + 1);
+            }
+        });
+    }
+    
+    // Add form function
+    document.getElementById('add-more').addEventListener('click', function () {
+        const formCount = parseInt(totalFormsInput.value);
+        const maxForms = maxFormsInput ? parseInt(maxFormsInput.value) : 1000;
+
+        if (formCount >= maxForms) {
+            alert('Maximum number of forms reached.');
+            return;
+        }
+
+        // Clone the empty form template
+        const template = document.getElementById('empty-form-template');
+        const newForm = template.firstElementChild.cloneNode(true);
+        
+        // Update all name and id attributes
+        const inputs = newForm.querySelectorAll('input, select, textarea');
+        inputs.forEach(function(input) {
+            if (input.name) {
+                input.name = input.name.replace('__prefix__', formCount);
+            }
+            if (input.id) {
+                input.id = input.id.replace('__prefix__', formCount);
+            }
+        });
+
+        // Update labels
+        const labels = newForm.querySelectorAll('label');
+        labels.forEach(function(label) {
+            if (label.getAttribute('for')) {
+                label.setAttribute('for', label.getAttribute('for').replace('__prefix__', formCount));
+            }
+        });
+
+        // Add to container with animation
+        newForm.style.opacity = '0';
+        newForm.style.transform = 'translateY(20px)';
+        container.appendChild(newForm);
+        
+        // Animate in
+        setTimeout(() => {
+            newForm.style.transition = 'all 0.4s ease';
+            newForm.style.opacity = '1';
+            newForm.style.transform = 'translateY(0)';
+        }, 10);
+        
+        // Update total forms count and numbering
+        totalFormsInput.value = formCount + 1;
+        updateItemNumbers();
+    });
+
+    // Delete form function
+    container.addEventListener('click', function (e) {
+        if (e.target.classList.contains('delete-row') || e.target.closest('.delete-row')) {
+            const button = e.target.classList.contains('delete-row') ? e.target : e.target.closest('.delete-row');
+            const row = button.closest('.formset-item');
+            const formRows = container.querySelectorAll('.formset-item:not([style*="display: none"])');
+            
+            const minForms = minFormsInput ? parseInt(minFormsInput.value) : 1;
+            
+            if (formRows.length <= minForms) {
+                alert('At least one item is required.');
+                return;
+            }
+
+            // Check if this form has a DELETE checkbox
+            const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+            if (deleteCheckbox) {
+                // If it's an existing form, mark for deletion with animation
+                deleteCheckbox.checked = true;
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    row.style.display = 'none';
+                    updateItemNumbers();
+                }, 300);
+            } else {
+                // If it's a new form, remove it completely with animation
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    row.remove();
+                    // Update total forms count
+                    const currentTotal = parseInt(totalFormsInput.value);
+                    totalFormsInput.value = Math.max(minForms, currentTotal - 1);
+                    updateItemNumbers();
+                }, 300);
+            }
+        }
+    });
+    
+    // Initial numbering
+    updateItemNumbers();
+});
+</script>
+{% endblock %}

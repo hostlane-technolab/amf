@@ -1,0 +1,1336 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Supervisor Voucher{% endblock %}
+
+{% block content %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Voucher Operations</h3>
+            <p class="ph-header-subtitle">Manage your voucher operations.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>Supervisor Vouchers</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <a href="">
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats"></div>
+      </div>
+    </div>
+
+    <!-- Display Django Messages -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="POST" id="voucherForm" class="purchase-form">
+      {% csrf_token %}
+
+      <!-- Voucher Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <div>
+                <h3 class="card-title mb-0">Voucher Details</h3>
+                <p class="text-muted mb-0">Enter basic voucher information</p>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3 mt-md-0">
+              <button type="button" id="viewSupervisorDetailsBtn" class="add-btn" style="display: none;">
+                <i class="fas fa-info-circle me-2"></i><span class="btn-text">Details</span>
+              </button>
+              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="add-btn">
+                <i class="fas fa-list me-2"></i><span class="btn-text">View All</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.voucher_no.label }} <span class="text-danger">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fas fa-hashtag input-icon"></i>
+                  {{ form.voucher_no }}
+                </div>
+                {% if form.voucher_no.errors %}
+                  <div class="validation-error">{{ form.voucher_no.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.date.label }} <span class="text-danger">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calendar-alt input-icon"></i>
+                  {{ form.date }}
+                </div>
+                {% if form.date.errors %}
+                  <div class="validation-error">{{ form.date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.supervisor.label }} <span class="text-danger">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  {{ form.supervisor }}
+                </div>
+                {% if form.supervisor.errors %}
+                  <div class="validation-error">{{ form.supervisor.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-12">
+              <div class="form-group">
+                <label class="form-label">{{ form.description.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-align-left input-icon"></i>
+                  {{ form.description }}
+                </div>
+                {% if form.description.errors %}
+                  <div class="validation-error">{{ form.description.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Supervisor Balance Information Display -->
+      <div class="form-card mb-4" id="balanceInfo" style="display: none;">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Supervisor Balance Information</h4>
+              <p class="text-muted mb-0">Current financial status of selected supervisor</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="table-header">Total Commission</th>
+                  <th class="table-header">Total Payments</th>
+                  <th class="table-header">Total Receipts</th>
+                  <th class="table-header">Current Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="totalCommission" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="totalPayments" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="totalReceipts" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span id="currentBalance" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Amount Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-calculator"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Amount Calculations</h4>
+              <p class="text-muted mb-0">Previous balance and new transaction amounts</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">{{ form.remain_amount.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-history input-icon"></i>
+                  {{ form.remain_amount }}
+                </div>
+                {% if form.remain_amount.errors %}
+                  <div class="validation-error">{{ form.remain_amount.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label">{{ form.total_amount.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calculator input-icon"></i>
+                  {{ form.total_amount }}
+                </div>
+                {% if form.total_amount.errors %}
+                  <div class="validation-error">{{ form.total_amount.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Payment Details</h4>
+              <p class="text-muted mb-0">Enter receipt and payment amounts</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label text-danger">
+                  <i class="fas fa-minus-circle me-1"></i>{{ form.receipt.label }} (-)
+                </label>
+                <div class="input-wrapper">
+                  <i class="fas fa-rupee-sign input-icon"></i>
+                  {{ form.receipt }}
+                </div>
+                {% if form.receipt.errors %}
+                  <div class="validation-error">{{ form.receipt.errors }}</div>
+                {% endif %}
+                <small class="form-text text-muted">Amount received from supervisor</small>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label text-success">
+                  <i class="fas fa-plus-circle me-1"></i>{{ form.payment.label }} (+)
+                </label>
+                <div class="input-wrapper">
+                  <i class="fas fa-rupee-sign input-icon"></i>
+                  {{ form.payment }}
+                </div>
+                {% if form.payment.errors %}
+                  <div class="validation-error">{{ form.payment.errors }}</div>
+                {% endif %}
+                <small class="form-text text-muted">Amount paid to supervisor</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final Balance Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Transaction Summary</h4>
+              <p class="text-muted mb-0">Final calculation after this transaction</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="summary-header">Previous Balance</th>
+                  <th class="summary-header">Receipt Amount</th>
+                  <th class="summary-header">Payment Amount</th>
+                  <th class="summary-header">New Total Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="summary-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="display-remain-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="summary-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="display-receipt-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="summary-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="display-payment-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="summary-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span id="display-total-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save me-2"></i>Create Voucher
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Supervisor Details Modal -->
+<div class="modal fade" id="supervisorDetailsModal" tabindex="-1" aria-labelledby="supervisorDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; padding: 25px 30px;">
+        <div>
+          <h5 class="modal-title" id="supervisorDetailsModalLabel" style="font-size: 24px; font-weight: 700; margin-bottom: 5px;">
+            <i class="fas fa-user-tie me-2"></i>Supervisor Details
+          </h5>
+          <p style="margin: 0; opacity: 0.9; font-size: 14px;">Complete financial summary and information</p>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" style="padding: 30px;">
+        <!-- Supervisor Basic Information -->
+        <div class="info-card mb-4" style="background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%); padding: 25px; border-radius: 16px; border: 2px solid #e9ecef;">
+          <h6 style="color: #495057; font-weight: 700; font-size: 16px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fas fa-id-card me-2" style="color: #28a745;"></i>Basic Information
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="detail-item">
+                <span class="detail-label"><i class="fas fa-user me-2"></i>Name:</span>
+                <span class="detail-value" id="modalSupervisorName">-</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <span class="detail-label"><i class="fas fa-phone me-2"></i>Mobile:</span>
+                <span class="detail-value" id="modalSupervisorMobile">-</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <span class="detail-label"><i class="fas fa-envelope me-2"></i>Email:</span>
+                <span class="detail-value" id="modalSupervisorEmail">-</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item">
+                <span class="detail-label"><i class="fas fa-percentage me-2"></i>Commission Rate:</span>
+                <span class="detail-value text-success" id="modalCommissionRate">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="info-card mb-4" style="background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%); padding: 25px; border-radius: 16px; border: 2px solid #ffe082;">
+          <h6 style="color: #f57c00; font-weight: 700; font-size: 16px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fas fa-chart-line me-2"></i>Financial Summary
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-arrow-up me-1"></i>Total Payments
+                </div>
+                <div style="font-size: 24px; font-weight: 700; color: #28a745;">
+                  ₹<span id="modalTotalPayments">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-arrow-down me-1"></i>Total Receipts
+                </div>
+                <div style="font-size: 24px; font-weight: 700; color: #dc3545;">
+                  ₹<span id="modalTotalReceipts">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-wallet me-1"></i>Balance
+                </div>
+                <div style="font-size: 24px; font-weight: 700;" id="modalBalanceAmount">
+                  ₹<span id="modalOutstandingBalance">0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Commission Summary -->
+        <div class="info-card" style="background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%); padding: 25px; border-radius: 16px; border: 2px solid #81c784;">
+          <h6 style="color: #2e7d32; font-weight: 700; font-size: 16px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fas fa-percentage me-2"></i>Commission Details
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-3">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-shopping-cart me-1"></i>Total Purchases
+                </div>
+                <div style="font-size: 24px; font-weight: 700; color: #2196f3;">
+                  <span id="modalTotalPurchases">0</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-weight me-1"></i>Total Quantity
+                </div>
+                <div style="font-size: 24px; font-weight: 700; color: #ff9800;">
+                  <span id="modalTotalQuantity">0.00</span> kg
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-percent me-1"></i>Commission Rate
+                </div>
+                <div style="font-size: 24px; font-weight: 700; color: #9c27b0;">
+                  ₹<span id="modalCommissionRateValue">0.00</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <div class="summary-card" style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 2px solid #4caf50;">
+                <div style="color: #6c757d; font-size: 13px; font-weight: 600; margin-bottom: 8px; text-transform: uppercase;">
+                  <i class="fas fa-coins me-1"></i>Total Commission
+                </div>
+                <div style="font-size: 24px; font-weight: 700; color: #4caf50;">
+                  ₹<span id="modalTotalCommission">0.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="background: #f8f9fd; border: none; padding: 20px 30px;">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 10px; padding: 10px 25px; font-weight: 600;">
+          <i class="fas fa-times me-2"></i>Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Textarea specific styling */
+textarea {
+  min-height: 80px !important;
+  resize: vertical !important;
+}
+
+/* Add Button */
+.add-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.add-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  text-decoration: none;
+}
+
+/* Table Styling */
+.summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.table-header, .summary-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+  text-align: center;
+  width: 25%;
+  vertical-align: middle;
+}
+
+.table-cell, .summary-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+  text-align: center;
+  width: 25%;
+}
+
+/* Summary Table Styling */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 40px;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Text Color Overrides */
+.text-success {
+  color: #28a745 !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 12px;
+  border: none;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+}
+
+.alert-success {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #155724;
+  border-left: 4px solid #28a745;
+}
+
+.alert-danger {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #721c24;
+  border-left: 4px solid #dc3545;
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  border-left: 4px solid #ffc107;
+}
+
+.alert-info {
+  background-color: rgba(13, 202, 240, 0.1);
+  color: #055160;
+  border-left: 4px solid #0dcaf0;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  font-weight: 700;
+  color: inherit;
+  opacity: 0.5;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Small text styling */
+.form-text {
+  font-size: 12px;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Modal Styling */
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.detail-value {
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .add-btn {
+    padding: 10px 15px;
+    font-size: 12px;
+  }
+  
+  .add-btn .btn-text {
+    display: none;
+  }
+
+  .card-title {
+    font-size: 20px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .summary-table {
+    font-size: 12px;
+  }
+  
+  .table-header, .table-cell, .summary-header, .summary-cell {
+    padding: 12px 8px;
+  }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const supervisorSelect = document.getElementById('id_supervisor');
+    const remainAmountInput = document.getElementById('id_remain_amount');
+    const totalAmountInput = document.getElementById('id_total_amount');
+    const receiptInput = document.getElementById('id_receipt');
+    const paymentInput = document.getElementById('id_payment');
+    const balanceInfo = document.getElementById('balanceInfo');
+    const viewDetailsBtn = document.getElementById('viewSupervisorDetailsBtn');
+    const dateInput = document.getElementById('id_date');
+    
+    // Store supervisor data globally for modal
+    let currentSupervisorData = null;
+
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.getElementById('id_voucher_no'),
+        dateInput,
+        supervisorSelect,
+        document.getElementById('id_description'),
+        remainAmountInput,
+        totalAmountInput,
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+
+    // ===== AMOUNT CALCULATIONS =====
+    function updateAmounts() {
+        const remainAmount = parseFloat(remainAmountInput.value) || 0;
+        const receipt = parseFloat(receiptInput.value) || 0;
+        const payment = parseFloat(paymentInput.value) || 0;
+        
+        // Balance = Previous Balance + Payment - Receipt
+        const newTotal = remainAmount + payment - receipt;
+        totalAmountInput.value = newTotal.toFixed(2);
+
+        // Update display values in summary table
+        document.getElementById('display-remain-amount').textContent = remainAmount.toFixed(2);
+        document.getElementById('display-receipt-amount').textContent = receipt.toFixed(2);
+        document.getElementById('display-payment-amount').textContent = payment.toFixed(2);
+        document.getElementById('display-total-amount').textContent = newTotal.toFixed(2);
+    }
+
+    // ===== SUPERVISOR BALANCE FETCH =====
+    function fetchSupervisorBalance(supervisorId) {
+        if (!supervisorId) {
+            balanceInfo.style.display = 'none';
+            viewDetailsBtn.style.display = 'none';
+            remainAmountInput.value = '0.00';
+            updateAmounts();
+            currentSupervisorData = null;
+            return;
+        }
+
+        fetch(`{% url 'adminapp:get_supervisor_balance' %}?supervisor_id=${supervisorId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    balanceInfo.style.display = 'none';
+                    viewDetailsBtn.style.display = 'none';
+                    currentSupervisorData = null;
+                    return;
+                }
+
+                // Store data for modal
+                currentSupervisorData = data;
+
+                // Calculate correct remain amount: Commission + Payment - Receipt
+                const totalCommission = data.total_commission || 0;
+                const totalPayment = data.total_payment || 0;
+                const totalReceipt = data.total_receipt || 0;
+                const correctRemainAmount = totalCommission + totalPayment - totalReceipt;
+
+                // Display balance information in table
+                document.getElementById('totalCommission').textContent = totalCommission.toFixed(2);
+                document.getElementById('totalPayments').textContent = totalPayment.toFixed(2);
+                document.getElementById('totalReceipts').textContent = totalReceipt.toFixed(2);
+                document.getElementById('currentBalance').textContent = correctRemainAmount.toFixed(2);
+                
+                // Update balance color based on amount
+                const balanceElement = document.getElementById('currentBalance');
+                if (correctRemainAmount > 0) {
+                    balanceElement.className = 'calculated-value text-success'; // We owe supervisor
+                } else if (correctRemainAmount < 0) {
+                    balanceElement.className = 'calculated-value text-danger'; // Supervisor owes us
+                } else {
+                    balanceElement.className = 'calculated-value text-muted'; // Balanced
+                }
+                
+                // Update remain amount field with correct calculation
+                remainAmountInput.value = correctRemainAmount.toFixed(2);
+                
+                // Show balance info and details button
+                balanceInfo.style.display = 'block';
+                viewDetailsBtn.style.display = 'inline-flex';
+                
+                // Log for debugging
+                console.log('=== Balance Calculation ===');
+                console.log('Total Commission:', totalCommission);
+                console.log('Total Payments:', totalPayment);
+                console.log('Total Receipts:', totalReceipt);
+                console.log('Formula: Commission + Payment - Receipt');
+                console.log('Calculation:', totalCommission, '+', totalPayment, '-', totalReceipt, '=', correctRemainAmount);
+                console.log('========================');
+                
+                // Update total amount
+                updateAmounts();
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                balanceInfo.style.display = 'none';
+                viewDetailsBtn.style.display = 'none';
+                currentSupervisorData = null;
+            });
+    }
+
+    // ===== SUPERVISOR DETAILS MODAL =====
+    function showSupervisorDetailsModal() {
+        if (!currentSupervisorData) {
+            alert('No supervisor data available');
+            return;
+        }
+
+        const data = currentSupervisorData;
+
+        // Populate basic information
+        document.getElementById('modalSupervisorName').textContent = data.supervisor_name || '-';
+        document.getElementById('modalSupervisorMobile').textContent = data.supervisor_mobile || '-';
+        document.getElementById('modalSupervisorEmail').textContent = data.supervisor_email || '-';
+        document.getElementById('modalCommissionRate').textContent = (data.commission_rate || 0).toFixed(2) + '%';
+
+        // Calculate correct remain amount
+        const totalCommission = data.total_commission || 0;
+        const totalPayment = data.total_payment || 0;
+        const totalReceipt = data.total_receipt || 0;
+        const correctRemainAmount = totalCommission + totalPayment - totalReceipt;
+
+        // Populate financial summary
+        document.getElementById('modalTotalPayments').textContent = totalPayment.toFixed(2);
+        document.getElementById('modalTotalReceipts').textContent = totalReceipt.toFixed(2);
+        document.getElementById('modalOutstandingBalance').textContent = Math.abs(correctRemainAmount).toFixed(2);
+
+        // Populate commission details
+        document.getElementById('modalTotalPurchases').textContent = data.total_purchases || 0;
+        document.getElementById('modalTotalQuantity').textContent = (data.total_quantity || 0).toFixed(2);
+        document.getElementById('modalCommissionRateValue').textContent = (data.commission_rate || 0).toFixed(2);
+        document.getElementById('modalTotalCommission').textContent = totalCommission.toFixed(2);
+
+        // Update balance color in modal
+        const modalBalanceAmount = document.getElementById('modalBalanceAmount');
+        if (correctRemainAmount > 0) {
+            modalBalanceAmount.style.color = '#28a745'; // Green - We owe supervisor
+        } else if (correctRemainAmount < 0) {
+            modalBalanceAmount.style.color = '#dc3545'; // Red - Supervisor owes us
+        } else {
+            modalBalanceAmount.style.color = '#6c757d'; // Gray - Balanced
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('supervisorDetailsModal'));
+        modal.show();
+    }
+
+    // ===== EVENT LISTENERS =====
+    supervisorSelect.addEventListener('change', function() {
+        fetchSupervisorBalance(this.value);
+    });
+
+    receiptInput.addEventListener('input', updateAmounts);
+    paymentInput.addEventListener('input', updateAmounts);
+
+    viewDetailsBtn.addEventListener('click', showSupervisorDetailsModal);
+
+    // Set default values
+    if (!receiptInput.value) receiptInput.value = '0.00';
+    if (!paymentInput.value) paymentInput.value = '0.00';
+    if (!remainAmountInput.value) remainAmountInput.value = '0.00';
+    if (!totalAmountInput.value) totalAmountInput.value = '0.00';
+
+    // Make remain_amount and total_amount readonly
+    remainAmountInput.setAttribute('readonly', 'readonly');
+    totalAmountInput.setAttribute('readonly', 'readonly');
+
+    // Initial load - if supervisor is already selected
+    if (supervisorSelect.value) {
+        fetchSupervisorBalance(supervisorSelect.value);
+    } else {
+        updateAmounts(); // Initialize display values
+    }
+});
+</script>
+
+
+{% endblock %}

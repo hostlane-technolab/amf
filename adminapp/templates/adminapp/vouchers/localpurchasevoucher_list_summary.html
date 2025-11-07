@@ -1,0 +1,2532 @@
+{% extends "admin_base.html" %}
+{% load static %}
+
+{% block title %}Local Purchase Voucher Summary{% endblock %}
+
+{% block content %}
+
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+
+<style>
+
+  @media (max-width: 768px) {
+    .agent-summary-container {
+        padding: 15px;
+    }
+    
+    .agent-summary-item {
+        padding: 16px;
+        margin-bottom: 15px;
+    }
+    
+    .agent-info-section .agent-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+        margin-right: 12px;
+    }
+    
+    .agent-name {
+        font-size: 18px !important;
+    }
+    
+    .agent-mobile {
+        font-size: 13px !important;
+    }
+    
+    .financial-metrics {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    .metric-item {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        min-width: auto;
+    }
+    
+    .metric-label {
+        text-align: left;
+        margin-bottom: 0;
+        font-size: 12px;
+    }
+    
+    .metric-value {
+        text-align: right;
+        font-size: 16px;
+    }
+    
+    .statement-btn {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .financial-progress {
+        margin-top: 12px;
+    }
+}
+  /* Summary Badge Styles */
+.summary-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid;
+    white-space: nowrap;
+}
+
+.summary-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.summary-badge i {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.badge-value {
+    font-size: 18px;
+    font-weight: 700;
+    margin-right: 8px;
+}
+
+.badge-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+/* Agents Badge */
+.agents-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: #764ba2;
+}
+
+.agents-badge:hover {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Balance Positive Badge */
+.balance-positive-badge {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-color: #a5d6a7;
+    color: #2e7d32;
+}
+
+.balance-positive-badge:hover {
+    box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+}
+
+/* Balance Negative Badge */
+.balance-negative-badge {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-color: #ef9a9a;
+    color: #c62828;
+}
+
+.balance-negative-badge:hover {
+    box-shadow: 0 6px 20px rgba(198, 40, 40, 0.3);
+}
+
+/* Balance Neutral Badge */
+.balance-neutral-badge {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #90caf9;
+    color: #1565c0;
+}
+
+.balance-neutral-badge:hover {
+    box-shadow: 0 6px 20px rgba(21, 101, 192, 0.3);
+}
+
+/* Status Badge */
+.status-badge {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-color: #20c997;
+}
+
+.status-badge:hover {
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+/* Adjust summary-value container */
+.summary-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Remove old styles */
+.summary-value .calculated-value,
+.summary-value .unit {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .summary-badge {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+    
+    .badge-value {
+        font-size: 16px;
+    }
+    
+    .badge-label {
+        font-size: 10px;
+    }
+    
+    .summary-badge i {
+        font-size: 14px;
+    }
+}
+</style>
+
+
+<style>
+/* Base Styles */
+.myclass {
+    margin-top: 2rem;
+}
+
+/* Page Header */
+.page-header h3 {
+    color: #2c3e50;
+    font-weight: 700;
+}
+/* Amount Display (Positive) */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+/* Red styling for negative amounts (payments) */
+.amount-display.amount-negative {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  color: #c62828;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+}
+.amount-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+/* Green styling for positive amounts (receipts > payments) */
+.amount-display.amount-positive {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  color: #2e7d32;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+}
+
+/* Red styling for negative amounts (payments > receipts) */
+.amount-display.amount-negative {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  color: #c62828;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+}
+
+.amount-display .amount-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Expense Display (Negative) */
+.expense-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
+}
+
+.expense-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.expense-display .expense-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Balanced Display (Zero) */
+.balanced-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #fde3e3 0%, #fbbbbb 100%);
+  border: 2px solid #f99090;
+  border-radius: 25px;
+  color: #c01515;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.15);
+  white-space: nowrap;
+}
+
+.balanced-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.balanced-display .balanced-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Card Styling */
+.form-card, .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+    overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 25px 30px;
+    border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #28a745;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+}
+
+.card-header p {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* Card Body */
+.card-body {
+    padding: 30px;
+}
+
+/* Supply Information Grid */
+.supply-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 30px;
+}
+
+.info-card {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fd 100%);
+    border-radius: 20px;
+    padding: 25px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(40, 167, 69, 0.1);
+    cursor: pointer;
+}
+
+.info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.info-card:hover::before {
+    transform: scaleX(1);
+}
+
+.info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(40, 167, 69, 0.15);
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
+.info-background {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-icon {
+    font-size: 40px;
+    color: rgba(40, 167, 69, 0.1);
+    transform: rotate(-15deg);
+}
+
+.info-content {
+    position: relative;
+    z-index: 2;
+}
+
+.info-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.info-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+.info-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.info-badge i {
+    margin-right: 4px;
+    font-size: 10px;
+}
+
+/* Specific card color variations */
+.receipts-card:hover {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff);
+}
+
+.receipts-card .info-background {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(0, 123, 255, 0.02) 100%);
+}
+
+.receipts-card .bg-icon {
+    color: rgba(0, 123, 255, 0.15);
+}
+
+.receipts-card .info-badge {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+.payments-card:hover {
+    background: linear-gradient(135deg, #fff5f5 0%, #fee);
+}
+
+.payments-card .info-background {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.02) 100%);
+}
+
+.payments-card .bg-icon {
+    color: rgba(220, 53, 69, 0.15);
+}
+
+.payments-card .info-badge {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.net-card:hover {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff);
+}
+
+.net-card .info-background {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.05) 0%, rgba(23, 162, 184, 0.02) 100%);
+}
+
+.net-card .bg-icon {
+    color: rgba(23, 162, 184, 0.15);
+}
+
+.net-card .info-badge {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+}
+
+.vouchers-card:hover {
+    background: linear-gradient(135deg, #f8f0ff 0%, #f3e5f5);
+}
+
+.vouchers-card .info-background {
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(108, 117, 125, 0.02) 100%);
+}
+
+.vouchers-card .bg-icon {
+    color: rgba(108, 117, 125, 0.15);
+}
+
+.vouchers-card .info-badge {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Filter Section */
+.filter-section {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.filter-section .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.filter-section .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+}
+
+.filter-section .form-label {
+    color: #495057;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.filter-section .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 10px 20px;
+}
+
+/* Search Controls */
+.search-controls {
+    min-width: 300px;
+}
+
+.search-box-wrapper {
+    position: relative;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 280px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+    background: #ffffff;
+}
+
+.search-input::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+}
+
+.clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.stats-badge .badge {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+/* Add New Button */
+.add-new-btn {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid #28a745;
+    font-size: 14px;
+}
+
+.add-new-btn:hover {
+    background: #218838;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+/* Table Styling */
+.custom-table {
+    font-size: 15px;
+}
+
+.summary-table {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+/* Row Styling */
+.table-row {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.table-row:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+.table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+}
+
+/* Voucher Display */
+.voucher-display {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.voucher-badge {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    text-align: center;
+    display: inline-block;
+    width: fit-content;
+}
+
+.voucher-meta {
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Party Info */
+.party-info {
+    display: flex;
+    align-items: center;
+}
+
+.party-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.party-details {
+    flex: 1;
+}
+
+.party-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+}
+
+.party-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.party-mobile {
+    color: #dc3545;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+/* Financial Displays */
+.receipt-display, .payment-display, .net-amount-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.receipt-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  border: 2px solid #bdbdbd;
+  border-radius: 25px;
+  color: #757575;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(117, 117, 117, 0.15);
+  white-space: nowrap;
+}
+
+/* Green styling for positive receipts */
+.receipt-display.amount-positive {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  color: #2e7d32;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+}
+
+.payment-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(117, 117, 117, 0.15);
+  white-space: nowrap;
+}
+
+/* Green styling for positive payments */
+.payment-display.amount-positive {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  border: 2px solid #bdbdbd;
+  color: #2e7d32;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+}
+
+.currency-symbol {
+    font-size: 14px;
+    margin-right: 2px;
+}
+
+.receipt-value {
+    color: #28a745;
+}
+
+.payment-value {
+    color: #dc3545;
+}
+
+.net-value {
+    font-weight: 700;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+}
+
+.view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+.action-btn i {
+    /* margin-right: 6px; */
+    font-size: 16px;
+}
+
+/* No Results Styling */
+.no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.no-results p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Empty State */
+.empty-state-content {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-state-content h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.empty-state-content p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Party Summary Styles */
+.party-summary-container {
+    padding: 20px;
+}
+
+.party-summary-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.party-summary-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.party-summary-container::-webkit-scrollbar-thumb {
+    background: #17a2b8;
+    border-radius: 10px;
+}
+
+.party-summary-container::-webkit-scrollbar-thumb:hover {
+    background: #138496;
+}
+
+.party-summary-item {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border: 2px solid #e9ecef;
+    border-left: 6px solid #dc3545;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.party-summary-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-left-color: #17a2b8;
+}
+
+.party-summary-item:last-child {
+    margin-bottom: 0;
+}
+
+.party-summary-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.party-info-section {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.financial-summary-section {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.financial-metrics {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    min-width: 100px;
+}
+
+.receipt-metric {
+    background: rgba(40, 167, 69, 0.1);
+    border: 2px solid rgba(40, 167, 69, 0.2);
+}
+
+.payment-metric {
+    background: rgba(220, 53, 69, 0.1);
+    border: 2px solid rgba(220, 53, 69, 0.2);
+}
+
+.net-metric {
+    background: rgba(23, 162, 184, 0.1);
+    border: 2px solid rgba(23, 162, 184, 0.2);
+}
+
+.metric-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6c757d;
+    margin-bottom: 4px;
+}
+
+.metric-value {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.receipt-metric .metric-value {
+    color: #28a745;
+}
+
+.payment-metric .metric-value {
+    color: #dc3545;
+}
+
+.net-amount.positive {
+    color: #28a745;
+}
+
+.net-amount.negative {
+    color: #dc3545;
+}
+
+.net-amount.neutral {
+    color: #6c757d;
+}
+
+.financial-progress {
+    margin-top: 16px;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar-container {
+    display: flex;
+    height: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.receipt-bar {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.payment-bar {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state-content {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-state h5 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Summary Table Styling */
+.summary-row {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.calculated-value {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.unit {
+    color: #6c757d;
+    font-size: 12px;
+    margin-left: 4px;
+}
+
+.total-highlight .calculated-value {
+    color: #28a745;
+    font-size: 18px;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-top: 1px solid #e9ecef;
+}
+
+.pagination .page-link {
+    color: #198754;
+    border: none;
+    padding: 12px 16px;
+    margin: 0 4px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #198754;
+    border-color: #198754;
+    box-shadow: 0 4px 15px rgba(25, 135, 84, 0.3);
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #198754;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .supply-info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 20px;
+    }
+    
+    .info-card {
+        padding: 20px;
+    }
+    
+    .info-value {
+        font-size: 18px;
+    }
+    
+    .info-background {
+        width: 100px;
+        height: 100px;
+        top: -15px;
+        right: -15px;
+    }
+    
+    .bg-icon {
+        font-size: 32px;
+    }
+    
+    .card-header .d-flex {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .card-header .d-flex > .d-flex:first-child {
+        flex-direction: row !important;
+        align-items: center !important;
+        margin-bottom: 20px;
+    }
+    
+    .search-controls {
+        min-width: auto;
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0;
+    }
+    
+    .search-input {
+        width: 200px;
+    }
+    
+    .card-title {
+        font-size: 22px;
+    }
+    
+    .icon-wrapper {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .action-btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .party-info {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    .party-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 16px !important;
+        margin-right: 12px !important;
+        flex-shrink: 0;
+    }
+    
+    .party-name {
+        font-size: 14px !important;
+    }
+    
+    .party-meta, .party-mobile {
+        font-size: 11px !important;
+    }
+
+    .party-summary-content {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 20px;
+    }
+    
+    .party-info-section {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .financial-summary-section {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .financial-metrics {
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: 12px;
+    }
+    
+    .metric-item {
+        min-width: 80px;
+        padding: 10px 12px;
+    }
+    
+    .metric-value {
+        font-size: 13px;
+    }
+    
+    .filter-section .row {
+        margin: 0;
+    }
+    
+    .filter-section .col-md-3,
+    .filter-section .col-md-2 {
+        margin-bottom: 15px;
+    }
+    
+    .table-responsive {
+        border-radius: 0;
+    }
+    
+    .custom-table {
+        font-size: 13px;
+    }
+    
+    .table-cell {
+        padding: 15px 10px;
+    }
+    
+    .voucher-badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .date-display {
+        font-size: 13px;
+    }
+    
+    .receipt-display, .payment-display, .net-amount-display {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-header {
+        padding: 20px 15px;
+    }
+    
+    .card-body {
+        padding: 20px 15px;
+    }
+    
+    .supply-info-grid {
+        padding: 15px;
+        grid-template-columns: 1fr;
+    }
+    
+    .search-input {
+        width: 160px;
+    }
+    
+.stats-badge .badge {
+        font-size: 11px;
+        padding: 8px 12px;
+    }
+    
+    .add-new-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .filter-section {
+        padding: 15px !important;
+    }
+    
+    .filter-section .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .table-header {
+        font-size: 11px;
+        padding: 15px 8px;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .header-icon {
+        font-size: 12px;
+    }
+    
+    .header-text {
+        font-size: 10px;
+    }
+    
+    .party-summary-container {
+        padding: 15px;
+        max-height: 400px;
+    }
+    
+    .party-summary-item {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .card-title {
+        font-size: 18px;
+    }
+    
+    .page-header h3 {
+        font-size: 1.5rem !important;
+    }
+    
+    .breadcrumbs {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 320px) {
+    .search-input {
+        width: 140px;
+    }
+    
+    .info-card {
+        padding: 15px;
+    }
+    
+    .info-value {
+        font-size: 16px;
+    }
+    
+    .metric-item {
+        min-width: 70px;
+        padding: 8px 10px;
+    }
+    
+    .metric-value {
+        font-size: 12px;
+    }
+    
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    
+    .table-cell {
+        padding: 12px 8px;
+    }
+    
+    .voucher-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .party-name {
+        font-size: 13px !important;
+    }
+    
+    .party-avatar {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .search-controls,
+    .filter-section,
+    .action-buttons,
+    .pagination-wrapper,
+    .add-new-btn {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    .table-row:hover {
+        background: none !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .info-card {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    .party-summary-item {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6 !important;
+        break-inside: avoid;
+    }
+    
+    body {
+        font-size: 12px !important;
+    }
+    
+    .page-header h3 {
+        font-size: 1.2rem !important;
+    }
+    
+    .card-title {
+        font-size: 1rem !important;
+    }
+}
+
+
+
+/* Animation Keyframes */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Loading Animation */
+.loading {
+    animation: pulse 2s infinite;
+}
+
+/* Smooth Transitions */
+* {
+    scroll-behavior: smooth;
+}
+
+/* Focus Styles for Accessibility */
+.action-btn:focus,
+.search-input:focus,
+.form-control:focus,
+.add-new-btn:focus {
+    outline: 2px solid #28a745;
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .info-card,
+    .party-summary-item,
+    .table-row {
+        border-width: 2px;
+        border-style: solid;
+    }
+    
+    .action-btn {
+        border-width: 2px;
+    }
+    
+    .search-input,
+    .form-control {
+        border-width: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .info-card:hover,
+    .table-row:hover,
+    .party-summary-item:hover {
+        transform: none;
+    }
+}
+</style>
+
+<div class="container-fluid" style="margin-top: 5rem;">
+    <div class="page-inner">
+        <div class="page-header-section">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="ph-icon-wrapper">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">Voucher Operations</h3>
+                        <p class="ph-header-subtitle">Manage your voucher operations.</p>
+                    </div>
+                </div>
+
+                <!-- Breadcrumbs - Now inline with header -->
+                <nav class="ph-breadcrumb-nav">
+                    <ol class="ph-breadcrumb-list">
+                        <li class="ph-breadcrumb-item">
+                            <a href="#" class="ph-breadcrumb-link">
+                                <i class="icon-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="{%url 'adminapp:localpurchasevoucher_list'%}">
+                                <span> Local Purchase Vouchers</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item ">
+                            <a href="{%url 'adminapp:localpurchasevoucher_create'%}"  class="ph-breadcrumb-link">
+                              <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>Create</span>
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="myclass">
+            <!-- Summary Cards -->
+            <div class="form-card mb-4 supply-info-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title mb-0">Financial Overview</h3>
+                            <p class="text-muted mb-0">Complete voucher financial summary</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="supply-info-grid">
+                        <div class="info-card receipts-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-down bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Receipts</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Incoming</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card payments-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-up bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Payments</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-minus-circle"></i>
+                                    <span>Outgoing</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card net-card">
+                            <div class="info-background">
+                                <i class="fas fa-calculator bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Net Amount</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-balance-scale"></i>
+                                    <span>Balance</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card vouchers-card">
+                            <div class="info-background">
+                                <i class="fas fa-receipt bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Vouchers</div>
+                                <div class="info-value">{{ summary.total_vouchers }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Local Purchase Vouchers Data Section -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-white border-0 py-4">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                <div class="d-flex align-items-center mb-3 mb-md-0">
+                                    <div class="icon-wrapper me-4">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="card-title mb-0 fw-bold">Local Purchase Vouchers</h3>
+                                        <p class="text-muted mb-0 fs-6">Manage local purchase voucher transactions</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Search Box -->
+                                <div class="search-controls d-flex align-items-center gap-3">
+                                    <div class="search-box-wrapper">
+                                        <div class="search-input-group">
+                                            <i class="fas fa-search search-icon"></i>
+                                            <input type="text" id="searchInput" class="search-input" placeholder="Search vouchers...">
+                                            <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stats-badge">
+                                        <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                                            <i class="fas fa-receipt me-2"></i><span id="voucherCount">{{ total_count }}</span> Vouchers
+                                        </span>
+                                    </div>
+
+                                    <a href="{% url 'adminapp:localpurchasevoucher_create' %}" class="add-new-btn">
+                                        <i class="fas fa-plus me-2"></i>Add New Voucher
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <!-- Filters -->
+                            <div class="filter-section p-4 border-bottom">
+                                <form method="GET">
+                                    <div class="row g-3">
+                                        <!-- Date Filter -->
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">Date Filter</label>
+                                            <select name="date_filter" class="form-control" id="dateFilter">
+                                                <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                                                <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                                                <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Party Filter -->
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">Party</label>
+                                            <select name="party" class="form-control">
+                                                <option value="">All Parties</option>
+                                                {% for party_id, party_name in all_parties %}
+                                                <option value="{{ party_id }}" {% if party_filter == party_id|stringformat:"s" %}selected{% endif %}>
+                                                    {{ party_name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <!-- Search -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">Search</label>
+                                            <input type="text" name="search" class="form-control" 
+                                                   placeholder="Search..." value="{{ search_query }}">
+                                        </div>
+                                        <div class="col-md-5 mt-5">
+                                            <button type="submit" class="btn btn-success me-2">
+                                                <i class="fas fa-filter"></i> Apply Filters
+                                            </button>
+                                            <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times"></i> Clear Filters
+                                            </a>
+                                            <a href="{% url 'adminapp:localpurchase_voucher_summary_pdf' %}?{{ request.GET.urlencode }}" 
+                                               class="btn btn-outline-primary ms-2" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> PDF Summary
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table id="multi-filter" class="table table-hover mb-0 custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-hashtag header-icon"></i>
+                                                    <span class="header-text">Voucher No.</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-calendar header-icon"></i>
+                                                    <span class="header-text">Date</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-users header-icon"></i>
+                                                    <span class="header-text">Party</span>
+                                                </div>
+                                            </th>
+
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-arrow-down header-icon"></i>
+                                                    <span class="header-text">Receipt (+)</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-arrow-up header-icon"></i>
+                                                    <span class="header-text">Payment (-)</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-calculator header-icon"></i>
+                                                    <span class="header-text">Remaining</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header text-center">
+                                                <div class="header-content justify-content-center">
+                                                    <i class="fas fa-cogs header-icon"></i>
+                                                    <span class="header-text">Actions</span>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="tableBody">
+                                        {% for voucher in vouchers %}
+                                        <tr class="table-row" data-searchable="{{ voucher.voucher_no|lower }} {{ voucher.party.party_name.party|lower }} {{ voucher.date }} {{ voucher.description|lower }}">
+                                            <td class="table-cell">
+                                                <div class="voucher-display">
+                                                    <span class="voucher-badge">{{ voucher.voucher_no }}</span>
+                                                    {% if voucher.description %}
+                                                    <!-- <div class="voucher-meta">{{ voucher.description|truncatechars:30 }}</div> -->
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+
+                                                                                        <td class="table-cell">
+                                                <div class="date-display">
+                                                    <i class="fas fa-calendar-day me-2"></i>
+                                                    <span class="date-text">{{ voucher.date|date:"M d, Y" }}</span>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="party-info">
+                                                    <div class="party-avatar">
+                                                        <i class="fas fa-shopping-cart"></i>
+                                                    </div>
+                                                    <div class="party-details">
+                                                        <div class="party-name">{{ voucher.party.party_name.party }}</div>
+                                                        {% if voucher.party.party_name.district %}
+                                                        <div class="party-meta">{{ voucher.party.party_name.district|truncatechars:15 }}</div>
+                                                        {% endif %}
+                                                        {% if voucher.party.party_name.state %}
+                                                        <div class="party-mobile">{{ voucher.party.party_name.state|truncatechars:10 }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            
+
+                                            
+                                            <td class="table-cell">
+                                                <div class="receipt-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
+                                                    {% if voucher.receipt > 0 %}
+                                                    <span class="currency-symbol">+₹</span>
+                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
+                                                    {% else %}
+                                                    <span class="text-muted">₹0.00</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            
+                <td class="table-cell">
+                  <div class="expense-display">
+                    {% if voucher.payment > 0 %}
+                    <span class="currency-symbol">-₹</span>
+                    <span class="expense-value">{{ voucher.payment|floatformat:2 }}</span>
+                    {% else %}
+                    <span class="text-muted">₹0.00</span>
+                    {% endif %}
+                  </div>
+                </td>
+                                            
+<td class="table-cell">
+  {% with receipt=voucher.receipt|default:0 payment=voucher.payment|default:0 %}
+    <div class="{% if receipt > payment %}amount-display{% elif payment > receipt %}expense-display{% else %}balanced-display{% endif %}">
+      <span class="currency-symbol">
+        {% if receipt > payment %}+₹{% elif payment > receipt %}-₹{% else %}₹{% endif %}
+      </span>
+      <span class="{% if receipt > payment %}amount-value{% elif payment > receipt %}expense-value{% else %}balanced-value{% endif %}">
+        {{ voucher.remain_amount|floatformat:2 }}
+      </span>
+    </div>
+  {% endwith %}
+</td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="action-buttons">
+                                                    <a href="{% url 'adminapp:local_purchase_voucher_detail' voucher.pk %}" 
+                                                       class="action-btn view-btn" 
+                                                       title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'adminapp:localpurchasevoucher_delete_list' voucher.pk %}"
+                                                    class="action-btn delete-btn"
+                                                    title="Delete Voucher"
+                                                    onclick="return confirm('Are you sure you want to delete this voucher?');">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </a>
+
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="empty-state-cell">
+                                                <div class="empty-state-content">
+                                                    <i class="fas fa-shopping-cart empty-state-icon"></i>
+                                                    <h4>No Vouchers Found</h4>
+                                                    <p>There are no local purchase vouchers to display yet.</p>
+                                                    <a href="{% url 'adminapp:localpurchasevoucher_create' %}" class="add-new-btn">Create Your First Voucher</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                
+                                <!-- No Results Message -->
+                                <div id="noResults" class="no-results" style="display: none;">
+                                    <div class="no-results-content">
+                                        <i class="fas fa-search-minus no-results-icon"></i>
+                                        <h4>No vouchers found</h4>
+                                        <p>Try adjusting your search terms</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if vouchers.has_other_pages %}
+                                <div class="pagination-wrapper p-4">
+                                    <nav aria-label="Vouchers pagination">
+                                        <ul class="pagination justify-content-center">
+                                            {% if vouchers.has_previous %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ vouchers.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <li class="page-item active">
+                                                <span class="page-link">Page {{ vouchers.number }} of {{ vouchers.paginator.num_pages }}</span>
+                                            </li>
+
+                                            {% if vouchers.has_next %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ vouchers.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ vouchers.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Party-wise Summary Card -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title mb-0 fw-bold">Party-wise Summary</h4>
+                            <p class="text-muted mb-0 fs-6">Overview by individual parties</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="party-summary-container" style="max-height: 600px; overflow-y: auto; padding: 20px;">
+                        {% for party in party_summary %}
+                        <div class="party-summary-item">
+                            <div class="party-summary-content">
+                                <!-- Party Info Section -->
+                                <div class="party-info-section">
+                                    <div class="party-avatar">
+                                        <i class="fas fa-shopping-cart"></i>
+                                    </div>
+                                    <div class="party-details">
+                                        <div style="font-size: 20px;" class="party-name">{{ party.party__party_name__party|truncatechars:20|capfirst }}</div>
+                                        <div style="font-size: 15px;" class="party-mobile">{{ party.party__party_name__district|default:"—" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Financial Summary Section -->
+                                <div class="financial-summary-section">
+                                    <div class="financial-metrics">
+                                        <div class="metric-item receipt-metric">
+                                            <div class="metric-label"><i class="fas fa-receipt me-1"></i>Vouchers</div>
+                                            <div class="metric-value">{{ party.voucher_count }}</div>
+                                        </div>
+
+                                        <div class="metric-item receipt-metric">
+                                            <div class="metric-label">Receipts</div>
+                                            <div class="metric-value">+₹{{ party.total_receipts|floatformat:2 }}</div>
+                                        </div>
+
+                                        <div class="metric-item payment-metric">
+                                            <div class="metric-label">Payments</div>
+                                            <div class="metric-value">-₹{{ party.total_payments|floatformat:2 }}</div>
+                                        </div>
+                                        
+                                        <div class="metric-item net-metric">
+                                            <div class="metric-label">Net Amount</div>
+                                            <div class="metric-value net-amount {% if party.net_amount > 0 %}positive{% elif party.net_amount < 0 %}negative{% else %}neutral{% endif %}">
+                                                ₹{{ party.net_amount|floatformat:2 }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar for Visual Representation -->
+                            <div class="financial-progress">
+                                {% if party.total_receipts > 0 or party.total_payments > 0 %}
+                                    {% with max_amount=party.total_receipts|add:party.total_payments %}
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar receipt-bar" 
+                                             style="width: {% widthratio party.total_receipts max_amount 100 %}%"></div>
+                                        <div class="progress-bar payment-bar" 
+                                             style="width: {% widthratio party.total_payments max_amount 100 %}%"></div>
+                                    </div>
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <div class="empty-state-content">
+                                <i class="fas fa-shopping-cart empty-state-icon"></i>
+                                <h5>No Party Data Available</h5>
+                                <p>There are no party summaries to display yet.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4" style="background: #6c757d;">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-0">Quick Stats</h6>
+                            <p class="text-muted mb-0">Summary statistics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Active Parties</th>
+                                    <th class="table-header">Net Balance</th>
+                                    <th class="table-header">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+ <tr class="summary-row">
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge agents-badge">
+                <i class="fas fa-users me-2"></i>
+                <span class="badge-value">{{ agent_summary|length }}</span>
+                <span class="badge-label">AGENTS</span>
+            </span>
+        </div>
+    </td>
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge {% if summary.net_amount > 0 %}balance-positive-badge{% elif summary.net_amount < 0 %}balance-negative-badge{% else %}balance-neutral-badge{% endif %}">
+                <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
+                <span class="badge-value">
+                    {% if summary.net_amount > 0 %}
+                        +₹{{ summary.net_amount|floatformat:0 }}
+                    {% elif summary.net_amount < 0 %}
+                        ₹{{ summary.net_amount|floatformat:0 }}
+                    {% else %}
+                        ₹{{ summary.net_amount|floatformat:0 }}
+                    {% endif %}
+                </span>
+                <span class="badge-label">BALANCE</span>
+            </span>
+        </div>
+    </td>
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge status-badge">
+                <i class="fas fa-check-circle me-2"></i>
+                <span class="badge-value">Active</span>
+            </span>
+        </div>
+    </td>
+</tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="small text-muted text-center mt-3">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Positive amounts indicate money owed by agents, negative amounts indicate credits due to agents.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFilter = document.getElementById('dateFilter');
+    const startDateDiv = document.getElementById('startDateDiv');
+    const endDateDiv = document.getElementById('endDateDiv');
+
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                if (startDateDiv) startDateDiv.style.display = 'block';
+                if (endDateDiv) endDateDiv.style.display = 'block';
+            } else {
+                if (startDateDiv) startDateDiv.style.display = 'none';
+                if (endDateDiv) endDateDiv.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+
+<script>
+  // Enhanced search functionality for vouchers table
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const voucherCount = document.getElementById('voucherCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    // Enhanced search data extraction
+    function getSearchableText(row) {
+      const searchableElements = [
+        // Voucher number
+        row.querySelector('.voucher-badge')?.textContent || '',
+        // Voucher description
+        row.querySelector('.voucher-meta')?.textContent || '',
+        // Party name
+        row.querySelector('.party-name')?.textContent || '',
+        // Party meta
+        row.querySelector('.party-meta')?.textContent || '',
+        // Date
+        row.querySelector('.date-text')?.textContent || '',
+        // Receipt amount
+        row.querySelector('.receipt-value')?.textContent || '',
+        // Payment amount
+        row.querySelector('.payment-value')?.textContent || '',
+        // Net amount
+        row.querySelector('.net-value')?.textContent || ''
+      ];
+      
+      return searchableElements.join(' ').toLowerCase().trim();
+    }
+
+    // Update counter display
+    function updateCounter(visibleCount) {
+      voucherCount.textContent = visibleCount;
+    }
+
+    // Show/hide clear button
+    function showClearButton(show) {
+      clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    // Main filter function
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      if (searchTerm === '') {
+        // Show all rows
+        allRows.forEach(row => {
+          row.style.display = '';
+          visibleCount++;
+        });
+        noResults.style.display = 'none';
+        showClearButton(false);
+      } else {
+        // Filter rows
+        allRows.forEach(row => {
+          // Get searchable text from data attribute or extract it
+          let searchableText = row.getAttribute('data-searchable');
+          
+          // If data-searchable doesn't exist or is empty, extract text
+          if (!searchableText) {
+            searchableText = getSearchableText(row);
+            row.setAttribute('data-searchable', searchableText); // Cache it
+          }
+          
+          if (searchableText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0 && totalCount > 0) {
+          noResults.style.display = 'block';
+        } else {
+          noResults.style.display = 'none';
+        }
+        
+        showClearButton(true);
+      }
+
+      updateCounter(visibleCount);
+    }
+
+    // Clear search function
+    function clearSearch() {
+      searchInput.value = '';
+      filterTable();
+      searchInput.focus();
+    }
+
+    // Event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+          clearSearch();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Keyboard navigation for table rows
+    allRows.forEach(row => {
+      row.setAttribute('tabindex', '0');
+      row.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const viewLink = this.querySelector('.view-btn');
+          if (viewLink) {
+            viewLink.click();
+          }
+        }
+      });
+    });
+
+    // Initialize counter
+    updateCounter(totalCount);
+  });
+</script>
+
+
+{%endblock%}

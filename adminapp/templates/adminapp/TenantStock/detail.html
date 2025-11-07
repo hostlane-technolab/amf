@@ -1,0 +1,1214 @@
+{% extends 'admin_base.html' %}
+{% block title %}{{ tenant.company_name }} - Stock Details{% endblock %}
+{% block content %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<style>
+  /* Base Styles */
+  .stock-detail-container {
+    margin-top: 2rem;
+  }
+
+  /* Card Styling */
+  .form-card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  /* Card Header */
+  .card-header {
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 25px 30px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #28a745;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+  }
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+  .card-header p {
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  /* Card Body */
+  .card-body {
+    padding: 30px;
+  }
+
+  /* Company Information Grid */
+  .company-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 30px;
+  }
+
+  .info-card {
+    position: relative;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fd 100%);
+    border-radius: 20px;
+    padding: 25px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(40, 167, 69, 0.1);
+    cursor: pointer;
+  }
+
+  .info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .info-card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(40, 167, 69, 0.15);
+    border-color: rgba(40, 167, 69, 0.3);
+  }
+
+  .info-background {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .bg-icon {
+    font-size: 40px;
+    color: rgba(40, 167, 69, 0.1);
+    transform: rotate(-15deg);
+  }
+
+  .info-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .info-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  .info-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .info-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+
+  .info-badge i {
+    margin-right: 4px;
+    font-size: 10px;
+  }
+
+  /* Balance Summary Cards */
+  .balance-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 30px;
+  }
+
+  .balance-card {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.2);
+  }
+
+  .balance-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(40, 167, 69, 0.3);
+  }
+
+  .balance-card.info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  }
+
+  .balance-card.warning {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  }
+
+  .balance-card.dark {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  }
+
+  .metric-icon {
+    font-size: 2.5rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Tab Navigation */
+  .nav-pills .nav-link {
+    border-radius: 50px;
+    padding: 12px 24px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+    color: #6c757d;
+  }
+
+  .nav-pills .nav-link.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .nav-pills .nav-link:hover:not(.active) {
+    background: #f8f9fa;
+    color: #2c3e50;
+  }
+
+  /* Table Styling */
+  .modern-table {
+    width: 100%;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .table-row {
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  }
+
+  .table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  /* Badges */
+  .quantity-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .quantity-badge {
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .badge.bg-info {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+  }
+
+  .badge.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  }
+
+  .badge.bg-dark {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+  }
+
+  .badge.bg-warning {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+  }
+
+  .status-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  .status-pending {
+    background: #fff3cd;
+    color: #856404;
+  }
+
+  .status-completed {
+    background: #d4edda;
+    color: #155724;
+  }
+
+  .status-processing {
+    background: #d1ecf1;
+    color: #0c5460;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+  }
+
+  .empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+    opacity: 0.3;
+  }
+
+  /* Action Buttons */
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    background: #28a745;
+    color: white;
+    border: 2px solid #28a745;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .action-btn:hover {
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .btn-primary {
+    background: #007bff;
+    border-color: #007bff;
+  }
+
+  .btn-primary:hover {
+    background: #0056b3;
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .btn-info {
+    background: #17a2b8;
+    border-color: #17a2b8;
+  }
+
+  .btn-info:hover {
+    background: #138496;
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+  }
+
+  .btn-secondary {
+    background: #6c757d;
+    border-color: #6c757d;
+  }
+
+  .btn-secondary:hover {
+    background: #545b62;
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .company-info-grid,
+    .balance-summary-grid {
+      grid-template-columns: 1fr;
+      padding: 20px;
+    }
+
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+
+    .card-title {
+      font-size: 20px;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .action-btn {
+      width: 100%;
+      max-width: 300px;
+      justify-content: center;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+    }
+
+    .metric-icon {
+      font-size: 2rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .card-body {
+      padding: 20px;
+    }
+
+    .card-header {
+      padding: 20px;
+    }
+
+    .table-cell {
+      padding: 15px 10px;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-building"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Tenant Stock Management</h3>
+            <p class="ph-header-subtitle">Comprehensive stock overview and transactions</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:tenant_stock_balance' %}" class="ph-breadcrumb-link">
+                <i class="fas fa-boxes"></i>
+                <span>Stock Balance</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>Detail</span>
+            </li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <div class="stock-detail-container">
+      <!-- Company Information Card -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-building"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">{{ tenant.company_name }}</h3>
+              <p class="text-muted mb-0">Company information and contact details</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="company-info-grid">
+            <div class="info-card">
+              <div class="info-background">
+                <i class="fas fa-map-marker-alt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Address</div>
+                <div class="info-value">{{ tenant.address|default:"No address" }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-location-dot"></i>
+                  <span>Location</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card">
+              <div class="info-background">
+                <i class="fas fa-phone bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Phone Number</div>
+                <div class="info-value">{{ tenant.phone|default:"No phone" }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-phone"></i>
+                  <span>Contact</span>
+                </div>
+              </div>
+            </div>
+            
+            {% if tenant.email %}
+            <div class="info-card">
+              <div class="info-background">
+                <i class="fas fa-envelope bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Email Address</div>
+                <div class="info-value">{{ tenant.email }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-envelope"></i>
+                  <span>Email</span>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Balance Summary Card -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Stock Balance Summary</h4>
+              <p class="text-muted mb-0">Current inventory levels</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="balance-summary-grid">
+            <div class="balance-card">
+              <div class="metric-icon">
+                <i class="fas fa-boxes"></i>
+              </div>
+              <div class="metric-value">{{ balance_totals.slab_balance|default:0 }}</div>
+              <div class="metric-label">Total Slabs</div>
+            </div>
+            
+            <div class="balance-card info">
+              <div class="metric-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <div class="metric-value">{{ balance_totals.cs_balance|default:0 }}</div>
+              <div class="metric-label">Total C/S</div>
+            </div>
+            
+            <div class="balance-card warning">
+              <div class="metric-icon">
+                <i class="fas fa-weight-hanging"></i>
+              </div>
+              <div class="metric-value">{{ balance_totals.kg_balance|default:0 }}</div>
+              <div class="metric-label">Total KG</div>
+            </div>
+            
+            <div class="balance-card dark">
+              <div class="metric-icon">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+              <div class="metric-value">${{ total_value|default:0|floatformat:0 }}</div>
+              <div class="metric-label">Estimated Value</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transactions Card -->
+      <div class="form-card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-exchange-alt"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Stock Transactions</h4>
+              <p class="text-muted mb-0">Inbound and outbound stock movements</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <!-- Tab Navigation -->
+          <div class="mb-4">
+            <ul class="nav nav-pills justify-content-center" role="tablist">
+              <li class="nav-item">
+                <button class="nav-link active" id="stock-in-tab" data-bs-toggle="pill" 
+                        data-bs-target="#stock-in" type="button" role="tab">
+                  <i class="fas fa-arrow-down text-success me-2"></i>
+                  Stock In Entries
+                  <span class="badge bg-primary ms-2">{{ freezing_entries.count|default:0 }}</span>
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" id="stock-out-tab" data-bs-toggle="pill" 
+                        data-bs-target="#stock-out" type="button" role="tab">
+                  <i class="fas fa-arrow-up text-danger me-2"></i>
+                  Stock Out Entries
+                  <span class="badge bg-warning ms-2">{{ return_entries.count|default:0 }}</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="tab-content">
+            <!-- Stock In Tab -->
+            <div class="tab-pane fade show active" id="stock-in" role="tabpanel">
+              {% if freezing_entries %}
+              <div class="table-responsive">
+                <table class="modern-table">
+                  <thead>
+                    <tr>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-calendar header-icon"></i>
+                          <span class="header-text">Date</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-receipt header-icon"></i>
+                          <span class="header-text">Voucher</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-box header-icon"></i>
+                          <span class="header-text">Item Details</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-store header-icon"></i>
+                          <span class="header-text">Store</span>
+                        </div>
+                      </th>
+                      <th class="table-header text-center">
+                        <div class="header-content">
+                          <i class="fas fa-cubes header-icon"></i>
+                          <span class="header-text">Quantities</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for entry in freezing_entries %}
+                    <tr class="table-row">
+                      <td class="table-cell">
+                        <strong>{{ entry.freezing_tenant.freezing_date|date:"M d, Y" }}</strong>
+                        <br><small class="text-muted">{{ entry.freezing_tenant.freezing_date|time:"h:i A" }}</small>
+                      </td>
+                      <td class="table-cell">
+                        <span class="badge bg-primary">{{ entry.freezing_tenant.voucher_number }}</span>
+                      </td>
+                      <td class="table-cell">
+                        <div class="fw-semibold">{{ entry.item.item_name }}</div>
+                        <small class="text-muted d-block">
+                          <i class="fas fa-fish"></i> {{ entry.species.species_name }}
+                        </small>
+                        <small class="text-muted">
+                          <span class="badge bg-secondary">{{ entry.grade.grade_name }}</span>
+                        </small>
+                      </td>
+                      <td class="table-cell">
+                        {% if entry.store %}
+                          <i class="fas fa-warehouse text-info"></i> {{ entry.store.store_name }}
+                        {% else %}
+                          <span class="text-muted">No Store</span>
+                        {% endif %}
+                      </td>
+                      <td class="table-cell text-center">
+                        <div class="quantity-badges">
+                          <span class="badge bg-info quantity-badge">
+                            <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} Slab
+                          </span>
+                          <span class="badge bg-primary quantity-badge">
+                            <i class="fas fa-boxes"></i> {{ entry.c_s_quantity|default:0 }} C/S
+                          </span>
+                          <span class="badge bg-dark quantity-badge">
+                            <i class="fas fa-weight"></i> {{ entry.kg|default:0 }} KG
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot class="table-primary">
+                    <tr>
+                      <th colspan="4" class="text-end table-header">Totals:</th>
+                      <th class="text-center table-header">
+                        <div class="quantity-badges">
+                          <span class="badge bg-info quantity-badge">
+                            {{ freezing_totals.total_slab|default:0 }} Slab
+                          </span>
+                          <span class="badge bg-primary quantity-badge">
+                            {{ freezing_totals.total_cs|default:0 }} C/S
+                          </span>
+                          <span class="badge bg-dark quantity-badge">
+                            {{ freezing_totals.total_kg|default:0 }} KG
+                          </span>
+                        </div>
+                      </th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              {% else %}
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <i class="fas fa-snowflake"></i>
+                </div>
+                <h4>No Stock In Entries</h4>
+                <p>This tenant has not received any stock entries yet.</p>
+                <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" class="action-btn">
+                  <i class="fas fa-plus me-2"></i>Add First Entry
+                </a>
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Stock Out Tab -->
+            <div class="tab-pane fade" id="stock-out" role="tabpanel">
+              {% if return_entries %}
+              <div class="table-responsive">
+                <table class="modern-table">
+                  <thead>
+                    <tr>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-calendar header-icon"></i>
+                          <span class="header-text">Date</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-receipt header-icon"></i>
+                          <span class="header-text">Voucher</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-box header-icon"></i>
+                          <span class="header-text">Item Details</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-store header-icon"></i>
+                          <span class="header-text">Store</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-info-circle header-icon"></i>
+                          <span class="header-text">Status</span>
+                        </div>
+                      </th>
+                      <th class="table-header text-center">
+                        <div class="header-content">
+                          <i class="fas fa-cubes header-icon"></i>
+                          <span class="header-text">Quantities</span>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for entry in return_entries %}
+                    <tr class="table-row">
+                      <td class="table-cell">
+                        <strong>{{ entry.return_tenant.return_date|date:"M d, Y" }}</strong>
+                        <br><small class="text-muted">{{ entry.return_tenant.return_date|time:"h:i A" }}</small>
+                      </td>
+                      <td class="table-cell">
+                        <span class="badge bg-warning">{{ entry.return_tenant.voucher_number }}</span>
+                      </td>
+                      <td class="table-cell">
+                        <div class="fw-semibold">{{ entry.item.item_name }}</div>
+                        <small class="text-muted d-block">
+                          <i class="fas fa-fish"></i> {{ entry.species.species_name }}
+                        </small>
+                        <small class="text-muted">
+                          <span class="badge bg-secondary">{{ entry.grade.grade_name }}</span>
+                        </small>
+                      </td>
+                      <td class="table-cell">
+                        {% if entry.store %}
+                          <i class="fas fa-warehouse text-info"></i> {{ entry.store.store_name }}
+                        {% else %}
+                          <span class="text-muted">No Store</span>
+                        {% endif %}
+                      </td>
+                      <td class="table-cell">
+                        {% if entry.return_tenant.return_status == 'pending' %}
+                          <span class="status-badge status-pending">
+                            <i class="fas fa-clock"></i> Pending
+                          </span>
+                        {% elif entry.return_tenant.return_status == 'completed' %}
+                          <span class="status-badge status-completed">
+                            <i class="fas fa-check-circle"></i> Completed
+                          </span>
+                        {% else %}
+                          <span class="status-badge status-processing">
+                            <i class="fas fa-spinner"></i> {{ entry.return_tenant.return_status|title }}
+                          </span>
+                        {% endif %}
+                      </td>
+                      <td class="table-cell text-center">
+                        <div class="quantity-badges">
+                          <span class="badge bg-warning quantity-badge">
+                            <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} Slab
+                          </span>
+                          <span class="badge bg-warning quantity-badge">
+                            <i class="fas fa-boxes"></i> {{ entry.c_s_quantity|default:0 }} C/S
+                          </span>
+                          <span class="badge bg-warning quantity-badge">
+                            <i class="fas fa-weight"></i> {{ entry.kg|default:0 }} KG
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                  <tfoot class="table-warning">
+                    <tr>
+                      <th colspan="5" class="text-end table-header">Totals:</th>
+                      <th class="text-center table-header">
+                        <div class="quantity-badges">
+                          <span class="badge bg-warning quantity-badge">
+                            {{ return_totals.total_slab|default:0 }} Slab
+                          </span>
+                          <span class="badge bg-warning quantity-badge">
+                            {{ return_totals.total_cs|default:0 }} C/S
+                          </span>
+                          <span class="badge bg-warning quantity-badge">
+                            {{ return_totals.total_kg|default:0 }} KG
+                          </span>
+                        </div>
+                      </th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              {% else %}
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <i class="fas fa-undo"></i>
+                </div>
+                <h4>No Stock Out Entries</h4>
+                <p>This tenant has no return entries yet.</p>
+                <a href="{% url 'adminapp:create_return_tenant' %}" class="action-btn btn-warning">
+                  <i class="fas fa-plus me-2"></i>Add Return Entry
+                </a>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" 
+           class="action-btn">
+          <i class="fas fa-plus me-2"></i>Add Stock Entry
+        </a>
+        <a href="{% url 'adminapp:create_return_tenant' %}" 
+           class="action-btn btn-primary">
+          <i class="fas fa-minus me-2"></i>Process Return
+        </a>
+        <button class="action-btn btn-info" onclick="window.print()">
+          <i class="fas fa-print me-2"></i>Print Report
+        </button>
+        <a href="{% url 'adminapp:tenant_stock_balance' %}" 
+           class="action-btn btn-secondary">
+          <i class="fas fa-arrow-left me-2"></i>Back to Balance
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Bootstrap JS if not already in base template -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize tooltips
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+
+  // Tab change animation
+  const tabButtons = document.querySelectorAll('button[data-bs-toggle="pill"]');
+  tabButtons.forEach(button => {
+    button.addEventListener('shown.bs.tab', function (e) {
+      const targetPane = document.querySelector(e.target.getAttribute('data-bs-target'));
+      if (targetPane) {
+        targetPane.style.opacity = '0';
+        setTimeout(() => {
+          targetPane.style.transition = 'opacity 0.5s ease';
+          targetPane.style.opacity = '1';
+        }, 50);
+      }
+    });
+  });
+
+  // Make cards focusable for accessibility
+  const infoCards = document.querySelectorAll('.info-card');
+  infoCards.forEach(card => {
+    card.setAttribute('tabindex', '0');
+  });
+
+  // Add keyboard support for action buttons
+  const actionBtns = document.querySelectorAll('.action-btn');
+  actionBtns.forEach(btn => {
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.click();
+      }
+    });
+  });
+});
+
+// Smooth scroll to top
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Print functionality with enhanced styling
+window.onbeforeprint = function() {
+  document.body.classList.add('printing');
+};
+
+window.onafterprint = function() {
+  document.body.classList.remove('printing');
+};
+</script>
+
+<style>
+/* Print Styles */
+@media print {
+  .form-actions,
+  .ph-breadcrumb-nav,
+  .ph-icon-wrapper,
+  .nav-pills {
+    display: none !important;
+  }
+  
+  .page-header-section {
+    margin-bottom: 1rem !important;
+  }
+  
+  .form-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    margin-bottom: 20px !important;
+    page-break-inside: avoid;
+  }
+  
+  .card-header {
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+  
+  .stock-detail-container {
+    margin-top: 0 !important;
+  }
+  
+  .tab-content .tab-pane {
+    display: block !important;
+    opacity: 1 !important;
+  }
+  
+  .tab-pane:not(.active) {
+    display: none !important;
+  }
+  
+  .balance-card {
+    background: #f8f9fa !important;
+    color: #2c3e50 !important;
+    border: 1px solid #ddd !important;
+  }
+  
+  .info-background,
+  .bg-icon {
+    display: none !important;
+  }
+}
+</style>
+
+{% endblock %}

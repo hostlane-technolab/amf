@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sectioned Freezing Report - Print View</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 9px;
+            line-height: 1.3;
+            color: #000;
+            background: white;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 12mm 8mm;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 12px;
+            border: 2px solid #007bff;
+            background: white;
+        }
+
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #007bff;
+            text-transform: uppercase;
+        }
+
+        .report-subtitle {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .company-info {
+            background: #f8f9fa;
+            padding: 8px;
+            border: 1px solid #28a745;
+            margin: 8px 0;
+        }
+
+        .company-name {
+            font-weight: bold;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 3px;
+            color: #155724;
+        }
+
+        .company-location {
+            font-size: 10px;
+            text-align: center;
+            margin-bottom: 2px;
+            color: #155724;
+        }
+
+        .date-range {
+            font-size: 11px;
+            margin-top: 6px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .section-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            margin: 15px 0 8px 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .section-summary {
+            background: #fff3cd;
+            padding: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #ffc107;
+            font-size: 9px;
+            text-align: center;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+            border: 1px solid #007bff;
+            background-color: white;
+        }
+
+        .data-table th {
+            background: #007bff;
+            color: white;
+            border: 1px solid #004085;
+            padding: 6px 3px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+
+        .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 4px 3px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 8px;
+        }
+
+        .data-table .number-col {
+            text-align: right;
+            padding-right: 5px;
+            font-weight: bold;
+        }
+
+        .data-table .center-col {
+            text-align: center;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .section-total-row {
+            background: #d4edda !important;
+            font-weight: bold;
+        }
+
+        .section-total-row td {
+            border-top: 2px solid #28a745;
+            border-bottom: 2px solid #28a745;
+            font-weight: bold;
+            padding: 6px 3px;
+            color: #155724;
+            font-size: 8px;
+        }
+
+        .grand-total-section {
+            margin-top: 15px;
+            border: 2px solid #dc3545;
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+
+        .grand-total-header {
+            background: #dc3545;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .grand-total-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .grand-total-table td {
+            border: 1px solid #dc3545;
+            padding: 8px;
+            font-weight: bold;
+            text-align: right;
+            font-size: 10px;
+            background: white;
+        }
+
+        .grand-total-table .label-col {
+            background: #f8d7da;
+            text-align: left;
+            width: 65%;
+            color: #721c24;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+            color: #666;
+            border: 2px dashed #dee2e6;
+            margin: 15px 0;
+            background: #f8f9fa;
+        }
+
+        .footer {
+            margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 7px;
+            color: #666;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .section-header {
+                page-break-after: avoid;
+            }
+
+            .data-table {
+                page-break-inside: auto;
+            }
+
+            .data-table tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .grand-total-section {
+                page-break-inside: avoid;
+            }
+        }
+
+        @media screen {
+            body {
+                background: #e0e0e0;
+                padding: 20px;
+            }
+
+            .print-container {
+                background: white;
+                max-width: 210mm;
+                margin: 0 auto;
+                padding: 12mm 8mm;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+
+            .no-print {
+                text-align: center;
+                padding: 15px;
+                background: #f0f0f0;
+                margin-bottom: 20px;
+                border-radius: 5px;
+            }
+
+            .no-print button {
+                padding: 10px 20px;
+                font-size: 14px;
+                background: #0066cc;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin: 0 5px;
+            }
+
+            .no-print button:hover {
+                background: #0052a3;
+            }
+
+            .no-print button:disabled {
+                background: #999;
+                cursor: not-allowed;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-container">
+        <div class="no-print">
+            <button id="generatePdfBtn" onclick="generatePDF()">Generate PDF</button>
+            <button onclick="window.close()">Close</button>
+            <div id="status" style="margin-top: 10px; font-size: 12px;"></div>
+        </div>
+
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title">Enhanced Sectioned Freezing Report</div>
+            <div class="report-subtitle">
+                Detailed Breakdown by {{ section_by|title }}
+                {% if entry_type == 'spot' %} - Spot Entries Only
+                {% elif entry_type == 'local' %} - Local Entries Only
+                {% endif %}
+            </div>
+            
+            <div class="company-info">
+                <div class="company-name">BAHRAYA EXPORTS </div>
+                <div class="company-location">VANDANAM, ALAPPUZHA</div>
+                <div class="company-location">KERALA, INDIA</div>
+            </div>
+            
+            <div class="date-range">
+                {% if start_date and end_date %}
+                    Period: {{ start_date|date:"d-M-Y" }} to {{ end_date|date:"d-M-Y" }}
+                {% elif date_filter == 'today' %}
+                    Period: Today ({{ "now"|date:"d-M-Y" }})
+                {% elif date_filter == 'week' %}
+                    Period: Current Week
+                {% elif date_filter == 'month' %}
+                    Period: Current Month ({{ "now"|date:"F Y" }})
+                {% elif date_filter == 'quarter' %}
+                    Period: Current Quarter
+                {% elif date_filter == 'year' %}
+                    Period: Current Year ({{ "now"|date:"Y" }})
+                {% else %}
+                    Period: All Records
+                {% endif %}
+                | Sectioned by: {{ section_by|upper }}
+            </div>
+        </div>
+
+        <!-- Sectioned Data Display -->
+        {% if sectioned_data %}
+            {% for section_name, section_data in sectioned_data.items %}
+            <!-- Section Header -->
+            <div class="section-header">
+                {% if section_by == 'month' %}
+                    {{ section_name }}
+                {% elif section_by == 'brand' %}
+                    BRAND: {{ section_name|upper }}
+                {% elif section_by == 'peeling type' %}
+                    PEELING TYPE: {{ section_name|upper }}
+                {% elif section_by == 'grade' %}
+                    GRADE: {{ section_name|upper }}
+                {% elif section_by == 'item' %}
+                    ITEM: {{ section_name|upper }}
+                {% elif section_by == 'processing_center' %}
+                    PROCESSING CENTER: {{ section_name|upper }}
+                {% elif section_by == 'store' %}
+                    STORE: {{ section_name|upper }}
+                {% else %}
+                    {{ section_name|upper }}
+                {% endif %}
+            </div>
+
+            <!-- Section Summary -->
+            <div class="section-summary">
+                <strong>Section Summary:</strong> 
+                {{ section_data.items|length }} records | 
+                Total: {{ section_data.totals.total_kg|floatformat:2 }} KG | 
+                USD: ${{ section_data.totals.total_usd_amount|floatformat:2 }} | 
+                INR: ₹{{ section_data.totals.total_inr_amount|floatformat:2 }}
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>S.NO</th>
+                        <th>DATE</th>
+                        <th>TYPE</th>
+                        <th>VOUCHER</th>
+                        <th>ITEM SUB</th>
+                        {% if units %}
+                        <th>UNIT</th>
+                        {% endif %}
+                        {% if glazes %}
+                        <th>GLAZE</th>
+                        {% endif %}
+                        <th>BRAND</th>
+                        <th>GRADE</th>
+                        <th>QTY (KG)</th>
+                        <th>USD AMT</th>
+                        <th>INR AMT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in section_data.items %}
+                    <tr>
+                        <td class="center-col">{{ forloop.counter }}</td>
+                        <td class="center-col">{{ item.freezing_entry__freezing_date|date:"d/m/Y" }}</td>
+                        <td class="center-col">{{ item.entry_type|upper }}</td>
+                        <td class="center-col">{{ item.freezing_entry__voucher_number|default:"N/A" }}</td>
+                        <td class="center-col">{{ item.item_quality__quality|default:"N/A"|truncatechars:20 }}</td>
+                        {% if units %}
+                        <td class="center-col">{{ item.unit__unit_code|default:item.unit__description|default:"N/A"|truncatechars:10 }}</td>
+                        {% endif %}
+                        {% if glazes %}
+                        <td class="center-col">{% if item.glaze__percentage %}{{ item.glaze__percentage }}%{% else %}N/A{% endif %}</td>
+                        {% endif %}
+                        <td class="center-col">{{ item.brand__name|default:"N/A"|truncatechars:15 }}</td>
+                        <td class="center-col">{{ item.peeling_type__name|default:"N/A"|truncatechars:15 }} - {{ item.grade__grade|default:"N/A" }}</td>
+                        <td class="number-col">{{ item.total_kg|floatformat:2 }}</td>
+                        <td class="number-col">${{ item.total_usd_amount|floatformat:2 }}</td>
+                        <td class="number-col">₹{{ item.total_inr_amount|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Section Total Row with proper colspan calculation -->
+                    <tr class="section-total-row">
+                        {% if units and glazes %}
+                            <td colspan="9" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% elif units or glazes %}
+                            <td colspan="8" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% else %}
+                            <td colspan="7" class="center-col"><strong>SECTION TOTAL</strong></td>
+                        {% endif %}
+                        <td class="number-col"><strong>{{ section_data.totals.total_kg|floatformat:2 }}</strong></td>
+                        <td class="number-col"><strong>${{ section_data.totals.total_usd_amount|floatformat:2 }}</strong></td>
+                        <td class="number-col"><strong>₹{{ section_data.totals.total_inr_amount|floatformat:2 }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endfor %}
+
+            <!-- Grand Total Section -->
+            <div class="grand-total-section">
+                <div class="grand-total-header">GRAND TOTALS - ALL SECTIONS</div>
+                <table class="grand-total-table">
+                    <tr>
+                        <td class="label-col">TOTAL QUANTITY (KG)</td>
+                        <td>{{ grand_totals.total_kg|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL USD AMOUNT</td>
+                        <td>${{ grand_totals.total_usd_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL INR AMOUNT</td>
+                        <td>₹{{ grand_totals.total_inr_amount|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL RECORDS</td>
+                        <td>{{ grand_totals.count }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-col">TOTAL SECTIONS</td>
+                        <td>{{ sectioned_data|length }}</td>
+                    </tr>
+                    {% if grand_totals.avg_kg_per_entry %}
+                    <tr>
+                        <td class="label-col">AVERAGE QUANTITY PER RECORD (KG)</td>
+                        <td>{{ grand_totals.avg_kg_per_entry|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if grand_totals.avg_usd_per_kg %}
+                    <tr>
+                        <td class="label-col">AVERAGE USD PER KG</td>
+                        <td>${{ grand_totals.avg_usd_per_kg|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        {% else %}
+            <div class="no-data">
+                <h3>No Records Found</h3>
+                <p>No freezing records match the current filter criteria.</p>
+                <p>Please adjust your filters and try again.</p>
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            Generated on {{ "now"|date:"d-M-Y H:i" }} | BAHRAYA EXPORTS  - Enhanced Sectioned Freezing Report
+        </div>
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const button = document.getElementById('generatePdfBtn');
+            const status = document.getElementById('status');
+            
+            button.disabled = true;
+            button.textContent = 'Generating PDF...';
+            status.textContent = 'Please wait...';
+            status.style.color = '#0066cc';
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const element = document.querySelector('.print-container');
+                
+                // Hide the no-print section before capturing
+                const noPrintSection = document.querySelector('.no-print');
+                noPrintSection.style.display = 'none';
+                
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+                
+                // Show the no-print section again
+                noPrintSection.style.display = 'block';
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const pdfWidth = 210;
+                const pdfHeight = 297;
+                const imgWidth = pdfWidth;
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                // Check if content fits in one page
+                if (imgHeight <= pdfHeight) {
+                    // Single page - center content vertically
+                    const yOffset = 0;
+                    pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgHeight);
+                } else {
+                    // Multiple pages needed
+                    let heightLeft = imgHeight;
+                    let position = 0;
+                    
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+                    
+                    while (heightLeft > 0) {
+                        position = heightLeft - imgHeight;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pdfHeight;
+                    }
+                }
+                
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0];
+                const filename = `Freezing_Report_${dateStr}.pdf`;
+                
+                pdf.save(filename);
+                
+                status.textContent = 'PDF generated successfully!';
+                status.style.color = '#28a745';
+                button.textContent = 'Generate PDF';
+                button.disabled = false;
+                
+                setTimeout(() => {
+                    status.textContent = '';
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                status.textContent = 'Error generating PDF. Please try again.';
+                status.style.color = '#dc3545';
+                button.textContent = 'Generate PDF';
+                button.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

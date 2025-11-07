@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Purchase Profit/Loss Analysis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.2;
+            background: #f0f8ff;
+            padding: 10px;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: rgb(0, 0, 0);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .report-title {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            page-break-inside: avoid;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, #5ba3f5 0%, #4a90e2 100%);
+            color: rgb(0, 0, 0);
+            padding: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .section-content {
+            padding: 10px;
+        }
+
+        .data-grid {
+            display: grid;
+            gap: 5px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .data-item {
+            border: 1px solid #a3cef1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .data-label {
+            background: linear-gradient(135deg, #6eb5f7 0%, #5ba3f5 100%);
+            color: rgb(0, 0, 0);
+            padding: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .data-value {
+            padding: 4px;
+            text-align: center;
+            background: #f0f8ff;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 14px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        table th {
+            background: linear-gradient(135deg, #5ba3f5 0%, #4a90e2 100%);
+            color: rgb(0, 0, 0);
+            padding: 6px 4px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid white;
+        }
+
+        table td {
+            padding: 4px;
+            border: 1px solid #c5dff5;
+            text-align: center;
+            background: white;
+        }
+
+        .text-left { text-align: left !important; }
+        .text-right { text-align: right !important; }
+        .bg-yellow { background: #fff9e6 !important; }
+        .bg-light-blue { background: #e3f2fd !important; }
+
+        .cost-summary {
+            background: #e6f3ff;
+            border: 2px solid #4a90e2;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid #c5dff5;
+        }
+
+        .cost-row:last-child {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-primary { 
+            background: linear-gradient(135deg, #5ba3f5 0%, #4a90e2 100%);
+            color: white; 
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .btn-danger { 
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white; 
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        @media print {
+            .action-buttons { display: none; }
+            body { padding: 0; background: white; }
+            .section { page-break-inside: avoid; }
+        }
+
+        .profit { color: #27ae60; font-weight: bold; }
+        .loss { color: #e74c3c; font-weight: bold; }
+        
+        .grand-total {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%) !important;
+            color: rgb(0, 0, 0) !important;
+            font-weight: bold;
+            font-size: 17px;
+        }
+
+        /* Overhead table specific styling */
+        .overhead-table {
+            margin-top: 10px;
+        }
+
+        .overhead-table td {
+            background: #f8fbff;
+        }
+
+        .overhead-table tr:hover td {
+            background: #e3f2fd;
+        }
+        
+        /* Warning for zero overhead */
+        .overhead-warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            color: #856404;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <div class="report-title">LOCAL PURCHASE PROFIT & LOSS ANALYSIS</div>
+            <div>Period: {{ start_date }} to {{ end_date }}</div>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="generatePDF()" class="btn btn-danger" id="pdfBtn">Generate PDF</button>
+        </div>
+
+        {% if error %}
+        <div style="background: #fee; border: 1px solid #e74c3c; padding: 15px; margin: 20px 0; color: #c0392b; border-radius: 6px;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if report_data %}
+        {% for purchase in report_data %}
+        <div class="section">
+            <div class="section-header">PURCHASE DATAS</div>
+            
+            <div class="section-content">
+                <div class="data-grid grid-3" style="margin-bottom: 10px;">
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE DATE</div>
+                        <div class="data-value">{{ purchase.date|date:"d/m/y" }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">VOUCHER NUMBER</div>
+                        <div class="data-value">{{ purchase.voucher_number|default:"N/A" }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PARTY NAME</div>
+                        <div class="data-value">{{ purchase.party_name }}</div>
+                    </div>
+                </div>
+
+                <div class="data-grid grid-3" style="margin-bottom: 10px;">
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE ITEM NAME</div>
+                        <div class="data-value">{{ purchase.purchase_item_names }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE QUANTITY</div>
+                        <div class="data-value">{{ purchase.purchase_quantity|floatformat:2 }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE AMOUNT</div>
+                        <div class="data-value">Rs/ {{ purchase.purchase_amount|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div class="data-grid grid-2">
+                    <div class="data-item">
+                        <div class="data-label">COST/KG</div>
+                        <div class="data-value bg-yellow">Rs/ {{ purchase.cost_per_kg|floatformat:2 }}</div>
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="section-header">FREEZING DATAS</div>
+            <div class="section-content">
+                <div class="data-grid grid-4">
+                    <div class="data-item">
+                        <div class="data-label">PROFIT/LOSS PER KG</div>
+                        <div class="data-value {% if purchase.profit_loss_per_kg > 0 %}profit{% elif purchase.profit_loss_per_kg < 0 %}loss{% endif %}">
+                            Rs/ {{ purchase.profit_loss_per_kg|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">TOTAL PROFIT/LOSS</div>
+                        <div class="data-value {% if purchase.total_profit_loss > 0 %}profit{% elif purchase.total_profit_loss < 0 %}loss{% endif %}">
+                            Rs/ {{ purchase.total_profit_loss|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">USD RATE</div>
+                        <div class="data-value">${{ usd_rate|floatformat:2 }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PROCESSING OVERHEADS PER KG</div>
+                        <div class="data-value bg-yellow">Rs/ {{ purchase.processing_overhead_per_kg|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TOTAL PRODUCTION QUANTITY</th>
+                                <th>TOTAL AMOUNT/USD</th>
+                                <th>TOTAL AMOUNT/INR</th>
+                                <th>TOTAL PROCESSING EXP</th>
+                                <th>INCOME</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="bg-yellow">{{ purchase.total_freezing_kg|floatformat:2 }}</td>
+                                <td class="bg-yellow">${{ purchase.total_freezing_usd|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ {{ purchase.income|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if purchase.processing_details %}
+            <div class="section-header">PROCESSING DETAILS</div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ITEM SUB</th>
+                            <th>PACKING</th>
+                            <th>UNIT</th>
+                            <th>GRADE</th>
+                            <th>TOTAL SLAB</th>
+                            <th>TOTAL QUANTITY</th>
+                            <th>PRICE/USD</th>
+                            <th>AMOUNT/USD</th>
+                            <th>AMOUNT/INR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in purchase.processing_details %}
+                        <tr>
+                            <td class="text-left">{{ detail.item_quality }}</td>
+                            <td>{{ detail.packing }}</td>
+                            <td>{{ detail.unit }}</td>
+                            <td>{{ detail.grade }}</td>
+                            <td>{{ detail.total_slab|floatformat:0 }}</td>
+                            <td class="bg-yellow">{{ detail.total_quantity|floatformat:2 }}</td>
+                            <td class="bg-yellow">${{ detail.price_usd|floatformat:2 }}</td>
+                            <td class="bg-yellow">${{ detail.amount_usd|floatformat:2 }}</td>
+                            <td class="bg-yellow">{{ detail.amount_inr|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="grand-total">
+                            <td colspan="4">SUBTOTAL</td>
+                            <td>{{ purchase.total_slabs|floatformat:0 }}</td>
+                            <td>{{ purchase.total_kg_processed|floatformat:2 }}</td>
+                            <td>${{ purchase.avg_price_usd|floatformat:2 }}</td>
+                            <td>${{ purchase.total_freezing_usd|floatformat:2 }}</td>
+                            <td>Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div class="section-header">OVERHEADS BREAKDOWN</div>
+            <div class="section-content">
+                {% if purchase.overhead_breakdown %}
+                <table class="overhead-table">
+                    <thead>
+                        <tr>
+                            <th>OVERHEAD TYPE</th>
+                            <th>RATE/KG (Rs)</th>
+                            <th>QUANTITY (KG)</th>
+                            <th>AMOUNT (Rs)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for overhead in purchase.overhead_breakdown %}
+                        <tr>
+                            <td class="text-left">{{ overhead.type }}</td>
+                            <td>{{ overhead.rate|floatformat:2 }}</td>
+                            <td>{{ purchase.total_freezing_kg|floatformat:2 }}</td>
+                            <td class="text-right">Rs/ {{ overhead.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="grand-total">
+                            <td colspan="3">TOTAL OVERHEADS</td>
+                            <td class="text-right">Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                {% if summary.purchase_overhead_rate == 0 or summary.shipment_overhead_rate == 0 %}
+                <div class="overhead-warning">
+                    ⚠️ Warning: Some overhead rates are zero. Please check overhead settings in the system.
+                    {% if summary.purchase_overhead_rate == 0 %}Purchase Overhead: Rs/ 0.00{% endif %}
+                    {% if summary.shipment_overhead_rate == 0 %}Shipment Overhead: Rs/ 0.00{% endif %}
+                </div>
+                {% endif %}
+                {% else %}
+                <div style="text-align: center; padding: 10px; color: #666;">
+                    No overhead data available
+                </div>
+                {% endif %}
+            </div>
+
+            {% if purchase.freezing_tariff_breakdown %}
+            <div class="section-header">FREEZING AMOUNT BREAKDOWN</div>
+            <div class="section-content">
+                <table class="overhead-table">
+                    <thead>
+                        <tr>
+                            <th>CATEGORY</th>
+                            <th>TARIFF RATE (Rs/KG)</th>
+                            <th>QUANTITY (KG)</th>
+                            <th>AMOUNT (Rs)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tariff in purchase.freezing_tariff_breakdown %}
+                        <tr>
+                            <td class="text-left">{{ tariff.category_name }}</td>
+                            <td>Rs/ {{ tariff.tariff_rate|floatformat:2 }}</td>
+                            <td>{{ tariff.quantity|floatformat:2 }}</td>
+                            <td class="text-right">Rs/ {{ tariff.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="grand-total">
+                            <td colspan="3">TOTAL FREEZING AMOUNT</td>
+                            <td class="text-right">Rs/ {{ purchase.freezing_tariff|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div class="section-header">PROFIT/LOSS SUMMARY</div>
+            <div class="section-content">
+                <div class="cost-summary">
+                    <div class="cost-row">
+                        <span>Purchase Amount:</span>
+                        <span>Rs/ {{ purchase.purchase_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Purchase Overhead:</span>
+                        <span>Rs/ {{ purchase.purchase_overhead|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Processing Overhead:</span>
+                        <span>Rs/ {{ purchase.processing_overhead|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Shipment Overhead:</span>
+                        <span>Rs/ {{ purchase.shipment_overhead|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Freezing Amount:</span>
+                        <span>Rs/ {{ purchase.freezing_tariff|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row" style="background: #d6ebff; padding: 5px; border-radius: 4px;">
+                        <span><strong>Grand Total Cost:</strong></span>
+                        <span><strong>Rs/ {{ purchase.grand_total_cost|floatformat:2 }}</strong></span>
+                    </div>
+                    <div class="cost-row" style="background: #d4edda; padding: 5px; border-radius: 4px; margin-top: 5px;">
+                        <span><strong>Total Revenue:</strong></span>
+                        <span><strong>Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</strong></span>
+                    </div>
+                    <div class="cost-row" style="background: {% if purchase.total_profit_loss > 0 %}#d4edda{% else %}#f8d7da{% endif %}; padding: 8px; border-radius: 4px; margin-top: 5px;">
+                        <span><strong>TOTAL PROFIT/LOSS:</strong></span>
+                        <span class="{% if purchase.total_profit_loss > 0 %}profit{% else %}loss{% endif %}">
+                            <strong>Rs/ {{ purchase.total_profit_loss|floatformat:2 }} ({{ purchase.profit_percentage|floatformat:1 }}%)</strong>
+                        </span>
+                    </div>
+                    <div class="cost-row" style="background: #e3f2fd; padding: 5px; border-radius: 4px; margin-top: 5px; border: 2px solid #4a90e2;">
+                        <span><strong>Profit/Loss Per KG:</strong></span>
+                        <span class="{% if purchase.profit_loss_per_kg > 0 %}profit{% else %}loss{% endif %}">
+                            <strong>Rs/ {{ purchase.profit_loss_per_kg|floatformat:2 }}</strong>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if summary %}
+        <div class="section">
+            <div class="section-header">OVERALL SUMMARY - ALL PURCHASES</div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>METRIC</th>
+                            <th>AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-left">Total Purchases</td>
+                            <td>{{ summary.total_purchases }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Purchase Amount</td>
+                            <td>Rs/ {{ summary.total_purchase_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Purchase Overhead</td>
+                            <td>Rs/ {{ summary.total_purchase_overhead|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Processing Overhead</td>
+                            <td>Rs/ {{ summary.total_processing_overhead|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Shipment Overhead</td>
+                            <td>Rs/ {{ summary.total_shipment_overhead|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Freezing Amount</td>
+                            <td>Rs/ {{ summary.total_freezing_tariff|floatformat:2 }}</td>
+                        </tr>
+                        <tr style="background: #d6ebff;">
+                            <td class="text-left"><strong>Total Cost</strong></td>
+                            <td><strong>Rs/ {{ summary.total_cost|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr style="background: #d4edda;">
+                            <td class="text-left"><strong>Total Revenue</strong></td>
+                            <td><strong>Rs/ {{ summary.total_revenue|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr style="background: {% if summary.total_profit_loss > 0 %}#d4edda{% else %}#f8d7da{% endif %};">
+                            <td class="text-left"><strong>NET PROFIT/LOSS</strong></td>
+                            <td><strong class="{% if summary.total_profit_loss > 0 %}profit{% else %}loss{% endif %}">
+                                Rs/ {{ summary.total_profit_loss|floatformat:2 }} ({{ summary.overall_profit_margin|floatformat:1 }}%)
+                            </strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Profitable Purchases</td>
+                            <td class="profit">{{ summary.profit_count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Loss-Making Purchases</td>
+                            <td class="loss">{{ summary.loss_count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Break-Even Purchases</td>
+                            <td>{{ summary.break_even_count }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
+            <p>No purchase data found for the selected criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const btn = document.getElementById('pdfBtn');
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Generating...';
+
+                const { jsPDF } = window.jspdf;
+                const container = document.querySelector('.report-container');
+                
+                document.querySelector('.action-buttons').style.display = 'none';
+                
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const imgWidth = 190;
+                const pageHeight = 277;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 10;
+
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight + 10;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const filename = `Local_Purchase_PL_${new Date().toISOString().split('T')[0]}.pdf`;
+                pdf.save(filename);
+                
+                alert('PDF generated successfully!');
+            } catch (error) {
+                console.error('PDF Error:', error);
+                alert('Error generating PDF: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate PDF';
+                document.querySelector('.action-buttons').style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>

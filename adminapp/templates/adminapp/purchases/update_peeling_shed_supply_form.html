@@ -1,0 +1,1376 @@
+{% extends 'admin_base.html' %}
+{% block title %} Peeling Shed Supply Update {% endblock %}
+{% block content %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-fish-fins"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Processing Operations</h3>
+            <p class="ph-header-subtitle">Manage your processing operations.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:peeling_shed_supply_list'%}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Peeling Shed Supplies</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="">
+                <span>Edit</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden field to store supply ID for JavaScript -->
+    <input type="hidden" id="current-supply-id" value="{{ supply.id }}">
+
+    <form method="post" class="purchase-form">
+      {% csrf_token %}
+
+      <!-- Basic Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-info-circle"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Basic Details</h3>
+              <p class="text-muted mb-0">Enter basic supply information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.date.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calendar-alt input-icon"></i>
+                  {{ form.date }}
+                </div>
+                {% if form.date.errors %}
+                  <div class="validation-error">{{ form.date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.voucher_number.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-hashtag input-icon"></i>
+                  {{ form.voucher_number }}
+                </div>
+                {% if form.voucher_number.errors %}
+                  <div class="validation-error">{{ form.voucher_number.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.shed.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-warehouse input-icon"></i>
+                  {{ form.shed }}
+                </div>
+                {% if form.shed.errors %}
+                  <div class="validation-error">{{ form.shed.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+              <div class="form-group">
+                <label class="form-label">{{ form.vehicle_number.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-truck input-icon"></i>
+                  {{ form.vehicle_number }}
+                </div>
+                {% if form.vehicle_number.errors %}
+                  <div class="validation-error">{{ form.vehicle_number.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spot Purchase Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Spot Purchase Details</h4>
+              <p class="text-muted mb-0">Select spot purchase information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.spot_purchase_date.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calendar-alt input-icon"></i>
+                  {{ form.spot_purchase_date }}
+                </div>
+                {% if form.spot_purchase_date.errors %}
+                  <div class="validation-error">{{ form.spot_purchase_date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.spot_purchase.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-list-alt input-icon"></i>
+                  <select id="id_spot_purchase" name="spot_purchase" class="form-control">
+                    {% if form.spot_purchase.value %}
+                      <option value="{{ form.spot_purchase.value }}" selected>
+                        {{ form.spot_purchase.instance }}
+                      </option>
+                    {% else %}
+                      <option value="">Select Spot Purchase...</option>
+                    {% endif %}
+                  </select>
+                </div>
+                {% if form.spot_purchase.errors %}
+                  <div class="validation-error">{{ form.spot_purchase.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.spot_purchase_item.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-box input-icon"></i>
+                  <select id="id_spot_purchase_item" name="spot_purchase_item" class="form-control">
+                    {% if form.spot_purchase_item.value %}
+                      <option value="{{ form.spot_purchase_item.value }}" selected>
+                        {{ form.spot_purchase_item.instance }}
+                      </option>
+                    {% else %}
+                      <option value="">Select Purchase Item...</option>
+                    {% endif %}
+                  </select>
+                </div>
+                {% if form.spot_purchase_item.errors %}
+                  <div class="validation-error">{{ form.spot_purchase_item.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Information Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Information</h4>
+              <p class="text-muted mb-0">Automatic purchase details</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.SpotPurchase_total_boxes.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-cube input-icon"></i>
+                  <input type="text" id="id_SpotPurchase_total_boxes" name="SpotPurchase_total_boxes" class="form-control" value="{{ form.initial.SpotPurchase_total_boxes|default:form.SpotPurchase_total_boxes.value|default:'' }}" readonly>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.SpotPurchase_quantity.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-weight-hanging input-icon"></i>
+                  <input type="text" id="id_SpotPurchase_quantity" name="SpotPurchase_quantity" class="form-control" value="{{ form.initial.SpotPurchase_quantity|default:form.SpotPurchase_quantity.value|default:'' }}" readonly>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.SpotPurchase_average_box_weight.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-balance-scale input-icon"></i>
+                  <input type="text" id="id_SpotPurchase_average_box_weight" name="SpotPurchase_average_box_weight" class="form-control" value="{{ form.initial.SpotPurchase_average_box_weight|default:form.SpotPurchase_average_box_weight.value|default:'' }}" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shed Received Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Shed Received Details</h4>
+              <p class="text-muted mb-0">Enter received quantities</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">Boxes Received Shed</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-boxes input-icon"></i>
+                  <input type="text" name="boxes_received_shed" id="id_boxes_received_shed" class="form-control" value="{{ form.boxes_received_shed.value|default:'' }}">
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">Quantity Received Shed</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-weight input-icon"></i>
+                  <input type="text" name="quantity_received_shed" id="id_quantity_received_shed" class="form-control" value="{{ form.initial.quantity_received_shed|default:form.quantity_received_shed.value|default:'' }}" readonly>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label balance-label">Box Balance</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calculator input-icon"></i>
+                  <input type="text" name="SpotPurchase_balance_boxes" id="id_SpotPurchase_balance_boxes" class="form-control" value="{{ form.initial.SpotPurchase_balance_boxes|default:form.SpotPurchase_balance_boxes.value|default:'' }}" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Peeling Charges Card -->
+      <div class="form-card mb-4" style="display: none;">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Peeling Charges</h4>
+              <p class="text-muted mb-0">Configure peeling charge details</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tag header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-layer-group header-icon"></i>
+                      <span class="header-text">Type</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Amount</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-ruler header-icon"></i>
+                      <span class="header-text">Unit</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="formset-container">
+                {{ formset.management_form }}
+                {% for form in formset %}
+                  <tr class="table-row dynamic-item">
+                    {{ form.id }}
+                    <td class="table-cell">
+                      {{ form.item.as_widget }}
+                      {% if form.item.errors %}
+                        <div class="validation-error">{{ form.item.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.item_type.as_widget }}
+                      {% if form.item_type.errors %}
+                        <div class="validation-error">{{ form.item_type.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.amount.as_widget }}
+                      {% if form.amount.errors %}
+                        <div class="validation-error">{{ form.amount.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.unit.as_widget }}
+                      {% if form.unit.errors %}
+                        <div class="validation-error">{{ form.unit.errors }}</div>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save me-2"></i>Update
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:peeling_shed_supply_list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Readonly inputs */
+input[readonly] {
+  background: #f8f9fa !important;
+  color: #6c757d !important;
+  cursor: not-allowed;
+}
+
+/* Balance field special styling */
+.balance-label {
+  color: #dc2626 !important;
+  font-weight: 700 !important;
+}
+
+#id_SpotPurchase_balance_boxes {
+  border-color: #dc2626 !important;
+  color: #dc2626 !important;
+  font-weight: 600 !important;
+  background: linear-gradient(135deg, rgba(254, 226, 226, 0.3), rgba(252, 165, 165, 0.2)) !important;
+}
+
+/* Table Styling */
+.modern-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  color: #6c757d;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+/* Table Rows */
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+.table-cell input, .table-cell select {
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.form-actions .row {
+  width: 100%;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Balance Info Styling */
+.balance-info {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.error-msg {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* Loading animation */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+  position: relative;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #28a745;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Animation for updated fields */
+.updated {
+  animation: highlight 0.6s ease;
+}
+
+@keyframes highlight {
+  0% { background-color: rgba(40, 167, 69, 0.2); }
+  100% { background-color: transparent; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let availableBoxes = 0;
+    let currentSupplyId = null;
+    
+    function showLoading(element) {
+        $(element).addClass('loading');
+    }
+    
+    function hideLoading(element) {
+        $(element).removeClass('loading');
+    }
+
+    function calculateBalanceBoxes() {
+        let boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        
+        if (boxesReceived > availableBoxes) {
+            alert(`Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available from this purchase.`);
+            $("#id_boxes_received_shed").val(availableBoxes);
+            boxesReceived = availableBoxes;
+        }
+        
+        let balance = availableBoxes - boxesReceived;
+        balance = Math.max(0, balance);
+        
+        const balanceField = $("#id_SpotPurchase_balance_boxes");
+        balanceField.val(balance);
+        
+        balanceField.addClass('updated');
+        setTimeout(() => {
+            balanceField.removeClass('updated');
+        }, 600);
+    }
+
+    function calculateQuantityReceivedShed() {
+        let boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        let avgWeight = parseFloat($("#id_SpotPurchase_average_box_weight").val()) || 0;
+        
+        if (boxesReceived > availableBoxes) {
+            alert(`Cannot receive ${boxesReceived} boxes. Only ${availableBoxes} boxes are available.`);
+            $("#id_boxes_received_shed").val(availableBoxes);
+            boxesReceived = availableBoxes;
+        }
+        
+        let quantity = boxesReceived * avgWeight;
+        $("#id_quantity_received_shed").val(quantity.toFixed(2));
+        
+        calculateBalanceBoxes();
+    }
+
+   function showAvailableBoxesInfo(data) {
+        const infoHtml = `
+            <div class="col-12">
+                <div class="balance-info" style="background: ${data.is_fully_used ? '#fee2e2' : '#f0f9ff'}; 
+                     border: 2px solid ${data.is_fully_used ? '#dc2626' : '#3b82f6'};">
+                    <strong>Box Balance Information:</strong><br>
+                    Total Boxes: ${data.total_boxes}<br>
+                    Used Boxes: ${data.used_boxes}<br>
+                    <span style="color: ${data.is_fully_used ? '#dc2626' : '#059669'}; font-weight: bold;">
+                        Available Boxes: ${data.available_boxes}
+                    </span>
+                    ${data.is_fully_used ? '<br><span style="color: #dc2626;">⚠️ This item is fully used!</span>' : ''}
+                </div>
+            </div>
+        `;
+        
+        $('.balance-info').parent().remove();
+        $('#id_spot_purchase_item').closest('.row.g-4').append(infoHtml);
+    }
+
+    $('#id_spot_purchase_date').on('change', function () {
+        showLoading('#id_spot_purchase');
+        
+        $.get("{% url 'adminapp:get_spot_purchases_by_date' %}", {
+            'date': $(this).val()
+        }, function (data) {
+            const select = $('#id_spot_purchase');
+            select.empty().append('<option value="">Select Spot Purchase...</option>');
+            data.forEach(p => select.append(`<option value="${p.id}">${p.name}</option>`));
+            $('#id_spot_purchase_item').empty().append('<option value="">Select Purchase Item...</option>');
+            hideLoading('#id_spot_purchase');
+            
+            $('.balance-info').remove();
+            availableBoxes = 0;
+            $("#id_SpotPurchase_balance_boxes").val('');
+        }).fail(function() {
+            hideLoading('#id_spot_purchase');
+            alert('Error loading spot purchases. Please try again.');
+        });
+    });
+
+    $('#id_spot_purchase').on('change', function () {
+        showLoading('#id_spot_purchase_item');
+        
+        $.get("{% url 'adminapp:get_spot_purchase_items' %}", {
+            'spot_purchase_id': $(this).val()
+        }, function (data) {
+            const select = $('#id_spot_purchase_item').empty().append('<option value="">Select Purchase Item...</option>');
+            
+            data.forEach(item => {
+                select.append(`<option value="${item.id}">${item.name}</option>`);
+            });
+            
+            hideLoading('#id_spot_purchase_item');
+            
+            availableBoxes = 0;
+            $("#id_SpotPurchase_balance_boxes").val('');
+        }).fail(function() {
+            hideLoading('#id_spot_purchase_item');
+            alert('Error loading purchase items. Please try again.');
+        });
+    });
+
+    $('#id_spot_purchase_item').on('change', function () {
+        const fields = ['#id_SpotPurchase_total_boxes', '#id_SpotPurchase_quantity', '#id_SpotPurchase_average_box_weight'];
+        fields.forEach(field => showLoading(field));
+        
+        $.get("{% url 'adminapp:get_spot_purchase_item_details_for_update' %}", {
+            'item_id': $(this).val(),
+            'supply_id': currentSupplyId
+        }, function (data) {
+            $('#id_SpotPurchase_total_boxes').val(data.total_boxes);
+            $('#id_SpotPurchase_quantity').val(data.quantity);
+            $('#id_SpotPurchase_average_box_weight').val(data.average_weight);
+            
+            availableBoxes = data.available_boxes;
+            
+            $("#id_SpotPurchase_balance_boxes").val(data.available_boxes);
+            
+            showAvailableBoxesInfo(data);
+            
+            $("#id_boxes_received_shed").attr('max', data.available_boxes);
+            
+            const currentReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+            if (currentReceived > data.available_boxes) {
+                showWarning(`Current value (${currentReceived}) exceeds available boxes (${data.available_boxes})`);
+            }
+            
+            if (data.is_fully_used) {
+                $("#id_boxes_received_shed").prop('disabled', true).attr('placeholder', 'No boxes available');
+                $("#id_SpotPurchase_balance_boxes").val(0);
+            } else {
+                $("#id_boxes_received_shed").prop('disabled', false).attr('placeholder', `Max: ${data.available_boxes} boxes`);
+            }
+            
+            fields.forEach(field => hideLoading(field));
+        }).fail(function() {
+            fields.forEach(field => hideLoading(field));
+            alert('Error loading item details. Please try again.');
+        });
+    });
+
+    function showWarning(message) {
+        $('.warning-msg').remove();
+        $("#id_boxes_received_shed").parent().append(`<small class="warning-msg" style="color: #f59e0b; font-weight: 500;">${message}</small>`);
+    }
+
+    function updatePeelingCharges(peelingTypes) {
+        const container = $('#formset-container');
+        const totalForms = $('#id_form-TOTAL_FORMS');
+        let newCount = 0;
+
+        container.find('.dynamic-item').remove();
+
+        peelingTypes.forEach((pt, i) => {
+            const newForm = $(`
+                <tr class="table-row dynamic-item">
+                    <input type="hidden" name="form-${i}-id" id="id_form-${i}-id">
+                    <td class="table-cell">
+                        <select name="form-${i}-item" id="id_form-${i}-item" class="form-control">
+                            <option value="${pt.item_id}" selected>${pt.item_name}</option>
+                        </select>
+                    </td>
+                    <td class="table-cell">
+                        <select name="form-${i}-item_type" id="id_form-${i}-item_type" class="form-control">
+                            ${pt.item_type_id ? `<option value="${pt.item_type_id}" selected>${pt.item_type_name}</option>` : `<option value="">------</option>`}
+                        </select>
+                    </td>
+                    <td class="table-cell">
+                        <input type="text" name="form-${i}-amount" id="id_form-${i}-amount" class="form-control" value="${pt.amount}">
+                    </td>
+                    <td class="table-cell">
+                        <input type="text" name="form-${i}-unit" id="id_form-${i}-unit" class="form-control" value="${pt.unit}">
+                    </td>
+                </tr>
+            `);
+            container.append(newForm);
+            newCount++;
+        });
+
+        totalForms.val(newCount);
+    }
+
+    function validateFormSubmission() {
+        const boxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        
+        if (boxesReceived > availableBoxes) {
+            alert(`Cannot submit: ${boxesReceived} boxes exceeds available balance of ${availableBoxes} boxes.`);
+            return false;
+        }
+        
+        if (boxesReceived <= 0) {
+            alert('Please enter the number of boxes received.');
+            return false;
+        }
+        
+        return true;
+    }
+
+    $(document).ready(function () {
+        currentSupplyId = $("#current-supply-id").val();
+        
+        $("#id_SpotPurchase_balance_boxes").prop('readonly', true);
+
+        const currentTotalBoxes = parseFloat($("#id_SpotPurchase_total_boxes").val()) || 0;
+        const currentBoxesReceived = parseFloat($("#id_boxes_received_shed").val()) || 0;
+        const currentBalance = parseFloat($("#id_SpotPurchase_balance_boxes").val()) || 0;
+        
+        availableBoxes = currentBalance + currentBoxesReceived;
+        
+        if (currentTotalBoxes > 0) {
+            const usedBoxes = currentTotalBoxes - availableBoxes;
+            showAvailableBoxesInfo({
+                total_boxes: currentTotalBoxes,
+                used_boxes: usedBoxes,
+                available_boxes: availableBoxes,
+                is_fully_used: availableBoxes <= 0
+            });
+        }
+
+        $("#id_boxes_received_shed").on('input change', function () {
+            calculateQuantityReceivedShed();
+        });
+
+        $("#id_boxes_received_shed").on('input', function() {
+            const value = parseFloat($(this).val()) || 0;
+            if (value > availableBoxes && availableBoxes > 0) {
+                $(this).css('border-color', '#dc2626');
+                $(this).next('.error-msg').remove();
+                $(this).after(`<small class="error-msg" style="color: #dc2626;">Maximum ${availableBoxes} boxes available</small>`);
+            } else {
+                $(this).css('border-color', '');
+                $(this).next('.error-msg').remove();
+            }
+        });
+
+        $("#id_SpotPurchase_average_box_weight").on('input change', function () {
+            calculateQuantityReceivedShed();
+        });
+
+        $('#id_shed').change(function () {
+            const shedId = $(this).val();
+            if (shedId) {
+                $.ajax({
+                    url: "{% url 'adminapp:get_peeling_charge_by_shed' %}",
+                    data: { 'shed_id': shedId },
+                    dataType: 'json',
+                    success: function (response) {
+                        updatePeelingCharges(response.peeling_types);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading peeling charges:', error);
+                        alert('Error loading peeling charges. Please try again.');
+                    }
+                });
+            }
+        });
+
+        $('form').on('submit', function(e) {
+            if (!validateFormSubmission()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        if ($("#id_boxes_received_shed").val() || $("#id_SpotPurchase_average_box_weight").val()) {
+            calculateQuantityReceivedShed();
+        }
+        
+        const currentItemId = $("#id_spot_purchase_item").val();
+        if (currentItemId && availableBoxes === 0) {
+            $("#id_spot_purchase_item").trigger('change');
+        }
+    });
+    </script>
+
+
+<script>
+  // Enhanced Arrow key navigation for form fields
+document.addEventListener('keydown', function(e) {
+    if (e.target.matches('input, select, textarea')) {
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea'))
+            .filter(el => {
+                // Check if element is visible and enabled
+                return el.offsetParent !== null && !el.disabled && !el.readOnly;
+            });
+        
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Left arrow key - only navigate when cursor is at start of input
+        if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+            // For text inputs, only navigate if cursor is at the beginning
+            if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                if (e.target.selectionStart === 0 && e.target.selectionEnd === 0) {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                        activeElements[currentIndex - 1].focus();
+                        if (activeElements[currentIndex - 1].select) {
+                            activeElements[currentIndex - 1].select();
+                        }
+                    }
+                }
+            } else {
+                // For non-text inputs (select, date, etc.), navigate immediately
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    activeElements[currentIndex - 1].focus();
+                    if (activeElements[currentIndex - 1].select) {
+                        activeElements[currentIndex - 1].select();
+                    }
+                }
+            }
+            return false;
+        }
+        
+        // Right arrow key - only navigate when cursor is at end of input
+        if (e.key === 'ArrowRight' || e.keyCode === 39) {
+            // For text inputs, only navigate if cursor is at the end
+            if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                const inputLength = e.target.value.length;
+                if (e.target.selectionStart === inputLength && e.target.selectionEnd === inputLength) {
+                    e.preventDefault();
+                    if (currentIndex < activeElements.length - 1) {
+                        activeElements[currentIndex + 1].focus();
+                        if (activeElements[currentIndex + 1].select) {
+                            activeElements[currentIndex + 1].select();
+                        }
+                    }
+                }
+            } else {
+                // For non-text inputs (select, date, etc.), navigate immediately
+                e.preventDefault();
+                if (currentIndex < activeElements.length - 1) {
+                    activeElements[currentIndex + 1].focus();
+                    if (activeElements[currentIndex + 1].select) {
+                        activeElements[currentIndex + 1].select();
+                    }
+                }
+            }
+            return false;
+        }
+    }
+});
+
+// Enter key to move to next field
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && e.target.matches('input:not([type="submit"]):not([type="button"])')) {
+        e.preventDefault();
+        
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]):not([type="button"]), select, textarea'))
+            .filter(el => el.offsetParent !== null && !el.disabled && !el.readOnly);
+        
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Move to next field
+        if (currentIndex < activeElements.length - 1) {
+            activeElements[currentIndex + 1].focus();
+            if (activeElements[currentIndex + 1].select) {
+                activeElements[currentIndex + 1].select();
+            }
+        }
+        
+        return false;
+    }
+});
+
+// Limit date year input to 4 digits
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all date inputs in the form
+    const dateInputs = document.querySelectorAll('input[type="date"], input[name*="date"]');
+    
+    dateInputs.forEach(function(dateInput) {
+        // For HTML5 date input
+        if (dateInput.type === 'date') {
+            dateInput.setAttribute('max', '9999-12-31');
+            dateInput.setAttribute('min', '1900-01-01');
+            
+            // Only validate on change (after user finishes input)
+            dateInput.addEventListener('change', function(e) {
+                const value = e.target.value;
+                if (value) {
+                    const parts = value.split('-');
+                    const year = parts[0];
+                    
+                    // Check if year is valid (4 digits, between 1900-9999)
+                    if (year && (year.length > 4 || parseInt(year) > 9999)) {
+                        alert('Year must be 4 digits (1900-9999). Please correct the date.');
+                        e.target.value = '';
+                        setTimeout(() => e.target.focus(), 100);
+                    }
+                }
+            });
+        }
+        
+        // For text input with manual date entry (non-HTML5 date inputs)
+        if (dateInput.type !== 'date') {
+            dateInput.addEventListener('input', function(e) {
+                let value = e.target.value;
+                
+                // Handle DD/MM/YYYY format
+                if (value.includes('/')) {
+                    const parts = value.split('/');
+                    if (parts.length === 3 && parts[2] && parts[2].length > 4) {
+                        parts[2] = parts[2].substring(0, 4);
+                        e.target.value = parts.join('/');
+                    }
+                }
+                
+                // Handle YYYY-MM-DD format  
+                if (value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        e.target.value = parts.join('-');
+                    }
+                }
+            });
+        }
+    });
+});
+
+// Date validation helper
+function isValidDate(day, month, year) {
+    const d = parseInt(day);
+    const m = parseInt(month);
+    const y = parseInt(year);
+    
+    if (y < 1900 || y > 9999) return false;
+    if (m < 1 || m > 12) return false;
+    
+    const daysInMonth = new Date(y, m, 0).getDate();
+    if (d < 1 || d > daysInMonth) return false;
+    
+    return true;
+}
+
+// Visual feedback for focused field
+document.addEventListener('DOMContentLoaded', function() {
+    const formInputs = document.querySelectorAll('input:not([type="hidden"]), select, textarea');
+    
+    formInputs.forEach(function(input) {
+        input.addEventListener('focus', function() {
+            this.style.transform = 'scale(1.01)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>
+    {%endblock%}

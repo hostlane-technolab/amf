@@ -1,0 +1,274 @@
+{% extends 'admin_base.html' %}
+{%block title%} Admin Panel{%endblock%}
+{% block content %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        
+        .permission-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .checkbox-custom {
+            appearance: none;
+            width: 1.4rem;
+            height: 1.4rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.375rem;
+            background-color: white;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .checkbox-custom:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .checkbox-custom:checked::after {
+            content: '\2713';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+        
+        .checkbox-custom:hover {
+            border-color: #3b82f6;
+        }
+        
+        .group-header {
+            background: #1e293b;
+        }
+        
+
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-hover:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+
+    <div class="min-h-screen bg-gray-50 py-4" style="margin-top: 5rem;">
+        <div class="max-w-10xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Header Section -->
+            <div class="fade-in mb-6">
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-user-shield text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-900">Assign Permissions</h1>
+                                <p class="text-gray-600 text-base">Managing permissions for <span class="font-semibold text-blue-600">{{ user.full_name }}</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center space-x-3">
+                            <div class="flex items-center space-x-2 text-sm text-gray-500">
+                                <i class="fas fa-clock"></i>
+                                <span>Last updated: Today</span>
+                            </div>
+                            <a href="{% url 'adminapp:users_list' %}" 
+                               class="inline-flex items-center px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors duration-200 text-base">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Back to Users
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permissions Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Permission Groups Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {% for group_name, permissions in permission_groups.items %}
+                    <div class="fade-in permission-card bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden h-fit" style="animation-delay: {{ forloop.counter0|add:1|floatformat:1 }}s;">
+                        
+                        <!-- Group Header -->
+                        <div class="group-header p-5 text-white">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-layer-group text-gray-900 text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-semibold">{{ group_name }}</h3>
+                                        <p class="text-white text-opacity-80 text-sm">{{ permissions|length }} permission{{ permissions|length|pluralize }}</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Group Controls -->
+                                <div class="flex space-x-2">
+                                    <button type="button" 
+                                            class="select-all-btn px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-gray-900 text-sm rounded-md transition-all duration-200 font-medium">
+                                        <i class="fas fa-check mr-1"></i>
+                                        All
+                                    </button>
+                                    <button type="button" 
+                                            class="deselect-all-btn px-3 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-gray-900 text-sm rounded-md transition-all duration-200 font-medium">
+                                        <i class="fas fa-times mr-1"></i>
+                                        None
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Permissions List -->
+                        <div class="p-4 space-y-3">
+                            {% for permission in permissions %}
+                            <div class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                                <input class="checkbox-custom permission-checkbox" 
+                                       type="checkbox" 
+                                       name="permissions" 
+                                       value="{{ permission.id }}"
+                                       id="perm_{{ permission.id }}"
+                                       {% if permission in user_permissions %}checked{% endif %}>
+                                       
+                                <label for="perm_{{ permission.id }}" class="flex-1 cursor-pointer">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-gray-800 font-medium text-base">{{ permission.name }}</span>
+                                        <div class="flex items-center">
+                                            {% if permission in user_permissions %}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                    <i class="fas fa-check mr-1"></i>
+                                                    Active
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
+                                                    <i class="fas fa-minus mr-1"></i>
+                                                    Inactive
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">ID: {{ permission.id }}</p>
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Group Footer -->
+                        <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                            <div class="flex items-center justify-between text-sm text-gray-600">
+                                <span class="selected-count font-medium">0 selected</span>
+                                <span class="total-count">{{ permissions|length }} total</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="fade-in bg-white rounded-xl shadow-md border border-gray-200 p-6" style="animation-delay: 0.8s;">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-save text-green-600 text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900 text-base">Ready to Update?</h3>
+                                <p class="text-sm text-gray-600">Changes will be applied immediately</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-3">
+                            <a href="{% url 'adminapp:users_list' %}" 
+                               class="inline-flex items-center px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-all duration-200 btn-hover text-base">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancel
+                            </a>
+                            <button type="submit" 
+                                    class="inline-flex items-center px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 btn-hover text-base">
+                                <i class="fas fa-check mr-2"></i>
+                                Update Permissions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const permissionGroups = document.querySelectorAll('.permission-card');
+            
+            permissionGroups.forEach(group => {
+                const selectAllBtn = group.querySelector('.select-all-btn');
+                const deselectAllBtn = group.querySelector('.deselect-all-btn');
+                const checkboxes = group.querySelectorAll('.permission-checkbox');
+                const selectedCount = group.querySelector('.selected-count');
+                
+                // Update counter
+                function updateCounter() {
+                    const checked = group.querySelectorAll('.permission-checkbox:checked').length;
+                    selectedCount.textContent = `${checked} selected`;
+                }
+                
+                // Initial counter update
+                updateCounter();
+                
+                // Select all functionality
+                selectAllBtn.addEventListener('click', () => {
+                    checkboxes.forEach(cb => {
+                        cb.checked = true;
+                        // Trigger animation
+                        cb.parentElement.classList.add('bg-blue-50');
+                        setTimeout(() => cb.parentElement.classList.remove('bg-blue-50'), 200);
+                    });
+                    updateCounter();
+                });
+                
+                // Deselect all functionality
+                deselectAllBtn.addEventListener('click', () => {
+                    checkboxes.forEach(cb => {
+                        cb.checked = false;
+                        // Trigger animation
+                        cb.parentElement.classList.add('bg-red-50');
+                        setTimeout(() => cb.parentElement.classList.remove('bg-red-50'), 200);
+                    });
+                    updateCounter();
+                });
+                
+                // Update counter on individual checkbox change
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateCounter);
+                });
+            });
+            
+            // Form submission feedback
+            const form = document.querySelector('form');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            form.addEventListener('submit', function(e) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Updating...';
+                submitBtn.disabled = true;
+            });
+        });
+    </script>
+
+{%endblock%}

@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .bg-pattern {
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        }
+        .glass-effect {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .input-focus:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .btn-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        .slide-in {
+            animation: slideIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<!-- jQuery (required for the script) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <!-- SplitType for text splitting -->
+    <script src="https://unpkg.com/split-type"></script>
+    
+    <style>
+        :root {
+            --rr-ff-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            --rr-color-common-white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--rr-ff-heading);
+            background: #0a0a0a;
+            overflow-x: hidden;
+        }
+
+        /* Site Preloader - FULLSCREEN CENTERED */
+        #preloader {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background-color: #02050A;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .loading {
+            font-size: 100px;
+            font-family: var(--rr-ff-heading);
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            line-height: 1.2;
+            text-align: center;
+            max-width: 100%;
+        }
+
+        @media only screen and (max-width: 1200px) {
+            .loading {
+                font-size: 80px;
+            }
+        }
+
+        @media only screen and (max-width: 992px) {
+            .loading {
+                font-size: 60px;
+            }
+        }
+
+        @media only screen and (max-width: 767px) {
+            .loading {
+                font-size: 40px;
+            }
+        }
+
+        @media only screen and (max-width: 480px) {
+            .loading {
+                font-size: 28px;
+            }
+        }
+
+        .loading:before {
+            color: #333;
+            content: attr(data-loading-text);
+            display: block;
+        }
+
+        .loading:after {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            color: var(--rr-color-common-white);
+            overflow: hidden;
+            content: attr(data-loading-text);
+            animation: loading 3s ease-in-out infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes loading {
+            0% {
+                width: 0;
+            }
+            50% {
+                width: 100%;
+            }
+            100% {
+                width: 0;
+            }
+        }
+
+        /* Demo content */
+        .content {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .demo-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        h1 {
+            color: #ffaf01;
+            margin-top: 0;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #fff;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        p, li {
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: #ffaf01;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: #ffc233;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 175, 1, 0.3);
+        }
+
+        /* Animation text classes for demo */
+        .anim-text {
+            overflow: hidden;
+        }
+
+        .anim-text .char {
+            display: inline-block;
+            transform: translateY(100%);
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        code {
+            background: #222;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #ffaf01;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .screenshot {
+            width: 100%;
+            max-width: 800px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+
+    <!-- Preloader - FULLSCREEN CENTERED -->
+    <div id="preloader">
+        <div class="loading" data-loading-text="BAHRAYA EXPORTS"></div>
+    </div>
+    <!-- ./ preloader -->
+
+    <script>
+        /*======================================
+          Preloader activation
+        ========================================*/
+        $(window).on("load", function (event) {
+            $("#preloader").delay(1000).fadeOut(500);
+            
+            // Text Animation
+            setTimeout(() => {
+                var hasAnim = $(".anim-text");
+                hasAnim.each(function () {
+                    var $this = $(this);
+                    var splitto = new SplitType($this, {
+                        types: "lines, chars",
+                        className: "char",
+                    });
+                    var chars = $this.find(".char");
+                    gsap.fromTo(
+                        chars,
+                        { y: "100%" },
+                        {
+                            y: "0%",
+                            duration: 0.9,
+                            stagger: 0.03,
+                            ease: "power2.out",
+                        }
+                    );
+                });
+            }, 1000);
+        });
+
+        // Function to test preloader
+        function testPreloader() {
+            $("#preloader").fadeIn(0);
+            setTimeout(() => {
+                $("#preloader").delay(1000).fadeOut(500);
+            }, 100);
+        }
+    </script>
+
+<body class="min-h-screen bg-slate-900 bg-pattern overflow-hidden">
+    <!-- Animated Background Elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-72 h-72 bg-blue-500 rounded-full opacity-10 floating-animation"></div>
+        <div class="absolute top-1/2 -left-20 w-96 h-96 bg-purple-500 rounded-full opacity-5 floating-animation" style="animation-delay: -2s;"></div>
+        <div class="absolute bottom-0 right-1/3 w-80 h-80 bg-cyan-500 rounded-full opacity-8 floating-animation" style="animation-delay: -4s;"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 items-center">
+            
+            <!-- Left Side - Branding/Image -->
+            <div class="hidden lg:block slide-in">
+                <div class="text-center space-y-8">
+                    <!-- Logo/Icon -->
+                    <div class="relative inline-block">
+                        <div class="w-32 h-32 mx-auto bg-white rounded-3xl shadow-2xl flex items-center justify-center floating-animation">
+                            <i class="fas fa-shield-alt text-5xl text-slate-800"></i>
+                        </div>
+                        <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Title -->
+                    <div class="space-y-4">
+                        <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight">
+                            Zy<span class="text-blue-400">Crost</span>
+                        </h1>
+                        <p class="text-xl text-slate-300 max-w-md mx-auto leading-relaxed">
+                            Advanced authentication system with enterprise-grade security protocols
+                        </p>
+                    </div>
+                    
+                    <!-- Feature Icons -->
+                    <div class="flex justify-center space-x-8 pt-8">
+                        <div class="text-center group">
+                            <div class="w-16 h-16 bg-blue-500 bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-opacity-30 transition-all duration-300">
+                                <i class="fas fa-lock text-2xl text-blue-400"></i>
+                            </div>
+                            <p class="text-sm text-slate-400">Encrypted</p>
+                        </div>
+                        <div class="text-center group">
+                            <div class="w-16 h-16 bg-purple-500 bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-opacity-30 transition-all duration-300">
+                                <i class="fas fa-chart-line text-2xl text-purple-400"></i>
+                            </div>
+                            <p class="text-sm text-slate-400">Analytics</p>
+                        </div>
+                        <div class="text-center group">
+                            <div class="w-16 h-16 bg-cyan-500 bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:bg-opacity-30 transition-all duration-300">
+                                <i class="fas fa-users text-2xl text-cyan-400"></i>
+                            </div>
+                            <p class="text-sm text-slate-400">Team</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side - Login Form -->
+            <div class="slide-in" style="animation-delay: 0.2s;">
+                <div class="glass-effect rounded-3xl p-8 lg:p-12 shadow-2xl max-w-md mx-auto">
+                    
+                    <!-- Mobile Logo -->
+                    <div class="lg:hidden text-center mb-8">
+                        <div class="w-20 h-20 mx-auto bg-white rounded-2xl shadow-xl flex items-center justify-center mb-4">
+                            <i class="fas fa-shield-alt text-3xl text-slate-800"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-800">Admin Portal</h2>
+                    </div>
+
+                    <!-- Form Header -->
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome Back</h2>
+                        <p class="text-slate-600">Please sign in to your account</p>
+                    </div>
+
+                    <!-- Error Messages -->
+                    {% if messages %}
+                        <div class="mb-6 space-y-2">
+                            {% for message in messages %}
+                                <div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center space-x-3">
+                                    <i class="fas fa-exclamation-triangle text-red-500"></i>
+                                    <p class="text-red-700 text-sm">{{ message }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Login Form -->
+                    <form method="post" class="space-y-6">
+                        {% csrf_token %}
+                        
+<!-- Email Field -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 ml-1">Email Address</label>
+                            <div class="relative transition-all duration-300">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <i class="fas fa-envelope text-slate-400 text-base"></i>
+                                </div>
+                                <input 
+                                    type="email" 
+                                    name="email" 
+                                    placeholder="admin@company.com"
+                                    required
+                                    class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 input-focus text-slate-800 placeholder-slate-400"
+                                >
+                            </div>
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-medium text-slate-700 ml-1">Password</label>
+                            <div class="relative transition-all duration-300">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                                    <i class="fas fa-lock text-slate-400 text-base"></i>
+                                </div>
+                                <input 
+                                    type="password" 
+                                    name="password" 
+                                    id="passwordInput"
+                                    placeholder="Enter your password"
+                                    required
+                                    class="w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-300 input-focus text-slate-800 placeholder-slate-400"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="togglePassword"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center z-10 text-slate-400 hover:text-slate-600 transition-colors duration-200 focus:outline-none"
+                                >
+                                    <i class="fas fa-eye text-base" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Remember & Forgot -->
+                        <div class="flex items-center justify-between">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 text-blue-600 bg-slate-100 border-slate-300 rounded focus:ring-blue-500 focus:ring-2">
+                                <span class="text-sm text-slate-600">Remember me</span>
+                            </label>
+                            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Forgot password?</a>
+                        </div>
+
+                        <!-- Login Button -->
+                        <button 
+                            type="submit" 
+                            class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 btn-hover focus:ring-4 focus:ring-slate-300 focus:outline-none flex items-center justify-center space-x-2"
+                        >
+                            <span>Sign In</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <!-- Security Notice -->
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <div class="flex items-center justify-center space-x-2 text-sm text-slate-500">
+                            <i class="fas fa-shield-check text-green-500"></i>
+                            <span>Protected by 256-bit SSL encryption</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center text-slate-400 text-sm">
+        <p>&copy; 2025 AQUA MARINE FOODS</p>
+    </div>
+
+    <script>
+        // Add subtle interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add focus animations to inputs
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('scale-105');
+                });
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('scale-105');
+                });
+            });
+
+            // Add button click effect
+            const button = document.querySelector('button[type="submit"]');
+            button.addEventListener('click', function(e) {
+                this.classList.add('scale-95');
+                setTimeout(() => {
+                    this.classList.remove('scale-95');
+                }, 150);
+            });
+        });
+    </script>
+
+    <script>
+    // Add subtle interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle functionality
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('passwordInput');
+        const toggleIcon = document.getElementById('toggleIcon');
+
+        if (togglePassword && passwordInput && toggleIcon) {
+            togglePassword.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Toggle password visibility
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    toggleIcon.classList.remove('fa-eye');
+                    toggleIcon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    toggleIcon.classList.remove('fa-eye-slash');
+                    toggleIcon.classList.add('fa-eye');
+                }
+            });
+        }
+
+        // Add button click effect
+        const button = document.querySelector('button[type="submit"]');
+        if (button) {
+            button.addEventListener('click', function(e) {
+                this.classList.add('scale-95');
+                setTimeout(() => {
+                    this.classList.remove('scale-95');
+                }, 150);
+            });
+        }
+    });
+</script>
+</body>
+</html>

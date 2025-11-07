@@ -1,0 +1,1479 @@
+{% extends 'admin_base.html' %}
+{% block title %} Sales Entry List {% endblock %}
+{% block content %}
+
+<style>
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 30px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+    margin-right: 20px;
+  }
+
+  .header-text h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+  }
+
+  .header-text p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* Controls Section */
+  .controls-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Search Box */
+  .search-wrapper {
+    position: relative;
+  }
+
+  .search-input {
+    width: 300px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 14px;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: none;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  /* Stats Badge */
+  .stats-badge .badge {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e9ecef;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Filter Section */
+  .filter-section {
+    padding: 25px 30px;
+    background: #f8f9fd;
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .filter-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    align-items: end;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0;
+  }
+
+  .filter-input,
+  .filter-select {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .filter-input:focus,
+  .filter-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+  }
+
+  .filter-btn {
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .filter-btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border-color: #007bff;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  }
+
+  .filter-btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+  }
+
+  .filter-btn-secondary {
+    background: white;
+    color: #6c757d;
+    border-color: #e9ecef;
+  }
+
+  .filter-btn-secondary:hover {
+    background: #f8f9fa;
+    color: #495057;
+    border-color: #dee2e6;
+  }
+
+  .filter-toggle {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border: 2px solid rgba(0, 123, 255, 0.2);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .filter-toggle:hover {
+    background: rgba(0, 123, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .filter-content {
+    display: none;
+    margin-top: 20px;
+  }
+
+  .filter-content.show {
+    display: block;
+    animation: slideDown 0.3s ease forwards;
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Add Button */
+  .add-new-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  }
+
+  .add-new-btn:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 25px 30px;
+    background: #f8f9fd;
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+
+  .stat-card.entries {
+    border-color: rgba(0, 123, 255, 0.2);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.amount {
+    border-color: rgba(40, 167, 69, 0.2);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.status {
+    border-color: rgba(255, 193, 7, 0.2);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, white 100%);
+  }
+
+  .stat-card h4 {
+    margin: 0 0 10px 0;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .stat-card.entries .value { color: #007bff; }
+  .stat-card.amount .value { color: #28a745; }
+  .stat-card.status .value { color: #ffc107; }
+
+  /* Table */
+  .table-responsive {
+    background: white;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin: 0;
+  }
+
+  .modern-table th {
+    background: #f8f9fd;
+    padding: 20px;
+    text-align: left;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    border: none;
+  }
+
+  .header-content-table {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .modern-table td {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  .table-row {
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.02) 0%, rgba(0, 123, 255, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+    .table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  /* Id-Badge */
+    .id-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    border: 2px solid #ce93d8;
+    border-radius: 25px;
+    color: #7b1fa2;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(123, 31, 162, 0.15);
+    white-space: nowrap;
+  }
+
+    /* Code Display */
+.code-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 12px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.code-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+  /* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+  .date-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  .date-text {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  /* Buyer/Company Display */
+  .company-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .company-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #6610f2 0%, #e83e8c 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .company-details .company-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .company-details .company-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  /* Item-info */
+  .item-info {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.item-info i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+  .item-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  .item-text {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  .no-data {
+    color: #6c757d;
+    font-style: italic;
+  }
+
+  /* Badges */
+  .badge-wrapper {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-dot {
+    font-size: 8px;
+    margin-right: 8px;
+  }
+
+  .badge-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .badge-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  .badge-danger  {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 2px solid rgba(220, 53, 69, 0.2);
+  }
+
+  /* Amount Display */
+  .amount-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #a5d6a7;
+    border-radius: 25px;
+    color: #2e7d32;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+    white-space: nowrap;
+  }
+
+  .amount-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  .amount-text {
+    color: #495057;
+    font-weight: 500;
+  }
+
+  .amount-currency {
+    font-size: 12px;
+    color: #6c757d;
+    margin-right: 4px;
+    font-weight: 500;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    color: #007bff;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  .empty-state h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    display: none;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+    
+    .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .header-info {
+      margin-bottom: 20px;
+    }
+    
+    .controls-section {
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .search-input {
+      width: 200px;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+    
+    .modern-table th,
+    .modern-table td {
+      padding: 15px 10px;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .company-info {
+      flex-direction: row;
+    }
+    
+    .company-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .controls-section {
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .search-input {
+      width: 100%;
+    }
+    
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .header-text h3 {
+      font-size: 20px;
+    }
+    
+    .company-avatar {
+      width: 35px;
+      height: 35px;
+      font-size: 14px;
+    }
+    
+    .company-name {
+      font-size: 14px;
+    }
+  }
+</style>
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-file"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Billing Operations</h3>
+            <p class="ph-header-subtitle">Manage your billing operations.</p>
+          </div>
+        </div>
+                <!-- Breadcrumbs - Now inline with header -->
+                <nav class="ph-breadcrumb-nav">
+                    <ol class="ph-breadcrumb-list">
+                        <li class="ph-breadcrumb-item">
+                            <a href="#" class="ph-breadcrumb-link">
+                                <i class="icon-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="{%url 'adminapp:sales_entry_list'%}">
+                                <span>Sales Entries</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item ">
+                            <a href="{%url 'adminapp:sales_entry_create'%}"  class="ph-breadcrumb-link">
+                              <i class="fa-solid fa-file"></i>
+                                <span>Create</span>
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-content">
+              <div class="header-info">
+                <div class="icon-wrapper">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                <div class="header-text">
+                  <h3 class="card-title mb-0 fw-bold">Sales Entries</h3>
+                  <p>Manage your sales transactions</p>
+                </div>
+              </div>
+              
+              <div class="controls-section">
+                <div class="search-wrapper">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" id="searchInput" class="search-input" placeholder="Search entries...">
+                  <button type="button" id="clearSearch" class="clear-btn">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                
+                <button type="button" id="filterToggle" class="filter-toggle">
+                  <i class="fas fa-filter"></i>Filters
+                </button>
+                
+                <div class="stats-badge">
+                  <span class="badge">
+                    <i class="fas fa-cube me-2"></i><span id="entryCount">{{ page_obj.paginator.count }}</span> Entries
+                  </span>
+                </div>
+
+                <a href="{% url 'adminapp:sales_entry_create' %}" class="add-new-btn">
+                  <i class="fas fa-plus"></i>Add New Entry
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Filter Section -->
+          <div class="filter-section" id="filterSection" style="display: none;">
+            <div class="filter-content show">
+              <form method="get" id="filterForm">
+                <div class="filter-form">
+                  <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select name="status" class="filter-select">
+                      <option value="">All Status</option>
+                      {% for value, label in status_choices %}
+                      <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                        {{ label }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  
+                  <div class="filter-group">
+                    <label class="filter-label">From Date</label>
+                    <input type="date" name="date_from" class="filter-input" value="{{ date_from }}">
+                  </div>
+                  
+                  <div class="filter-group">
+                    <label class="filter-label">To Date</label>
+                    <input type="date" name="date_to" class="filter-input" value="{{ date_to }}">
+                  </div>
+                  
+                  <div class="filter-actions">
+                    <button type="submit" class="filter-btn filter-btn-primary">
+                      <i class="fas fa-search"></i>Apply
+                    </button>
+                    <a href="{% url 'adminapp:sales_entry_list' %}" class="filter-btn filter-btn-secondary">
+                      <i class="fas fa-times"></i>Clear
+                    </a>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          
+          {% if page_obj %}
+          <div class="stats-grid">
+            <div class="stat-card entries">
+              <h4>Total Entries</h4>
+              <div class="value" id="totalEntries">{{ page_obj.paginator.count }}</div>
+            </div>
+            <div class="stat-card amount">
+              <h4>Total Amount</h4>
+              <div class="value" id="totalAmount">$0.00</div>
+            </div>
+            <div class="stat-card status">
+              <h4>Active</h4>
+              <div class="value" id="activeCount">0</div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="modern-table" id="dataTable">
+              <thead>
+                <tr>
+                    <!-- <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-hashtag header-icon"></i>
+                        <span class="header-text">NO</span>
+                      </div>
+                    </th> -->
+                    <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-receipt header-icon"></i>
+                      <span>Voucher No</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-calendar-alt header-icon"></i>
+                      <span>Date</span>
+                    </div>
+                  </th>
+                  <!-- <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-file-invoice header-icon"></i>
+                      <span>Invoice No</span>
+                    </div>
+                  </th> -->
+
+                  <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-user-tie header-icon"></i>
+                      <span>Buyer</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-box header-icon"></i>
+                      <span>Item</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-dollar-sign header-icon"></i>
+                      <span>Amount (USD)</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div class="header-content-table">
+                      <i class="fas fa-info-circle header-icon"></i>
+                      <span>Status</span>
+                    </div>
+                  </th>
+                  <th class="text-center">
+                    <div class="header-content-table justify-content-center">
+                      <i class="fas fa-tools header-icon"></i>
+                      <span>Actions</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                {% for entry in page_obj %}
+                <tr class="table-row" data-searchable="{{ entry.invoice_no|lower }} {{ entry.voucher_no|lower }} {{ entry.buyer.name|lower }} {{ entry.item.name|lower }} {{ entry.date }} {{ entry.total_amount_usd }} {{ entry.get_status_display|lower }}">
+                    <!-- <td class="table-cell">
+                      <div class="id-badge">
+                        {{ forloop.counter }}
+                      </div>
+                    </td> -->
+                                      <td class="table-cell">
+                    <div class="code-display">
+                        {{ entry.voucher_no }}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="date-display">
+                      <i class="fas fa-calendar-alt"></i>
+                      <span>{{ entry.date|date:"M d, Y" }}</span>
+                    </div>
+                  </td>
+                  
+                  <!-- <td class="table-cell">
+                    <div class="code-display">
+                        {{ entry.invoice_no }}
+                    </div>
+                  </td> -->
+                  
+
+                  
+                  <td>
+                    <div class="company-info">
+                      <div class="company-avatar">
+                        <i class="fas fa-user-tie"></i>
+                      </div>
+                      <div class="company-details">
+                        <div class="company-name">{{ entry.buyer.name }}</div>
+                        <div class="company-meta">Buyer</div>
+                      </div>
+                    </div>
+                  </td>
+                <td class="table-cell">
+                  <div class="item-info">
+                      <i class="fas fa-box item-icon"></i>
+                      <span class="item-text">{{ entry.item.name }}</span>
+                  </div>
+                </td>
+                  
+                  <td>
+                    <div class="amount-display">
+                      <i class="fa-solid fa-dollar-sign amount-icon"></i>
+                      <span>{{ entry.total_amount_usd|floatformat:2 }}</span>
+                    </div>
+                  </td>
+
+                                      
+                    <td class="table-cell">
+                      <div class="badge-wrapper">
+                        <span class="badge {% if entry.status == 'confirmed' %}badge-success{% elif entry.status == 'draft' %}badge-warning{% else %} badge-danger{% endif %}">
+                          <i class="fas fa-circle badge-dot"></i>
+                          {{ entry.get_status_display }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                  
+                  <td>
+                    <div class="action-buttons">
+                      <a href="{% url 'adminapp:sales_entry_detail' entry.pk %}" 
+                         class="action-btn view-btn" 
+                         title="View Entry">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <a href="{% url 'adminapp:sales_entry_update' entry.pk %}" 
+                         class="action-btn edit-btn" 
+                         title="Edit Entry">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <a href="{% url 'adminapp:sales_entry_delete' entry.pk %}" 
+                         class="action-btn delete-btn" 
+                         title="Delete Entry"
+                         onclick="return confirm('Are you sure you want to delete this sales entry? This action cannot be undone.')">
+                        <i class="fas fa-trash-alt"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="8" class="text-center">No sales entries found.</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            
+            <!-- No Results Message -->
+            <div id="noResults" class="no-results">
+              <div class="no-results-content">
+                <i class="fas fa-search-minus no-results-icon"></i>
+                <h4>No entries found</h4>
+                <p>Try adjusting your search terms</p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="fas fa-receipt empty-state-icon"></i>
+            <h4>No Sales Entries Found</h4>
+            <p>There are no sales entries to display yet.</p>
+            <a href="{% url 'adminapp:sales_entry_create' %}" class="add-new-btn">Create Your First Entry</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const entryCount = document.getElementById('entryCount');
+    const filterToggle = document.getElementById('filterToggle');
+    const filterSection = document.getElementById('filterSection');
+    const allRows = tableBody ? tableBody.querySelectorAll('.table-row') : [];
+    const totalCount = allRows.length;
+
+    // Filter toggle functionality
+    if (filterToggle && filterSection) {
+        filterToggle.addEventListener('click', function() {
+            if (filterSection.style.display === 'none') {
+                filterSection.style.display = 'block';
+                filterToggle.style.background = 'rgba(0, 123, 255, 0.2)';
+            } else {
+                filterSection.style.display = 'none';
+                filterToggle.style.background = 'rgba(0, 123, 255, 0.1)';
+            }
+        });
+        
+        // Show filter section if any filter is active
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('status') || urlParams.get('date_from') || urlParams.get('date_to')) {
+            filterSection.style.display = 'block';
+            filterToggle.style.background = 'rgba(0, 123, 255, 0.2)';
+        }
+    }
+
+    // Update stats function
+    function updateStats() {
+        const visibleRows = document.querySelectorAll('.table-row[style=""], .table-row:not([style*="display: none"])');
+        let totalAmount = 0;
+        let activeCount = 0;
+        let visibleCount = 0;
+
+        visibleRows.forEach(row => {
+            visibleCount++;
+            const amountCell = row.querySelector('.amount-display span:last-child');
+            if (amountCell) {
+                const amount = parseFloat(amountCell.textContent) || 0;
+                totalAmount += amount;
+            }
+            
+            const statusBadge = row.querySelector('.badge-success');
+            if (statusBadge) {
+                activeCount++;
+            }
+        });
+
+        // Update display
+        if (document.getElementById('totalEntries')) {
+            document.getElementById('totalEntries').textContent = visibleCount;
+        }
+        if (document.getElementById('totalAmount')) {
+            document.getElementById('totalAmount').textContent = '$' + totalAmount.toFixed(2);
+        }
+        if (document.getElementById('activeCount')) {
+            document.getElementById('activeCount').textContent = activeCount;
+        }
+        if (entryCount) {
+            entryCount.textContent = visibleCount;
+        }
+    }
+
+    // Search functionality
+    function filterTable() {
+        if (!searchInput || !tableBody) return;
+        
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (searchTerm === '') {
+            // Show all rows
+            allRows.forEach(row => {
+                row.style.display = '';
+                visibleCount++;
+            });
+            if (noResults) noResults.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+        } else {
+            // Filter rows
+            allRows.forEach(row => {
+                const searchableText = row.getAttribute('data-searchable') || row.textContent.toLowerCase();
+                
+                if (searchableText.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0 && totalCount > 0 && noResults) {
+                noResults.style.display = 'block';
+            } else if (noResults) {
+                noResults.style.display = 'none';
+            }
+            
+            if (clearBtn) clearBtn.style.display = 'block';
+        }
+
+        updateStats();
+    }
+
+    // Clear search
+    function clearSearch() {
+        if (searchInput) {
+            searchInput.value = '';
+            filterTable();
+            searchInput.focus();
+        }
+    }
+
+    // Event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', filterTable);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Enhanced delete confirmation
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(event) {
+            const row = event.target.closest('tr');
+            const invoice = row.querySelector('td:nth-child(2) strong')?.textContent?.trim() || 'Unknown';
+            const voucher = row.querySelector('td:nth-child(3) strong')?.textContent?.trim() || 'Unknown';
+            const buyer = row.querySelector('.company-name')?.textContent?.trim() || 'Unknown';
+            const date = row.querySelector('.date-display span')?.textContent?.trim() || 'Unknown';
+            
+            const confirmMessage = `Are you sure you want to delete this sales entry?\n\nInvoice: ${invoice}\nVoucher: ${voucher}\nBuyer: ${buyer}\nDate: ${date}\n\nThis action cannot be undone.`;
+            
+            if (!confirm(confirmMessage)) {
+                event.preventDefault();
+                return false;
+            }
+        });
+    });
+
+    // Initialize stats and animations
+    updateStats();
+    
+    // Add smooth animations to rows
+    allRows.forEach((row, index) => {
+        row.style.animationDelay = `${index * 0.05}s`;
+        row.style.animation = 'fadeInUp 0.6s ease forwards';
+    });
+
+    // Keyboard navigation for table rows
+    allRows.forEach(row => {
+        row.setAttribute('tabindex', '0');
+        row.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const viewLink = this.querySelector('.view-btn');
+                if (viewLink) {
+                    viewLink.click();
+                }
+            }
+        });
+    });
+});
+
+// Animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+document.head.appendChild(style);
+</script>
+
+{% endblock %}

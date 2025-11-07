@@ -1,0 +1,791 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Tenant Vouchers - Summary{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{%static 'css/tenant_voucher_list.css'%}">
+
+
+<div class="container-fluid" style="margin-top: 5rem;">
+    <div class="page-inner">
+        <div class="page-header-section">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="ph-icon-wrapper">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">Voucher Operations</h3>
+                        <p class="ph-header-subtitle">Manage your voucher operations.</p>
+                    </div>
+                </div>
+
+      <!-- Breadcrumbs -->
+      <nav class="ph-breadcrumb-nav">
+        <ol class="ph-breadcrumb-list">
+          <li class="ph-breadcrumb-item">
+            <a href="#" class="ph-breadcrumb-link">
+              <i class="icon-home"></i>
+              <span>Home</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="{%url 'adminapp:tenantvoucher_list'%}">
+                                <span>Tenant Vouchers</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item ">
+                            <a href="{%url 'adminapp:tenantvoucher_create'%}"  class="ph-breadcrumb-link">
+                              <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>Create</span>
+                            </a>
+                        </li>
+        </ol>
+      </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="myclass">
+            <!-- Summary Cards -->
+            <div class="form-card mb-4 supply-info-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title mb-0">Financial Overview</h3>
+                            <p class="text-muted mb-0">Complete voucher financial summary</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="supply-info-grid">
+                        <div class="info-card receipts-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-down bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Receipts</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Incoming</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card payments-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-up bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Payments</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-minus-circle"></i>
+                                    <span>Outgoing</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card net-card">
+                            <div class="info-background">
+                                <i class="fas fa-calculator bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Net Amount</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2 }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-balance-scale"></i>
+                                    <span>Balance</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card vouchers-card">
+                            <div class="info-background">
+                                <i class="fas fa-receipt bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Vouchers</div>
+                                <div class="info-value">{{ summary.total_vouchers }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tenant Vouchers Data Section -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-white border-0 py-4">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                <div class="d-flex align-items-center mb-3 mb-md-0">
+                                    <div class="icon-wrapper me-4">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="card-title mb-0 fw-bold">Tenant Vouchers</h3>
+                                        <p class="text-muted mb-0 fs-6">Manage tenant voucher transactions</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Search Box -->
+                                <div class="search-controls d-flex align-items-center gap-3">
+                                    <div class="search-box-wrapper">
+                                        <div class="search-input-group">
+                                            <i class="fas fa-search search-icon"></i>
+                                            <input type="text" id="searchInput" class="search-input" placeholder="Search vouchers...">
+                                            <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stats-badge">
+                                        <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                                            <i class="fas fa-receipt me-2"></i><span id="voucherCount">{{ total_count }}</span> Vouchers
+                                        </span>
+                                    </div>
+
+                                    <a href="{% url 'adminapp:tenantvoucher_create' %}" class="add-new-btn">
+                                        <i class="fas fa-plus me-2"></i>Add New Voucher
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <!-- Filters -->
+                            <div class="filter-section p-4 border-bottom">
+                                <form method="GET">
+                                    <div class="row g-3">
+                                        <!-- Date Filter -->
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">Date Filter</label>
+                                            <select name="date_filter" class="form-control" id="dateFilter">
+                                                <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                                                <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                                                <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Custom Date Range -->
+                                        <!-- <div class="col-md-2" id="startDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
+                                            <label class="form-label fw-bold">Start Date</label>
+                                            <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+                                        </div>
+                                        <div class="col-md-2" id="endDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
+                                            <label class="form-label fw-bold">End Date</label>
+                                            <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+                                        </div> -->
+
+                                        <!-- Tenant Filter -->
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold">Tenant</label>
+                                            <select name="tenant" class="form-control">
+                                                <option value="">All Tenants</option>
+                                                {% for tenant in all_tenants %}
+                                                <option value="{{ tenant.id }}" {% if tenant_filter == tenant.id|stringformat:"s" %}selected{% endif %}>
+                                                    {{ tenant.company_name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <!-- Search -->
+                                        <div class="col-md-3">
+                                            <label class="form-label fw-bold">Search</label>
+                                            <input type="text" name="search" class="form-control" 
+                                                   placeholder="Search..." value="{{ search_query }}">
+                                        </div>
+                                        <div class="col-md-5 mt-5">
+                                            <button type="submit" class="btn btn-success me-2">
+                                                <i class="fas fa-filter"></i> Apply Filters
+                                            </button>
+                                            <a href="{% url 'adminapp:tenantvoucher_list' %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times"></i> Clear Filters
+                                            </a>
+                                            <a href="{% url 'adminapp:tenant_voucher_summary_pdf' %}?{{ request.GET.urlencode }}" 
+                                               class="btn btn-outline-primary ms-2" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> PDF Summary
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="table-responsive">
+                                <table id="multi-filter" class="table table-hover mb-0 custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-hashtag header-icon"></i>
+                                                    <span class="header-text">Voucher No</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-building header-icon"></i>
+                                                    <span class="header-text">Tenant</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-calendar header-icon"></i>
+                                                    <span class="header-text">Date</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-arrow-down header-icon"></i>
+                                                    <span class="header-text">Receipt (+)</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-arrow-up header-icon"></i>
+                                                    <span class="header-text">Payment (-)</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-calculator header-icon"></i>
+                                                    <span class="header-text">Net Amount</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header text-center">
+                                                <div class="header-content justify-content-center">
+                                                    <i class="fas fa-cogs header-icon"></i>
+                                                    <span class="header-text">Actions</span>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="tableBody">
+                                        {% for voucher in vouchers %}
+                                        <tr class="table-row" data-searchable="{{ voucher.voucher_no|lower }} {{ voucher.tenant.company_name|lower }} {{ voucher.tenant.contact_person|lower }} {{ voucher.date }} {{ voucher.description|lower }}">
+                                            <td class="table-cell">
+                                                <div class="voucher-display">
+                                                    <span class="voucher-badge">{{ voucher.voucher_no }}</span>
+                                                    <!-- {% if voucher.description %}
+                                                    <div class="voucher-meta">{{ voucher.description|truncatechars:30 }}</div>
+                                                    {% endif %} -->
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="tenant-info">
+                                                    <div class="tenant-avatar">
+                                                        <i class="fas fa-building"></i>
+                                                    </div>
+                                                    <div class="tenant-details">
+                                                        <div class="tenant-name">{{ voucher.tenant.company_name }}</div>
+                                                        {% if voucher.tenant.contact_person %}
+                                                        <div class="tenant-meta">{{ voucher.tenant.contact_person }}</div>
+                                                        {% endif %}
+                                                        {% if voucher.tenant.mobile %}
+                                                        <div class="tenant-mobile">{{ voucher.tenant.mobile }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="date-display">
+                                                    <i class="fas fa-calendar-day me-2"></i>
+                                                    <span class="date-text">{{ voucher.date|date:"M d, Y" }}</span>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="receipt-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
+                                                    {% if voucher.receipt > 0 %}
+                                                    <span class="currency-symbol">+₹</span>
+                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
+                                                    {% else %}
+                                                    <span class="text-muted">₹0.00</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="payment-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
+                                                    {% if voucher.payment > 0 %}
+                                                    <span class="currency-symbol">-₹</span>
+                                                    <span class="payment-value">{{ voucher.payment|floatformat:2 }}</span>
+                                                    {% else %}
+                                                    <span class="text-muted">₹0.00</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            
+<td class="table-cell">
+  {% with receipt=voucher.receipt|default:0 payment=voucher.payment|default:0 %}
+    {% with net_amount=receipt|add:payment|make_list %}
+      {# This is a workaround - better to calculate in view #}
+    {% endwith %}
+    <div class="{% if receipt > payment %}amount-display{% elif payment > receipt %}expense-display{% else %}balanced-display{% endif %}">
+      <span class="currency-symbol">
+        {% if receipt > payment %}+₹{% elif payment > receipt %}-₹{% else %}₹{% endif %}
+      </span>
+      <span class="{% if receipt > payment %}amount-value{% elif payment > receipt %}expense-value{% else %}balanced-value{% endif %}">
+        {% if receipt > payment %}
+          {{ receipt|add:payment|floatformat:2 }}
+        {% else %}
+          {{ payment|add:receipt|floatformat:2 }}
+        {% endif %}
+      </span>
+    </div>
+  {% endwith %}
+</td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="action-buttons">
+                                                    <a href="{% url 'adminapp:tenant_statement_pdf' voucher.tenant.id %}?{{ request.GET.urlencode }}" 
+                                                       class="action-btn view-btn" 
+                                                       title="Tenant Statement"
+                                                       target="_blank">
+                                                        <i class="fas fa-file-invoice"></i>
+                                                    </a>
+                                                    <a href="{% url 'adminapp:tenant_voucher_detail' voucher.pk %}" 
+                                                       class="action-btn view-btn" 
+                                                       title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+
+                                                    <a href="{% url 'adminapp:tenantvoucher_delete_list' voucher.pk %}" 
+                                                    class="action-btn delete-btn" 
+                                                    title="Delete Voucher"
+                                                    onclick="return confirm('Are you sure you want to delete this voucher?');">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                    </a>
+                                                </div>
+
+                                                <style>
+                                                    
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+                                                </style>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="7" class="empty-state-cell">
+                                                <div class="empty-state-content">
+                                                    <i class="fas fa-building empty-state-icon"></i>
+                                                    <h4>No Vouchers Found</h4>
+                                                    <p>There are no tenant vouchers to display yet.</p>
+                                                    <a href="{% url 'adminapp:tenantvoucher_create' %}" class="add-new-btn">Create Your First Voucher</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                
+                                <!-- No Results Message -->
+                                <div id="noResults" class="no-results" style="display: none;">
+                                    <div class="no-results-content">
+                                        <i class="fas fa-search-minus no-results-icon"></i>
+                                        <h4>No vouchers found</h4>
+                                        <p>Try adjusting your search terms</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pagination -->
+                                {% if vouchers.has_other_pages %}
+                                <div class="pagination-wrapper p-4">
+                                    <nav aria-label="Vouchers pagination">
+                                        <ul class="pagination justify-content-center">
+                                            {% if vouchers.has_previous %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ vouchers.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a>
+                                                </li>
+                                            {% endif %}
+
+                                            <li class="page-item active">
+                                                <span class="page-link">Page {{ vouchers.number }} of {{ vouchers.paginator.num_pages }}</span>
+                                            </li>
+
+                                            {% if vouchers.has_next %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ vouchers.next_page_number }}&{{ request.GET.urlencode }}">Next</a>
+                                                </li>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page={{ vouchers.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </nav>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tenant-wise Summary Card -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title mb-0 fw-bold">Tenant-wise Summary</h4>
+                            <p class="text-muted mb-0 fs-6">Overview by individual tenants</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="tenant-summary-container" style="max-height: 600px; overflow-y: auto; padding: 20px;">
+                        {% for tenant in tenant_summary %}
+                        <div class="tenant-summary-item">
+                            <div class="tenant-summary-content">
+                                <!-- Tenant Info Section -->
+                                <div class="tenant-info-section">
+                                    <div class="tenant-avatar">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div class="tenant-details">
+                                        <div style="font-size: 20px;" class="tenant-name">{{ tenant.tenant__company_name|truncatechars:20|capfirst }}</div>
+                                        <div style="font-size: 15px;" class="tenant-mobile">{{ tenant.tenant__phone|default:"—" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Financial Summary Section -->
+                                <div class="financial-summary-section">
+                                    <div class="financial-metrics">
+                                        <div class="metric-item receipt-metric">
+                                            <div class="metric-label"><i class="fas fa-receipt me-1"></i>Vouchers</div>
+                                            <div class="metric-value">{{ tenant.voucher_count }}</div>
+                                        </div>
+
+                                        <div class="metric-item receipt-metric">
+                                            <div class="metric-label">Receipts</div>
+                                            <div class="metric-value">+₹{{ tenant.total_receipts|floatformat:2 }}</div>
+                                        </div>
+
+                                        <div class="metric-item payment-metric">
+                                            <div class="metric-label">Payments</div>
+                                            <div class="metric-value">-₹{{ tenant.total_payments|floatformat:2 }}</div>
+                                        </div>
+                                        
+                                        <div class="metric-item net-metric">
+                                            <div class="metric-label">Net Amount</div>
+                                            <div class="metric-value net-amount {% if tenant.net_amount > 0 %}positive{% elif tenant.net_amount < 0 %}negative{% else %}neutral{% endif %}">
+                                                {% if tenant.net_amount >= 0 %}₹{{ tenant.net_amount|floatformat:2 }}{% else %}₹{{ tenant.net_amount|floatformat:2 }}{% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Action Button -->
+                                    <div class="action-section">
+                                        <a href="{% url 'adminapp:tenant_statement_pdf' tenant.tenant__id %}?{{ request.GET.urlencode }}" 
+                                           class="statement-btn" 
+                                           title="Generate Statement" 
+                                           target="_blank">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>Statement</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar for Visual Representation -->
+                            <div class="financial-progress">
+                                {% if tenant.total_receipts > 0 or tenant.total_payments > 0 %}
+                                    {% with max_amount=tenant.total_receipts|add:tenant.total_payments %}
+                                    <div class="progress-bar-container">
+                                        <div class="progress-bar receipt-bar" 
+                                             style="width: {% widthratio tenant.total_receipts max_amount 100 %}%"></div>
+                                        <div class="progress-bar payment-bar" 
+                                             style="width: {% widthratio tenant.total_payments max_amount 100 %}%"></div>
+                                    </div>
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <div class="empty-state-content">
+                                <i class="fas fa-building empty-state-icon"></i>
+                                <h5>No Tenant Data Available</h5>
+                                <p>There are no tenant summaries to display yet.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4" style="background: #6c757d;">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-0">Quick Stats</h6>
+                            <p class="text-muted mb-0">Summary statistics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Active Tenants</th>
+                                    <th class="table-header">Net Balance</th>
+                                    <th class="table-header">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                               <tr class="summary-row">
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge agents-badge">
+                <i class="fas fa-users me-2"></i>
+                <span class="badge-value">{{ agent_summary|length }}</span>
+                <span class="badge-label">AGENTS</span>
+            </span>
+        </div>
+    </td>
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge {% if summary.net_amount > 0 %}balance-positive-badge{% elif summary.net_amount < 0 %}balance-negative-badge{% else %}balance-neutral-badge{% endif %}">
+                <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
+                <span class="badge-value">
+                    {% if summary.net_amount > 0 %}
+                        +₹{{ summary.net_amount|floatformat:0 }}
+                    {% elif summary.net_amount < 0 %}
+                        ₹{{ summary.net_amount|floatformat:0 }}
+                    {% else %}
+                        ₹{{ summary.net_amount|floatformat:0 }}
+                    {% endif %}
+                </span>
+                <span class="badge-label">BALANCE</span>
+            </span>
+        </div>
+    </td>
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge status-badge">
+                <i class="fas fa-check-circle me-2"></i>
+                <span class="badge-value">Active</span>
+            </span>
+        </div>
+    </td>
+</tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="small text-muted text-center mt-3">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Positive amounts indicate money owed by agents, negative amounts indicate credits due to agents.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFilter = document.getElementById('dateFilter');
+    const startDateDiv = document.getElementById('startDateDiv');
+    const endDateDiv = document.getElementById('endDateDiv');
+
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                if (startDateDiv) startDateDiv.style.display = 'block';
+                if (endDateDiv) endDateDiv.style.display = 'block';
+            } else {
+                if (startDateDiv) startDateDiv.style.display = 'none';
+                if (endDateDiv) endDateDiv.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+
+<script>
+  // Enhanced search functionality for vouchers table
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const voucherCount = document.getElementById('voucherCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    // Enhanced search data extraction
+    function getSearchableText(row) {
+      const searchableElements = [
+        // Voucher number
+        row.querySelector('.voucher-badge')?.textContent || '',
+        // Voucher description
+        row.querySelector('.voucher-meta')?.textContent || '',
+        // Tenant name
+        row.querySelector('.tenant-name')?.textContent || '',
+        // Tenant contact
+        row.querySelector('.tenant-meta')?.textContent || '',
+        // Tenant mobile
+        row.querySelector('.tenant-mobile')?.textContent || '',
+        // Date
+        row.querySelector('.date-text')?.textContent || '',
+        // Receipt amount
+        row.querySelector('.receipt-value')?.textContent || '',
+        // Payment amount
+        row.querySelector('.payment-value')?.textContent || '',
+        // Net amount
+        row.querySelector('.net-value')?.textContent || ''
+      ];
+      
+      return searchableElements.join(' ').toLowerCase().trim();
+    }
+
+    // Update counter display
+    function updateCounter(visibleCount) {
+      voucherCount.textContent = visibleCount;
+    }
+
+    // Show/hide clear button
+    function showClearButton(show) {
+      clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    // Main filter function
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      if (searchTerm === '') {
+        // Show all rows
+        allRows.forEach(row => {
+          row.style.display = '';
+          visibleCount++;
+        });
+        noResults.style.display = 'none';
+        showClearButton(false);
+      } else {
+        // Filter rows
+        allRows.forEach(row => {
+          // Get searchable text from data attribute or extract it
+          let searchableText = row.getAttribute('data-searchable');
+          
+          // If data-searchable doesn't exist or is empty, extract text
+          if (!searchableText) {
+            searchableText = getSearchableText(row);
+            row.setAttribute('data-searchable', searchableText); // Cache it
+          }
+          
+          if (searchableText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0 && totalCount > 0) {
+          noResults.style.display = 'block';
+        } else {
+          noResults.style.display = 'none';
+        }
+        
+        showClearButton(true);
+      }
+
+      updateCounter(visibleCount);
+    }
+
+    // Clear search function
+    function clearSearch() {
+      searchInput.value = '';
+      filterTable();
+      searchInput.focus();
+    }
+
+    // Event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+          clearSearch();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Keyboard navigation for table rows
+    allRows.forEach(row => {
+      row.setAttribute('tabindex', '0');
+      row.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const viewLink = this.querySelector('.view-btn');
+          if (viewLink) {
+            viewLink.click();
+          }
+        }
+      });
+    });
+
+    // Initialize counter
+    updateCounter(totalCount);
+  });
+</script>
+
+
+
+{% endblock %}

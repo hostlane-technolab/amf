@@ -1,0 +1,361 @@
+{% extends 'admin_base.html' %}
+{%block title%} Stock Details - Admin Panel{%endblock%}
+{% block content %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .detail-card {
+            border: none;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            border-radius: 15px;
+        }
+        .info-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        .quantity-box {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .quantity-box:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 10px rgba(0,123,255,0.1);
+        }
+        .status-badge {
+            font-size: 1rem;
+            padding: 8px 16px;
+        }
+        .timeline-item {
+            border-left: 3px solid #007bff;
+            padding-left: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 5px;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+        .related-stock-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .related-stock-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'adminapp:list' %}">Stock</a></li>
+                <li class="breadcrumb-item active">{{ stock.item.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Main Detail Card -->
+            <div class="col-lg-8">
+                <div class="card detail-card mb-4">
+                    <!-- Header -->
+                    <div class="info-section p-4">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h2 class="mb-1">{{ stock.item.name }}</h2>
+                                <p class="mb-2 opacity-75">
+                                    <i class="fas fa-store me-2"></i>{{ stock.store.name }} • 
+                                    <i class="fas fa-tag me-1"></i>{{ stock.brand.name }}
+                                </p>
+                                {% if stock.species %}
+                                    <p class="mb-0 opacity-75">
+                                        <i class="fas fa-fish me-2"></i>{{ stock.species }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <span class="badge status-badge bg-{{ stock_status.class }}">
+                                <i class="fas fa-circle me-1"></i>{{ stock_status.text }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Quantities -->
+                    <div class="card-body">
+                        <h5 class="mb-4">Current Stock Levels</h5>
+                        <div class="row g-4 mb-4">
+                            {% if stock.cs_quantity > 0 %}
+                                <div class="col-md-6">
+                                    <div class="quantity-box">
+                                        <div class="display-4 fw-bold text-primary mb-2">{{ stock.cs_quantity }}</div>
+                                        <h6 class="text-muted">{{ stock.unit|upper }}</h6>
+                                        <small class="text-muted">Case/Carton Quantity</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.kg_quantity > 0 %}
+                                <div class="col-md-6">
+                                    <div class="quantity-box">
+                                        <div class="display-4 fw-bold text-success mb-2">{{ stock.kg_quantity }}</div>
+                                        <h6 class="text-muted">KG</h6>
+                                        <small class="text-muted">Weight Quantity</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Product Details -->
+                        <h5 class="mb-3">Product Details</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Category:</strong>
+                                    <span>{{ stock.category.name }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Brand:</strong>
+                                    <span>{{ stock.brand.name }}</span>
+                                </div>
+                            </div>
+                            {% if stock.item_quality %}
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Quality:</strong>
+                                        <span>{{ stock.item_quality.name }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.item_grade %}
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Grade:</strong>
+                                        <span>{{ stock.item_grade }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.glaze %}
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Glaze:</strong>
+                                        <span>{{ stock.glaze }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.selling_type %}
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Selling Type:</strong>
+                                        <span>{{ stock.selling_type }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.freezing_category %}
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Freezing Category:</strong>
+                                        <span>{{ stock.freezing_category.name }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.source_reference %}
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Reference:</strong>
+                                        <span class="font-monospace">{{ stock.source_reference }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Update History -->
+                        <h5 class="mb-3">Update History</h5>
+                        <div class="timeline">
+                            {% if stock.last_updated_from_spot %}
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Spot Update</h6>
+                                            <p class="text-muted mb-0">Last updated from spot source</p>
+                                            {% if stock.source_spot_entry %}
+                                                <small class="text-primary">Entry: {{ stock.source_spot_entry }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-info">{{ stock.last_updated_from_spot|date:"M d, Y H:i" }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if stock.last_updated_from_local %}
+                                <div class="timeline-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">Local Update</h6>
+                                            <p class="text-muted mb-0">Last updated from local source</p>
+                                            {% if stock.source_local_entry %}
+                                                <small class="text-warning">Entry: {{ stock.source_local_entry }}</small>
+                                            {% endif %}
+                                        </div>
+                                        <span class="badge bg-warning">{{ stock.last_updated_from_local|date:"M d, Y H:i" }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            {% if not stock.last_updated_from_spot and not stock.last_updated_from_local %}
+                                <div class="text-muted text-center py-3">
+                                    <i class="fas fa-clock fa-2x mb-2"></i>
+                                    <p>No update history available</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-edit me-1"></i>Edit Stock
+                            </button>
+                            <button class="btn btn-success">
+                                <i class="fas fa-plus me-1"></i>Update Quantity
+                            </button>
+                            <button class="btn btn-info">
+                                <i class="fas fa-history me-1"></i>View History
+                            </button>
+                            <button class="btn btn-outline-secondary">
+                                <i class="fas fa-print me-1"></i>Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary">
+                                <i class="fas fa-truck me-1"></i>Create Transfer
+                            </button>
+                            <button class="btn btn-outline-success">
+                                <i class="fas fa-shopping-cart me-1"></i>Create Sale
+                            </button>
+                            <button class="btn btn-outline-warning">
+                                <i class="fas fa-clipboard-list me-1"></i>Stock Adjustment
+                            </button>
+                            <button class="btn btn-outline-info">
+                                <i class="fas fa-chart-line me-1"></i>View Analytics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Stock Items -->
+                {% if related_stocks %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Related Stock</h5>
+                            <small class="text-muted">Same item in other stores/qualities</small>
+                        </div>
+                        <div class="card-body">
+                            {% for related in related_stocks %}
+                                <div class="related-stock-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1">{{ related.store.name }}</h6>
+                                            <small class="text-muted">{{ related.brand.name }}</small>
+                                        </div>
+                                        {% if related.cs_quantity > 0 or related.kg_quantity > 0 %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Out</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="row g-2 text-center">
+                                        {% if related.cs_quantity > 0 %}
+                                            <div class="col-6">
+                                                <div class="bg-light p-2 rounded">
+                                                    <small class="text-muted d-block">{{ related.unit }}</small>
+                                                    <strong>{{ related.cs_quantity }}</strong>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                        {% if related.kg_quantity > 0 %}
+                                            <div class="col-6">
+                                                <div class="bg-light p-2 rounded">
+                                                    <small class="text-muted d-block">KG</small>
+                                                    <strong>{{ related.kg_quantity }}</strong>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-2">
+                                        <a href="{% url 'adminapp:detail' related.pk %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Stock Alerts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Alerts & Notifications</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if stock_status.status == 'out_of_stock' %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Out of Stock!</strong><br>
+                                This item is currently out of stock. Consider restocking soon.
+                            </div>
+                        {% elif stock_status.status == 'low_stock' %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                <strong>Low Stock Warning!</strong><br>
+                                Stock levels are running low. Consider reordering.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Stock Levels Good</strong><br>
+                                Current stock levels are adequate.
+                            </div>
+                        {% endif %}
+
+                        {% if not stock.last_updated_from_spot and not stock.last_updated_from_local %}
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>No Recent Updates</strong><br>
+                                This stock hasn't been updated recently. Verify current levels.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    {%endblock%}

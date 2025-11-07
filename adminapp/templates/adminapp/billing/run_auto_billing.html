@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Run Auto Billing</title>
+</head>
+<body>
+    <h1>Run Auto Billing</h1>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <p>Click the button to generate bills for all tenants that are due.</p>
+        <button type="submit">⚡ Run Now</button>
+    </form>
+
+    <p><a href="{% url 'adminapp:billing_config_list' %}">← Back to Config List</a></p>
+</body>
+</html>

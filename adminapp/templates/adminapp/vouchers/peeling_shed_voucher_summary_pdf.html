@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Peeling Shed Voucher Summary Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #198754;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 5px;
+        }
+        
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .report-period {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .generated-date {
+            font-size: 10px;
+            color: #999;
+        }
+        
+        .summary-section {
+            margin-bottom: 30px;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #198754;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .summary-row {
+            display: table-row;
+        }
+        
+        .summary-cell {
+            display: table-cell;
+            width: 16.66%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        
+        .summary-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .shed-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .shed-summary-table th {
+            background-color: #198754;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #146c43;
+            font-size: 11px;
+        }
+        
+        .shed-summary-table td {
+            padding: 8px 6px;
+            border: 1px solid #ddd;
+            font-size: 11px;
+        }
+        
+        .shed-summary-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .voucher-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .voucher-table th {
+            background-color: #198754;
+            color: white;
+            padding: 8px 4px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #146c43;
+        }
+        
+        .voucher-table td {
+            padding: 6px 4px;
+            border: 1px solid #ddd;
+        }
+        
+        .voucher-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-success {
+            color: #198754;
+            font-weight: bold;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .text-info {
+            color: #0dcaf0;
+            font-weight: bold;
+        }
+        
+        .text-warning {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        .section-break {
+            page-break-before: always;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="report-title">Peeling Shed Voucher Summary Report</div>
+        <div class="report-period">Period: {{ period_name }}</div>
+        <div class="generated-date">Generated on {{ generated_date|date:"F d, Y \a\t H:i A" }}</div>
+    </div>
+
+    <!-- Overall Summary -->
+    <div class="summary-section">
+        <div class="summary-title">Overall Summary</div>
+        <div class="summary-grid">
+            <div class="summary-row">
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_work_amount|floatformat:2 }}</div>
+                    <div class="summary-label">Total Work Amount</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_receipts|floatformat:2 }}</div>
+                    <div class="summary-label">Total Receipts</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_payments|floatformat:2 }}</div>
+                    <div class="summary-label">Total Payments</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_remaining|floatformat:2 }}</div>
+                    <div class="summary-label">Total Outstanding</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.net_amount|floatformat:2 }}</div>
+                    <div class="summary-label">Net Amount</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_vouchers }}</div>
+                    <div class="summary-label">Total Vouchers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shed-wise Summary -->
+    {% if shed_summary %}
+    <div class="summary-section">
+        <div class="summary-title">Shed-wise Summary</div>
+        <table class="shed-summary-table">
+            <thead>
+                <tr>
+                    <th>Shed Name</th>
+                    <th>Code</th>
+                    <th class="text-right">Vouchers</th>
+                    <th class="text-right">Work Amount</th>
+                    <th class="text-right">Receipts</th>
+                    <th class="text-right">Payments</th>
+                    <th class="text-right">Outstanding</th>
+                    <th class="text-right">Net Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for shed in shed_summary %}
+                <tr>
+                    <td>{{ shed.shed__name }}</td>
+                    <td>{{ shed.shed__code|default:"-" }}</td>
+                    <td class="text-right">{{ shed.voucher_count }}</td>
+                    <td class="text-right text-info">{{ shed.total_work_amount|floatformat:2 }}</td>
+                    <td class="text-right text-success">{{ shed.total_receipts|floatformat:2 }}</td>
+                    <td class="text-right text-danger">{{ shed.total_payments|floatformat:2 }}</td>
+                    <td class="text-right {% if shed.total_remaining > 0 %}text-warning{% elif shed.total_remaining < 0 %}text-danger{% else %}text-success{% endif %}">
+                        {{ shed.total_remaining|floatformat:2 }}
+                    </td>
+                    <td class="text-right {% if shed.net_amount > 0 %}text-success{% elif shed.net_amount < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        {{ shed.net_amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Voucher List -->
+    {% if vouchers %}
+    <div class="section-break">
+        <div class="summary-title">Detailed Voucher List</div>
+        <table class="voucher-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Voucher No.</th>
+                    <th>Shed</th>
+                    <th>Description</th>
+                    <th class="text-right">Work Amount</th>
+                    <th class="text-right">Receipt</th>
+                    <th class="text-right">Payment</th>
+                    <th class="text-right">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voucher in vouchers %}
+                <tr>
+                    <td>{{ voucher.date|date:"M d, Y" }}</td>
+                    <td>{{ voucher.voucher_no }}</td>
+                    <td>{{ voucher.shed.name }}</td>
+                    <td>{{ voucher.description|default:"-"|truncatechars:30 }}</td>
+                    <td class="text-right">
+                        <span class="text-info">{{ voucher.total_amount|floatformat:2 }}</span>
+                    </td>
+                    <td class="text-right">
+                        {% if voucher.receipt > 0 %}
+                            <span class="text-success">{{ voucher.receipt|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-muted">0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if voucher.payment > 0 %}
+                            <span class="text-danger">{{ voucher.payment|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-muted">0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <span class="{% if voucher.remain_amount > 0 %}text-warning{% elif voucher.remain_amount < 0 %}text-danger{% else %}text-success{% endif %}">
+                            {{ voucher.remain_amount|floatformat:2 }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This is a computer-generated report. No signature required.</p>
+        <p>{{ company_name }} - Peeling Shed Voucher Management System</p>
+    </div>
+</body>
+</html>

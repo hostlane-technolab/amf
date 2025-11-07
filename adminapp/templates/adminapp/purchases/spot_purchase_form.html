@@ -1,0 +1,1361 @@
+{% extends 'admin_base.html' %}
+{% block title %} Spot Purchase Form {% endblock %}
+{% block content %}
+{% load indian_numbers %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Purchase Management</h3>
+            <p class="ph-header-subtitle">Manage your purchase orders.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:spot_purchase_list'%}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Spot Purchases</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="{%url 'adminapp:spot_purchase_add'%}">
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <form method="post" class="purchase-form">
+      {% csrf_token %}
+      {{ item_formset.management_form }}
+
+      <!-- Purchase Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Purchase Entry</h3>
+              <p class="text-muted mb-0">Enter basic purchase information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ purchase_form.date.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calendar-alt input-icon"></i>
+                  {{ purchase_form.date }}
+                </div>
+                {% if purchase_form.date.errors %}
+                  <div class="validation-error">{{ purchase_form.date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ purchase_form.voucher_number.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-hashtag input-icon"></i>
+                  {{ purchase_form.voucher_number }}
+                </div>
+                {% if purchase_form.voucher_number.errors %}
+                  <div class="validation-error">{{ purchase_form.voucher_number.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ purchase_form.spot.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-map-marker-alt input-icon"></i>
+                  {{ purchase_form.spot }}
+                </div>
+                {% if purchase_form.spot.errors %}
+                  <div class="validation-error">{{ purchase_form.spot.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ purchase_form.supervisor.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user-tie input-icon"></i>
+                  {{ purchase_form.supervisor }}
+                </div>
+                {% if purchase_form.supervisor.errors %}
+                  <div class="validation-error">{{ purchase_form.supervisor.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ purchase_form.agent.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-user input-icon"></i>
+                  {{ purchase_form.agent }}
+                </div>
+                {% if purchase_form.agent.errors %}
+                  <div class="validation-error">{{ purchase_form.agent.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Items Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4">
+                <i class="fas fa-boxes"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Purchase Items</h4>
+                <p class="text-muted mb-0">Add items to your purchase</p>
+              </div>
+            </div>
+            <button type="button" id="add-more-items" class="add-btn">
+              <i class="fas fa-plus me-2"></i>Add Item
+            </button>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tag header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-weight-hanging header-icon"></i>
+                      <span class="header-text">Quantity</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Total Rate</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-calculator header-icon"></i>
+                      <span class="header-text">Rate/kg</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-cube header-icon"></i>
+                      <span class="header-text">Boxes</span>
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <i class="fas fa-tools header-icon"></i>
+                      <span class="header-text">Action</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="item-container">
+                {% for form in item_formset %}
+                  <tr class="item-row table-row">
+                    <td class="table-cell">
+                      {{ form.item.as_widget }}
+                      {% if form.item.errors %}
+                        <div class="validation-error">{{ form.item.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.quantity.as_widget }}
+                      {% if form.quantity.errors %}
+                        <div class="validation-error">{{ form.quantity.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.total_rate.as_widget }}
+                      {% if form.total_rate.errors %}
+                        <div class="validation-error">{{ form.total_rate.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.rate.as_widget }}
+                      {% if form.rate.errors %}
+                        <div class="validation-error">{{ form.rate.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell">
+                      {{ form.boxes.as_widget }}
+                      {% if form.boxes.errors %}
+                        <div class="validation-error">{{ form.boxes.errors }}</div>
+                      {% endif %}
+                    </td>
+                    <td class="table-cell text-center">
+                      <button type="button" class="action-btn delete-btn">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Summary</h4>
+              <p class="text-muted mb-0">Overview of purchase totals</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="table-header">Total Quantity</th>
+                  <th class="table-header">Total Amount</th>
+                  <th class="table-header">Total Items</th>
+                  <th class="table-header">Total Expense</th>
+                  <th class="table-header">Total Purchase Amount</th>
+                  <th class="table-header">Total Purchase Amount / kg</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span id="quantity-total" class="calculated-value">0.00</span>
+                      <small class="unit">kg</small>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="amount-total" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span id="items-count" class="calculated-value">0</span>
+                      <small class="unit">items</small>
+
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="expense-total" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span id="total-purchase-amount" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span id="total-purchase-amount-per-kg" class="calculated-value">0.00</span>
+                      <small class="unit">/kg</small>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Expenses Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Additional Expenses</h4>
+              <p class="text-muted mb-0">Enter any additional costs</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ expense_form.ice_expense.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-snowflake input-icon"></i>
+                  {{ expense_form.ice_expense }}
+                </div>
+                {% if expense_form.ice_expense.errors %}
+                  <div class="validation-error">{{ expense_form.ice_expense.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ expense_form.vehicle_rent.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-truck input-icon"></i>
+                  {{ expense_form.vehicle_rent }}
+                </div>
+                {% if expense_form.vehicle_rent.errors %}
+                  <div class="validation-error">{{ expense_form.vehicle_rent.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ expense_form.loading_and_unloading.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-dolly input-icon"></i>
+                  {{ expense_form.loading_and_unloading }}
+                </div>
+                {% if expense_form.loading_and_unloading.errors %}
+                  <div class="validation-error">{{ expense_form.loading_and_unloading.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ expense_form.peeling_charge.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-cut input-icon"></i>
+                  {{ expense_form.peeling_charge }}
+                </div>
+                {% if expense_form.peeling_charge.errors %}
+                  <div class="validation-error">{{ expense_form.peeling_charge.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg">
+              <div class="form-group">
+                <label class="form-label">{{ expense_form.other_expense.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-plus-circle input-icon"></i>
+                  {{ expense_form.other_expense }}
+                </div>
+                {% if expense_form.other_expense.errors %}
+                  <div class="validation-error">{{ expense_form.other_expense.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save me-2"></i>Update
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:spot_purchase_list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Hidden empty form template -->
+<template id="row-template">
+  <tr class="item-row table-row">
+    {% with item_formset.empty_form as form %}
+      <td class="table-cell">
+        {{ form.item.as_widget }}
+      </td>
+      <td class="table-cell">
+        {{ form.quantity.as_widget }}
+      </td>
+      <td class="table-cell">
+        {{ form.total_rate.as_widget }}
+      </td>
+      <td class="table-cell">
+        {{ form.rate.as_widget }}
+      </td>
+      <td class="table-cell">
+        {{ form.boxes.as_widget }}
+      </td>
+    {% endwith %}
+    <td class="table-cell text-center">
+      <button type="button" class="action-btn delete-btn">
+        <i class="fas fa-trash-alt"></i>
+        <span>Delete</span>
+      </button>
+    </td>
+  </tr>
+</template>
+
+<style>
+    small.unit {
+  font-size: 0.8rem;        
+  font-weight: 600;        
+  color: #2c3e50;     
+  text-transform: uppercase;
+  letter-spacing: 0.5px;   
+  margin-left: 4px;         
+}
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Add Button */
+.add-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+/* Table Styling */
+.modern-table, .summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  color: #6c757d;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+/* Table Rows */
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+.table-cell input, .table-cell select {
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+/* Action Buttons */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  background: none;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border-color: rgba(220, 53, 69, 0.2);
+}
+
+.delete-btn:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.action-btn i {
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+/* Summary Table Styling */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.unit {
+  color: #6c757d;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .add-btn {
+    align-self: center;
+    margin-top: 15px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .total-highlight .calculated-value {
+    font-size: 16px;
+  }
+}
+</style>
+
+
+<script>
+// Your existing JavaScript code with minor modifications for the new structure
+function calculatePurchaseTotals() {
+    let totalAmount = 0;
+    let totalQuantity = 0;
+    let totalItems = 0;
+
+    const itemRows = document.querySelectorAll('.item-row');
+
+    itemRows.forEach(row => {
+        const quantityInput = row.querySelector('input[name$="-quantity"]');
+        const totalRateInput = row.querySelector('input[name$="-total_rate"]');
+
+        const quantity = parseFloat(quantityInput?.value) || 0;
+        const totalRate = parseFloat(totalRateInput?.value) || 0;
+
+        if (quantity > 0 || totalRate > 0) {
+            totalItems += 1;
+            totalQuantity += quantity;
+            totalAmount += totalRate;
+        }
+    });
+
+    document.getElementById('quantity-total').textContent = totalQuantity.toFixed(2);
+    document.getElementById('amount-total').textContent = totalAmount.toFixed(2);
+    document.getElementById('items-count').textContent = totalItems;
+    
+    calculateTotalPurchaseAmount();
+}
+
+function calculateExpenseTotals() {
+    const expenseFields = [
+        'ice_expense',
+        'vehicle_rent',
+        'loading_and_unloading',
+        'peeling_charge',
+        'other_expense'
+    ];
+
+    let totalExpense = 0;
+
+    expenseFields.forEach(field => {
+        const input = document.querySelector(`[name$="${field}"]`);
+        if (input) {
+            totalExpense += parseFloat(input.value) || 0;
+        }
+    });
+
+    document.getElementById('expense-total').textContent = totalExpense.toFixed(2);
+    
+    calculateTotalPurchaseAmount();
+}
+
+function calculateTotalPurchaseAmount() {
+    const totalAmount = parseFloat(document.getElementById('amount-total').textContent) || 0;
+    const totalExpense = parseFloat(document.getElementById('expense-total').textContent) || 0;
+    const totalQuantity = parseFloat(document.getElementById('quantity-total').textContent) || 0;
+    
+    const totalPurchaseAmount = totalAmount + totalExpense;
+    
+    const totalPurchaseElement = document.getElementById('total-purchase-amount');
+    if (totalPurchaseElement) {
+        totalPurchaseElement.textContent = totalPurchaseAmount.toFixed(2);
+    }
+    
+    const totalPurchaseAmountPerKgElement = document.getElementById('total-purchase-amount-per-kg');
+    if (totalPurchaseAmountPerKgElement) {
+        if (totalQuantity > 0) {
+            const totalPurchaseAmountPerKg = totalPurchaseAmount / totalQuantity;
+            totalPurchaseAmountPerKgElement.textContent = totalPurchaseAmountPerKg.toFixed(2);
+        } else {
+            totalPurchaseAmountPerKgElement.textContent = '0.00';
+        }
+    }
+}
+
+function handleRateCalculation(changedInput) {
+    const row = changedInput.closest('.item-row');
+    const quantityInput = row.querySelector('input[name$="-quantity"]');
+    const totalRateInput = row.querySelector('input[name$="-total_rate"]');
+    const rateInput = row.querySelector('input[name$="-rate"]');
+    
+    const quantity = parseFloat(quantityInput?.value) || 0;
+    const totalRate = parseFloat(totalRateInput?.value) || 0;
+    const rate = parseFloat(rateInput?.value) || 0;
+    
+    // If total_rate changed, calculate rate per kg
+    if (changedInput.name.includes('total_rate')) {
+        if (quantity > 0) {
+            const calculatedRate = totalRate / quantity;
+            rateInput.value = calculatedRate.toFixed(2);
+        } else {
+            rateInput.value = '0.00';
+        }
+    }
+    
+    // If rate changed, calculate total_rate
+    else if (changedInput.name.includes('rate')) {
+        const calculatedTotalRate = rate * quantity;
+        totalRateInput.value = calculatedTotalRate.toFixed(2);
+    }
+    
+    // If quantity changed, recalculate based on existing rate
+    else if (changedInput.name.includes('quantity')) {
+        if (rate > 0) {
+            // If we have a rate per kg, calculate total_rate
+            const calculatedTotalRate = rate * quantity;
+            totalRateInput.value = calculatedTotalRate.toFixed(2);
+        } else if (totalRate > 0 && quantity > 0) {
+            // If we have total_rate, calculate rate per kg
+            const calculatedRate = totalRate / quantity;
+            rateInput.value = calculatedRate.toFixed(2);
+        }
+    }
+}
+
+// Update totals and handle rate calculations on input change
+document.addEventListener('input', function (e) {
+    if (e.target.name) {
+        // Handle rate calculations
+        if (e.target.name.includes('quantity') || e.target.name.includes('rate') || e.target.name.includes('total_rate')) {
+            handleRateCalculation(e.target);
+            calculatePurchaseTotals();
+        }
+
+        // Handle expense calculations
+        if (
+            e.target.name.includes('ice_expense') ||
+            e.target.name.includes('vehicle_rent') ||
+            e.target.name.includes('loading_and_unloading') ||
+            e.target.name.includes('peeling_charge') ||
+            e.target.name.includes('other_expense')
+        ) {
+            calculateExpenseTotals();
+        }
+    }
+});
+
+// Add delete button handler
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
+        const button = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
+        const row = button.closest('.item-row');
+        if (row) {
+            if (document.querySelectorAll('.item-row').length > 1) {
+                row.remove();
+                updateFormCount(-1);
+                calculatePurchaseTotals();
+            } else {
+                alert("At least one item is required.");
+            }
+        }
+    }
+});
+
+// Add more button functionality
+document.getElementById('add-more-items').addEventListener('click', function () {
+    const container = document.getElementById('item-container');
+    const totalFormsInput = container.closest('form').querySelector('input[name$="-TOTAL_FORMS"]');
+    const formCount = parseInt(totalFormsInput.value);
+
+    const template = document.getElementById('row-template').innerHTML;
+    const newFormHtml = template.replace(/__prefix__/g, formCount);
+
+    const tbody = document.querySelector('#item-container');
+    tbody.insertAdjacentHTML('beforeend', newFormHtml);
+    totalFormsInput.value = formCount + 1;
+
+    calculatePurchaseTotals();
+});
+
+// Helper to update TOTAL_FORMS when deleting
+function updateFormCount(change) {
+    const container = document.getElementById('item-container');
+    const totalFormsInput = container.closest('form').querySelector('input[name$="-TOTAL_FORMS"]');
+    const currentValue = parseInt(totalFormsInput.value);
+    totalFormsInput.value = currentValue + change;
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', function() {
+    calculatePurchaseTotals();
+    calculateExpenseTotals();
+});
+
+
+</script>
+
+
+
+<script>
+  // Enhanced Arrow key navigation for form fields
+document.addEventListener('keydown', function(e) {
+    if (e.target.matches('input, select, textarea')) {
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]), select, textarea'))
+            .filter(el => {
+                // Check if element is visible and enabled
+                return el.offsetParent !== null && !el.disabled && !el.readOnly;
+            });
+        
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Left arrow key (keyCode 37)
+        if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+            e.preventDefault();
+            // Move to previous field
+            if (currentIndex > 0) {
+                activeElements[currentIndex - 1].focus();
+                // Select all text in the field for easy editing
+                if (activeElements[currentIndex - 1].select) {
+                    activeElements[currentIndex - 1].select();
+                }
+            }
+            return false;
+        }
+        
+        // Right arrow key (keyCode 39)  
+        if (e.key === 'ArrowRight' || e.keyCode === 39) {
+            e.preventDefault();
+            // Move to next field
+            if (currentIndex < activeElements.length - 1) {
+                activeElements[currentIndex + 1].focus();
+                // Select all text in the field for easy editing
+                if (activeElements[currentIndex + 1].select) {
+                    activeElements[currentIndex + 1].select();
+                }
+            }
+            return false;
+        }
+    }
+});
+
+// Date validation helper
+function isValidDate(day, month, year) {
+    const d = parseInt(day);
+    const m = parseInt(month);
+    const y = parseInt(year);
+    
+    if (y < 1900 || y > 2100) return false;
+    if (m < 1 || m > 12) return false;
+    
+    const daysInMonth = new Date(y, m, 0).getDate();
+    if (d < 1 || d > daysInMonth) return false;
+    
+    return true;
+}
+
+// F1 key shortcut for adding more items
+document.addEventListener('keydown', function(e) {
+    // Check if F1 key is pressed (keyCode 112)
+    if (e.keyCode === 112 || e.key === 'F1') {
+        e.preventDefault();
+        const addButton = document.getElementById('add-more-items');
+        if (addButton) {
+            addButton.click();
+        }
+        return false;
+    }
+    
+    // Delete key shortcut for removing focused item
+    if (e.key === "Delete") {
+        let activeElement = document.activeElement;
+        let row = activeElement.closest('.item-row');
+        if (row) {
+            e.preventDefault();
+            if (document.querySelectorAll('.item-row').length > 1) {
+                row.remove();
+                updateFormCount(-1);
+                calculatePurchaseTotals();
+            } else {
+                alert("At least one item is required.");
+            }
+        }
+    }
+});
+
+// Enter key to move to next field
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter' && e.target.matches('input:not([type="submit"]):not([type="button"])')) {
+        e.preventDefault();
+        
+        const activeElements = Array.from(document.querySelectorAll('input:not([type="hidden"]), select, textarea'))
+            .filter(el => el.offsetParent !== null && !el.disabled && !el.readOnly);
+        
+        const currentIndex = activeElements.indexOf(e.target);
+        
+        // Move to next field
+        if (currentIndex < activeElements.length - 1) {
+            activeElements[currentIndex + 1].focus();
+            if (activeElements[currentIndex + 1].select) {
+                activeElements[currentIndex + 1].select();
+            }
+        }
+        
+        return false;
+    }
+});
+
+// Special handling for select fields - use Tab or Arrow keys to navigate
+document.addEventListener('keydown', function(e) {
+    // For select fields, allow Enter to open dropdown, use Tab to move to next field
+    if (e.target.tagName === 'SELECT' && e.key === 'Tab' && !e.shiftKey) {
+        // Tab key will naturally move to next field
+        return true;
+    }
+});
+</script>
+
+<script>
+// Limit date year input to 4 digits
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.querySelector('input[name$="date"]');
+    
+    if (dateInput) {
+        // For HTML5 date input
+        if (dateInput.type === 'date') {
+            dateInput.setAttribute('max', '9999-12-31');
+            dateInput.setAttribute('min', '1900-01-01');
+            
+            dateInput.addEventListener('blur', function(e) {
+                const value = e.target.value;
+                if (value) {
+                    const year = value.split('-')[0];
+                    if (year.length !== 4) {
+                        alert('Please enter a valid 4-digit year');
+                        e.target.value = '';
+                    }
+                }
+            });
+        }
+        
+        // For text input with manual date entry
+        dateInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            
+            // Handle DD/MM/YYYY format
+            if (value.includes('/')) {
+                const parts = value.split('/');
+                if (parts.length === 3 && parts[2].length > 4) {
+                    parts[2] = parts[2].substring(0, 4);
+                    e.target.value = parts.join('/');
+                }
+            }
+            
+            // Handle YYYY-MM-DD format  
+            if (value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    e.target.value = parts.join('-');
+                }
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

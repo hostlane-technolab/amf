@@ -1,0 +1,19 @@
+<!-- FreezingTariff List Template -->
+<!DOCTYPE html>
+<html>
+<head><title>Freezing Tariff List</title></head>
+<body>
+<h1>Freezing Tariff List</h1>
+<table border="1">
+<tr><th>ID</th><th>Rate</th><th>Actions</th></tr>
+{% for obj in object_list %}
+<tr><td>{{ obj.id }}</td>
+    <td>{{ obj.rate }}</td>
+    <td><a href="{% url 'adminapp:freezing_tariff_update' obj.id %}">Edit</a></td>
+    <td><a href="{% url 'adminapp:freezing_tariff_delete' obj.id %}">Delete</a></td>
+
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>

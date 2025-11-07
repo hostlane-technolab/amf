@@ -1,0 +1,2138 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block title %}Create Local Purchase Voucher{% endblock %}
+
+{% block content %}
+
+
+<style>
+  /* ===== SHED BALANCE INFORMATION SECTION STYLES ===== */
+
+/* Calculation Preview Card Enhancements */
+#calculation-preview .card-header .icon-wrapper {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.25);
+}
+
+/* Base Calculation Table */
+#calculation-preview .table {
+  margin-bottom: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#calculation-preview .table thead.table-dark {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+#calculation-preview .table thead th {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 14px 16px;
+  border: none;
+  color: #ffffff;
+}
+
+#calculation-preview .table tbody td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+#calculation-preview .table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+#calculation-preview .table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8fafc;
+}
+
+#calculation-preview .table tbody tr:hover {
+  background-color: #f1f5f9;
+  transition: background-color 0.2s ease;
+}
+
+#calculation-preview .table tfoot.table-dark {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+#calculation-preview .table tfoot th {
+  padding: 14px 16px;
+  font-weight: 700;
+  font-size: 15px;
+  color: #ffffff;
+  border: none;
+}
+
+/* Warning Row Styling */
+#calculation-preview .table-warning {
+  background-color: #fef3c7 !important;
+}
+
+#calculation-preview .table-warning:hover {
+  background-color: #fde68a !important;
+}
+
+/* Summary Boxes Grid */
+#calculation-preview .row {
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+#calculation-preview .row > [class*='col-'] {
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-bottom: 16px;
+}
+
+/* Individual Summary Box */
+.balance-box {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.balance-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.balance-box small {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.balance-box .h5,
+.balance-box .h6,
+.balance-box .h4 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+/* Color-coded boxes */
+.balance-box.info-box {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border-color: #38bdf8;
+}
+
+.balance-box.info-box .h5 {
+  color: #0284c7;
+}
+
+.balance-box.success-box {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border-color: #4ade80;
+}
+
+.balance-box.success-box .h5,
+.balance-box.success-box .h6 {
+  color: #16a34a;
+}
+
+.balance-box.warning-box {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fbbf24;
+}
+
+.balance-box.warning-box .h5,
+.balance-box.warning-box .h6 {
+  color: #d97706;
+}
+
+.balance-box.primary-box {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #60a5fa;
+}
+
+.balance-box.primary-box .h5 {
+  color: #2563eb;
+}
+
+.balance-box.light-box {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-color: #cbd5e1;
+}
+
+.balance-box.light-box .h5 {
+  color: #475569;
+}
+
+/* Current Transaction Boxes */
+.transaction-box {
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.transaction-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.transaction-box small {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.transaction-box .h6 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.transaction-box.receipt {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.transaction-box.payment {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* Total Boxes */
+.total-box {
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.total-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.total-box small {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.total-box .h5,
+.total-box .h4 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.total-box .h5 {
+  font-size: 22px;
+}
+
+.total-box .h4 {
+  font-size: 26px;
+}
+
+.total-box.total-receipts {
+  background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+}
+
+.total-box.total-payments {
+  background: linear-gradient(135deg, #f59e0b 0%, #c2410c 100%);
+}
+
+.total-box.final-remaining {
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+}
+
+/* Divider Line */
+#calculation-preview hr {
+  border: none;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #cbd5e1, transparent);
+  margin: 24px 0;
+}
+
+/* Formula Text */
+#calculation-preview .text-muted {
+  font-size: 13px;
+  color: #64748b !important;
+  font-weight: 500;
+}
+
+/* Balance Status */
+#calculation-preview .balance-status {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+#calculation-preview #balance-status-message {
+  font-size: 16px;
+}
+
+/* Alert Boxes in Preview */
+#calculation-preview .alert {
+  border-radius: 12px;
+  border: none;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+}
+
+#calculation-preview .alert-warning {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border-left: 4px solid #f59e0b;
+}
+
+#calculation-preview .alert-info {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  border-left: 4px solid #3b82f6;
+}
+
+#calculation-preview .alert-danger {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  border-left: 4px solid #ef4444;
+}
+
+#calculation-preview .alert i {
+  font-size: 16px;
+  vertical-align: middle;
+}
+
+#calculation-preview .alert strong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 8px;
+}
+
+#calculation-preview .alert ul {
+  margin-left: 20px;
+  margin-bottom: 0;
+}
+
+#calculation-preview .alert ul li {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+/* Loading State */
+#calculation-preview .spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.3em;
+}
+
+#calculation-preview .text-center p {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+/* Section Title */
+#calculation-preview h6 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #calculation-preview .balance-box,
+  #calculation-preview .transaction-box,
+  #calculation-preview .total-box {
+    margin-bottom: 12px;
+  }
+  
+  #calculation-preview .table {
+    font-size: 12px;
+  }
+  
+  #calculation-preview .table thead th,
+  #calculation-preview .table tbody td,
+  #calculation-preview .table tfoot th {
+    padding: 10px 12px;
+  }
+  
+  .balance-box .h5,
+  .balance-box .h6 {
+    font-size: 16px;
+  }
+  
+  .transaction-box .h6 {
+    font-size: 16px;
+  }
+  
+  .total-box .h5 {
+    font-size: 18px;
+  }
+  
+  .total-box .h4 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 576px) {
+  #calculation-preview .table-responsive {
+    border-radius: 8px;
+  }
+  
+  .balance-box,
+  .transaction-box,
+  .total-box {
+    padding: 16px;
+  }
+}
+</style>
+
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+
+}
+</style>
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="ph-icon-wrapper">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">Voucher Operations</h3>
+                        <p class="ph-header-subtitle">Manage your voucher operations.</p>
+                    </div>
+                </div>
+
+      <!-- Breadcrumbs -->
+      <nav class="ph-breadcrumb-nav">
+        <ol class="ph-breadcrumb-list">
+          <li class="ph-breadcrumb-item">
+            <a href="#" class="ph-breadcrumb-link">
+              <i class="icon-home"></i>
+              <span>Home</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="ph-breadcrumb-item">
+            <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="ph-breadcrumb-link">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+              <span>Peeling Shed Vouchers</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="ph-breadcrumb-item active">
+            <a href="">
+              <span>Create</span>
+            </a>
+          </li>
+        </ol>
+      </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+
+
+    <!-- Display Django Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" id="voucherForm" class="voucher-form">
+      {% csrf_token %}
+
+      <!-- Voucher Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Voucher Details</h3>
+              <p class="text-muted mb-0">Enter basic voucher information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.voucher_no.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-hashtag input-icon"></i>
+                  {{ form.voucher_no }}
+                </div>
+                {% if form.voucher_no.errors %}
+                  <div class="validation-error">{{ form.voucher_no.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ form.date.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-calendar-alt input-icon"></i>
+                  {{ form.date }}
+                </div>
+                {% if form.date.errors %}
+                  <div class="validation-error">{{ form.date.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">Select Shed</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-warehouse input-icon"></i>
+                  <select name="shed" class="form-control" id="shed-select" required>
+                    <option style="color: #0080ff; !important" value="">Select a shed...</option>
+                    {% for shed in sheds_with_freezing %}
+                        <option value="{{ shed.id }}" 
+                                {% if form.shed.value == shed.id %}selected{% endif %}>
+                            {{ shed.name }} - {{ shed.code }}
+                        </option>
+                    {% endfor %}
+                  </select>
+                </div>
+                {% if form.shed.errors %}
+                  <div class="validation-error">{{ form.shed.errors }}</div>
+                {% endif %}
+                <small class="form-text text-muted">
+                    Only sheds with completed freezing entries are shown
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+            <!-- Description Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-text"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Additional Information</h4>
+              <p class="text-muted mb-0">Add description or notes</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">{{ form.description.label }}</label>
+            <div class="input-wrapper">
+              <i class="fas fa-align-left input-icon"></i>
+              {{ form.description }}
+            </div>
+            {% if form.description.errors %}
+              <div class="validation-error">{{ form.description.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculation Preview Section -->
+      <div class="form-card mb-4" id="calculation-preview" style="display: none;">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-calculator"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Shed Balance Information</h4>
+              <p class="text-muted mb-0">Calculation preview and balance overview</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div id="preview-content">
+            <!-- Preview content will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Amount Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Amount Details</h4>
+              <p class="text-muted mb-0">Enter receipt and payment information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label text-success">
+                  <i class="fas fa-plus-circle me-2"></i>{{ form.receipt.label }} (+)
+                </label>
+                <div class="input-wrapper">
+                  <i class="fas fa-plus input-icon"></i>
+                  {{ form.receipt }}
+                </div>
+                {% if form.receipt.errors %}
+                  <div class="validation-error">{{ form.receipt.errors }}</div>
+                {% endif %}
+                <small class="form-text text-success">Money received - adds to cumulative receipts</small>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="form-group">
+                <label class="form-label text-warning">
+                  <i class="fas fa-minus-circle me-2"></i>{{ form.payment.label }} (-)
+                </label>
+                <div class="input-wrapper">
+                  <i class="fas fa-minus input-icon"></i>
+                  {{ form.payment }}
+                </div>
+                {% if form.payment.errors %}
+                  <div class="validation-error">{{ form.payment.errors }}</div>
+                {% endif %}
+                <small class="form-text text-warning">Money paid out - adds to cumulative payments</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Amount Summary</h4>
+              <p class="text-muted mb-0">Overview of calculated amounts</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="table-header">Final Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="table-cell">
+                    <div class="summary-value total-highlight">
+                      <span class="currency">₹</span>
+                      <span id="final-balance-amount" class="calculated-value">0.00</span>
+                    </div>
+                    <small class="unit">After receipts and payments</small>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+
+            <!-- Submit Section -->
+      <div class="form-actions">
+        <div class="row">
+          <div class="col-lg-6 mb-3">
+            <button type="submit" class="submit-btn">
+              <i class="fas fa-save me-2"></i>{% if is_update %}Update{% else %}Create{% endif %} Voucher
+            </button>
+          </div>
+          <div class="col-lg-6 mb-3">
+            <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="cancel-btn">
+              <i class="fas fa-times me-2"></i>Cancel
+            </a>
+          </div>
+        </div>
+      </div>
+    </form>
+
+    <!-- Hidden form fields -->
+    <div style="display: none;">
+      {{ form.total_amount }}
+      {{ form.remain_amount }}
+    </div>
+  </div>
+</div>
+
+<!-- Pass Django data to JavaScript -->
+<script>
+    window.djangoData = {
+        ajaxUrl: "{% url 'adminapp:get_shed_calculation_preview' %}",
+        csrfToken: "{{ csrf_token }}",
+        isUpdate: {% if is_update %}true{% else %}false{% endif %}
+    };
+</script>
+
+<style>
+small.unit {
+  font-size: 0.8rem;        
+  font-weight: 600;        
+  color: #2c3e50;     
+  text-transform: uppercase;
+  letter-spacing: 0.5px;   
+  margin-left: 4px;         
+}
+
+/* Base Styles */
+.voucher-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Table Styling */
+.summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+/* Table Rows */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+.summary-value {
+
+    display: flex;
+  flex-wrap: wrap;
+
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.calculated-value input {
+  border: none !important;
+  background: transparent !important;
+  text-align: center;
+  padding: 5px !important;
+  font-weight: 700 !important;
+  color: #2c3e50 !important;
+  font-size: 16px !important;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .calculated-value input {
+  color: #dc3545 !important;
+  font-size: 18px !important;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+/* Form Actions */
+.form-actions {
+
+  margin-top: 40px;
+}
+
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Form Text */
+.form-text {
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.form-text.text-success {
+  color: #28a745 !important;
+}
+
+.form-text.text-warning {
+  color: #ffc107 !important;
+}
+
+.form-text.text-muted {
+  color: #6c757d !important;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .total-highlight .calculated-value {
+    font-size: 16px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Peeling Shed Voucher Form - JavaScript Loaded");
+    
+    const shedSelect = document.getElementById('shed-select');
+    const previewDiv = document.getElementById('calculation-preview');
+    const previewContent = document.getElementById('preview-content');
+    const receiptInput = document.querySelector('input[name="receipt"]');
+    const paymentInput = document.querySelector('input[name="payment"]');
+    const totalAmountInput = document.querySelector('input[name="total_amount"]');
+    const remainAmountInput = document.querySelector('input[name="remain_amount"]');
+    
+    let calculationData = null;
+    
+    // Check if elements exist
+    if (!shedSelect || !previewDiv || !previewContent) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+    
+    console.log('All DOM elements found successfully');
+    
+    // Update the preview with current receipt/payment values
+    function updateCalculationPreview() {
+        if (!calculationData) return;
+        
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        // Recalculate totals
+        const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+        const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+        const finalRemaining = parseFloat(calculationData.base_amount) + totalReceipts - totalPayments;
+        
+        // Update form fields
+        if (totalAmountInput) {
+            totalAmountInput.value = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        if (remainAmountInput) {
+            remainAmountInput.value = finalRemaining.toFixed(2);
+        }
+        
+        // Update summary display elements
+        const baseWorkAmountElement = document.getElementById('base-work-amount');
+        const finalBalanceAmountElement = document.getElementById('final-balance-amount');
+        
+        if (baseWorkAmountElement) {
+            baseWorkAmountElement.textContent = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        
+        if (finalBalanceAmountElement) {
+            finalBalanceAmountElement.textContent = finalRemaining.toFixed(2);
+            // Add color coding based on balance
+            finalBalanceAmountElement.parentElement.className = finalRemaining < 0 ? 'summary-value total-highlight text-danger' : 
+                                                              finalRemaining === 0 ? 'summary-value total-highlight text-success' : 
+                                                              'summary-value total-highlight';
+        }
+        
+        // Update display elements if they exist (from calculation preview)
+        const elements = {
+            'current-receipt': `₹${currentReceipt.toFixed(2)}`,
+            'current-payment': `₹${currentPayment.toFixed(2)}`,
+            'total-receipts': `₹${totalReceipts.toFixed(2)}`,
+            'total-payments': `₹${totalPayments.toFixed(2)}`,
+            'final-remaining': `₹${finalRemaining.toFixed(2)}`
+        };
+        
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = elements[id];
+                
+
+            }
+        });
+
+        // Update the balance status message
+        const balanceStatusElement = document.getElementById('balance-status-message');
+        if (balanceStatusElement) {
+            let statusMessage = '';
+            let statusClass = '';
+            
+            if (finalRemaining > 0) {
+                statusMessage = `₹${finalRemaining.toFixed(2)} owed to customer`;
+                statusClass = 'text-success';
+            } else if (finalRemaining < 0) {
+                statusMessage = `Customer owes ₹${Math.abs(finalRemaining).toFixed(2)}`;
+                statusClass = 'text-danger';
+            } else {
+                statusMessage = 'Account fully settled';
+                statusClass = 'text-success';
+            }
+            
+            balanceStatusElement.textContent = statusMessage;
+            balanceStatusElement.className = `fw-bold ${statusClass}`;
+        }
+    }
+    
+    // Function to update summary display
+    function updateSummaryDisplay() {
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        const baseWorkAmountElement = document.getElementById('base-work-amount');
+        const finalBalanceAmountElement = document.getElementById('final-balance-amount');
+        
+        if (calculationData) {
+            // If we have calculation data, use it
+            const baseAmount = parseFloat(calculationData.base_amount) || 0;
+            const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+            const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+            const finalBalance = baseAmount + totalReceipts - totalPayments;
+            
+            if (baseWorkAmountElement) {
+                baseWorkAmountElement.textContent = baseAmount.toFixed(2);
+            }
+            
+            if (finalBalanceAmountElement) {
+                finalBalanceAmountElement.textContent = finalBalance.toFixed(2);
+                // Add color coding based on balance
+                const parentElement = finalBalanceAmountElement.closest('.summary-value');
+                if (parentElement) {
+                    parentElement.className = finalBalance < 0 ? 'summary-value total-highlight text-danger' : 
+                                            finalBalance === 0 ? 'summary-value total-highlight text-success' : 
+                                            'summary-value total-highlight';
+                }
+            }
+        } else {
+            // If no calculation data, just show the receipt/payment difference
+            const simpleBalance = currentReceipt - currentPayment;
+            
+            if (baseWorkAmountElement) {
+                baseWorkAmountElement.textContent = '0.00';
+            }
+            
+            if (finalBalanceAmountElement) {
+                finalBalanceAmountElement.textContent = simpleBalance.toFixed(2);
+                // Add color coding based on balance
+                const parentElement = finalBalanceAmountElement.closest('.summary-value');
+                if (parentElement) {
+                    parentElement.className = simpleBalance < 0 ? 'summary-value total-highlight text-danger' : 
+                                            simpleBalance === 0 ? 'summary-value total-highlight text-success' : 
+                                            'summary-value total-highlight';
+                }
+            }
+        }
+    }
+
+    // Add event listeners to receipt and payment inputs
+    if (receiptInput) {
+        receiptInput.addEventListener('input', function() {
+            updateCalculationPreview();
+            updateSummaryDisplay();
+        });
+        console.log('Receipt input listener added');
+    }
+    if (paymentInput) {
+        paymentInput.addEventListener('input', function() {
+            updateCalculationPreview();
+            updateSummaryDisplay();
+        });
+        console.log('Payment input listener added');
+    }
+    
+    // Initial summary update
+    updateSummaryDisplay();
+    
+    // Handle shed selection change
+    shedSelect.addEventListener('change', function() {
+        const shedId = this.value;
+        console.log(`Shed selection changed to: ${shedId}`);
+        
+        if (shedId) {
+            // Show loading state
+            previewContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Calculating cumulative amounts...</p>
+                </div>
+            `;
+            previewDiv.style.display = 'block';
+            
+            // Get current input values
+            const currentReceipt = parseFloat(receiptInput?.value) || 0;
+            const currentPayment = parseFloat(paymentInput?.value) || 0;
+            
+            // Make AJAX call to get calculation preview
+            fetch(window.djangoData.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    'shed_id': shedId,
+                    'receipt': currentReceipt.toString(),
+                    'payment': currentPayment.toString()
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Calculation data received:', data);
+                
+                if (data.error) {
+                    previewContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${data.error}
+                        </div>
+                    `;
+                    calculationData = null;
+                } else if (data.success) {
+                    calculationData = data;
+                    
+// Replace the entire HTML generation block in your JavaScript with this:
+
+let html = `
+    <h6 class="mb-3">Cumulative Calculation for: ${data.shed_name}</h6>
+    
+    <!-- Base Calculation Table -->
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Peeling Type</th>
+                    <th>Quantity (KG)</th>
+                    <th>Rate per KG</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+`;
+
+if (data.calculation_preview && data.calculation_preview.length > 0) {
+    data.calculation_preview.forEach(item => {
+        const rowClass = item.error ? 'table-warning' : '';
+        html += `
+            <tr class="${rowClass}">
+                <td>${item.peeling_type}</td>
+                <td>${item.quantity}</td>
+                <td>₹${item.rate}${item.error ? ' <i class="fas fa-exclamation-triangle text-warning" title="' + item.error + '"></i>' : ''}</td>
+                <td>₹${item.amount}</td>
+            </tr>
+        `;
+    });
+} else {
+    html += `
+        <tr>
+            <td colspan="4" class="text-center text-muted">No calculation data available</td>
+        </tr>
+    `;
+}
+
+html += `
+            </tbody>
+            <tfoot class="table-dark">
+                <tr>
+                    <th colspan="3">Base Amount</th>
+                    <th>₹${data.base_amount}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <!-- Cumulative Amount Summary -->
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box info-box">
+                <small>Base Amount</small>
+                <span class="h5">₹${data.base_amount}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box success-box">
+                <small>Previous Receipts</small>
+                <span class="h6">₹${data.cumulative_receipts}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box warning-box">
+                <small>Previous Payments</small>
+                <span class="h6">₹${data.cumulative_payments}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box light-box">
+                <small>Outstanding Balance</small>
+                <span class="h5" id="outstanding-balance">₹${data.previous_balance}</span>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-3">
+    
+    <!-- Current Transaction Boxes -->
+    <div class="row">
+        <div class="col-md-6 col-sm-6">
+            <div class="transaction-box receipt">
+                <small>+ Current Receipt</small>
+                <span class="h6" id="current-receipt">₹${data.current_receipt}</span>
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <div class="transaction-box payment">
+                <small>- Current Payment</small>
+                <span class="h6" id="current-payment">₹${data.current_payment}</span>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-3">
+    
+    <!-- Total Boxes -->
+    <div class="row">
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box total-receipts">
+                <small>Total Receipts</small>
+                <span class="h5" id="total-receipts">₹${data.new_total_receipts}</span>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box total-payments">
+                <small>Total Payments</small>
+                <span class="h5" id="total-payments">₹${data.new_total_payments}</span>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box final-remaining">
+                <small>Final Remaining</small>
+                <span class="h4" id="final-remaining">₹${data.new_balance}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Balance Status -->
+    <div class="mt-4 text-center">
+        <div class="mb-3">
+            <small class="text-muted">
+                <strong>Formula:</strong> Base Amount + Total Receipts - Total Payments = Final Remaining
+            </small>
+        </div>
+        <div class="balance-status">
+            <strong>Balance Status: </strong>
+            <span id="balance-status-message" class="fw-bold">${data.balance_status?.message || ''}</span>
+        </div>
+    </div>
+`;
+
+if (data.warnings && data.warnings.length > 0) {
+    html += `
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Warnings:</strong>
+            <ul class="mb-0 mt-2">
+                ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+if (data.stats) {
+    html += `
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Statistics:</strong> 
+            ${data.stats.total_peeling_types} peeling types, 
+            ${data.stats.total_work_entries} work entries, 
+            ${data.voucher_count} previous vouchers
+            ${data.stats.missing_rates > 0 ? `, ${data.stats.missing_rates} missing rates` : ''}
+        </div>
+    `;
+}
+
+previewContent.innerHTML = html;
+updateCalculationPreview();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching calculation:', error);
+                previewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading calculation: ${error.message}
+                        <br><small>Please check the server configuration and try again.</small>
+                    </div>
+                `;
+                calculationData = null;
+            });
+        } else {
+            previewDiv.style.display = 'none';
+            calculationData = null;
+            
+            // Reset form fields
+            if (totalAmountInput) totalAmountInput.value = '0.00';
+            if (remainAmountInput) remainAmountInput.value = '0.00';
+        }
+    });
+
+    // Trigger calculation preview if shed is already selected (for update form)
+    if (shedSelect.value && window.djangoData.isUpdate) {
+        shedSelect.dispatchEvent(new Event('change'));
+    }
+    
+    console.log('All event listeners attached successfully');
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Peeling Shed Voucher Form - JavaScript Loaded");
+    
+    const shedSelect = document.getElementById('shed-select');
+    const previewDiv = document.getElementById('calculation-preview');
+    const previewContent = document.getElementById('preview-content');
+    const receiptInput = document.querySelector('input[name="receipt"]');
+    const paymentInput = document.querySelector('input[name="payment"]');
+    const totalAmountInput = document.querySelector('input[name="total_amount"]');
+    const remainAmountInput = document.querySelector('input[name="remain_amount"]');
+    const dateInput = document.getElementById('id_date');
+    
+    let calculationData = null;
+    
+    // Check if elements exist
+    if (!shedSelect || !previewDiv || !previewContent) {
+        console.error('Required DOM elements not found');
+        return;
+    }
+    
+    console.log('All DOM elements found successfully');
+
+    // ===== KEYBOARD NAVIGATION =====
+    const formInputs = [
+        document.querySelector('input[name="voucher_no"]'),
+        dateInput,
+        shedSelect,
+        document.querySelector('textarea[name="description"]'),
+        receiptInput,
+        paymentInput
+    ].filter(input => input !== null);
+
+    // Add individual keydown listeners to each input
+    formInputs.forEach((input, index) => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') {
+                // Move to previous field
+                if (index > 0) {
+                    e.preventDefault();
+                    formInputs[index - 1].focus();
+                    
+                    setTimeout(() => {
+                        const prevField = formInputs[index - 1];
+                        if (prevField.setSelectionRange && prevField.type !== 'date' && prevField.tagName !== 'SELECT') {
+                            try {
+                                const len = prevField.value.length;
+                                prevField.setSelectionRange(len, len);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            } else if (e.key === 'ArrowRight') {
+                // Move to next field
+                if (index < formInputs.length - 1) {
+                    e.preventDefault();
+                    formInputs[index + 1].focus();
+                    
+                    setTimeout(() => {
+                        const nextField = formInputs[index + 1];
+                        if (nextField.setSelectionRange && nextField.type !== 'date' && nextField.tagName !== 'SELECT') {
+                            try {
+                                nextField.setSelectionRange(0, 0);
+                            } catch (err) {}
+                        }
+                    }, 10);
+                }
+            }
+        });
+    });
+
+    // ===== DATE YEAR LIMIT (4 DIGITS) =====
+    if (dateInput) {
+        // Limit year to 4 digits on input
+        dateInput.addEventListener('input', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+
+        // Limit year on paste
+        dateInput.addEventListener('paste', function(e) {
+            setTimeout(() => {
+                let value = this.value;
+                if (value && value.includes('-')) {
+                    const parts = value.split('-');
+                    if (parts[0] && parts[0].length > 4) {
+                        parts[0] = parts[0].substring(0, 4);
+                        this.value = parts.join('-');
+                    }
+                }
+            }, 10);
+        });
+
+        // Limit year on change (date picker)
+        dateInput.addEventListener('change', function(e) {
+            let value = this.value;
+            if (value && value.includes('-')) {
+                const parts = value.split('-');
+                if (parts[0] && parts[0].length > 4) {
+                    parts[0] = parts[0].substring(0, 4);
+                    this.value = parts.join('-');
+                }
+            }
+        });
+    }
+    
+    // ===== CALCULATION UPDATES =====
+    // Update the preview with current receipt/payment values
+    function updateCalculationPreview() {
+        if (!calculationData) return;
+        
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        // Recalculate totals
+        const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+        const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+        const finalRemaining = parseFloat(calculationData.base_amount) + totalReceipts - totalPayments;
+        
+        // Update form fields
+        if (totalAmountInput) {
+            totalAmountInput.value = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        if (remainAmountInput) {
+            remainAmountInput.value = finalRemaining.toFixed(2);
+        }
+        
+        // Update summary display elements
+        const baseWorkAmountElement = document.getElementById('base-work-amount');
+        const finalBalanceAmountElement = document.getElementById('final-balance-amount');
+        
+        if (baseWorkAmountElement) {
+            baseWorkAmountElement.textContent = parseFloat(calculationData.base_amount).toFixed(2);
+        }
+        
+        if (finalBalanceAmountElement) {
+            finalBalanceAmountElement.textContent = finalRemaining.toFixed(2);
+            // Add color coding based on balance
+            finalBalanceAmountElement.parentElement.className = finalRemaining < 0 ? 'summary-value total-highlight text-danger' : 
+                                                              finalRemaining === 0 ? 'summary-value total-highlight text-success' : 
+                                                              'summary-value total-highlight';
+        }
+        
+        // Update display elements if they exist (from calculation preview)
+        const elements = {
+            'current-receipt': `₹${currentReceipt.toFixed(2)}`,
+            'current-payment': `₹${currentPayment.toFixed(2)}`,
+            'total-receipts': `₹${totalReceipts.toFixed(2)}`,
+            'total-payments': `₹${totalPayments.toFixed(2)}`,
+            'final-remaining': `₹${finalRemaining.toFixed(2)}`
+        };
+        
+        Object.keys(elements).forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = elements[id];
+            }
+        });
+
+        // Update the balance status message
+        const balanceStatusElement = document.getElementById('balance-status-message');
+        if (balanceStatusElement) {
+            let statusMessage = '';
+            let statusClass = '';
+            
+            if (finalRemaining > 0) {
+                statusMessage = `₹${finalRemaining.toFixed(2)} owed to customer`;
+                statusClass = 'text-success';
+            } else if (finalRemaining < 0) {
+                statusMessage = `Customer owes ₹${Math.abs(finalRemaining).toFixed(2)}`;
+                statusClass = 'text-danger';
+            } else {
+                statusMessage = 'Account fully settled';
+                statusClass = 'text-success';
+            }
+            
+            balanceStatusElement.textContent = statusMessage;
+            balanceStatusElement.className = `fw-bold ${statusClass}`;
+        }
+    }
+    
+    // Function to update summary display
+    function updateSummaryDisplay() {
+        const currentReceipt = parseFloat(receiptInput?.value) || 0;
+        const currentPayment = parseFloat(paymentInput?.value) || 0;
+        
+        const baseWorkAmountElement = document.getElementById('base-work-amount');
+        const finalBalanceAmountElement = document.getElementById('final-balance-amount');
+        
+        if (calculationData) {
+            // If we have calculation data, use it
+            const baseAmount = parseFloat(calculationData.base_amount) || 0;
+            const totalReceipts = parseFloat(calculationData.cumulative_receipts) + currentReceipt;
+            const totalPayments = parseFloat(calculationData.cumulative_payments) + currentPayment;
+            const finalBalance = baseAmount + totalReceipts - totalPayments;
+            
+            if (baseWorkAmountElement) {
+                baseWorkAmountElement.textContent = baseAmount.toFixed(2);
+            }
+            
+            if (finalBalanceAmountElement) {
+                finalBalanceAmountElement.textContent = finalBalance.toFixed(2);
+                // Add color coding based on balance
+                const parentElement = finalBalanceAmountElement.closest('.summary-value');
+                if (parentElement) {
+                    parentElement.className = finalBalance < 0 ? 'summary-value total-highlight text-danger' : 
+                                            finalBalance === 0 ? 'summary-value total-highlight text-success' : 
+                                            'summary-value total-highlight';
+                }
+            }
+        } else {
+            // If no calculation data, just show the receipt/payment difference
+            const simpleBalance = currentReceipt - currentPayment;
+            
+            if (baseWorkAmountElement) {
+                baseWorkAmountElement.textContent = '0.00';
+            }
+            
+            if (finalBalanceAmountElement) {
+                finalBalanceAmountElement.textContent = simpleBalance.toFixed(2);
+                // Add color coding based on balance
+                const parentElement = finalBalanceAmountElement.closest('.summary-value');
+                if (parentElement) {
+                    parentElement.className = simpleBalance < 0 ? 'summary-value total-highlight text-danger' : 
+                                            simpleBalance === 0 ? 'summary-value total-highlight text-success' : 
+                                            'summary-value total-highlight';
+                }
+            }
+        }
+    }
+
+    // Add event listeners to receipt and payment inputs
+    if (receiptInput) {
+        receiptInput.addEventListener('input', function() {
+            updateCalculationPreview();
+            updateSummaryDisplay();
+        });
+        console.log('Receipt input listener added');
+    }
+    if (paymentInput) {
+        paymentInput.addEventListener('input', function() {
+            updateCalculationPreview();
+            updateSummaryDisplay();
+        });
+        console.log('Payment input listener added');
+    }
+    
+    // Initial summary update
+    updateSummaryDisplay();
+    
+    // Handle shed selection change
+    shedSelect.addEventListener('change', function() {
+        const shedId = this.value;
+        console.log(`Shed selection changed to: ${shedId}`);
+        
+        if (shedId) {
+            // Show loading state
+            previewContent.innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Calculating cumulative amounts...</p>
+                </div>
+            `;
+            previewDiv.style.display = 'block';
+            
+            // Get current input values
+            const currentReceipt = parseFloat(receiptInput?.value) || 0;
+            const currentPayment = parseFloat(paymentInput?.value) || 0;
+            
+            // Make AJAX call to get calculation preview
+            fetch(window.djangoData.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.djangoData.csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    'shed_id': shedId,
+                    'receipt': currentReceipt.toString(),
+                    'payment': currentPayment.toString()
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Calculation data received:', data);
+                
+                if (data.error) {
+                    previewContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            ${data.error}
+                        </div>
+                    `;
+                    calculationData = null;
+                } else if (data.success) {
+                    calculationData = data;
+                    
+let html = `
+    <h6 class="mb-3">Cumulative Calculation for: ${data.shed_name}</h6>
+    
+    <!-- Base Calculation Table -->
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Peeling Type</th>
+                    <th>Quantity (KG)</th>
+                    <th>Rate per KG</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+`;
+
+if (data.calculation_preview && data.calculation_preview.length > 0) {
+    data.calculation_preview.forEach(item => {
+        const rowClass = item.error ? 'table-warning' : '';
+        html += `
+            <tr class="${rowClass}">
+                <td>${item.peeling_type}</td>
+                <td>${item.quantity}</td>
+                <td>₹${item.rate}${item.error ? ' <i class="fas fa-exclamation-triangle text-warning" title="' + item.error + '"></i>' : ''}</td>
+                <td>₹${item.amount}</td>
+            </tr>
+        `;
+    });
+} else {
+    html += `
+        <tr>
+            <td colspan="4" class="text-center text-muted">No calculation data available</td>
+        </tr>
+    `;
+}
+
+html += `
+            </tbody>
+            <tfoot class="table-dark">
+                <tr>
+                    <th colspan="3">Base Amount</th>
+                    <th>₹${data.base_amount}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <!-- Cumulative Amount Summary -->
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box info-box">
+                <small>Base Amount</small>
+                <span class="h5">₹${data.base_amount}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box success-box">
+                <small>Previous Receipts</small>
+                <span class="h6">₹${data.cumulative_receipts}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box warning-box">
+                <small>Previous Payments</small>
+                <span class="h6">₹${data.cumulative_payments}</span>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="balance-box light-box">
+                <small>Outstanding Balance</small>
+                <span class="h5" id="outstanding-balance">₹${data.previous_balance}</span>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-3">
+    
+    <!-- Current Transaction Boxes -->
+    <div class="row">
+        <div class="col-md-6 col-sm-6">
+            <div class="transaction-box receipt">
+                <small>+ Current Receipt</small>
+                <span class="h6" id="current-receipt">₹${data.current_receipt}</span>
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-6">
+            <div class="transaction-box payment">
+                <small>- Current Payment</small>
+                <span class="h6" id="current-payment">₹${data.current_payment}</span>
+            </div>
+        </div>
+    </div>
+    
+    <hr class="my-3">
+    
+    <!-- Total Boxes -->
+    <div class="row">
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box total-receipts">
+                <small>Total Receipts</small>
+                <span class="h5" id="total-receipts">₹${data.new_total_receipts}</span>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box total-payments">
+                <small>Total Payments</small>
+                <span class="h5" id="total-payments">₹${data.new_total_payments}</span>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="total-box final-remaining">
+                <small>Final Remaining</small>
+                <span class="h4" id="final-remaining">₹${data.new_balance}</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Balance Status -->
+    <div class="mt-4 text-center">
+        <div class="mb-3">
+            <small class="text-muted">
+                <strong>Formula:</strong> Base Amount + Total Receipts - Total Payments = Final Remaining
+            </small>
+        </div>
+        <div class="balance-status">
+            <strong>Balance Status: </strong>
+            <span id="balance-status-message" class="fw-bold">${data.balance_status?.message || ''}</span>
+        </div>
+    </div>
+`;
+
+if (data.warnings && data.warnings.length > 0) {
+    html += `
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Warnings:</strong>
+            <ul class="mb-0 mt-2">
+                ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+if (data.stats) {
+    html += `
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Statistics:</strong> 
+            ${data.stats.total_peeling_types} peeling types, 
+            ${data.stats.total_work_entries} work entries, 
+            ${data.voucher_count} previous vouchers
+            ${data.stats.missing_rates > 0 ? `, ${data.stats.missing_rates} missing rates` : ''}
+        </div>
+    `;
+}
+
+previewContent.innerHTML = html;
+updateCalculationPreview();
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching calculation:', error);
+                previewContent.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading calculation: ${error.message}
+                        <br><small>Please check the server configuration and try again.</small>
+                    </div>
+                `;
+                calculationData = null;
+            });
+        } else {
+            previewDiv.style.display = 'none';
+            calculationData = null;
+            
+            // Reset form fields
+            if (totalAmountInput) totalAmountInput.value = '0.00';
+            if (remainAmountInput) remainAmountInput.value = '0.00';
+        }
+    });
+
+    // Trigger calculation preview if shed is already selected (for update form)
+    if (shedSelect.value && window.djangoData.isUpdate) {
+        shedSelect.dispatchEvent(new Event('change'));
+    }
+    
+    console.log('All event listeners attached successfully');
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,552 @@
+{% extends 'admin_base.html' %}
+{%block title%} Admin Panel{%endblock%}
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8" style="margin-top: 5rem;">
+  <div class="max-w-8xl mx-auto">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
+            <i class="fas fa-chart-line text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-4xl font-bold text-slate-900">Admin Dashboard</h1>
+            <p class="text-base text-slate-500 font-medium mt-1">AMF Management System</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-base">
+            <i class="fas fa-cog mr-2"></i>
+            Manage
+          </button>
+          <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-base">
+            <i class="fas fa-plus mr-2"></i>
+            Add Customer
+          </button>
+        </div>
+      </div>
+    </div>
+    
+<!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      
+      <!-- Incomplete Freezing Card -->
+      <div class="bg-white rounded-xl border border-orange-200 p-4 hover:shadow-lg transition-shadow cursor-pointer group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+            <i class="fa-solid fa-snowflake text-orange-600 text-lg"></i>
+          </div>
+          <span class="px-2.5 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-md">URGENT</span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-600 mb-1">Incomplete Freezing</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">{{ incomplete_freezing_count|default:"0" }}</h3>
+          <div class="flex items-center text-orange-600">
+            <span class="text-xs font-semibold">View Details</span>
+            <i class="fas fa-arrow-right text-xs ml-2 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscribers Card -->
+      <div class="bg-white rounded-xl border border-blue-200 p-4 hover:shadow-lg transition-shadow group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+            <i class="fas fa-user-check text-blue-600 text-lg"></i>
+          </div>
+          <span class="flex items-center text-green-600 text-xs font-bold">
+            <i class="fas fa-arrow-up mr-1"></i>
+            12%
+          </span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-600 mb-1">Subscribers</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">{{ total_subscribers|default:"1303" }}</h3>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full w-3/4 bg-blue-500 rounded-full"></div>
+            </div>
+            <span class="text-xs font-bold text-slate-600">75%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Card -->
+      <div class="bg-white rounded-xl border border-emerald-200 p-4 hover:shadow-lg transition-shadow group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+            <i class="fas fa-dollar-sign text-emerald-600 text-lg"></i>
+          </div>
+          <span class="flex items-center text-green-600 text-xs font-bold">
+            <i class="fas fa-arrow-up mr-1"></i>
+            8%
+          </span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-600 mb-1">Total Sales</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">${{ total_sales|default:"1,345" }}</h3>
+          <p class="text-xs font-semibold text-emerald-600">This Month</p>
+        </div>
+      </div>
+
+      <!-- Orders Card -->
+      <div class="bg-white rounded-xl border border-purple-200 p-4 hover:shadow-lg transition-shadow group">
+        <div class="flex items-start justify-between mb-3">
+          <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+            <i class="far fa-check-circle text-purple-600 text-lg"></i>
+          </div>
+          <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-slate-600 mb-1">Total Orders</p>
+          <h3 class="text-3xl font-bold text-slate-900 mb-2">{{ total_orders|default:"576" }}</h3>
+          <p class="text-xs font-semibold text-purple-600">98% Completed</p>
+        </div>
+      </div>
+    </div>
+
+        <!-- Incomplete Freezing Section -->
+    {% if incomplete_freezing_count > 0 %}
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      
+      <div class="bg-slate-50 px-8 py-5 border-b border-slate-200">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center shadow-sm">
+              <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-slate-900">Incomplete Freezing Entries</h2>
+              <p class="text-base text-slate-600 mt-0.5">Requires immediate attention</p>
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap gap-3">
+            <a href="{% url 'adminapp:freezing_entry_spot_list' %}" 
+               class="px-5 py-2.5 bg-blue-50 border border-blue-200 text-blue-700 text-base font-semibold rounded-lg hover:bg-blue-100 transition-colors">
+              <i class="fas fa-map-marker-alt mr-2"></i>
+              Spot Entries
+            </a>
+            <a href="{% url 'adminapp:freezing_entry_local_list' %}" 
+               class="px-5 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-base font-semibold rounded-lg hover:bg-emerald-100 transition-colors">
+              <i class="fas fa-home mr-2"></i>
+              Local Entries
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Spot Freezing Card -->
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+            <div class="flex items-start gap-5">
+
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Spot Freezing</h3>
+                <p class="text-base text-slate-700 mb-4">
+                  <span class="text-3xl font-bold text-blue-600">{{ incomplete_spot_freezing|default:"0" }}</span>
+                  <span class="text-slate-600 ml-2">incomplete entries</span>
+                </p>
+                <div class="mb-4">
+                  <div class="flex items-center justify-between text-sm font-semibold text-slate-600 mb-2">
+                    <span>Progress</span>
+                    <span>66%</span>
+                  </div>
+                  <div class="h-2.5 bg-blue-200 rounded-full overflow-hidden">
+                    <div class="h-full w-2/3 bg-blue-600 rounded-full"></div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <a href="{% url 'adminapp:freezing_entry_spot_create' %}" 
+                     class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-base font-semibold rounded-lg hover:bg-blue-700 transition-colors text-center shadow-sm">
+                    <i class="fas fa-plus mr-1"></i>
+                    Add New
+                  </a>
+                  <a href="{% url 'adminapp:freezing_entry_spot_list' %}" 
+                     class="flex-1 px-4 py-2.5 bg-white border border-blue-300 text-blue-700 text-base font-semibold rounded-lg hover:bg-blue-50 transition-colors text-center">
+                    <i class="fas fa-list mr-1"></i>
+                    View All
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Local Freezing Card -->
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-6 hover:shadow-md transition-shadow">
+
+              <div class="flex-1">
+                <h3 class="text-xl font-bold text-slate-900 mb-2">Local Freezing</h3>
+                <p class="text-base text-slate-700 mb-4">
+                  <span class="text-3xl font-bold text-emerald-600">{{ incomplete_local_freezing|default:"0" }}</span>
+                  <span class="text-slate-600 ml-2">incomplete entries</span>
+                </p>
+                <div class="mb-4">
+                  <div class="flex items-center justify-between text-sm font-semibold text-slate-600 mb-2">
+                    <span>Progress</span>
+                    <span>50%</span>
+                  </div>
+                  <div class="h-2.5 bg-emerald-200 rounded-full overflow-hidden">
+                    <div class="h-full w-1/2 bg-emerald-600 rounded-full"></div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <a href="{% url 'adminapp:freezing_entry_local_create' %}" 
+                     class="flex-1 px-4 py-2.5 bg-emerald-600 text-white text-base font-semibold rounded-lg hover:bg-emerald-700 transition-colors text-center shadow-sm">
+                    <i class="fas fa-plus mr-1"></i>
+                    Add New
+                  </a>
+                  <a href="{% url 'adminapp:freezing_entry_local_list' %}" 
+                     class="flex-1 px-4 py-2.5 bg-white border border-emerald-300 text-emerald-700 text-base font-semibold rounded-lg hover:bg-emerald-50 transition-colors text-center">
+                    <i class="fas fa-list mr-1"></i>
+                    View All
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+
+    <!-- Management Section Cards (Sidebar Items as Cards) -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">Management</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- User Management Card -->
+        {% if user_permissions.can_manage_users %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-user text-indigo-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">User Management</h3>
+              <p class="text-sm text-slate-500">Manage system users and permissions</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="flex gap-2">
+              <a href="{% url 'adminapp:users_list' %}" class="flex-1 px-4 py-2.5 bg-indigo-50 text-indigo-700 text-sm font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">
+                <i class="fas fa-list mr-1"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_user' %}" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
+                <i class="fas fa-plus mr-1"></i> Add
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Purchase Management Card -->
+        {% if user_permissions.can_view_purchasing or user_permissions.can_add_purchasing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+              <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Purchase Management</h3>
+              <p class="text-sm text-slate-500">Handle spot and local purchases</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:spot_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-location-dot mr-2 text-blue-600"></i>Spot Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:local_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-store mr-2 text-blue-600"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Processing Operations Card -->
+        {% if user_permissions.can_view_processing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-gear text-amber-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Processing Operations</h3>
+              <p class="text-sm text-slate-500">Manage peeling shed operations</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="flex gap-2">
+              <a href="{% url 'adminapp:peeling_shed_supply_list' %}" class="flex-1 px-4 py-2.5 bg-amber-50 text-amber-700 text-sm font-semibold rounded-lg hover:bg-amber-100 transition-colors text-center">
+                <i class="fas fa-list mr-1"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="flex-1 px-4 py-2.5 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors text-center">
+                <i class="fas fa-plus mr-1"></i> Create
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Freezing Operations Card -->
+        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-cyan-100 rounded-lg flex items-center justify-center group-hover:bg-cyan-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-snowflake text-cyan-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Freezing Operations</h3>
+              <p class="text-sm text-slate-500">Manage freezing entries and workflow</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-cyan-600"></i>Spot Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-shopping-cart mr-2 text-cyan-600"></i>Local Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Shipping Operations Card -->
+        {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-truck-fast text-green-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Shipping Operations</h3>
+              <p class="text-sm text-slate-500">Pre-shipment and stock transfers</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:preshipment_workout_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-green-600"></i>Pre Shipment</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:store_transfer_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-tent-arrow-left-right mr-2 text-green-600"></i>Stock Transaction</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Master Dashboard Card -->
+        {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+              <i class="fas fa-tachometer-alt text-purple-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Master Dashboard</h3>
+              <p class="text-sm text-slate-500">Configure master data and settings</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <a href="{% url 'adminapp:master' %}" class="block w-full px-4 py-2.5 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors text-center">
+              <i class="fas fa-arrow-right mr-2"></i> Open Dashboard
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Billing Operations Card -->
+        {% if user_permissions.can_view_billing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-file text-pink-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Billing Operations</h3>
+              <p class="text-sm text-slate-500">Manage tenant and main stock bills</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:bill_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-pink-600"></i>Tenant Bill</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:sales_entry_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-import mr-2 text-pink-600"></i>Main Stock Bill</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Voucher Card -->
+        {% if user_permissions.can_view_voucher or user_permissions.can_add_voucher %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-14 h-14 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-file-invoice-dollar text-rose-600 text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-slate-900 mb-1">Voucher Management</h3>
+              <p class="text-sm text-slate-500">Manage all types of vouchers</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Spot Agent</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Supervisor</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Peeling Shed</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+
+  </div>
+</div>
+
+<script>
+// Chart initialization
+var ctx = document.getElementById('statisticsChart');
+if (ctx) {
+  ctx = ctx.getContext('2d');
+  
+  var statisticsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Subscribers",
+        borderColor: '#f3545d',
+        pointBackgroundColor: 'rgba(243, 84, 93, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(243, 84, 93, 0.4)',
+        legendColor: '#f3545d',
+        fill: true,
+        borderWidth: 2,
+        data: [154, 184, 175, 203, 210, 231, 240, 278, 252, 312, 320, 374]
+      }, {
+        label: "New Visitors",
+        borderColor: '#fdaf4b',
+        pointBackgroundColor: 'rgba(253, 175, 75, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(253, 175, 75, 0.4)',
+        legendColor: '#fdaf4b',
+        fill: true,
+        borderWidth: 2,
+        data: [256, 230, 245, 287, 240, 250, 230, 295, 331, 431, 456, 521]
+      }, {
+        label: "Active Users",
+        borderColor: '#177dff',
+        pointBackgroundColor: 'rgba(23, 125, 255, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(23, 125, 255, 0.4)',
+        legendColor: '#177dff',
+        fill: true,
+        borderWidth: 2,
+        data: [542, 480, 430, 550, 530, 453, 380, 434, 568, 610, 700, 900]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      tooltips: {
+        bodySpacing: 4,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest",
+        xPadding: 10,
+        yPadding: 10,
+        caretPadding: 10
+      },
+      layout: {
+        padding: { left: 5, right: 5, top: 15, bottom: 15 }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            fontStyle: "500",
+            beginAtZero: false,
+            maxTicksLimit: 5,
+            padding: 10
+          },
+          gridLines: {
+            drawTicks: false,
+            display: false
+          }
+        }],
+        xAxes: [{
+          gridLines: {
+            zeroLineColor: "transparent"
+          },
+          ticks: {
+            padding: 10,
+            fontStyle: "500"
+          }
+        }]
+      },
+      legendCallback: function(chart) {
+        var text = [];
+        text.push('<ul class="' + chart.id + '-legend html-legend">');
+        for (var i = 0; i < chart.data.datasets.length; i++) {
+          text.push('<li><span style="background-color:' + chart.data.datasets[i].legendColor + '"></span>');
+          if (chart.data.datasets[i].label) {
+            text.push(chart.data.datasets[i].label);
+          }
+          text.push('</li>');
+        }
+        text.push('</ul>');
+        return text.join('');
+      }
+    }
+  });
+
+  var myLegendContainer = document.getElementById("myChartLegend");
+  if (myLegendContainer) {
+    myLegendContainer.innerHTML = statisticsChart.generateLegend();
+  }
+}
+</script>
+
+{% endblock %}

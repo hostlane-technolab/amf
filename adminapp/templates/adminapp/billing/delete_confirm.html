@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Billing Configuration</title>
+</head>
+<body>
+    <h1>Delete Billing Configuration</h1>
+
+    <p>Are you sure you want to delete billing configuration for <strong>{{ config.tenant.company_name }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">🗑 Confirm Delete</button>
+        <a href="{% url 'adminapp:billing_config_list' %}">Cancel</a>
+    </form>
+</body>
+</html>

@@ -1,0 +1,1215 @@
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Page header style -->
+<style>
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+  }
+
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 30px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    margin-right: 20px;
+  }
+
+  .header-text h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+  }
+
+  .header-text p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .controls-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+    gap: 8px;
+  }
+
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  .add-new-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    border: none;
+    cursor: pointer;
+  }
+
+  .add-new-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+  }
+
+  /* Table Styles */
+  .table-responsive {
+    background: white;
+    margin: 0 !important;
+    overflow-x: auto;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin: 0;
+  }
+
+  .modern-table th {
+    background: #f8f9fd;
+    padding: 12px 10px !important;
+    text-align: left;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px !important;
+    border: none;
+    white-space: nowrap !important;
+  }
+
+  .header-content-table {
+    display: flex;
+    align-items: center;
+    gap: 6px !important;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 6px !important;
+    font-size: 12px !important;
+  }
+
+  .modern-table td {
+    padding: 8px 10px !important;
+    border: none;
+    border-bottom: 1px solid #f1f3f7 !important;
+    vertical-align: middle !important;
+  }
+
+  .table-row {
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.02) 0%, rgba(231, 76, 60, 0.05) 100%) !important;
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+  }
+
+  /* Form Controls */
+  .modern-table select.form-select,
+  .modern-table input.form-control {
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    border: 2px solid #e9ecef !important;
+    font-size: 14px !important;
+    background: white !important;
+    transition: all 0.2s ease !important;
+    width: 100%;
+  }
+
+  .modern-table select.form-select:focus,
+  .modern-table input.form-control:focus {
+    border-color: #e74c3c !important;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+    outline: none !important;
+  }
+
+  /* Auto-filled field animation */
+  .auto-filled {
+    border-color: #28a745 !important;
+    background-color: rgba(40, 167, 69, 0.05) !important;
+    animation: pulse-green 0.5s ease-in-out;
+  }
+
+  @keyframes pulse-green {
+    0% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(40, 167, 69, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+    }
+  }
+
+  .modern-table select {
+    height: 38px !important;
+    min-width: 100px !important;
+  }
+
+  .modern-table input[type="number"],
+  .modern-table input[type="text"] {
+    height: 38px !important;
+    padding: 6px 10px !important;
+  }
+
+  /* Status Badges */
+  .status-badge {
+    padding: 4px 12px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+  }
+
+  .status-completed {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    color: white;
+  }
+
+  .status-returned {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+  }
+
+  .profit-display,
+  .loss-display {
+    padding: 4px 12px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    display: inline-block !important;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 8px !important;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .form-row.table-row {
+    margin: 0 !important;
+  }
+
+  .card .p-4 {
+    padding: 20px !important;
+  }
+
+  #formset-table {
+    margin-bottom: 0 !important;
+  }
+
+  .text-center.mt-4 {
+    margin-top: 20px !important;
+    padding: 0 20px 20px 20px !important;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1400px) {
+    .modern-table th,
+    .modern-table td {
+      padding: 8px 6px !important;
+      font-size: 13px !important;
+    }
+    
+    .modern-table select,
+    .modern-table input {
+      font-size: 13px !important;
+    }
+  }
+
+  @media (max-width: 992px) {
+    .modern-table th,
+    .modern-table td {
+      padding: 6px 4px !important;
+      font-size: 12px !important;
+    }
+    
+    .header-content-table {
+      flex-direction: column !important;
+      gap: 2px !important;
+    }
+    
+    .header-icon {
+      display: none !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .header-info {
+      margin-bottom: 20px;
+    }
+    
+    .controls-section {
+      justify-content: space-between;
+      width: 100%;
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .header-text h3 {
+      font-size: 20px;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-shipping-fast"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Shipping Operations</h3>
+            <p class="ph-header-subtitle">Manage your shipping operations.</p>
+          </div>
+        </div>
+
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:preshipment_workout_list' %}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-snowflake"></i>
+                <span>Pre-Shipment WorkOut List</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <a href="{% url 'adminapp:create_preshipment_workout' %}">
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Create Pre-Shipment WorkOut Section -->
+    <div class="card">
+      <div class="card-header">
+        <div class="header-content">
+          <div class="header-info">
+            <div class="icon-wrapper">
+              <i class="fas fa-plus-circle"></i>
+            </div>
+            <div class="header-text">
+              <h3 class="mb-0 fw-bold card-title">Create Pre-Shipment WorkOut</h3>
+              <p>Add new workout entries with detailed calculations</p>
+            </div>
+          </div>
+          <div class="controls-section">
+            <a href="{% url 'adminapp:preshipment_workout_list' %}" class="action-btn view-btn">
+              <i class="fas fa-list"></i> View All WorkOuts
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <form method="post" class="p-4">
+        {% csrf_token %}
+
+        <!-- Main Workout Form -->
+        <div class="table-responsive mb-4">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item</div></th>
+                <th><div class="header-content-table"><i class="fas fa-box header-icon"></i>Item Sub</div></th>
+                <th><div class="header-content-table"><i class="fas fa-cube header-icon"></i>Packing Unit</div></th>
+                <th><div class="header-content-table"><i class="fas fa-percent header-icon"></i>Glaze %</div></th>
+                <th><div class="header-content-table"><i class="fas fa-tag header-icon"></i>Category</div></th>
+                <th><div class="header-content-table"><i class="fas fa-star header-icon"></i>Brand</div></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="table-row">
+                <td>{{ workout_form.item }}</td>
+                <td>{{ workout_form.item_quality }}</td>
+                <td>{{ workout_form.unit }}</td>
+                <td>{{ workout_form.glaze }}</td>
+                <td>{{ workout_form.category }}</td>
+                <td>{{ workout_form.brand }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Items Formset -->
+        {{ formset.management_form }}
+        <div class="table-responsive">
+          <table id="formset-table" class="modern-table">
+            <thead>
+              <tr>
+                <th><div class="header-content-table"><i class="fas fa-cut header-icon"></i>Peeling</div></th>
+                <th><div class="header-content-table"><i class="fas fa-award header-icon"></i>Grade</div></th>
+                <th><div class="header-content-table"><i class="fas fa-boxes header-icon"></i>Cartons</div></th>
+                <th><div class="header-content-table"><i class="fas fa-weight header-icon"></i>Quantity</div></th>
+                <th><div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>$ KG</div></th>
+                <th><div class="header-content-table"><i class="fas fa-calculator header-icon"></i>$ Item</div></th>
+                <th><div class="header-content-table"><i class="fas fa-rupee-sign header-icon"></i>₹ Item</div></th>
+                <th><div class="header-content-table"><i class="fas fa-hand-holding-usd header-icon"></i>$ KG-Get</div></th>
+                <th><div class="header-content-table"><i class="fas fa-coins header-icon"></i>$ Item-Get</div></th>
+                <th><div class="header-content-table"><i class="fas fa-money-bill header-icon"></i>₹ Item-Get</div></th>
+                <th><div class="header-content-table"><i class="fas fa-arrow-up header-icon"></i>Profit</div></th>
+                <th><div class="header-content-table"><i class="fas fa-arrow-down header-icon"></i>Loss</div></th>
+                <th><div class="header-content-table"><i class="fas fa-cogs header-icon"></i>Actions</div></th>
+              </tr>
+            </thead>
+            <tbody id="formset-body">
+              {% for form in formset %}
+                <tr class="form-row table-row">
+                  <td>{{ form.peeling_type }}</td>
+                  <td>{{ form.grade }}</td>
+                  <td>{{ form.cartons }}</td>
+                  <td>{{ form.quantity }}</td>
+                  <td>{{ form.usd_rate_per_kg }}</td>
+                  <td>{{ form.usd_rate_item }}</td>
+                  <td>{{ form.usd_rate_item_to_inr }}</td>
+                  <td>{{ form.usd_rate_per_kg_get }}</td>
+                  <td>{{ form.usd_rate_item_get }}</td>
+                  <td>{{ form.usd_rate_item_to_inr_get }}</td>
+                  <td>
+                    <input type="hidden" name="{{ form.profit.name }}" class="profit">
+                    <span class="profit-display status-completed"></span>
+                  </td>
+                  <td>
+                    <input type="hidden" name="{{ form.loss.name }}" class="loss">
+                    <span class="loss-display status-returned"></span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button type="button" class="action-btn delete-btn remove-row">
+                        <i class="fas fa-trash"></i> Remove
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-4">
+          <div class="action-buttons">
+            <button type="button" id="add-row" class="add-new-btn">
+              <i class="fas fa-plus"></i> Add More Rows
+            </button>
+            <button type="submit" class="action-btn edit-btn">
+              <i class="fas fa-save"></i> Save WorkOut
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Hidden empty form template -->
+    <table style="display:none;">
+      <tbody>
+        <tr id="empty-form" class="form-row table-row">
+          <td>{{ formset.empty_form.peeling_type }}</td>
+          <td>{{ formset.empty_form.grade }}</td>
+          <td>{{ formset.empty_form.cartons }}</td>
+          <td>{{ formset.empty_form.quantity }}</td>
+          <td>{{ formset.empty_form.usd_rate_per_kg }}</td>
+          <td>{{ formset.empty_form.usd_rate_item }}</td>
+          <td>{{ formset.empty_form.usd_rate_item_to_inr }}</td>
+          <td>{{ formset.empty_form.usd_rate_per_kg_get }}</td>
+          <td>{{ formset.empty_form.usd_rate_item_get }}</td>
+          <td>{{ formset.empty_form.usd_rate_item_to_inr_get }}</td>
+          <td>
+            <input type="hidden" name="{{ formset.empty_form.profit.name }}" class="profit">
+            <span class="profit-display status-completed"></span>
+          </td>
+          <td>
+            <input type="hidden" name="{{ formset.empty_form.loss.name }}" class="loss">
+            <span class="loss-display status-returned"></span>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button type="button" class="action-btn delete-btn remove-row">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+  <!-- Load jQuery FIRST - Remove any other jQuery script tags -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Script 1: Load Item Qualities when main Item changes -->
+  <script>
+  $(document).ready(function() {
+      console.log("✓ Item → Quality script loaded");
+      
+      $("#id_item").on("change", function () {
+          var itemId = $(this).val();
+          var $qualitySelect = $("#id_item_quality");
+
+          console.log("Main item changed. Item ID:", itemId);
+
+          if (itemId) {
+              $.ajax({
+                  url: "{% url 'adminapp:get_item_qualities' %}",
+                  data: { "item_id": itemId },
+                  dataType: "json",
+                  success: function (data) {
+                      console.log("✓ Item qualities response:", data);
+                      $qualitySelect.empty();
+                      $qualitySelect.append($("<option>", { value: "", text: "---------" }));
+
+                      var qualities = Array.isArray(data) ? data : data.qualities || [];
+
+                      if (qualities.length === 0) {
+                          $qualitySelect.append($("<option>", { value: "", text: "No qualities found" }));
+                          console.log("⚠ No qualities found for item:", itemId);
+                      } else {
+                          $.each(qualities, function (index, quality) {
+                              $qualitySelect.append($("<option>", {
+                                  value: quality.id,
+                                  text: quality.quality
+                              }));
+                          });
+                          console.log(`✓ Loaded ${qualities.length} qualities`);
+                      }
+
+                      $qualitySelect.trigger('change');
+                  },
+                  error: function(xhr, status, error) {
+                      console.error("✗ Error loading qualities:", {
+                          item_id: itemId,
+                          status: status,
+                          error: error,
+                          response: xhr.responseText
+                      });
+                      
+                      $qualitySelect.empty();
+                      $qualitySelect.append($("<option>", { value: "", text: "Error loading qualities" }));
+                  }
+              });
+          } else {
+              console.log("No item selected, quality dropdown reset");
+              $qualitySelect.empty();
+              $qualitySelect.append($("<option>", { value: "", text: "---------" }));
+          }
+      });
+  });
+  </script>
+
+
+  <!-- Script 2: Main Formset and Calculation Logic -->
+  <script>
+  $(document).ready(function() {
+      console.log("✓ Main calculation script loaded");
+      
+      $.fn.dataTable.ext.errMode = 'none';
+      
+      $.extend($.fn.dataTable.defaults, {
+          "autoWidth": false,
+          "searching": false,
+          "paging": false,
+          "info": false
+      });
+
+      let dollarRateToInr = 0;
+
+      // Fetch dollar rate on page load
+      $.ajax({
+          url: "{% url 'adminapp:get_dollar_rate_pre_workout' %}",
+          method: "GET",
+          success: function(response) {
+              if (response.dollar_rate_to_inr) {
+                  dollarRateToInr = parseFloat(response.dollar_rate_to_inr);
+                  console.log("✓ Dollar rate loaded:", dollarRateToInr);
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error("✗ Error loading dollar rate:", error);
+          }
+      });
+
+      // Add new row functionality
+      $("#add-row").on("click", function() {
+          let formIndex = parseInt($("#id_items-TOTAL_FORMS").val());
+          let template = $("#empty-form").clone();
+          
+          template.removeAttr("id");
+          template.show();
+          
+          template.find("input, select, textarea").each(function() {
+              let name = $(this).attr("name");
+              let id = $(this).attr("id");
+              if (name) $(this).attr("name", name.replace(/__prefix__/g, formIndex));
+              if (id) $(this).attr("id", id.replace(/__prefix__/g, formIndex));
+          });
+          
+          $("#formset-body").append(template);
+          $("#id_items-TOTAL_FORMS").val(formIndex + 1);
+          console.log("✓ Added new row, total forms:", formIndex + 1);
+      });
+
+      // Remove row functionality
+      $(document).on("click", ".remove-row", function(e) {
+          e.preventDefault();
+          let row = $(this).closest(".form-row");
+          row.remove();
+          
+          let formRows = $("#formset-body .form-row");
+          $("#id_items-TOTAL_FORMS").val(formRows.length);
+          
+          formRows.each(function(index) {
+              $(this).find("input, select, textarea").each(function() {
+                  let name = $(this).attr("name");
+                  let id = $(this).attr("id");
+                  if (name) $(this).attr("name", name.replace(/items-\d+-/, `items-${index}-`));
+                  if (id) $(this).attr("id", id.replace(/id_items-\d+-/, `id_items-${index}-`));
+              });
+          });
+          
+          console.log("✓ Row removed, total forms:", formRows.length);
+      });
+
+
+      // When an item select changes (works for both regular and formset fields)
+      $(document).on("change", 'select[name$="-item"], select[name="item"]', function () {
+          const itemSelect = $(this);
+          const itemId = itemSelect.val();
+          const row = itemSelect.closest("tr");
+          const gradeSelect = row.find("select[name$='-grade'], select[name='grade']");
+
+          console.log("Item changed. Item ID:", itemId);
+
+          // Reset grade dropdown
+          gradeSelect.empty().append('<option value="">---------</option>');
+
+          if (itemId) {
+              console.log("Fetching grades for item:", itemId);
+
+              $.ajax({
+                  url: "{% url 'adminapp:get_item_grades' %}",
+                  method: "GET",
+                  data: { item_id: itemId },
+                  dataType: "json",
+                  success: function (data) {
+                      console.log("✓ Grades received:", data);
+
+                      // Handle both array and object response types
+                      const grades = Array.isArray(data) ? data : data.grades || [];
+
+                      if (grades.length > 0) {
+                          grades.forEach(function (grade) {
+                              gradeSelect.append(
+                                  `<option value="${grade.id}">${grade.grade}</option>`
+                              );
+                          });
+                          console.log(`✓ Loaded ${grades.length} grades for item ${itemId}`);
+                      } else {
+                          gradeSelect.append('<option value="">No grades available</option>');
+                          console.log("⚠ No grades found for item:", itemId);
+                      }
+                  },
+                  error: function (xhr, status, error) {
+                      console.error("✗ Error loading grades:", {
+                          item_id: itemId,
+                          status: status,
+                          error: error,
+                          response: xhr.responseText,
+                      });
+                      gradeSelect.append('<option value="">Error loading grades</option>');
+                  }
+              });
+          } else {
+              console.log("No item selected, grade dropdown reset");
+          }
+      });
+
+
+      // Fetch stock rate when any relevant field changes
+      $(document).on("change", "select[name$='peeling_type'], select[name$='grade']", function() {
+          let $row = $(this).closest(".form-row");
+          fetchStockRate($row);
+      });
+
+      // Function to fetch stock rate from Stock model
+      function fetchStockRate($row) {
+          let workoutItemId = $("#id_item").val();
+          let workoutUnitId = $("#id_unit").val();
+          let workoutGlazeId = $("#id_glaze").val();
+          let workoutCategoryId = $("#id_category").val();
+          let workoutBrandId = $("#id_brand").val();
+          
+          let peelingTypeId = $row.find("select[name$='peeling_type']").val();
+          let gradeId = $row.find("select[name$='grade']").val();
+          
+          if (!workoutItemId  || !gradeId) {
+              return;
+          }
+          
+          let requestData = {
+              workout_item: workoutItemId,
+              grade: gradeId
+          };
+          
+          if (workoutUnitId) requestData.workout_unit = workoutUnitId;
+          if (workoutGlazeId) requestData.workout_glaze = workoutGlazeId;
+          if (workoutCategoryId) requestData.workout_category = workoutCategoryId;
+          if (workoutBrandId) requestData.workout_brand = workoutBrandId;
+          if (peelingTypeId) requestData.peeling_type = peelingTypeId;
+          
+          console.log("Fetching stock rate with:", requestData);
+          
+          $.ajax({
+              url: "{% url 'adminapp:get_stock_rate' %}",
+              method: "GET",
+              data: requestData,
+              dataType: "json",
+              success: function(response) {
+                  if (response.success) {
+                      $row.find("input[name$='usd_rate_per_kg']").val(response.usd_rate_per_kg.toFixed(2));
+                      recalcRow($row);
+                      
+                      $row.find("input[name$='usd_rate_per_kg']").addClass("auto-filled");
+                      setTimeout(function() {
+                          $row.find("input[name$='usd_rate_per_kg']").removeClass("auto-filled");
+                      }, 2000);
+                      
+                      console.log("✓ Stock rate auto-filled:", response.usd_rate_per_kg);
+                  } else {
+                      console.log("⚠ No matching stock found:", response.message);
+                  }
+              },
+              error: function(xhr, status, error) {
+                  console.error("✗ Error fetching stock rate:", error);
+              }
+          });
+      }
+
+      // Trigger fetch when workout-level fields change
+      $("#id_item, #id_unit, #id_glaze, #id_category, #id_brand").on("change", function() {
+          $("#formset-body .form-row").each(function() {
+              fetchStockRate($(this));
+          });
+      });
+
+      // Calculation functions
+      function recalcRow($row) {
+          let cartons = parseFloat($row.find("input[name$='cartons']").val()) || 0;
+          let quantity = cartons * 20;
+          $row.find("input[name$='quantity']").val(quantity.toFixed(2));
+
+          let usdRateKg = parseFloat($row.find("input[name$='usd_rate_per_kg']").val()) || 0;
+          let usdItem = quantity * usdRateKg;
+          $row.find("input[name$='usd_rate_item']").val(usdItem.toFixed(2));
+          $row.find("input[name$='usd_rate_item_to_inr']").val((usdItem * dollarRateToInr).toFixed(2));
+
+          let usdRateKgGet = parseFloat($row.find("input[name$='usd_rate_per_kg_get']").val()) || 0;
+          let usdItemGet = quantity * usdRateKgGet;
+          $row.find("input[name$='usd_rate_item_get']").val(usdItemGet.toFixed(2));
+          $row.find("input[name$='usd_rate_item_to_inr_get']").val((usdItemGet * dollarRateToInr).toFixed(2));
+
+          recalcProfitLoss($row);
+      }
+
+      function recalcProfitLoss($row) {
+          let buyingInr = parseFloat($row.find("input[name$='usd_rate_item_to_inr']").val()) || 0;
+          let sellingInr = parseFloat($row.find("input[name$='usd_rate_item_to_inr_get']").val()) || 0;
+
+          let profitInput = $row.find(".profit");
+          let lossInput = $row.find(".loss");
+          let profitDisplay = $row.find(".profit-display");
+          let lossDisplay = $row.find(".loss-display");
+
+          let diff = sellingInr - buyingInr;
+
+          if (diff >= 0) {
+              profitInput.val(diff.toFixed(2));
+              profitDisplay.text("+₹" + diff.toFixed(2)).addClass("status-completed").removeClass("status-returned");
+              lossInput.val(0);
+              lossDisplay.text("").removeClass("status-returned");
+          } else {
+              profitInput.val(0);
+              profitDisplay.text("").removeClass("status-completed");
+              lossInput.val(Math.abs(diff).toFixed(2));
+              lossDisplay.text("-₹" + Math.abs(diff).toFixed(2)).addClass("status-returned").removeClass("status-completed");
+          }
+      }
+
+      // Trigger calculations on input changes
+      $(document).on("input", "input[name$='cartons'], input[name$='usd_rate_per_kg'], input[name$='usd_rate_per_kg_get']", function() {
+          let $row = $(this).closest("tr");
+          recalcRow($row);
+      });
+
+      // Initial calculation for existing rows
+      $("#formset-table tbody tr.form-row").each(function() {
+          recalcRow($(this));
+      });
+      
+      console.log("✓ All scripts initialized successfully");
+  });
+  </script>
+
+  <!-- Unit Calculation for Pre-Shipment Workout -->
+<script>
+$(document).ready(function () {
+    console.log("✓ Unit calculation script loaded");
+    let dollarRate = 0;
+
+    // Fetch dollar rate on page load
+    $.getJSON("{% url 'adminapp:get_dollar_rate_pre_workout' %}", function (data) {
+        if (data.dollar_rate_to_inr) {
+            dollarRate = parseFloat(data.dollar_rate_to_inr);
+            console.log("✓ Dollar rate loaded for unit calc:", dollarRate);
+        }
+    }).fail(function() {
+        console.log('Could not fetch dollar rate, using default 0');
+    });
+
+    // Helper to recalc a single formset row based on CS quantity
+    function recalcRowFromCS($row) {
+        let cartons = parseFloat($row.find("input[name$='cartons']").val()) || 0;
+        let usdPerKg = parseFloat($row.find("input[name$='usd_rate_per_kg']").val()) || 0;
+        
+        // Get unit precision and factor from main workout form
+        let unitId = $("#id_unit").val();
+        
+        if (!cartons || !unitId) {
+            return;
+        }
+        
+        console.log("Calculating from CS - Cartons:", cartons, "Unit ID:", unitId);
+        
+        // Fetch unit details and calculate
+        $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+            let precision = parseFloat(data.precision) || 0;
+            let factor = parseFloat(data.factor) || 0;
+            
+            console.log("Unit details - Precision:", precision, "Factor:", factor);
+            
+            if (precision && factor) {
+                // Calculate: Cartons (CS) → Slab Quantity → KG
+                let slabQty = cartons * precision;
+                let kg = slabQty * factor;
+                
+                console.log("Calculated - Slab:", slabQty, "KG:", kg);
+                
+                // Update quantity field (this is your KG field)
+                $row.find("input[name$='quantity']").val(kg.toFixed(2));
+                
+                // Calculate USD Item and INR values if USD rate exists
+                if (kg && usdPerKg) {
+                    let usdItem = kg * usdPerKg;
+                    $row.find("input[name$='usd_rate_item']").val(usdItem.toFixed(2));
+                    
+                    if (dollarRate) {
+                        $row.find("input[name$='usd_rate_item_to_inr']").val((usdItem * dollarRate).toFixed(2));
+                    }
+                }
+                
+                // Recalculate "get" values if they exist
+                let usdRateKgGet = parseFloat($row.find("input[name$='usd_rate_per_kg_get']").val()) || 0;
+                if (kg && usdRateKgGet) {
+                    let usdItemGet = kg * usdRateKgGet;
+                    $row.find("input[name$='usd_rate_item_get']").val(usdItemGet.toFixed(2));
+                    
+                    if (dollarRate) {
+                        $row.find("input[name$='usd_rate_item_to_inr_get']").val((usdItemGet * dollarRate).toFixed(2));
+                    }
+                }
+                
+                // Trigger profit/loss calculation
+                recalcProfitLoss($row);
+                
+                console.log("✓ Row recalculated from CS quantity");
+            }
+        }).fail(function() {
+            console.log('Could not fetch unit details for unit ID:', unitId);
+        });
+    }
+
+    // Profit/Loss calculation function
+    function recalcProfitLoss($row) {
+        let buyingInr = parseFloat($row.find("input[name$='usd_rate_item_to_inr']").val()) || 0;
+        let sellingInr = parseFloat($row.find("input[name$='usd_rate_item_to_inr_get']").val()) || 0;
+
+        let profitInput = $row.find(".profit");
+        let lossInput = $row.find(".loss");
+        let profitDisplay = $row.find(".profit-display");
+        let lossDisplay = $row.find(".loss-display");
+
+        let diff = sellingInr - buyingInr;
+
+        if (diff >= 0) {
+            profitInput.val(diff.toFixed(2));
+            profitDisplay.text("+₹" + diff.toFixed(2)).addClass("status-completed").removeClass("status-returned");
+            lossInput.val(0);
+            lossDisplay.text("").removeClass("status-returned");
+        } else {
+            profitInput.val(0);
+            profitDisplay.text("").removeClass("status-completed");
+            lossInput.val(Math.abs(diff).toFixed(2));
+            lossDisplay.text("-₹" + Math.abs(diff).toFixed(2)).addClass("status-returned").removeClass("status-completed");
+        }
+    }
+
+    // When unit changes in main form, recalculate all rows
+    $("#id_unit").on("change", function() {
+        console.log("Unit changed, recalculating all rows");
+        $("#formset-body .form-row").each(function() {
+            recalcRowFromCS($(this));
+        });
+    });
+
+    // Trigger recalculation when cartons (CS quantity) changes
+    $(document).on('input', "input[name$='cartons']", function () {
+        console.log("Cartons input changed");
+        let $row = $(this).closest('.form-row');
+        recalcRowFromCS($row);
+    });
+
+    // Also trigger when USD rate per kg changes
+    $(document).on('input', "input[name$='usd_rate_per_kg']", function () {
+        console.log("USD rate per kg changed");
+        let $row = $(this).closest('.form-row');
+        recalcRowFromCS($row);
+    });
+    
+    console.log("✓ Unit calculation script initialized");
+});
+</script>
+
+
+<script>// Arrow Key Navigation for Form Fields
+$(document).ready(function() {
+    console.log("✓ Arrow key navigation script loaded");
+    
+    // Handle keydown on input and select fields
+    $(document).on('keydown', 'input, select', function(e) {
+        // Left arrow key = 37, Right arrow key = 39
+        if (e.keyCode === 37 || e.keyCode === 39) {
+            
+            // For text input fields only, check cursor position
+            if (this.tagName === 'INPUT' && this.type === 'text') {
+                let cursorPos = this.selectionStart;
+                let textLength = this.value.length;
+                
+                // Left arrow: only navigate if cursor is at start
+                if (e.keyCode === 37 && cursorPos !== 0) {
+                    return; // Let default behavior work (move cursor)
+                }
+                
+                // Right arrow: only navigate if cursor is at end
+                if (e.keyCode === 39 && cursorPos !== textLength) {
+                    return; // Let default behavior work (move cursor)
+                }
+            }
+            
+            e.preventDefault();
+            
+            // Get all visible inputs and selects (except hidden profit/loss)
+            let $allFields = $('input:visible, select:visible').not('.profit, .loss, [type="hidden"]');
+            let currentIndex = $allFields.index(this);
+            
+            console.log("Current field index:", currentIndex);
+            
+            if (e.keyCode === 37) { // Left arrow
+                if (currentIndex > 0) {
+                    let $nextField = $allFields.eq(currentIndex - 1);
+                    $nextField.focus();
+                    if ($nextField.is('input')) {
+                        $nextField[0].select();
+                    }
+                    console.log("← Moved to previous field");
+                }
+            } else if (e.keyCode === 39) { // Right arrow
+                if (currentIndex < $allFields.length - 1) {
+                    let $nextField = $allFields.eq(currentIndex + 1);
+                    $nextField.focus();
+                    if ($nextField.is('input')) {
+                        $nextField[0].select();
+                    }
+                    console.log("→ Moved to next field");
+                }
+            }
+        }
+        
+        // Enter key - let default behavior (form submission) work
+        // No custom handling needed
+    });
+    
+    console.log("✓ Arrow key navigation ready - Use ← → arrows to navigate between fields");
+}); </script>
+
+
+{% endblock %}
+

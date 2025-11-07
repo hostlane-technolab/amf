@@ -1,0 +1,42 @@
+<table>
+    <tr>
+        <th>Source</th>
+        <th>Item</th>
+        <th>Unit</th>
+        <th>Glaze %</th>
+        <th>Category</th>
+        <th>Brand</th>
+        <th>Species</th>
+        <th>Peeling Type</th>
+        <th>Grade</th>
+        <th>Store</th>
+        <th>Processing Center</th>
+        <th>Slab Qty</th>
+        <th>C/S Qty</th>
+        <th>KG</th>
+        <th>Total USD</th>
+        <th>Total INR</th>
+        <th>Avg Yield %</th>
+    </tr>
+    {% for row in summary %}
+    <tr>
+        <td>{{ row.source|default:"-" }}</td>
+        <td>{{ row.item__name }}</td>
+        <td>{{ row.unit__name }}</td>
+        <td>{{ row.glaze__percentage }}</td>
+        <td>{{ row.freezing_category__name }}</td>
+        <td>{{ row.brand__name }}</td>
+        <td>{{ row.species__name }}</td>
+        <td>{{ row.peeling_type__name }}</td>
+        <td>{{ row.grade__name }}</td>
+        <td>{{ row.store__name }}</td>
+        <td>{{ row.processing_center__name }}</td>
+        <td>{{ row.total_slab }}</td>
+        <td>{{ row.total_cs }}</td>
+        <td>{{ row.total_kg }}</td>
+        <td>{{ row.total_usd }}</td>
+        <td>{{ row.total_inr }}</td>
+        <td>{{ row.avg_yield|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+</table>

@@ -1,0 +1,2116 @@
+{% extends "admin_base.html" %}
+{%block title%} Return Freezing create {%endblock%}
+{% load static %}
+
+{% block content %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Page header style -->
+        <style>
+            /* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1) !important;
+  outline: none !important;
+}
+            .header-content {
+  display: flex;
+  align-items: center;
+}
+
+/* Smaller header icons and text */
+.header-icon {
+  font-size: 11px !important;
+  margin-right: 6px !important;
+  display: none;
+}
+.header-text {
+  font-size: 13px !important;
+}
+
+        /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+        :root {
+            --ph-primary-color: #2563eb;
+            --ph-primary-hover: #1d4ed8;
+            --ph-secondary-color: #64748b;
+            --ph-bg-secondary: #f8fafc;
+            --ph-bg-tertiary: #f1f5f9;
+            --ph-bg-accent: #e2e8f0;
+            --ph-text-primary: #0f172a;
+            --ph-text-secondary: #4a4a4a;
+            --ph-text-light: #94a3b8;
+            --ph-border-color: #e2e8f0;
+            --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --ph-radius-sm: 8px;
+            --ph-radius-md: 12px;
+            --ph-radius-lg: 16px;
+            --ph-spacing-xs: 8px;
+            --ph-spacing-sm: 12px;
+            --ph-spacing-md: 16px;
+            --ph-spacing-lg: 24px;
+            --ph-spacing-xl: 32px;
+            --ph-spacing-2xl: 48px;
+        }
+
+        /* Page Header Section */
+        .page-header-section {
+            margin-bottom: var(--ph-spacing-2xl);
+        }
+
+        .ph-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* Changed from flex-start to center */
+            flex-wrap: wrap;
+            gap: var(--ph-spacing-lg);
+        }
+
+        .ph-header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--ph-spacing-md);
+            flex-shrink: 0;
+        }
+
+        .ph-icon-wrapper {
+            width: 64px;
+            height: 64px;
+            background: var(--ph-primary-color);
+            border-radius: var(--ph-radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: var(--ph-shadow-lg);
+            flex-shrink: 0;
+        }
+
+        .ph-header-text {
+            flex: 1;
+        }
+
+        .ph-header-title {
+            font-weight: 500;
+            font-size: 28px;
+            color: #2c3e50;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .ph-header-subtitle {
+            font-size: 16px;
+            color: var(--ph-text-secondary);
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .ph-header-stats {
+            margin-left: auto;
+        }
+
+        .ph-stat-badge {
+            display: flex;
+            align-items: center;
+
+            padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+            background: var(--ph-bg-tertiary);
+            border: 2px solid var(--ph-border-color);
+            border-radius: var(--ph-radius-md);
+            font-weight: 600;
+            color: var(--ph-text-secondary);
+            font-size: 14px;
+        }
+
+        /* Breadcrumbs */
+        .ph-breadcrumb-nav {
+            margin-top: 3rem;
+        }
+
+        .ph-breadcrumb-list {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            flex-wrap: wrap;
+
+        }
+
+        .ph-breadcrumb-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .ph-breadcrumb-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--ph-bg-secondary);
+            border-radius: var(--ph-radius-sm);
+            text-decoration: none;
+            color: var(--ph-text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .ph-breadcrumb-link:hover {
+            background: var(--ph-bg-accent);
+            color: var(--ph-text-primary);
+            border-color: var(--ph-border-color);
+        }
+
+        .ph-breadcrumb-item.active span {
+            color: var(--ph-primary-color);
+            font-weight: 600;
+            padding: 6px 12px;
+            background: rgba(37, 99, 235, 0.1);
+            border-radius: var(--ph-radius-sm);
+            font-size: 14px;
+        }
+
+        .ph-breadcrumb-separator {
+            color: var(--ph-text-light);
+            margin: 0 4px;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) { /* adjust breakpoint as needed */
+        .ph-header-stats {
+            display: none !important;
+        }
+        .ph-breadcrumb-nav {
+            margin-top: 5px;
+        }
+        .ph-header-title {
+            font-size: 1.7rem;
+        }
+        }
+        </style>
+
+        <style>
+        /* ===== PAGE HEADER STYLES ===== */
+        :root {
+            --ph-primary-color: #2563eb;
+            --ph-primary-hover: #1d4ed8;
+            --ph-secondary-color: #64748b;
+            --ph-bg-secondary: #f8fafc;
+            --ph-bg-tertiary: #f1f5f9;
+            --ph-bg-accent: #e2e8f0;
+            --ph-text-primary: #0f172a;
+            --ph-text-secondary: #4a4a4a;
+            --ph-text-light: #94a3b8;
+            --ph-border-color: #e2e8f0;
+            --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --ph-radius-sm: 8px;
+            --ph-radius-md: 12px;
+            --ph-radius-lg: 16px;
+            --ph-spacing-xs: 8px;
+            --ph-spacing-sm: 12px;
+            --ph-spacing-md: 16px;
+            --ph-spacing-lg: 24px;
+            --ph-spacing-xl: 32px;
+            --ph-spacing-2xl: 48px;
+        }
+
+
+        /* ===== FORM STYLES ===== */
+        .return-tenant-form {
+            margin-top: 2rem;
+        }
+
+        .form-card {
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: none;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+            border-bottom: 2px solid #f1f3f7;
+            padding: 25px 30px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .icon-wrapper {
+            width: 60px;
+            height: 60px;
+            background: #dc3545;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.2);
+        }
+
+        .card-title {
+            font-size: 26px;
+            color: #2c3e50;
+            letter-spacing: -0.5px;
+            margin-bottom: 0;
+        }
+
+        .card-header p {
+            color: #6c757d;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 30px;
+        }
+
+        /* ===== BASIC ENTRY TABLE ===== */
+        .basic-entry-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+
+        .basic-entry-table th {
+            background: #f8f9fd;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            padding: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .basic-entry-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f1f3f7;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-icon {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* ===== STOCK DISPLAY ===== */
+        #available-stock-section {
+            margin: 20px 30px;
+        }
+
+        #available-stock-section .alert {
+            border-radius: 12px;
+            border: 2px solid #d1ecf1;
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            padding: 20px;
+        }
+
+        #available-stock-section h5 {
+            color: #0c5460;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        #available-stock-section table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #available-stock-section thead {
+            background: #0c5460;
+            color: white;
+        }
+
+        #available-stock-section thead th {
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        #available-stock-section tbody td {
+            padding: 10px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        /* ===== ITEMS TABLE ===== */
+        .add-btn {
+            background: #dc3545;
+            color: white;
+            border: 2px solid #dc3545;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background: #c82333;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-header {
+            background: #dc3545;
+            border: none;
+            padding: 18px 12px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .table-header .header-content {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .table-header .header-icon {
+            font-size: 11px;
+            display: none;
+        }
+
+        .table-row {
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .table-row:hover {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.02) 0%, rgba(220, 53, 69, 0.05) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .table-cell {
+            /* padding: 15px 12px; */
+            border: none;
+            border-bottom: 1px solid #f1f3f7;
+            vertical-align: middle;
+        }
+
+        .table-cell input, 
+        .table-cell select {
+            padding: 10px 12px !important;
+            border: 2px solid #e9ecef !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            width: 100% !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .table-cell input:focus, 
+        .table-cell select:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1) !important;
+            outline: none !important;
+        }
+
+        .available-slab, .available-cs, .available-kg {
+            display: block;
+            margin-top: 4px;
+            color: #28a745;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            border: 2px solid;
+            background: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .delete-btn, .remove-btn {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border-color: rgba(220, 53, 69, 0.2);
+        }
+
+        .delete-btn:hover, .remove-btn:hover {
+            background: #dc3545;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .action-btn i {
+            margin-right: 6px;
+            font-size: 16px;
+        }
+
+             /* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.form-actions .row {
+  width: 100%;
+}
+
+.submit-btn {
+  background: #007bff;
+  color: white;
+  border: 2px solid #007bff;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+            background: #0056b3;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+        .validation-error {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            .ph-header-title {
+                font-size: 1.7rem;
+            }
+            
+            .ph-breadcrumb-nav {
+                margin-top: 5px;
+            }
+            
+            .card-header {
+                padding: 20px !important;
+                flex-direction: column;
+            }
+            
+            .card-header .d-flex {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            
+            .icon-wrapper {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 20px !important;
+                margin-right: 15px !important;
+            }
+            
+            .card-title {
+                font-size: 20px !important;
+            }
+            
+            .add-btn {
+                width: 100%;
+                margin-top: 15px;
+                justify-content: center;
+            }
+            
+            .basic-entry-table thead {
+                display: none;
+            }
+            
+            .basic-entry-table tbody,
+            .basic-entry-table tr,
+            .basic-entry-table td {
+                display: block;
+                width: 100%;
+            }
+            
+            .basic-entry-table tr {
+                margin-bottom: 15px;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 15px;
+                background: #f8f9fd;
+            }
+            
+            .basic-entry-table td {
+                border: none !important;
+                padding: 10px 0 !important;
+                position: relative;
+            }
+            
+            .basic-entry-table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                display: block;
+                margin-bottom: 5px;
+                color: #495057;
+                font-size: 12px;
+                text-transform: uppercase;
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .modern-table {
+                min-width: 1200px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .submit-btn, .cancel-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .ph-header-title {
+                font-size: 1.25rem !important;
+            }
+            
+            .card-title {
+                font-size: 18px !important;
+            }
+        }
+        </style>
+
+              <style>
+        /* Basic Entry Table */
+        .basic-entry-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 0;
+        }
+
+ 
+        .basic-entry-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f1f3f7;
+        }
+
+        .basic-entry-table th {
+            background: #dc3545;
+            font-weight: 600;
+            color: #ffffff;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            padding: 14px !important;
+        }
+
+        .basic-entry-table input,
+        .basic-entry-table select {
+            padding-left: 15px !important;
+        }
+
+        
+
+      </style>
+
+<div class="container-fluid" style="margin-top: 5rem;">
+    <div class="page-inner">
+        <!-- Page Header -->
+        <div class="page-header-section" style="margin-top: 1rem;">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-undo"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">{% if form.instance.pk %}Update Return Tenant Freezing{% else %}Create Return Tenant Entry{% endif %}</h3>
+                        <p class="ph-header-subtitle">Process tenant stock returns</p>
+                    </div>
+                </div>
+
+                <!-- Breadcrumbs - Now inline with header -->
+                <nav class="ph-breadcrumb-nav">
+                    <ol class="ph-breadcrumb-list">
+                        <li class="ph-breadcrumb-item">
+                            <a href="#" class="ph-breadcrumb-link">
+                                <i class="icon-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item ">
+                            <a href="{%url 'adminapp:list_return_tenant'%}" class="ph-breadcrumb-link">
+                                <i class="fas fa-undo"></i>
+                                <span>Return Entries</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="">
+                                <span>Create</span>
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+        <!-- Form -->
+        <form method="POST" id="returnTenantForm" class="return-tenant-form">
+            {% csrf_token %}
+            
+            <!-- Basic Details Card -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title">Return Details</h3>
+                            <p class="text-muted mb-0">Enter basic return information</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <table class="basic-entry-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-calendar-alt header-icon"></i>
+                                        <span>Return Date</span>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-hashtag header-icon"></i>
+                                        <span>Voucher Number</span>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-building header-icon"></i>
+                                        <span>Tenant Company</span>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-toggle-on header-icon"></i>
+                                        <span>Return Status</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="Return Date">
+                                    {{ form.return_date }}
+                                    {{ form.return_date.errors }}
+                                </td>
+                                <td data-label="Voucher Number">
+                                    {{ form.voucher_number }}
+                                    {{ form.voucher_number.errors }}
+                                </td>
+                                <td data-label="Tenant Company">
+                                    {{ form.tenant_company_name }}
+                                    {{ form.tenant_company_name.errors }}
+                                </td>
+                                <td data-label="Return Status">
+                                    {{ form.return_status }}
+                                    {{ form.return_status.errors }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Available Stock Display -->
+            <div id="available-stock-section" style="display:none;">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-warehouse"></i> Available Stock for Selected Tenant</h5>
+                    <div id="stock-summary">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Return Items Card -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <div class="icon-wrapper me-4">
+                                <i class="fas fa-boxes"></i>
+                            </div>
+                            <div>
+                                <h4 class="card-title">Return Items</h4>
+                                <p class="text-muted mb-0">Modify items to return</p>
+                            </div>
+                        </div>
+                        <button type="button" class="add-btn" id="add-form-btn">
+                            <i class="fas fa-plus me-2"></i>Add Item
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    {{ formset.management_form }}
+                    
+                    <div class="table-responsive">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-industry header-icon"></i>
+                                            <span>PR Center</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-store header-icon"></i>
+                                            <span>Store</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-tag header-icon"></i>
+                                            <span>Item</span>
+                                        </div>
+                                    </th>
+                                   <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-star header-icon"></i>
+                                            <span>Item Sub</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-ruler header-icon"></i>
+                                            <span>Unit</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-sparkles header-icon"></i>
+                                            <span>Glaze</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-list header-icon"></i>
+                                            <span>Category</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-trademark header-icon"></i>
+                                            <span>Brand</span>
+                                        </div>
+                                    </th>
+                                    <!-- <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-fish header-icon"></i>
+                                            <span>Species</span>
+                                        </div>
+                                    </th> -->
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-certificate header-icon"></i>
+                                            <span>Grade</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-layer-group header-icon"></i>
+                                            <span>Slab Qty</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-cubes header-icon"></i>
+                                            <span>C/S Qty</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header">
+                                        <div class="header-content">
+                                            <i class="fas fa-weight-hanging header-icon"></i>
+                                            <span>KG</span>
+                                        </div>
+                                    </th>
+                                    <th class="table-header text-center">
+                                        <div class="header-content justify-content-center">
+                                            <i class="fas fa-tools header-icon"></i>
+                                            <span>Action</span>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="formset-container">
+                                {% for form in formset %}
+                                <tr class="formset-row table-row">
+                                    {{ form.id }}
+                                    {{ form.return_entry }}
+                                    
+                                    <td class="table-cell">
+                                        {{ form.processing_center }}
+                                        {% if form.processing_center.errors %}
+                                            <div class="validation-error">{{ form.processing_center.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.store }}
+                                        {% if form.store.errors %}
+                                            <div class="validation-error">{{ form.store.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.item }}
+                                        {% if form.item.errors %}
+                                            <div class="validation-error">{{ form.item.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.item_quality }}
+                                        {% if form.item_quality.errors %}
+                                            <div class="validation-error">{{ form.item_quality.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.unit }}
+                                        {% if form.unit.errors %}
+                                            <div class="validation-error">{{ form.unit.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.glaze }}
+                                        {% if form.glaze.errors %}
+                                            <div class="validation-error">{{ form.glaze.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.freezing_category }}
+                                        {% if form.freezing_category.errors %}
+                                            <div class="validation-error">{{ form.freezing_category.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.brand }}
+                                        {% if form.brand.errors %}
+                                            <div class="validation-error">{{ form.brand.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <!-- <td class="table-cell">
+                                        {{ form.species }}
+                                        {% if form.species.errors %}
+                                            <div class="validation-error">{{ form.species.errors }}</div>
+                                        {% endif %}
+                                    </td> -->
+                                    <td class="table-cell">
+                                        {{ form.grade }}
+                                        {% if form.grade.errors %}
+                                            <div class="validation-error">{{ form.grade.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.slab_quantity }}
+                                        <small class="available-slab"></small>
+                                        {% if form.slab_quantity.errors %}
+                                            <div class="validation-error">{{ form.slab_quantity.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.c_s_quantity }}
+                                        <small class="available-cs"></small>
+                                        {% if form.c_s_quantity.errors %}
+                                            <div class="validation-error">{{ form.c_s_quantity.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell">
+                                        {{ form.kg }}
+                                        <small class="available-kg"></small>
+                                        {% if form.kg.errors %}
+                                            <div class="validation-error">{{ form.kg.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="table-cell text-center">
+                                        <button type="button" class="action-btn delete-btn remove-btn">
+                                            <i class="fas fa-trash-alt"></i>
+                                            <span>Remove</span>
+                                        </button>
+                                        <div class="hidden">{{ form.DELETE }}</div>
+                                        {% if form.DELETE.errors %}
+                                            <div class="validation-error">{{ form.DELETE.errors }}</div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Totals Card -->
+            <div class="form-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title">Total Summary</h4>
+                            <p class="text-muted mb-0">Overall return quantities</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <table class="basic-entry-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-layer-group header-icon"></i>
+                                        <span>Total Slab</span>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-cubes header-icon"></i>
+                                        <span>Total C/S</span>
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="header-content">
+                                        <i class="fas fa-weight header-icon"></i>
+                                        <span>Total KG</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="Total Slab">
+                                    {{ form.total_slab }}
+                                    {{ form.total_slab.errors }}
+                                </td>
+                                <td data-label="Total C/S">
+                                    {{ form.total_c_s }}
+                                    {{ form.total_c_s.errors }}
+                                </td>
+                                <td data-label="Total KG">
+                                    {{ form.total_kg }}
+                                    {{ form.total_kg.errors }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-save me-2"></i>Save Return Entry
+                </button>
+                <a href="{% url 'adminapp:list_return_tenant' %}" class="cancel-btn">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+    <!-- // ITEM QUALITY LOADER spot-->
+    <script>
+    $(document).ready(function() {
+        console.log('Item Quality Script Loaded');
+
+        // Event handler for item selection change
+        $(document).on('change', 'select[name$="-item"]', function() {
+            const itemSelect = $(this);
+            const itemId = itemSelect.val();
+            const row = itemSelect.closest('tr');
+            const qualitySelect = row.find('select[name$="-item_quality"]');
+
+            console.log('Item changed. Item ID:', itemId);
+
+            // Reset quality dropdown
+            qualitySelect.empty().append('<option value="">---------</option>');
+
+            // If item is selected, fetch its qualities
+            if (itemId) {
+                console.log('Fetching qualities for item:', itemId);
+                
+                $.get("{% url 'adminapp:get_item_qualities' %}", { item_id: itemId })
+                    .done(function(data) {
+                        console.log('Qualities received:', data);
+                        
+                        // Check if data is an array and has items
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function(quality) {
+                                qualitySelect.append(
+                                    `<option value="${quality.id}">${quality.quality}</option>`
+                                );
+                            });
+                            console.log(`Loaded ${data.length} qualities`);
+                        } else {
+                            console.log('No qualities found for this item');
+                            // Optionally add a message to the dropdown
+                            // qualitySelect.append('<option value="">No qualities available</option>');
+                        }
+                    })
+                    .fail(function(xhr, status, error) {
+                        console.error('Error loading qualities:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+                        
+                        // Optionally show error message to user
+                        qualitySelect.append('<option value="">Error loading qualities</option>');
+                    });
+            } else {
+                console.log('No item selected, quality dropdown reset');
+            }
+        });
+
+        console.log('Item quality event handler attached');
+    });
+    </script>
+
+    <!-- Load grade with species -->
+    <script>
+        // Load grade with species - CORRECTED VERSION
+    $(document).on("change", "select[name$='species']", function () {
+        var speciesId = $(this).val();
+        // Changed from .formset-form to .formset-row to match your HTML
+        var $gradeSelect = $(this).closest(".formset-row").find("select[name$='grade']");
+
+        console.log("Species changed. Species ID:", speciesId);
+        console.log("Grade select found:", $gradeSelect.length > 0);
+
+        if (speciesId) {
+            $.ajax({
+                url: "{% url 'adminapp:get_grade_for_species' %}",
+                data: { "species_id": speciesId },
+                dataType: "json",
+                success: function (data) {
+                    console.log("Grades received:", data);
+                    
+                    $gradeSelect.empty();
+                    $gradeSelect.append($("<option>", { value: "", text: "---------" }));
+
+                    $.each(data.grades, function (index, grade) {
+                        $gradeSelect.append($("<option>", {
+                            value: grade.id,
+                            text: grade.grade
+                        }));
+                    });
+                    
+                    console.log("Loaded " + data.grades.length + " grades");
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading grades:", {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                }
+            });
+        } else {
+            $gradeSelect.empty();
+            $gradeSelect.append($("<option>", { value: "", text: "---------" }));
+        }
+    });
+    </script>
+
+    <!-- Load grade with Item -->
+    <script>
+    $(document).ready(function () {
+        console.log("Item → Grade script loaded");
+
+        // When an item select changes
+        $(document).on("change", 'select[name$="-item"], select[name="item"]', function () {
+            const itemSelect = $(this);
+            const itemId = itemSelect.val();
+            const row = itemSelect.closest("tr");
+            const gradeSelect = row.find("select[name$='-grade'], select[name='grade']");
+
+            console.log("Item changed. Item ID:", itemId);
+
+            // Reset grade dropdown
+            gradeSelect.empty().append('<option value="">---------</option>');
+
+            if (itemId) {
+                console.log("Fetching grades for item:", itemId);
+
+                $.get("{% url 'adminapp:get_item_grades' %}", { item_id: itemId })
+                    .done(function (data) {
+                        console.log("Grades received:", data);
+
+                        // Handle both array and object response types
+                        const grades = Array.isArray(data) ? data : data.grades || [];
+
+                        if (grades.length > 0) {
+                            grades.forEach(function (grade) {
+                                gradeSelect.append(
+                                    `<option value="${grade.id}">${grade.grade}</option>`
+                                );
+                            });
+                            console.log(`Loaded ${grades.length} grades`);
+                        } else {
+                            console.log("No grades found for this item");
+                        }
+                    })
+                    .fail(function (xhr, status, error) {
+                        console.error("Error loading grades:", {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText,
+                        });
+                        gradeSelect.append('<option value="">Error loading grades</option>');
+                    });
+            } else {
+                console.log("No item selected, grade dropdown reset");
+            }
+        });
+    });
+    </script>
+    
+    <!-- Species AJAX Loader -->
+    <script>
+    $(document).ready(function () {
+        console.log("Species & Peeling AJAX ready");
+
+        // Listen for item change - using name attribute selector to match any item field
+        $(document).on("change", "select[name$='-item']", function () {
+            let itemId = $(this).val();
+            let row = $(this).closest(".formset-row"); // Changed from .formset-form to .formset-row
+
+            console.log("Item changed. Item ID:", itemId);
+            console.log("Row found:", row.length > 0);
+
+            if (!itemId) {
+                // Clear species and peeling if no item selected
+                row.find("select[name$='-species']").empty().append('<option value="">---------</option>');
+                row.find("select[name$='-peeling']").empty().append('<option value="">---------</option>');
+                return;
+            }
+
+            // 🔹 1. Fetch Species for this item
+            $.ajax({
+                url: "{% url 'adminapp:get_species_for_item' %}",
+                data: { item_id: itemId },
+                dataType: "json",
+                success: function (response) {
+                    console.log("Species received:", response);
+                    
+                    let speciesSelect = row.find("select[name$='-species']");
+                    console.log("Species select found:", speciesSelect.length > 0);
+                    
+                    speciesSelect.empty().append('<option value="">---------</option>');
+                    
+                    if (response.species && response.species.length > 0) {
+                        $.each(response.species, function (i, species) {
+                            speciesSelect.append('<option value="' + species.id + '">' + species.name + '</option>');
+                        });
+                        console.log("Loaded " + response.species.length + " species");
+                    } else {
+                        console.log("No species found for this item");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading species:", {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                }
+            });
+
+            // 🔹 2. Fetch Peeling Types for this item (if you have this endpoint)
+            $.ajax({
+                url: "{% url 'adminapp:get_peeling_for_item' %}",
+                data: { item_id: itemId },
+                dataType: "json",
+                success: function (response) {
+                    console.log("Peeling types received:", response);
+                    
+                    let peelingSelect = row.find("select[name$='-peeling']");
+                    console.log("Peeling select found:", peelingSelect.length > 0);
+                    
+                    peelingSelect.empty().append('<option value="">---------</option>');
+                    
+                    if (response.peeling_types && response.peeling_types.length > 0) {
+                        $.each(response.peeling_types, function (i, peeling) {
+                            peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
+                        });
+                        console.log("Loaded " + response.peeling_types.length + " peeling types");
+                    } else {
+                        console.log("No peeling types found for this item");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("Error loading peeling types:", {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    // Don't show error if endpoint doesn't exist or returns 404
+                    if (xhr.status !== 404) {
+                        console.warn("Peeling endpoint may not be implemented");
+                    }
+                }
+            });
+        });
+
+        console.log("Species & Peeling event handler attached");
+    });
+    </script>
+    
+    <!-- Unit Calculation -->
+    <script>
+    $(document).ready(function () {
+        let dollarRate = 0;
+    
+        // Fetch dollar rate on page load
+        $.getJSON("{% url 'adminapp:get_dollar_rate' %}", function (data) {
+            if (data.dollar_rate_to_inr) {
+                dollarRate = parseFloat(data.dollar_rate_to_inr);
+            }
+        }).fail(function() {
+            console.log('Could not fetch dollar rate, using default 0');
+        });
+    
+        // Helper to recalc a single formset row
+        function recalcRow($row) {
+            let slabQty = parseFloat($row.find('.slab-quantity').val()) || 0;
+            let usdPerKg = parseFloat($row.find('.usd-rate-per-kg').val()) || 0;
+            let precision = parseFloat($row.data('precision')) || 0;
+            let factor = parseFloat($row.data('factor')) || 0;
+    
+            // Calculate CS Quantity only if we have slab quantity and precision
+            if (slabQty && precision) {
+                $row.find('.cs-quantity').val((slabQty / precision).toFixed(2));
+            } else if (!slabQty) {
+                $row.find('.cs-quantity').val('');
+            }
+    
+            // Calculate KG only if we have slab quantity and factor
+            if (slabQty && factor) {
+                $row.find('.kg').val((slabQty * factor).toFixed(2));
+            } else if (!slabQty) {
+                $row.find('.kg').val('');
+            }
+    
+            // Calculate USD Rate Item only if we have both KG and USD per KG
+            let kg = parseFloat($row.find('.kg').val()) || 0;
+            if (kg && usdPerKg) {
+                $row.find('.usd-rate-item').val((usdPerKg * kg).toFixed(2));
+            } else {
+                $row.find('.usd-rate-item').val('');
+            }
+    
+            // Calculate USD Rate Item to INR
+            let usdItem = parseFloat($row.find('.usd-rate-item').val()) || 0;
+            if (usdItem && dollarRate) {
+                $row.find('.usd-rate-item-inr').val((usdItem * dollarRate).toFixed(2));
+            } else {
+                $row.find('.usd-rate-item-inr').val('');
+            }
+        }
+    
+        // When unit changes → fetch precision/factor and recalc
+        $(document).on('change', '.unit-select', function () {
+            let $row = $(this).closest('.formset-form');
+            let unitId = $(this).val();
+    
+            if (!unitId) {
+                // Clear data attributes if no unit selected
+                $row.removeData('precision').removeData('factor');
+                recalcRow($row);
+                return;
+            }
+    
+            $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+                $row.data('precision', data.precision);
+                $row.data('factor', data.factor);
+                recalcRow($row);
+            }).fail(function() {
+                console.log('Could not fetch unit details for unit ID:', unitId);
+            });
+        });
+    
+        // Trigger recalculation on input changes
+        $(document).on('input', '.slab-quantity, .usd-rate-per-kg', function () {
+            let $row = $(this).closest('.formset-form');
+            recalcRow($row);
+        });
+    
+        // Clear dependent fields when slab quantity is cleared
+        $(document).on('input', '.slab-quantity', function () {
+            let $row = $(this).closest('.formset-form');
+            if (!$(this).val()) {
+                $row.find('.cs-quantity, .kg, .usd-rate-item, .usd-rate-item-inr').val('');
+            }
+        });
+    
+        // Clear dependent fields when USD rate per kg is cleared
+        $(document).on('input', '.usd-rate-per-kg', function () {
+            let $row = $(this).closest('.formset-form');
+            if (!$(this).val()) {
+                $row.find('.usd-rate-item, .usd-rate-item-inr').val('');
+            }
+        });
+    
+        // Prevent any automatic filling of USD rate per kg in cloned forms
+        $(document).on('focus', '.usd-rate-per-kg', function() {
+            // Only allow focus if it's an existing form or user actually clicked
+            let $row = $(this).closest('.formset-form');
+            if (!$(this).data('user-interaction') && $row.index() > 0) {
+                // This is a cloned form and no user interaction yet
+                if ($(this).val() !== '') {
+                    console.log('Auto-filled value detected, clearing...');
+                    $(this).val('');
+                }
+            }
+            $(this).data('user-interaction', true);
+        });
+    });
+    </script>
+
+    <!-- Auto Calculate Slab, C/S, and KG -->
+    <script>
+    $(document).ready(function () {
+        console.log("Auto-calculation script loaded");
+
+        // Helper function to recalculate all three fields based on which one changed
+        function recalculateQuantities($row, changedField) {
+            let precision = parseFloat($row.data('precision')) || 0;
+            let factor = parseFloat($row.data('factor')) || 0;
+
+            // Get input elements
+            let $slabInput = $row.find('input[name$="-slab_quantity"]');
+            let $csInput = $row.find('input[name$="-c_s_quantity"]');
+            let $kgInput = $row.find('input[name$="-kg"]');
+
+            console.log("Recalculating from:", changedField);
+            console.log("Precision:", precision, "Factor:", factor);
+
+            // If no precision or factor, can't calculate
+            if (!precision && !factor) {
+                console.log("No precision/factor available yet");
+                return;
+            }
+
+            if (changedField === 'slab') {
+                let slabQty = parseFloat($slabInput.val()) || 0;
+                
+                if (slabQty > 0) {
+                    // Calculate C/S from Slab (Slab / Precision)
+                    if (precision > 0) {
+                        let csQty = slabQty / precision;
+                        $csInput.val(csQty.toFixed(2));
+                        console.log("Calculated C/S:", csQty);
+                    }
+                    
+                    // Calculate KG from Slab (Slab * Factor)
+                    if (factor > 0) {
+                        let kgQty = slabQty * factor;
+                        $kgInput.val(kgQty.toFixed(2));
+                        console.log("Calculated KG:", kgQty);
+                    }
+                } else {
+                    // Clear other fields if slab is empty
+                    $csInput.val('');
+                    $kgInput.val('');
+                }
+            }
+            else if (changedField === 'cs') {
+                let csQty = parseFloat($csInput.val()) || 0;
+                
+                if (csQty > 0) {
+                    // Calculate Slab from C/S (C/S * Precision)
+                    if (precision > 0) {
+                        let slabQty = csQty * precision;
+                        $slabInput.val(slabQty.toFixed(2));
+                        console.log("Calculated Slab:", slabQty);
+                        
+                        // Now calculate KG from the new Slab value
+                        if (factor > 0) {
+                            let kgQty = slabQty * factor;
+                            $kgInput.val(kgQty.toFixed(2));
+                            console.log("Calculated KG:", kgQty);
+                        }
+                    }
+                } else {
+                    // Clear other fields if CS is empty
+                    $slabInput.val('');
+                    $kgInput.val('');
+                }
+            }
+            else if (changedField === 'kg') {
+                let kgQty = parseFloat($kgInput.val()) || 0;
+                
+                if (kgQty > 0) {
+                    // Calculate Slab from KG (KG / Factor)
+                    if (factor > 0) {
+                        let slabQty = kgQty / factor;
+                        $slabInput.val(slabQty.toFixed(2));
+                        console.log("Calculated Slab:", slabQty);
+                        
+                        // Now calculate C/S from the new Slab value
+                        if (precision > 0) {
+                            let csQty = slabQty / precision;
+                            $csInput.val(csQty.toFixed(2));
+                            console.log("Calculated C/S:", csQty);
+                        }
+                    }
+                } else {
+                    // Clear other fields if KG is empty
+                    $slabInput.val('');
+                    $csInput.val('');
+                }
+            }
+
+            // Trigger total calculation after updating quantities
+            calculateTotals();
+        }
+
+        // When unit changes, fetch precision and factor
+        $(document).on('change', 'select[name$="-unit"]', function () {
+            let $row = $(this).closest('.formset-row');
+            let unitId = $(this).val();
+
+            console.log("Unit changed. Unit ID:", unitId);
+
+            if (!unitId) {
+                // Clear data attributes and fields if no unit selected
+                $row.removeData('precision').removeData('factor');
+                $row.find('input[name$="-slab_quantity"]').val('');
+                $row.find('input[name$="-c_s_quantity"]').val('');
+                $row.find('input[name$="-kg"]').val('');
+                return;
+            }
+
+            // Fetch unit details
+            $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId })
+                .done(function (data) {
+                    console.log("Unit details received:", data);
+                    $row.data('precision', data.precision);
+                    $row.data('factor', data.factor);
+                })
+                .fail(function() {
+                    console.log('Could not fetch unit details for unit ID:', unitId);
+                });
+        });
+
+        // Listen for Slab Quantity changes
+        $(document).on('input', 'input[name$="-slab_quantity"]', function () {
+            let $row = $(this).closest('.formset-row');
+            recalculateQuantities($row, 'slab');
+        });
+
+        // Listen for C/S Quantity changes
+        $(document).on('input', 'input[name$="-c_s_quantity"]', function () {
+            let $row = $(this).closest('.formset-row');
+            recalculateQuantities($row, 'cs');
+        });
+
+        // Listen for KG changes
+        $(document).on('input', 'input[name$="-kg"]', function () {
+            let $row = $(this).closest('.formset-row');
+            recalculateQuantities($row, 'kg');
+        });
+
+        // Calculate totals function (assumes you have this elsewhere, but including for safety)
+        function calculateTotals() {
+            let totalSlab = 0, totalCS = 0, totalKG = 0;
+            
+            $('.formset-row').each(function() {
+                const $row = $(this);
+                const deleteCheckbox = $row.find('input[name*="DELETE"]');
+                
+                // Only count rows that aren't marked for deletion
+                if (!deleteCheckbox.is(':checked') && $row.is(':visible')) {
+                    const slabVal = parseFloat($row.find('input[name$="-slab_quantity"]').val()) || 0;
+                    const csVal = parseFloat($row.find('input[name$="-c_s_quantity"]').val()) || 0;
+                    const kgVal = parseFloat($row.find('input[name$="-kg"]').val()) || 0;
+                    
+                    totalSlab += slabVal;
+                    totalCS += csVal;
+                    totalKG += kgVal;
+                }
+            });
+            
+            // Update total fields
+            $('#id_total_slab').val(totalSlab.toFixed(2));
+            $('#id_total_c_s').val(totalCS.toFixed(2));
+            $('#id_total_kg').val(totalKG.toFixed(2));
+            
+            console.log("Totals updated - Slab:", totalSlab, "C/S:", totalCS, "KG:", totalKG);
+        }
+
+        // Initialize precision/factor for existing rows on page load
+        $('.formset-row').each(function() {
+            let $row = $(this);
+            let $unitSelect = $row.find('select[name$="-unit"]');
+            let unitId = $unitSelect.val();
+            
+            if (unitId) {
+                $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId })
+                    .done(function (data) {
+                        $row.data('precision', data.precision);
+                        $row.data('factor', data.factor);
+                        console.log("Initialized unit data for existing row:", data);
+                    });
+            }
+        });
+
+        console.log("Auto-calculation event handlers attached");
+    });
+    </script>
+
+    <script>
+    let tenantStockData = [];
+
+    // When tenant is selected, load their available stock
+    document.getElementById('id_tenant_company_name').addEventListener('change', function() {
+        const tenantId = this.value;
+        
+        if (!tenantId) {
+            document.getElementById('available-stock-section').style.display = 'none';
+            return;
+        }
+
+        // Fetch tenant stock via AJAX
+        fetch(`/adminapp/get-tenant-stock/?tenant_id=${tenantId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tenantStockData = data.stock_items;
+                    displayStockSummary(data.stock_items);
+                } else {
+                    alert('Error loading stock: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to load tenant stock');
+            });
+    });
+
+    function displayStockSummary(stockItems) {
+        const section = document.getElementById('available-stock-section');
+        const summary = document.getElementById('stock-summary');
+        
+        if (stockItems.length === 0) {
+            summary.innerHTML = '<p class="text-warning">⚠️ No available stock found for this tenant</p>';
+        } else {
+            let html = `<p><strong>Total ${stockItems.length} items available</strong></p>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Species</th>
+                            <th>Grade</th>
+                            <th>Slab</th>
+                            <th>C/S</th>
+                            <th>KG</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            stockItems.forEach(item => {
+                html += `<tr>
+                    <td>${item.item_name}</td>
+                    <td>${item.species_name}</td>
+                    <td>${item.grade_name}</td>
+                    <td>${item.available_slab}</td>
+                    <td>${item.available_c_s}</td>
+                    <td>${item.available_kg}</td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            summary.innerHTML = html;
+        }
+        
+        section.style.display = 'block';
+    }
+
+    // Calculate totals when quantities change
+    document.addEventListener('input', function(e) {
+        if (e.target.name && (
+            e.target.name.includes('slab_quantity') || 
+            e.target.name.includes('c_s_quantity') || 
+            e.target.name.includes('kg')
+        )) {
+            calculateTotals();
+        }
+    });
+
+    function calculateTotals() {
+        let totalSlab = 0, totalCS = 0, totalKG = 0;
+        
+        document.querySelectorAll('.formset-row').forEach(row => {
+            const deleteCheckbox = row.querySelector('[name*="DELETE"]');
+            if (!deleteCheckbox || !deleteCheckbox.checked) {
+                const slabInput = row.querySelector('[name*="slab_quantity"]');
+                const csInput = row.querySelector('[name*="c_s_quantity"]');
+                const kgInput = row.querySelector('[name*="kg"]');
+                
+                totalSlab += parseFloat(slabInput?.value || 0);
+                totalCS += parseFloat(csInput?.value || 0);
+                totalKG += parseFloat(kgInput?.value || 0);
+            }
+        });
+        
+        document.getElementById('id_total_slab').value = totalSlab.toFixed(2);
+        document.getElementById('id_total_c_s').value = totalCS.toFixed(2);
+        document.getElementById('id_total_kg').value = totalKG.toFixed(2);
+    }
+
+    // Add Item Functionality
+    $(document).ready(function() {
+        console.log("Formset management initialized");
+        
+        $("#add-form-btn").click(function() {
+            let totalForms = parseInt($("#id_items-TOTAL_FORMS").val());
+            console.log("Current total forms:", totalForms);
+            
+            let $templateForm = $(".formset-row:first");
+            let $newForm = $templateForm.clone(true);
+            
+            console.log("Creating form with index:", totalForms);
+            
+            $newForm.find("input, select, textarea").each(function() {
+                let $field = $(this);
+                let name = $field.attr("name");
+                let id = $field.attr("id");
+                
+                if (name) {
+                    name = name.replace(/items-\d+-/, "items-" + totalForms + "-");
+                    $field.attr("name", name);
+                    console.log("Updated name:", name);
+                }
+                
+                if (id) {
+                    id = id.replace(/items-\d+-/, "items-" + totalForms + "-");
+                    $field.attr("id", id);
+                    console.log("Updated id:", id);
+                }
+                
+                if ($field.attr("type") === "hidden") {
+                    if (name && name.includes('-id')) {
+                        $field.val("");
+                    }
+                    if (name && name.includes('-DELETE')) {
+                        $field.prop("checked", false);
+                    }
+                } else {
+                    $field.val("");
+                    if ($field.attr("type") === "checkbox") {
+                        $field.prop("checked", false);
+                    }
+                }
+            });
+
+            $newForm.find("select").each(function() {
+                this.selectedIndex = 0;
+            });
+            
+            $newForm.find(".available-slab, .available-cs, .available-kg").text("");
+            
+            $("#formset-container").append($newForm);
+            
+            totalForms++;
+            $("#id_items-TOTAL_FORMS").val(totalForms);
+            
+            console.log("Added new form, total forms now:", totalForms);
+            calculateTotals();
+        });
+    });
+
+    // Remove Item Functionality
+    $(document).ready(function() {
+        console.log("Remove functionality initialized");
+
+        function removeFormRow($row) {
+            let totalRows = $(".formset-row").length;
+            
+            if (totalRows <= 1) {
+                alert("At least one item is required.");
+                return;
+            }
+
+            let idField = $row.find('input[name*="-id"]');
+            if (idField.length && idField.val()) {
+                let deleteField = $row.find('input[name*="-DELETE"]');
+                deleteField.prop('checked', true);
+                $row.hide();
+                console.log("Marked existing row for deletion");
+            } else {
+                $row.remove();
+                console.log("Removed new row completely");
+                updateFormIndices();
+            }
+            
+            calculateTotals();
+        }
+
+        function updateFormIndices() {
+            let formIndex = 0;
+            $(".formset-row:visible").each(function() {
+                $(this).find("input, select, textarea").each(function() {
+                    let $field = $(this);
+                    let name = $field.attr("name");
+                    let id = $field.attr("id");
+                    
+                    if (name) {
+                        name = name.replace(/items-\d+-/, "items-" + formIndex + "-");
+                        $field.attr("name", name);
+                    }
+                    
+                    if (id) {
+                        id = id.replace(/items-\d+-/, "items-" + formIndex + "-");
+                        $field.attr("id", id);
+                    }
+                });
+                formIndex++;
+            });
+            
+            $("#id_items-TOTAL_FORMS").val($(".formset-row").length);
+            console.log("Updated form indices, total forms:", $("#id_items-TOTAL_FORMS").val());
+        }
+
+        $(document).on("click", ".remove-btn", function(e) {
+            e.preventDefault();
+            let $row = $(this).closest(".formset-row");
+            removeFormRow($row);
+        });
+
+        $(document).on("keydown", function(e) {
+            if (e.key === "Delete" || e.keyCode === 46) {
+                let $activeElement = $(document.activeElement);
+                let $row = $activeElement.closest(".formset-row");
+                
+                if ($row.length && $activeElement.is("input, select, textarea")) {
+                    e.preventDefault();
+                    removeFormRow($row);
+                }
+            }
+        });
+    });
+
+    // F1 key shortcut for adding items
+    $(document).ready(function() {
+        $(document).on('keydown', function(e) {
+            if (e.keyCode === 112 || e.which === 112) {
+                e.preventDefault();
+                $('#add-form-btn').click();
+                return false;
+            }
+        });
+    });
+
+    // Arrow key navigation
+    $(document).ready(function() {
+        function getFocusableElements() {
+            return $('input:not([type="hidden"]), select, textarea').filter(':visible');
+        }
+
+        $(document).on('keydown', 'input, select, textarea', function(e) {
+            if (e.keyCode === 37 || e.which === 37) {
+                if ($(this).is('select') || 
+                    ($(this).is('input') && this.selectionStart === 0)) {
+                    
+                    e.preventDefault();
+                    let focusableElements = getFocusableElements();
+                    let currentIndex = focusableElements.index(this);
+                    
+                    if (currentIndex > 0) {
+                        focusableElements.eq(currentIndex - 1).focus();
+                    }
+                    return false;
+                }
+            }
+            
+            if (e.keyCode === 39 || e.which === 39) {
+                if ($(this).is('select') || 
+                    ($(this).is('input') && this.selectionStart === this.value.length)) {
+                    
+                    e.preventDefault();
+                    let focusableElements = getFocusableElements();
+                    let currentIndex = focusableElements.index(this);
+                    
+                    if (currentIndex < focusableElements.length - 1) {
+                        focusableElements.eq(currentIndex + 1).focus();
+                    }
+                    return false;
+                }
+            }
+        });
+    });
+
+    // Form validation on submit
+    $(document).ready(function() {
+        $('#returnTenantForm').on('submit', function(e) {
+            let visibleRows = $('.formset-row:visible').length;
+            let nonDeletedRows = $('.formset-row').filter(function() {
+                return !$(this).find('[name*="DELETE"]').is(':checked');
+            }).length;
+            
+            if (nonDeletedRows === 0) {
+                e.preventDefault();
+                alert('Please add at least one item before saving.');
+                return false;
+            }
+            
+            console.log('Form validation passed, submitting...');
+        });
+    });
+
+    // Initial calculation
+    $(document).ready(function() {
+        calculateTotals();
+    });
+
+    // Page leave warning
+    $(document).ready(function() {
+        let formChanged = false;
+        
+        $('#returnTenantForm').on('change input', function() {
+            formChanged = true;
+        });
+        
+        $('#returnTenantForm').on('submit', function() {
+            formChanged = false;
+        });
+        
+        $(window).on('beforeunload', function(e) {
+            if (formChanged) {
+                let message = 'You have unsaved changes. Are you sure you want to leave?';
+                e.returnValue = message;
+                return message;
+            }
+        });
+        
+        $('.cancel-btn').on('click', function() {
+            formChanged = false;
+        });
+    });
+
+    console.log('Keyboard shortcuts available:');
+    console.log('- F1: Add new item row');
+    console.log('- Delete: Remove focused row');
+    console.log('- Left/Right arrows: Navigate between fields');
+    </script>
+
+    <!-- Arrow key navigation for form fields -->
+    <script>
+        $(document).ready(function() {
+            // Get all focusable form elements
+            function getFocusableElements() {
+                return $('input:not([type="hidden"]), select, textarea').filter(':visible');
+            }
+
+            // Check if input type should navigate on arrow keys
+            function shouldNavigate(element, direction) {
+                const $elem = $(element);
+                const inputType = $elem.attr('type');
+                
+                // Always navigate for select, date, and number inputs
+                if ($elem.is('select') || inputType === 'date' || inputType === 'number') {
+                    return true;
+                }
+                
+                // For text inputs, check cursor position
+                if ($elem.is('input') && inputType === 'text') {
+                    try {
+                        const cursorPos = element.selectionStart;
+                        const valueLength = element.value.length;
+                        
+                        // Left arrow: navigate if cursor at beginning
+                        if (direction === 'left' && cursorPos === 0) {
+                            return true;
+                        }
+                        
+                        // Right arrow: navigate if cursor at end
+                        if (direction === 'right' && cursorPos === valueLength) {
+                            return true;
+                        }
+                    } catch(e) {
+                        // If selectionStart fails, just navigate
+                        return true;
+                    }
+                }
+                
+                // For textarea, don't navigate (allow normal arrow key behavior)
+                if ($elem.is('textarea')) {
+                    return false;
+                }
+                
+                return false;
+            }
+
+            $(document).on('keydown', 'input, select, textarea', function(e) {
+                // Left arrow key (keyCode 37)
+                if (e.keyCode === 37 || e.which === 37) {
+                    if (shouldNavigate(this, 'left')) {
+                        e.preventDefault();
+                        let focusableElements = getFocusableElements();
+                        let currentIndex = focusableElements.index(this);
+                        
+                        // Move to previous field
+                        if (currentIndex > 0) {
+                            focusableElements.eq(currentIndex - 1).focus().select();
+                        }
+                        return false;
+                    }
+                }
+                
+                // Right arrow key (keyCode 39)
+                if (e.keyCode === 39 || e.which === 39) {
+                    if (shouldNavigate(this, 'right')) {
+                        e.preventDefault();
+                        let focusableElements = getFocusableElements();
+                        let currentIndex = focusableElements.index(this);
+                        
+                        // Move to next field
+                        if (currentIndex < focusableElements.length - 1) {
+                            focusableElements.eq(currentIndex + 1).focus().select();
+                        }
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!-- Limit date input year to 4 digits -->
+    <script>
+    $(document).ready(function() {
+        $(document).on('input','input[type="date"]',function(){
+            let d=$(this).val();
+            // Only check if we have at least the year part (first 4 characters)
+            if(d && d.length>=4){
+                let y=parseInt(d.substring(0,4));
+                // Only validate if year has 4 digits AND is complete
+                if(d.length>=4 && y.toString().length===4){
+                    if(y<1900||y>2100){
+                        // Clear only the year part, allow user to re-enter
+                        $(this).val('');
+                    }
+                }
+            }
+        });
+        
+        // Final validation on blur
+        $(document).on('blur','input[type="date"]',function(){
+            let d=$(this).val();
+            if(d && d.length===10){
+                let y=parseInt(d.split('-')[0]);
+                if(y<1900||y>2100){
+                    alert('Please enter a valid year (1900-2100)');
+                    $(this).val('');
+                }
+            }
+        });
+    });
+    </script>
+
+
+
+{% endblock %}

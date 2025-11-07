@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tenant Voucher Summary Report</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #198754;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .company-name {
+            font-size: 26px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 5px;
+        }
+        
+        .company-details {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .report-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .report-period {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .generated-info {
+            font-size: 9px;
+            color: #999;
+        }
+        
+        .summary-section {
+            margin-bottom: 25px;
+        }
+        
+        .summary-title {
+            font-size: 15px;
+            font-weight: bold;
+            background-color: #198754;
+            color: white;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .summary-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+        
+        .summary-grid td {
+            width: 25%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        
+        .summary-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .tenant-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        
+        .tenant-summary-table th {
+            background-color: #198754;
+            color: white;
+            padding: 10px 6px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #146c43;
+            font-size: 10px;
+        }
+        
+        .tenant-summary-table td {
+            padding: 8px 6px;
+            border: 1px solid #ddd;
+            font-size: 10px;
+        }
+        
+        .tenant-summary-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .voucher-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+        
+        .voucher-table th {
+            background-color: #198754;
+            color: white;
+            padding: 8px 5px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #146c43;
+        }
+        
+        .voucher-table td {
+            padding: 6px 5px;
+            border: 1px solid #ddd;
+        }
+        
+        .voucher-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-success {
+            color: #198754;
+            font-weight: bold;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        .badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        
+        .badge-success {
+            background-color: #d1e7dd;
+            color: #0a3622;
+        }
+        
+        .badge-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .section-break {
+            page-break-before: always;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            color: #6c757d;
+        }
+        
+        .filter-info {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-left: 4px solid #0d6efd;
+            margin-bottom: 15px;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="company-details">
+            {{ address }}<br>
+            Phone: {{ phone }} | Email: {{ email }} | GSTIN: {{ gstin }}
+        </div>
+        <div class="report-title">Tenant Voucher Summary Report</div>
+        <div class="report-period">Period: {{ period_name }}</div>
+        <div class="generated-info">
+            Generated on {{ generated_date|date:"F d, Y \a\t h:i A" }} by {{ generated_by }}
+        </div>
+    </div>
+
+    {% if selected_tenant %}
+    <div class="filter-info">
+        <strong>Filtered by Tenant:</strong> {{ selected_tenant.company_name }}
+        {% if selected_tenant.contact_person %} (Contact: {{ selected_tenant.contact_person }}){% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Overall Summary -->
+    <div class="summary-section">
+        <div class="summary-title">Overall Summary</div>
+        <table class="summary-grid">
+            <tr>
+                <td>
+                    <div class="summary-value">{{ summary.total_vouchers }}</div>
+                    <div class="summary-label">Total Vouchers</div>
+                </td>
+                <td>
+                    <div class="summary-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
+                    <div class="summary-label">Total Receipts</div>
+                </td>
+                <td>
+                    <div class="summary-value">₹{{ summary.total_payments|floatformat:2 }}</div>
+                    <div class="summary-label">Total Payments</div>
+                </td>
+                <td>
+                    <div class="summary-value" style="color: {% if summary.net_amount >= 0 %}#198754{% else %}#dc3545{% endif %}">
+                        ₹{{ summary.net_amount|floatformat:2 }}
+                    </div>
+                    <div class="summary-label">Net Amount</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Tenant-wise Summary -->
+    {% if tenant_summary %}
+    <div class="summary-section">
+        <div class="summary-title">Tenant-wise Summary ({{ tenant_summary|length }} Tenants)</div>
+        <table class="tenant-summary-table">
+            <thead>
+                <tr>
+                    <th style="width: 4%;">#</th>
+                    <th style="width: 22%;">Tenant Name</th>
+                    <th style="width: 15%;">Contact Person</th>
+                    <th style="width: 12%;">Phone</th>
+                    <th style="width: 10%;">Latest Date</th>
+                    <th class="text-right" style="width: 7%;">Vouchers</th>
+                    <th class="text-right" style="width: 10%;">Receipts</th>
+                    <th class="text-right" style="width: 10%;">Payments</th>
+                    <th class="text-right" style="width: 10%;">Net Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tenant in tenant_summary %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td><strong>{{ tenant.tenant__company_name }}</strong></td>
+                    <td>{{ tenant.tenant__contact_person|default:"-" }}</td>
+                    <td>{{ tenant.tenant__phone|default:"-" }}</td>
+                    <td>{{ tenant.latest_date|date:"d/m/Y"|default:"-" }}</td>
+                    <td class="text-right">{{ tenant.voucher_count }}</td>
+                    <td class="text-right text-success">₹{{ tenant.total_receipts|floatformat:2 }}</td>
+                    <td class="text-right text-danger">₹{{ tenant.total_payments|floatformat:2 }}</td>
+                    <td class="text-right {% if tenant.net_amount > 0 %}text-success{% elif tenant.net_amount < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        ₹{{ tenant.net_amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-data">
+        <p><strong>No tenant summary data available</strong></p>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Voucher List -->
+    {% if vouchers %}
+    <div class="section-break">
+        <div class="summary-title">Detailed Voucher List (Showing {{ vouchers|length }} of {{ total_voucher_count }})</div>
+        <table class="voucher-table">
+            <thead>
+                <tr>
+                    <th style="width: 3%;">#</th>
+                    <th style="width: 8%;">Date</th>
+                    <th style="width: 10%;">Voucher No.</th>
+                    <th style="width: 18%;">Tenant</th>
+                    <th style="width: 28%;">Description</th>
+                    <th class="text-right" style="width: 11%;">Receipt (₹)</th>
+                    <th class="text-right" style="width: 11%;">Payment (₹)</th>
+                    <th class="text-right" style="width: 11%;">Net (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voucher in vouchers %}
+                <tr>
+                    <td class="text-center">{{ forloop.counter }}</td>
+                    <td>{{ voucher.date|date:"d/m/Y" }}</td>
+                    <td><strong>{{ voucher.voucher_no }}</strong></td>
+                    <td>{{ voucher.tenant.company_name|truncatechars:25 }}</td>
+                    <td>{{ voucher.description|default:"No description"|truncatechars:45 }}</td>
+                    <td class="text-right">
+                        {% if voucher.receipt > 0 %}
+                            <span class="text-success">{{ voucher.receipt|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-muted">0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if voucher.payment > 0 %}
+                            <span class="text-danger">{{ voucher.payment|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-muted">0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% with net=voucher.receipt|add:"-"|add:voucher.payment|floatformat:2 %}
+                        <span class="{% if voucher.receipt > voucher.payment %}text-success{% elif voucher.payment > voucher.receipt %}text-danger{% else %}text-muted{% endif %}">
+                            {% widthratio voucher.receipt 1 1 %}{{ voucher.receipt|floatformat:2|add:" - "|add:voucher.payment|floatformat:2 }}
+                        </span>
+                        {% endwith %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        {% if total_voucher_count > vouchers|length %}
+        <div style="text-align: center; padding: 15px; background-color: #fff3cd; margin-top: 10px; border-radius: 5px;">
+            <strong>Note:</strong> Only first 100 vouchers displayed for PDF performance. 
+            Total vouchers: {{ total_voucher_count }}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="section-break">
+        <div class="no-data">
+            <h4>No voucher records found for the selected period</h4>
+            <p>Try adjusting your date filters or tenant selection</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p><strong>{{ company_name }}</strong> - Tenant Voucher Management System</p>
+        <p>This is a computer-generated report. No signature required.</p>
+        <p>For queries, contact the accounts department at {{ email }} or {{ phone }}</p>
+        <p style="margin-top: 10px;">Report Date Range: {{ period_name }} | Generated: {{ generated_date|date:"d/m/Y H:i" }}</p>
+    </div>
+</body>
+</html>

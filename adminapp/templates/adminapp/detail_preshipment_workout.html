@@ -1,0 +1,1613 @@
+
+
+{% extends 'admin_base.html' %}
+{% block title %} Pre-Shipment WorkOut Details {% endblock %}
+{% block content %}
+{% load indian_numbers %}
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="ph-header-content">
+      <div class="ph-header-left">
+        <div class="ph-icon-wrapper">
+          <i class="fas fa-shipping-fast"></i>
+        </div>
+        <div class="ph-header-text">
+          <h3 class="ph-header-title">Shipping Operations</h3>
+          <p class="ph-header-subtitle">Manage your shipping operations.</p>
+        </div>
+      </div>
+
+      <!-- Breadcrumbs -->
+      <nav class="ph-breadcrumb-nav">
+        <ol class="ph-breadcrumb-list">
+          <li class="ph-breadcrumb-item">
+            <a href="#" class="ph-breadcrumb-link">
+              <i class="icon-home"></i>
+              <span>Home</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="ph-breadcrumb-item">
+            <a href="{% url 'adminapp:preshipment_workout_list' %}" class="ph-breadcrumb-link">
+              <i class="fas fa-shipping-fast"></i>
+              <span>Pre-Shipment WorkOut List</span>
+            </a>
+          </li>
+          <li class="ph-breadcrumb-separator">
+            <i class="icon-arrow-right"></i>
+          </li>
+          <li class="ph-breadcrumb-item active">
+            <a href="">
+              <span>Detail</span>
+            </a>
+          </li>
+        </ol>
+      </nav>
+      <div class="ph-header-stats"></div>
+    </div>
+
+    <div class="myclass">
+      <!-- Entry Information Card -->
+      <div class="form-card mb-4 supply-info-card">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">WorkOut Information</h3>
+              <p class="text-muted mb-0">Complete workout overview</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="supply-info-grid">
+            <div class="info-card date-card">
+              <div class="info-background">
+                <i class="fas fa-calendar-alt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Workout Date</div>
+                <div class="info-value">{{ workout.created_at|date:"d-m-Y" }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-calendar"></i>
+                  <span>Date</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card shed-card">
+              <div class="info-background">
+                <i class="fas fa-receipt bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Voucher Number</div>
+                <div class="info-value">{{ workout.voucher_number }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-hashtag"></i>
+                  <span>Reference</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="info-card vehicle-card">
+              <div class="info-background">
+                <i class="fas fa-sticky-note bg-icon"></i>
+              </div>
+              <div class="info-content">
+                <div class="info-label">Remarks</div>
+                <div class="info-value">{{ workout.remarks|default:"No remarks" }}</div>
+                <div class="info-badge">
+                  <i class="fas fa-comment"></i>
+                  <span>Notes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4" style="background: #28a745;">
+              <i class="fas fa-box"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Product Details</h4>
+              <p class="text-muted mb-0">Product specifications and information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-cube header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-weight header-icon"></i>
+                      <span class="header-text">Unit</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-percentage header-icon"></i>
+                      <span class="header-text">Glaze</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tags header-icon"></i>
+                      <span class="header-text">Category</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-trademark header-icon"></i>
+                      <span class="header-text">Brand</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="table-row">
+                  <td class="table-cell">
+                    <strong>{{ workout.item.name }}</strong>
+                  </td>
+                  <td class="table-cell">
+                    <span class="voucher-badge">{{ workout.unit.unit_code }}</span>
+                  </td>
+                  <td class="table-cell">
+                    <span class="balance-badge">{{ workout.glaze.percentage }}%</span>
+                  </td>
+                  <td class="table-cell">
+                    <span class="boxes-badge">{{ workout.category.name }}</span>
+                  </td>
+                  <td class="table-cell">
+                    <span class="quantity-badge">{{ workout.brand.name }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4" style="background: #17a2b8;">
+              <i class="fas fa-list"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Items Details</h4>
+              <p class="text-muted mb-0">Comprehensive breakdown of all items</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table items-table">
+              <thead>
+                <tr>
+                  <th class="table-header">Species</th>
+                  <th class="table-header">Peeling Type</th>
+                  <th class="table-header">Grade</th>
+                  <th class="table-header">Cartons</th>
+                  <th class="table-header">Quantity</th>
+                  <th class="table-header">USD/KG</th>
+                  <th class="table-header">USD Item</th>
+                  <th class="table-header">USD INR</th>
+                  <th class="table-header">USD/KG Get</th>
+                  <th class="table-header">USD Get</th>
+                  <th class="table-header">USD INR Get</th>
+                  <th class="table-header">Profit</th>
+                  <th class="table-header">Loss</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in items %}
+                <tr class="table-row">
+                  <td class="table-cell"><span class="item-name">{{ item.species.name }}</span></td>
+                  <td class="table-cell">{{ item.peeling_type.name }}</td>
+                  <td class="table-cell"><span class="voucher-badge">{{ item.grade.grade }}</span></td>
+                  <td class="table-cell"><span class="boxes-badge">{{ item.cartons }}</span></td>
+                  <td class="table-cell"><span class="quantity-badge">{{ item.quantity }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_per_kg_get|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">${{ item.usd_rate_item_get|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="currency-cell">₹{{ item.usd_rate_item_to_inr_get|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="weight-value">${{ item.profit|indian_comma }}</span></td>
+                  <td class="table-cell"><span class="balance-badge">${{ item.loss|indian_comma }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="13" class="table-cell">
+                    <div class="empty-state">
+                      <i class="fas fa-inbox" style="font-size: 48px; color: #6c757d; margin-bottom: 15px;"></i>
+                      <h4 style="color: #6c757d; margin-bottom: 10px;">No Items Found</h4>
+                      <p style="color: #6c757d;">No items have been added to this workout yet.</p>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        /* ===== FINANCIAL SUMMARY SECTION STYLES ===== */
+
+/* Section Container */
+.section-container {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 32px;
+  border: 2px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.section-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.section-icon.blue {
+  background: #4f46e5;
+}
+
+.section-icon.green {
+  background: #10b981;
+}
+
+.section-icon.cyan {
+  background: #06b6d4;
+}
+
+.section-icon.amber {
+  background: #f59e0b;
+}
+
+.section-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+  font-weight: 600;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 2px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.summary-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.summary-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.summary-row:hover {
+  background: #f1f5f9;
+  border-color: #2563eb;
+  transform: translateX(4px);
+}
+
+.summary-row-label {
+  font-weight: 600;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.summary-row-value {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.summary-row-value.currency {
+  color: #2563eb;
+}
+
+.summary-row-value.currency-inr {
+  color: #10b981;
+}
+
+/* Profit Loss Cards */
+.profit-loss-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.pl-card {
+  display: flex;
+  align-items: center;
+  padding: 32px;
+  border-radius: 20px;
+  border: 3px solid;
+  transition: all 0.3s ease;
+}
+
+.pl-card.profit {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.pl-card.profit:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 40px rgba(16, 185, 129, 0.2);
+  border-color: #4ade80;
+}
+
+.pl-card.loss {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.pl-card.loss:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 40px rgba(239, 68, 68, 0.2);
+  border-color: #f87171;
+}
+
+.pl-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-right: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.pl-icon.profit {
+  background: #10b981;
+  color: white;
+}
+
+.pl-icon.loss {
+  background: #ef4444;
+  color: white;
+}
+
+.pl-content h6 {
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #475569;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pl-value {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pl-value.profit {
+  color: #10b981;
+}
+
+.pl-value.loss {
+  color: #ef4444;
+}
+
+/* Responsive Design for Financial Summary */
+@media (max-width: 768px) {
+  .section-container {
+    padding: 24px 20px;
+  }
+  
+  .section-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+  }
+  
+  .pl-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 24px;
+  }
+  
+  .pl-icon {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+  
+  .pl-value {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 576px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .profit-loss-grid {
+    grid-template-columns: 1fr;
+  }
+}
+      </style>
+
+<!-- Financial Summary Section -->
+      <div class="section-container">
+        <div class="section-header">
+          <div class="section-icon amber">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div>
+            <h3 class="section-title">Financial Summary</h3>
+            <p class="section-subtitle">Complete overview of all financial metrics</p>
+          </div>
+        </div>
+
+        <div class="summary-cards">
+          <!-- Quantity Summary -->
+          <div class="summary-card">
+            <h6 class="summary-card-title">
+              <i class="fas fa-boxes"></i>Quantity Summary
+            </h6>
+            <div class="summary-rows">
+              <div class="summary-row">
+                <span class="summary-row-label">Total Cartons</span>
+                <span class="summary-row-value">{{ summary.total_cartons }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row-label">Total Quantity</span>
+                <span class="summary-row-value">{{ summary.total_quantity }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- USD Summary -->
+          <div class="summary-card">
+            <h6 class="summary-card-title">
+              <i class="fas fa-dollar-sign"></i>USD Summary
+            </h6>
+            <div class="summary-rows">
+              <div class="summary-row">
+                <span class="summary-row-label">Total USD Item</span>
+                <span class="summary-row-value currency">${{ summary.total_usd_rate_item|indian_comma }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row-label">Total USD Item Get</span>
+                <span class="summary-row-value currency">${{ summary.total_usd_rate_item_get|indian_comma }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- INR Summary -->
+          <div class="summary-card">
+            <h6 class="summary-card-title">
+              <i class="fas fa-rupee-sign"></i>INR Summary
+            </h6>
+            <div class="summary-rows">
+              <div class="summary-row">
+                <span class="summary-row-label">Total USD INR</span>
+                <span class="summary-row-value currency-inr">₹{{ summary.total_usd_inr|indian_comma }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row-label">Total USD INR Get</span>
+                <span class="summary-row-value currency-inr">₹{{ summary.total_usd_inr_get|indian_comma }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average Rates -->
+          <div class="summary-card">
+            <h6 class="summary-card-title">
+              <i class="fas fa-chart-bar"></i>Average Rates
+            </h6>
+            <div class="summary-rows">
+              <div class="summary-row">
+                <span class="summary-row-label">Average USD/KG</span>
+                <span class="summary-row-value currency">${{ summary.avg_usd_per_kg|indian_comma }}</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row-label">Average USD/KG Get</span>
+                <span class="summary-row-value currency">${{ summary.avg_usd_per_kg_get|indian_comma }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profit/Loss Cards -->
+        <div class="profit-loss-grid">
+          <div class="pl-card profit">
+            <div class="pl-icon profit">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="pl-content">
+              <h6>Total Profit</h6>
+              <div class="pl-value profit">${{ summary.total_profit|indian_comma }}</div>
+            </div>
+          </div>
+
+          <div class="pl-card loss">
+            <div class="pl-icon loss">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="pl-content">
+              <h6>Total Loss</h6>
+              <div class="pl-value loss">${{ summary.total_loss|indian_comma }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <a href="{% url 'adminapp:preshipment_workout_list' %}" class="action-btn btn-edit">
+          <i class="fas fa-arrow-left me-2"></i>Back to List
+        </a>
+        <button onclick="printMyclassIsolated()" class="action-btn btn-print">
+          <i class="fas fa-print me-2"></i>Print
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+small.unit {
+  font-size: 0.8rem;        
+  font-weight: 600;        
+  color: #2c3e50;     
+  text-transform: uppercase;
+  letter-spacing: 0.5px;   
+  margin-left: 4px;         
+}
+
+/* Base Styles */
+.myclass {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.card-title {
+  font-size: 26px;
+  color: #2c3e50;
+  letter-spacing: -0.5px;
+}
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Supply Information Grid */
+.supply-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+.info-card {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fd 100%);
+  border-radius: 20px;
+  padding: 25px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(40, 167, 69, 0.1);
+  cursor: pointer;
+}
+
+.info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.info-card:hover::before {
+  transform: scaleX(1);
+}
+
+.info-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 60px rgba(40, 167, 69, 0.15);
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.info-background {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bg-icon {
+  font-size: 40px;
+  color: rgba(40, 167, 69, 0.1);
+  transform: rotate(-15deg);
+}
+
+.info-content {
+  position: relative;
+  z-index: 2;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.info-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #2c3e50;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.info-badge {
+  display: inline-flex;
+  align-items: center;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.info-badge i {
+  margin-right: 4px;
+  font-size: 10px;
+}
+
+/* Specific card color variations */
+.date-card:hover {
+  background: linear-gradient(135deg, #fff5f5 0%, #fee);
+}
+
+.date-card .info-background {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.02) 100%);
+}
+
+.date-card .bg-icon {
+  color: rgba(220, 53, 69, 0.15);
+}
+
+.date-card .info-badge {
+  background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.shed-card:hover {
+  background: linear-gradient(135deg, #fff8e1 0%, #ffeaa7);
+}
+
+.shed-card .info-background {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 193, 7, 0.02) 100%);
+}
+
+.shed-card .bg-icon {
+  color: rgba(255, 193, 7, 0.2);
+}
+
+.shed-card .info-badge {
+  background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+  box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+}
+
+.vehicle-card:hover {
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff);
+}
+
+.vehicle-card .info-background {
+  background: linear-gradient(135deg, rgba(0, 123, 255, 0.05) 0%, rgba(0, 123, 255, 0.02) 100%);
+}
+
+.vehicle-card .bg-icon {
+  color: rgba(0, 123, 255, 0.15);
+}
+
+.vehicle-card .info-badge {
+  background: linear-gradient(135deg, #007bff 0%, #6f42c1 100%);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+}
+
+/* Responsive adjustments for supply info */
+@media (max-width: 768px) {
+  .supply-info-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 20px;
+  }
+  
+  .info-card {
+    padding: 20px;
+  }
+  
+  .info-value {
+    font-size: 18px;
+  }
+  
+  .info-background {
+    width: 100px;
+    height: 100px;
+    top: -15px;
+    right: -15px;
+  }
+  
+  .bg-icon {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 576px) {
+  .supply-info-grid {
+    padding: 15px;
+  }
+  
+  .info-card {
+    padding: 18px;
+  }
+  
+  .info-value {
+    font-size: 16px;
+  }
+}
+
+/* Table Styling */
+.modern-table, .summary-table, .items-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background: #f8f9fd;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #495057;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+  text-align: center;
+  vertical-align: middle;   
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.header-icon {
+  color: #6c757d;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+/* Table Rows */
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Value Styling */
+.quantity-badge {
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.voucher-badge {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.item-name {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.boxes-badge {
+  background: #fff3cd;
+  color: #856404;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.weight-value {
+  color: #dc3545;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.balance-badge {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.currency-cell {
+  color: #28a745;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Status badges */
+.status-active {
+  background: #d4edda !important;
+  color: #155724 !important;
+}
+
+.status-pending {
+  background: #fff3cd !important;
+  color: #856404 !important;
+}
+
+.status-inactive {
+  background: #f8d7da !important;
+  color: #721c24 !important;
+}
+
+/* Empty state styling */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-state h4 {
+  margin-bottom: 10px;
+  color: #6c757d;
+}
+
+.empty-state p {
+  color: #6c757d;
+  margin: 0;
+}
+
+/* Summary Table Styling */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.unit {
+  color: #6c757d;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.total-highlight .calculated-value {
+  color: #28a745;
+  font-size: 18px;
+}
+
+      /* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.form-actions .row {
+  width: 100%;
+}
+
+.action-btn {
+  background: #007bff;
+  color: white;
+  border: 2px solid #007bff;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.action-btn:hover {
+            background: #0056b3;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+
+.btn-print {
+  background: #6f42c1;
+  border-color: #6f42c1;
+}
+
+.btn-print:hover {
+  background: #5a32a3;
+  box-shadow: 0 8px 25px rgba(111, 66, 193, 0.3);
+}
+
+.btn-delete {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-delete:hover {
+  background: #c82333;
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+/* Print Styles */
+@media print {
+  .form-actions {
+    display: none !important;
+  }
+  
+  .page-header {
+    display: none !important;
+  }
+  
+  .form-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .card-header {
+    background: #f8f9fa !important;
+    border-bottom: 1px solid #ddd !important;
+  }
+  
+  .myclass {
+    margin-top: 0 !important;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .action-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  /* Make items table horizontally scrollable */
+  .items-table {
+    min-width: 1400px;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .total-highlight .calculated-value {
+    font-size: 16px;
+  }
+  
+  /* Ensure items table remains scrollable */
+  .items-table {
+    min-width: 1600px;
+  }
+}
+</style>
+
+<script>
+// Print functionality
+function printMyclassIsolated() {
+    const myclassElement = document.querySelector('.myclass');
+    const clonedContent = myclassElement.cloneNode(true);
+    
+    // Remove action buttons from cloned content
+    const actionButtons = clonedContent.querySelector('.form-actions');
+    if (actionButtons) {
+        actionButtons.remove();
+    }
+    
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Pre-Shipment WorkOut Details - Print</title>
+            <meta charset="utf-8">
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                
+                @page {
+                    margin: 0.5in;
+                    size: A4;
+                }
+                
+                body {
+                    font-family: 'Roboto', Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    background: white;
+                    color: #333;
+                    font-size: 14px;
+                    line-height: 1.4;
+                }
+                
+                .print-container {
+                    width: 100%;
+                    max-width: none;
+                    margin: 0;
+                    padding: 0;
+                }
+                
+                h2 {
+                    color: #007BFF;
+                    margin-bottom: 15px;
+                    font-size: 1.8rem;
+                    font-weight: 700;
+                    text-align: center;
+                }
+
+                h3 {
+                    color: #0056b3;
+                    margin: 20px 0 10px 0;
+                    font-size: 1.2rem;
+                    font-weight: 600;
+                    border-bottom: 2px solid #e2e6ea;
+                    padding-bottom: 5px;
+                }
+
+                .form-card {
+                    background: white;
+                    padding: 15px;
+                    border: 1px solid #ddd;
+                    margin-bottom: 20px;
+                    border-radius: 8px;
+                }
+
+                .card-header {
+                    background: #f8f9fa;
+                    padding: 15px;
+                    margin: -15px -15px 15px -15px;
+                    border-bottom: 1px solid #ddd;
+                    border-radius: 8px 8px 0 0;
+                }
+
+                .card-title {
+                    color: #2c3e50;
+                    font-size: 1.3rem;
+                    margin: 0;
+                }
+
+                .supply-info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 15px;
+                    margin: 15px 0;
+                }
+
+                .info-card {
+                    background: #f8f9fa;
+                    border: 1px solid #e9ecef;
+                    border-radius: 8px;
+                    padding: 15px;
+                }
+
+                .info-label {
+                    font-size: 0.8rem;
+                    text-transform: uppercase;
+                    font-weight: 600;
+                    color: #6c757d;
+                    margin-bottom: 5px;
+                }
+
+                .info-value {
+                    font-size: 1.1rem;
+                    font-weight: 700;
+                    color: #2c3e50;
+                    word-break: break-word;
+                }
+
+                .table-responsive {
+                    overflow-x: auto;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 10px 0;
+                    font-size: 12px;
+                }
+
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+                th {
+                    background: #f8f9fa;
+                    font-weight: 600;
+                    color: #495057;
+                }
+
+                .items-table {
+                    font-size: 11px;
+                    width: 100%;
+                    min-width: 1200px;
+                }
+
+                .items-table th,
+                .items-table td {
+                    padding: 6px;
+                    white-space: nowrap;
+                }
+
+                .empty-state {
+                    text-align: center;
+                    padding: 30px;
+                    color: #6c757d;
+                }
+
+                .quantity-badge,
+                .voucher-badge,
+                .boxes-badge,
+                .balance-badge {
+                    background: #e9ecef;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    font-size: 11px;
+                    font-weight: 600;
+                }
+
+                .item-name {
+                    color: #28a745;
+                    font-weight: 600;
+                }
+
+                .weight-value,
+                .currency-cell {
+                    font-weight: 600;
+                }
+
+                .calculated-value {
+                    font-weight: 700;
+                    font-size: 1.1em;
+                }
+
+                .unit {
+                    font-size: 0.8em;
+                    color: #6c757d;
+                    margin-left: 4px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-container">
+                <h2>Pre-Shipment WorkOut Details</h2>
+                ${clonedContent.innerHTML}
+            </div>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    // Wait for content to load, then print
+    printWindow.onload = function () {
+        setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+
+            // Close after printing
+            printWindow.onafterprint = function () {
+                printWindow.close();
+            };
+        }, 500);
+    };
+}
+
+// Add keyboard navigation
+$(document).ready(function () {
+    // Make info cards focusable for accessibility
+    $('.info-card').attr('tabindex', '0');
+
+    // Add keyboard support for action buttons
+    $('.action-btn').on('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            $(this).click();
+        }
+    });
+
+    // Add horizontal scroll support for items table on mobile
+    $('.items-table').parent().on('wheel', function(e) {
+        if (this.scrollWidth > this.clientWidth) {
+            e.preventDefault();
+            this.scrollLeft += e.originalEvent.deltaY;
+        }
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Billing Status</title>
+</head>
+<body>
+    <h1>Debug Billing Status</h1>
+
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>System Info</h2>
+    <ul>
+        <li>Today: {{ today }}</li>
+        <li>Total Configs: {{ configs.count }}</li>
+        <li>Due Configs: {{ configs|length }}</li>
+    </ul>
+
+    <h2>Configurations</h2>
+    <table border="1" cellpadding="6" cellspacing="0">
+        <tr>
+            <th>Tenant</th>
+            <th>Active</th>
+            <th>Start Date</th>
+            <th>Last Bill</th>
+            <th>Next Bill</th>
+            <th>Due?</th>
+            <th>Delete</th>
+        </tr>
+        {% for config in configs %}
+        <tr>
+            <td>{{ config.tenant.company_name }}</td>
+            <td>{{ config.is_active }}</td>
+            <td>{{ config.billing_start_date }}</td>
+            <td>{{ config.last_bill_generated_date|default:"-" }}</td>
+            <td>{{ config.next_bill_date }}</td>
+            <td>{% if config.next_bill_date <= today %}✅{% else %}❌{% endif %}</td>
+            <td><a href="{% url 'adminapp:delete_billing_configuration' config.id %}">🗑 Delete</a></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No configurations available.</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="{% url 'adminapp:billing_config_list' %}">← Back to Config List</a></p>
+</body>
+</html>

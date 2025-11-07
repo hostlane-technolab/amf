@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-tachometer-alt"></i> Tenant Billing Dashboard</h2>
+            <p class="text-muted">Manage and monitor tenant billing operations</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_saved_bills }}</h4>
+                            <p class="mb-0">Saved Bills</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-invoice fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'adminapp:tenant_bill_list' %}" class="text-white">
+                        View All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ total_draft_bills }}</h4>
+                            <p class="mb-0">Draft Bills</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-file-alt fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'adminapp:tenant_bill_unsaved_list' %}" class="text-white">
+                        Review Drafts <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">₹{{ total_amount_this_month|floatformat:0 }}</h4>
+                            <p class="mb-0">This Month</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-rupee-sign fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-white-50">Revenue Generated</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0">{{ tenants_needing_bills|length }}</h4>
+                            <p class="mb-0">Need Bills</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <small class="text-white-50">Tenants Requiring Attention</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'adminapp:bulk_tenant_bill_form' %}" class="btn btn-primary btn-block btn-lg">
+                                <i class="fas fa-magic fa-2x d-block mb-2"></i>
+                                <strong>Generate Bills</strong>
+                                <small class="d-block">For multiple tenants</small>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <form method="post" action="{% url 'adminapp:auto_generate_next_bills' %}" class="d-inline w-100">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-block btn-lg" 
+                                        onclick="return confirm('Auto-generate next period bills for all eligible tenants?')">
+                                    <i class="fas fa-forward fa-2x d-block mb-2"></i>
+                                    <strong>Auto Generate</strong>
+                                    <small class="d-block">Next period bills</small>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'adminapp:tenant_bill_unsaved_list' %}" class="btn btn-warning btn-block btn-lg">
+                                <i class="fas fa-list-alt fa-2x d-block mb-2"></i>
+                                <strong>Review Drafts</strong>
+                                <small class="d-block">{{ total_draft_bills }} pending</small>
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-3 mb-3">
+
+                                <i class="fas fa-file-invoice-dollar fa-2x d-block mb-2"></i>
+                                <strong>Manual Bill</strong>
+                                <small class="d-block">Create individual bill</small>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Bills -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Bills</h5>
+                    <a href="{% url 'adminapp:tenant_bill_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_bills %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Tenant</th>
+                                        <th>Period</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bill in recent_bills %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ bill.tenant.name }}</strong>
+                                        </td>
+                                        <td>
+                                            <small>{{ bill.start_date }} to {{ bill.end_date }}</small>
+                                        </td>
+                                        <td>
+                                            <strong class="text-success">₹{{ bill.total_amount|floatformat:2 }}</strong>
+                                        </td>
+                                        <td>
+                                            {% if bill.saved %}
+                                                <span class="badge badge-success">Saved</span>
+                                            {% else %}
+                                                <span class="badge badge-warning">Draft</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small>{{ bill.created_at|timesince }} ago</small>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'adminapp:tenant_bill_detail' bill.id %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-2x text-muted mb-3"></i>
+                            <p class="text-muted">No recent bills found</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tenants Needing Bills -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-circle text-warning"></i> Attention Needed
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    {% if tenants_needing_bills %}
+                        {% for item in tenants_needing_bills %}
+                        <div class="alert alert-warning py-2 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ item.tenant.name }}</strong>
+                                    <br>
+                                    <small>
+                                        {% if item.last_bill_date %}
+                                            Last bill: {{ item.last_bill_date }}
+                                            {% if item.days_since %}
+                                                ({{ item.days_since }} days ago)
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-danger">No bills yet</span>
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div>
+
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                            <p class="text-success">All tenants are up to date!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.card .btn-block.btn-lg {
+    padding: 1.5rem 1rem;
+}
+
+.card .btn-block.btn-lg i.fa-2x {
+    opacity: 0.8;
+}
+
+.card .btn-block.btn-lg:hover i.fa-2x {
+    opacity: 1;
+    transform: scale(1.1);
+    transition: all 0.2s ease;
+}
+
+.alert-warning {
+    border-left: 4px solid #ffc107;
+}
+
+.table-responsive {
+    border-radius: 0.25rem;
+}
+</style>
+</body>
+</html>

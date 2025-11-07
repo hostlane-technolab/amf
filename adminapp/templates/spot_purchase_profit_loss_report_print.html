@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spot Purchase Profit/Loss Analysis</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.2;
+            background: white;
+            padding: 10px;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #0066cc;
+            color: white;
+        }
+
+        .report-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .section {
+            margin-bottom: 15px;
+            border: 2px solid #0066cc;
+            page-break-inside: avoid;
+        }
+
+        .section-header {
+            background: #0066cc;
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .section-content {
+            padding: 10px;
+        }
+
+        .data-grid {
+            display: grid;
+            gap: 5px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+        .data-item {
+            border: 1px solid #0066cc;
+            padding: 5px;
+        }
+
+        .data-label {
+            background: #0066cc;
+            color: white;
+            padding: 4px;
+            font-weight: bold;
+            font-size: 9px;
+            text-align: center;
+        }
+
+        .data-value {
+            padding: 4px;
+            text-align: center;
+            background: white;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 9px;
+        }
+
+        table th {
+            background: #0066cc;
+            color: white;
+            padding: 6px 4px;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid white;
+        }
+
+        table td {
+            padding: 4px;
+            border: 1px solid #0066cc;
+            text-align: center;
+        }
+
+        .text-left { text-align: left !important; }
+        .text-right { text-align: right !important; }
+        .bg-yellow { background: #ffeb3b; }
+        .bg-light-blue { background: #e3f2fd; }
+
+        .cost-summary {
+            background: #fff9c4;
+            border: 2px solid #fbc02d;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cost-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-primary { background: #0066cc; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+
+        @media print {
+            .action-buttons { display: none; }
+            body { padding: 0; }
+            .section { page-break-inside: avoid; }
+        }
+
+        .profit { color: green; font-weight: bold; }
+        .loss { color: red; font-weight: bold; }
+        
+        .grand-total {
+            background: #0066cc !important;
+            color: white !important;
+            font-weight: bold;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="report-header">
+            <div class="report-title">PROFIT & LOSS ANALYSIS</div>
+            <div>Period: {{ start_date }} to {{ end_date }}</div>
+        </div>
+
+        <div class="action-buttons">
+            <button onclick="generatePDF()" class="btn btn-danger" id="pdfBtn">Generate PDF</button>
+        </div>
+
+        {% if error %}
+        <div style="background: #f8d7da; border: 1px solid #dc3545; padding: 15px; margin: 20px 0; color: #721c24;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if report_data %}
+        {% for purchase in report_data %}
+        <div class="section">
+            <div class="section-header">PURCHASE DATAS</div>
+            
+            <div class="section-content">
+                <div class="data-grid grid-4" style="margin-bottom: 10px;">
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE DATE</div>
+                        <div class="data-value">{{ purchase.date|date:"d/m/y" }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">SPOT</div>
+                        <div class="data-value">{{ purchase.spot_name }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">SPOT AGENT</div>
+                        <div class="data-value">{{ purchase.spot_agent }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">SPOT SUPERVISOR</div>
+                        <div class="data-value">{{ purchase.spot_supervisor }}</div>
+                    </div>
+                </div>
+
+                <div class="data-grid grid-3" style="margin-bottom: 10px;">
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE ITEM NAME</div>
+                        <div class="data-value">{{ purchase.purchase_item_names }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE QUANTITY</div>
+                        <div class="data-value">{{ purchase.purchase_quantity|floatformat:2 }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE AMOUNT</div>
+                        <div class="data-value">Rs/ {{ purchase.purchase_amount|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div class="data-grid grid-3">
+                    <div class="data-item">
+                        <div class="data-label">TOTAL PURCHASE EXPENSE</div>
+                        <div class="data-value">Rs/ {{ purchase.purchase_expense|floatformat:2 }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">TOTAL COST</div>
+                        <div class="data-value bg-yellow">Rs/ {{ purchase.total_purchase_cost|floatformat:2 }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">COST/KG</div>
+                        <div class="data-value bg-yellow">Rs/ {{ purchase.cost_per_kg|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div class="data-grid grid-2" style="margin-top: 10px;">
+                    <div class="data-item">
+                        <div class="data-label">PURCHASE RATE/KG</div>
+                        <div class="data-value">Rs/ {{ purchase.purchase_rate_per_kg|floatformat:2 }}</div>
+                    </div>
+                    <div></div>
+                </div>
+            </div>
+
+            <div class="section-header">FREEZING DATAS</div>
+            <div class="section-content">
+                <div class="data-grid grid-4">
+                    <div class="data-item">
+                        <div class="data-label">PROFIT/LOSS PER KG</div>
+                        <div class="data-value {% if purchase.profit_loss_per_kg > 0 %}profit{% elif purchase.profit_loss_per_kg < 0 %}loss{% endif %}">
+                            Rs/ {{ purchase.profit_loss_per_kg|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">TOTAL PROFIT/LOSS</div>
+                        <div class="data-value {% if purchase.total_profit_loss > 0 %}profit{% elif purchase.total_profit_loss < 0 %}loss{% endif %}">
+                            Rs/ {{ purchase.total_profit_loss|floatformat:2 }}
+                        </div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">USD RATE</div>
+                        <div class="data-value">${{ usd_rate|floatformat:2 }}</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">PROCESSING OVERHEADS PER KG</div>
+                        <div class="data-value bg-yellow">Rs/ {{ purchase.processing_overhead_per_kg|floatformat:2 }}</div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TOTAL PRODUCTION QUANTITY</th>
+                                <th>TOTAL AMOUNT/USD</th>
+                                <th>TOTAL AMOUNT/INR</th>
+                                <th>TOTAL PROCESSING EXP</th>
+                                <th>INCOME</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="bg-yellow">{{ purchase.total_freezing_kg|floatformat:2 }}</td>
+                                <td class="bg-yellow">${{ purchase.total_freezing_usd|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ {{ purchase.income|floatformat:2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if purchase.peeling_breakdown %}
+            <div class="section-header">PEELING DATAS</div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SHED NAMES</th>
+                            <th>RATE</th>
+                            <th>TYPE</th>
+                            <th>QUANTITY IN KG</th>
+                            <th>Rs/ AMOUNT IN INR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for peeling in purchase.peeling_breakdown %}
+                        <tr>
+                            <td class="text-left">{{ peeling.shed_name }}</td>
+                            <td>{{ peeling.rate|floatformat:0 }}</td>
+                            <td>{{ peeling.item_type }}</td>
+                            <td>{{ peeling.quantity|floatformat:2 }}</td>
+                            <td class="text-right">{{ peeling.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="grand-total">
+                            <td colspan="3">GRAND TOTAL</td>
+                            <td>{{ purchase.peeling_kg|floatformat:2 }}</td>
+                            <td class="text-right">Rs/ {{ purchase.peeling_expenses|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if purchase.processing_details %}
+            <div class="section-header">PROCESSING DETAILS</div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ITEM SUB</th>
+                            <th>PACKING</th>
+                            <th>UNIT</th>
+                            <th>GRADE</th>
+                            <th>TOTAL SLAB</th>
+                            <th>TOTAL QUANTITY</th>
+                            <th>PRICE/USD</th>
+                            <th>AMOUNT/USD</th>
+                            <th>AMOUNT/INR</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in purchase.processing_details %}
+                        <tr>
+                            <td class="text-left">{{ detail.item_quality }}</td>
+                            <td>{{ detail.packing }}</td>
+                            <td>{{ detail.unit }}</td>
+                            <td>{{ detail.grade }}</td>
+                            <td>{{ detail.total_slab|floatformat:0 }}</td>
+                            <td class="bg-yellow">{{ detail.total_quantity|floatformat:2 }}</td>
+                            <td class="bg-yellow">${{ detail.price_usd|floatformat:2 }}</td>
+                            <td class="bg-yellow">${{ detail.amount_usd|floatformat:2 }}</td>
+                            <td class="bg-yellow">{{ detail.amount_inr|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="grand-total">
+                            <td colspan="4">SUBTOTAL</td>
+                            <td>{{ purchase.total_slabs|floatformat:0 }}</td>
+                            <td>{{ purchase.total_kg_processed|floatformat:2 }}</td>
+                            <td>${{ purchase.avg_price_usd|floatformat:2 }}</td>
+                            <td>${{ purchase.total_freezing_usd|floatformat:2 }}</td>
+                            <td>Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            <div class="section-header">OVERHEADS</div>
+            <div class="section-content">
+                {% if purchase.overhead_breakdown %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>OVERHEAD TYPE</th>
+                            <th>RATE/KG</th>
+                            <th>AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for overhead in purchase.overhead_breakdown %}
+                        <tr>
+                            <td class="text-left">{{ overhead.type }}</td>
+                            <td>Rs/ {{ overhead.rate|floatformat:2 }}</td>
+                            <td class="text-right">Rs/ {{ overhead.amount|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                        <tr class="grand-total">
+                            <td colspan="2">TOTAL</td>
+                            <td class="text-right">Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+
+            <div class="section-header">PROFIT/LOSS SUMMARY</div>
+            <div class="section-content">
+                <div class="cost-summary">
+                    <div class="cost-row">
+                        <span>Purchase Amount:</span>
+                        <span>Rs/ {{ purchase.purchase_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Purchase Expenses:</span>
+                        <span>Rs/ {{ purchase.purchase_expense|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Peeling Expenses:</span>
+                        <span>Rs/ {{ purchase.peeling_expenses|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>All Overheads:</span>
+                        <span>Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row">
+                        <span>Freezing Tariff:</span>
+                        <span>Rs/ {{ purchase.freezing_tariff|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row" style="background: #e3f2fd; padding: 5px;">
+                        <span>Grand Total Cost:</span>
+                        <span>Rs/ {{ purchase.grand_total_cost|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row" style="background: #c8e6c9; padding: 5px;">
+                        <span>Total Revenue:</span>
+                        <span>Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</span>
+                    </div>
+                    <div class="cost-row" style="background: {% if purchase.total_profit_loss > 0 %}#a5d6a7{% else %}#ef9a9a{% endif %}; padding: 8px;">
+                        <span>TOTAL PROFIT/LOSS:</span>
+                        <span class="{% if purchase.total_profit_loss > 0 %}profit{% else %}loss{% endif %}">
+                            Rs/ {{ purchase.total_profit_loss|floatformat:2 }} ({{ purchase.profit_percentage|floatformat:1 }}%)
+                        </span>
+                    </div>
+                    <div class="cost-row" style="background: #fff; padding: 5px; border: 2px solid #0066cc;">
+                        <span>Profit/Loss Per KG:</span>
+                        <span class="{% if purchase.profit_loss_per_kg > 0 %}profit{% else %}loss{% endif %}">
+                            Rs/ {{ purchase.profit_loss_per_kg|floatformat:2 }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if summary %}
+        <div class="section">
+            <div class="section-header">OVERALL SUMMARY - ALL PURCHASES</div>
+            <div class="section-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>METRIC</th>
+                            <th>AMOUNT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-left">Total Purchases</td>
+                            <td>{{ summary.total_purchases }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Purchase Amount</td>
+                            <td>Rs/ {{ summary.total_purchase_amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Peeling Expenses</td>
+                            <td>Rs/ {{ summary.total_peeling_expenses|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total All Overheads</td>
+                            <td>Rs/ {{ summary.total_all_overheads|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Total Freezing Tariff</td>
+                            <td>Rs/ {{ summary.total_freezing_tariff|floatformat:2 }}</td>
+                        </tr>
+                        <tr style="background: #e3f2fd;">
+                            <td class="text-left"><strong>Total Cost</strong></td>
+                            <td><strong>Rs/ {{ summary.total_cost|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr style="background: #c8e6c9;">
+                            <td class="text-left"><strong>Total Revenue</strong></td>
+                            <td><strong>Rs/ {{ summary.total_revenue|floatformat:2 }}</strong></td>
+                        </tr>
+                        <tr style="background: {% if summary.total_profit_loss > 0 %}#a5d6a7{% else %}#ef9a9a{% endif %};">
+                            <td class="text-left"><strong>NET PROFIT/LOSS</strong></td>
+                            <td><strong class="{% if summary.total_profit_loss > 0 %}profit{% else %}loss{% endif %}">
+                                Rs/ {{ summary.total_profit_loss|floatformat:2 }} ({{ summary.overall_profit_margin|floatformat:1 }}%)
+                            </strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Profitable Purchases</td>
+                            <td class="profit">{{ summary.profit_count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Loss-Making Purchases</td>
+                            <td class="loss">{{ summary.loss_count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-left">Break-Even Purchases</td>
+                            <td>{{ summary.break_even_count }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div style="text-align: center; padding: 40px; color: #666;">
+            <p>No purchase data found for the selected criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        async function generatePDF() {
+            const btn = document.getElementById('pdfBtn');
+            try {
+                btn.disabled = true;
+                btn.textContent = 'Generating...';
+
+                const { jsPDF } = window.jspdf;
+                const container = document.querySelector('.report-container');
+                
+                document.querySelector('.action-buttons').style.display = 'none';
+                
+                const canvas = await html2canvas(container, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const imgWidth = 190;
+                const pageHeight = 277;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 10;
+
+                const imgData = canvas.toDataURL('image/png');
+                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight + 10;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const filename = `Spot_Purchase_PL_${new Date().toISOString().split('T')[0]}.pdf`;
+                pdf.save(filename);
+                
+                alert('PDF generated successfully!');
+            } catch (error) {
+                console.error('PDF Error:', error);
+                alert('Error generating PDF: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate PDF';
+                document.querySelector('.action-buttons').style.display = 'flex';
+            }
+        }
+    </script>
+</body>
+</html>

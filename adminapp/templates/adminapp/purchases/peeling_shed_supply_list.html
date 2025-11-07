@@ -1,0 +1,1086 @@
+{% extends 'admin_base.html' %}
+{% block title %} Peeling Shed Supply List {% endblock %}
+{% block content %}
+
+<style>
+  .custom-table th:nth-child(1),
+  .custom-table td:nth-child(1) {
+    width: 15%;
+    min-width: 100px;
+  }
+  .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2) {
+    width: 30%;
+    min-width: 180px;
+  }
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3) {
+    width: 38%;
+    min-width: 260px;
+  }
+  .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4) {
+    width: 15%;
+    min-width: 120px;
+  }
+  .custom-table th:nth-child(5),
+  .custom-table td:nth-child(5),
+  .custom-table th:nth-child(6),
+  .custom-table td:nth-child(6) {
+    width: 12%;
+    min-width: 100px;
+  }
+</style>
+
+
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-fish-fins"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Processing Operations</h3>
+            <p class="ph-header-subtitle">Manage your processing operations.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <a href="{%url 'adminapp:peeling_shed_supply_list'%}" >
+
+                <span>Peeling Shed Supplies</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+                           <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="ph-breadcrumb-link">
+                                            <i class="fa-solid fa-cart-shopping"></i>
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-wrapper me-4">
+                  <i class="fas fa-warehouse"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Peeling Shed Supplies</h3>
+                  <p class="text-muted mb-0 fs-6">Manage your peeling shed supply transactions</p>
+                </div>
+              </div>
+              
+              <!-- Search Box -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search supplies...">
+                    <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="stats-badge">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fas fa-box-open me-2"></i><span id="supplyCount">{{ supplies|length }}</span> Supplies
+                  </span>
+                </div>
+
+                <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="add-new-btn">
+                  <i class="fas fa-plus me-2"></i>Add New Supply
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table id="multi-filter" class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                                        <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-receipt header-icon"></i>
+                        <span class="header-text">Voucher</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-calendar-alt header-icon"></i>
+                        <span class="header-text">Date</span>
+                      </div>
+                    </th>
+
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-shopping-cart header-icon"></i>
+                        <span class="header-text">Spot Purchase</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-warehouse header-icon"></i>
+                        <span class="header-text">Shed</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-boxes header-icon"></i>
+                        <span class="header-text">Total Quantity</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fa-solid fa-box-open header-icon"></i>
+                        <span class="header-text">Balance Box</span>
+                      </div>
+                    </th>
+                    <th class="table-header text-center">
+                      <div class="header-content justify-content-center">
+                        <i class="fas fa-tools header-icon"></i>
+                        <span class="header-text">Actions</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="tableBody">
+                  {% for supply in supplies %}
+                  <tr class="table-row" data-searchable="{{ supply.voucher_number|lower }} {{ supply.spot_purchase.spot|lower }} {{ supply.shed|lower }} {{ supply.date }} {{ supply.total_amount }} {{ supply.total_quantity }}">
+                                        <td class="table-cell">
+                      <div class="voucher-display">
+                        <span class="voucher-badge">{{ supply.voucher_number }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="date-display">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        <span class="date-text">{{ supply.date }}</span>
+                      </div>
+                    </td>
+                  
+                    
+                    <td class="table-cell">
+                      <div class="purchase-info">
+                        <div class="purchase-avatar">
+                          <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="purchase-details">
+                          <div class="purchase-name">{{ supply.spot_purchase.spot }}</div>
+                          <div class="purchase-meta">Purchase Order</div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="shed-info">
+                        <div class="shed-avatar">
+                          <i class="fas fa-industry"></i>
+                        </div>
+                        <div class="shed-details">
+                          <div class="shed-name">{{ supply.shed }}</div>
+                          <div class="shed-meta">Facility</div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="quantity-badge">
+                        <i class="fas fa-cubes quantity-icon"></i>
+                        <span class="quantity-text">{{ supply.SpotPurchase_quantity|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    
+                    <!-- <td class="table-cell">
+                      <div class="balance-display">
+                        <span class="amount-value">{{ supply.SpotPurchase_balance_boxes|floatformat:2 }}</span>
+                      </div>
+                    </td> -->
+
+                                        <td class="table-cell">
+                      <div class="expense-display">
+                        <i class="fa-solid fa-box-open me-2"></i>
+                        <span class="expense-value">{{ supply.SpotPurchase_balance_boxes}}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="action-buttons">
+                        <a href="{% url 'adminapp:peeling_shed_supply_detail' supply.pk %}" 
+                           class="action-btn view-btn" 
+                           title="View Supply Details">
+                          <i class="fas fa-eye"></i>
+                          <!-- <span>Detail</span> -->
+                        </a>
+                        <a href="{% url 'adminapp:peeling_shed_supply_update' supply.pk %}" 
+                           class="action-btn edit-btn" 
+                           title="Update Supply">
+                          <i class="fas fa-edit"></i>
+                          <!-- <span>Edit</span> -->
+                        </a>
+                        <form method="post" action="{% url 'adminapp:peeling_shed_supply_delete' supply.pk %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" 
+                                  class="action-btn delete-btn" 
+                                  title="Delete Supply"
+                                  onclick="return confirm('Are you sure you want to delete this supply record? This action cannot be undone.')">
+                            <i class="fas fa-trash-alt"></i>
+                            <!-- <span>Delete</span> -->
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="7" class="empty-state-cell">
+                      <div class="empty-state-content">
+                        <i class="fas fa-warehouse empty-state-icon"></i>
+                        <h4>No Supplies Found</h4>
+                        <p>There are no peeling shed supplies to display yet.</p>
+                        <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="add-new-btn">Create Your First Supply</a>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- No Results Message -->
+              <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No supplies found</h4>
+                  <p>Try adjusting your search terms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+
+  /* Expense Display (Total Amount) */
+.expense-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
+}
+
+.expense-display .currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+.expense-display .expense-value {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #17a2b8;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.2);
+  }
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+  /* Add New Button */
+  .add-new-btn {
+    background: #17a2b8;
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid #17a2b8;
+    font-size: 14px;
+  }
+
+  .add-new-btn:hover {
+    background: #138496;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
+  }
+
+  /* Search Box Styling */
+  .search-controls {
+    min-width: 300px;
+  }
+
+  .search-box-wrapper {
+    position: relative;
+  }
+
+  .search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    width: 280px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 4px rgba(23, 162, 184, 0.1);
+    background: #ffffff;
+  }
+
+  .search-input::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  .stats-badge .badge {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  /* Table Styling */
+  .custom-table {
+    font-size: 15px;
+  }
+
+  .table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  /* Row Styling */
+  .table-row {
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(23, 162, 184, 0.02) 0%, rgba(23, 162, 184, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+
+  .table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  /* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 14px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.date-text {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+  /* Voucher Display */
+  .voucher-display {
+    text-align: center;
+  }
+
+  .voucher-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+    color: white;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* Purchase Info */
+  .purchase-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .purchase-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #fd7e14 0%, #e67e22 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .purchase-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .purchase-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Shed Info */
+  .shed-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .shed-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .shed-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .shed-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Quantity Badge */
+  .quantity-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border: 2px solid rgba(0, 123, 255, 0.2);
+  }
+
+  .quantity-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* Amount Display */
+  .amount-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #28a745;
+  }
+
+  .balance-display {
+    text-align: right;
+    font-weight: 700;
+    font-size: 16px;
+    color: #cd0000;
+  }
+
+  .currency-symbol {
+    font-size: 14px;
+    margin-right: 2px;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  .action-btn i {
+
+    font-size: 16px;
+  }
+
+  /* Empty State Styling */
+  .empty-state-cell {
+    padding: 60px 20px !important;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .empty-state-content h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state-content p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results Styling */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .card-header .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+    }
+
+    .card-header .d-flex>.d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+      margin-bottom: 20px;
+    }
+
+    .search-controls {
+      min-width: auto;
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 0;
+    }
+
+    .search-input {
+      width: 500px;
+    }
+
+    .card-title {
+      font-size: 22px;
+    }
+
+
+
+
+    .supplier-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+
+
+    .supplier-details {
+      flex: 1;
+    }
+
+  }
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const supplyCount = document.getElementById('supplyCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    function updateCounter(visibleCount) {
+        supplyCount.textContent = visibleCount;
+    }
+
+    function showClearButton(show) {
+        clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (searchTerm === '') {
+            // Show all rows
+            allRows.forEach(row => {
+                row.style.display = '';
+                visibleCount++;
+            });
+            noResults.style.display = 'none';
+            showClearButton(false);
+        } else {
+            // Filter rows
+            allRows.forEach(row => {
+                const searchableText = row.getAttribute('data-searchable');
+                if (searchableText && searchableText.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+            
+            showClearButton(true);
+        }
+
+        updateCounter(visibleCount);
+    }
+
+    function clearSearch() {
+        searchInput.value = '';
+        filterTable();
+        searchInput.focus();
+    }
+
+    // Enhanced delete confirmation
+    function enhancedDeleteConfirm(event) {
+        const row = event.target.closest('tr');
+        const voucher = row.querySelector('.voucher-badge').textContent.trim();
+        const purchase = row.querySelector('.purchase-name').textContent.trim();
+        const date = row.querySelector('.date-text').textContent.trim();
+        const amount = row.querySelector('.amount-value').textContent.trim();
+        
+        const confirmMessage = `Are you sure you want to delete this supply record?\n\nVoucher: ${voucher}\nPurchase: ${purchase}\nDate: ${date}\nTotal Amount: ₹${amount}\n\nThis action cannot be undone.`;
+        
+        return confirm(confirmMessage);
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterTable);
+    searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+            clearSearch();
+        }
+    });
+    
+    clearBtn.addEventListener('click', clearSearch);
+
+    // Add enhanced delete confirmation to all delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', enhancedDeleteConfirm);
+    });
+
+    // Keyboard navigation
+    allRows.forEach(row => {
+        row.setAttribute('tabindex', '0');
+        row.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const viewLink = this.querySelector('.view-btn');
+                if (viewLink) {
+                    viewLink.click();
+                }
+            }
+        });
+    });
+
+    // Initialize
+    updateCounter(totalCount);
+});
+</script>
+
+{% endblock %}

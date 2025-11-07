@@ -1,0 +1,1627 @@
+{% extends 'admin_base.html' %}
+{% block title %} Tenant Stock Summary {% endblock %}
+{% block content %}
+
+<style>
+  /* Main Container */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Page Header */
+  .page-header {
+    margin-bottom: 30px;
+  }
+
+  .page-header h3 {
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .page-header h3 i {
+    color: #3498db;
+    font-size: 30px;
+  }
+
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    border: none;
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 30px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.2);
+    margin-right: 20px;
+  }
+
+  .header-text h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+  }
+
+  .header-text p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* Controls Section */
+  .controls-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Search Box */
+  .search-wrapper {
+    position: relative;
+  }
+
+  .search-input {
+    width: 300px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 14px;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: none;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  /* Stats Badge */
+  .stats-badge .badge {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e9ecef;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Add Button */
+  .add-new-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  }
+
+  .add-new-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+  }
+
+  .view-details-btn {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+
+  .view-details-btn:hover {
+    background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 25px 30px;
+    background: #f8f9fd;
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+
+  .stat-card.tenants {
+    border-color: rgba(52, 152, 219, 0.2);
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.with-stock {
+    border-color: rgba(40, 167, 69, 0.2);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.empty {
+    border-color: rgba(108, 117, 125, 0.2);
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.items {
+    border-color: rgba(255, 193, 7, 0.2);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, white 100%);
+  }
+
+  .stat-card h4 {
+    margin: 0 0 10px 0;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .stat-card.tenants .value { color: #3498db; }
+  .stat-card.with-stock .value { color: #28a745; }
+  .stat-card.empty .value { color: #6c757d; }
+  .stat-card.items .value { color: #ffc107; }
+
+  /* Tenant Cards Grid */
+  .tenant-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    padding: 30px;
+  }
+
+  /* Individual Tenant Card */
+  .tenant-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .tenant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    border-color: rgba(52, 152, 219, 0.2);
+  }
+
+  .tenant-card.has-stock {
+    border-left: 4px solid #28a745;
+  }
+
+  .tenant-card.no-stock {
+    border-left: 4px solid #6c757d;
+  }
+
+  /* Tenant Card Header */
+  .tenant-card-header {
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .tenant-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .tenant-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+
+  .tenant-details .tenant-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+
+  .tenant-details .tenant-contact {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Status Indicator Base Styles */
+.status-indicator {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-indicator::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.status-indicator:hover::before {
+  left: 100%;
+}
+
+/* Active Status */
+.status-active {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  color: white;
+  border-color: #27ae60;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+.status-active:hover {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+  transform: translateY(-1px);
+}
+
+.status-active::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  animation: pulse-active 2s infinite;
+}
+
+@keyframes pulse-active {
+  0% { opacity: 1; transform: translateY(-50%) scale(1); }
+  50% { opacity: 0.7; transform: translateY(-50%) scale(1.2); }
+  100% { opacity: 1; transform: translateY(-50%) scale(1); }
+}
+
+/* Inactive Status */
+.status-inactive {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: white;
+  border-color: #7f8c8d;
+  box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+}
+
+.status-inactive:hover {
+  background: linear-gradient(135deg, #7f8c8d 0%, #6c7b7d 100%);
+  box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+  transform: translateY(-1px);
+}
+
+.status-inactive::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 6px;
+  height: 6px;
+  background: #ffffff;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  opacity: 0.6;
+}
+
+/* Alternative Light Theme Status */
+.status-active-light {
+  background: rgba(46, 204, 113, 0.1);
+  color: #27ae60;
+  border-color: rgba(46, 204, 113, 0.3);
+  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.1);
+}
+
+.status-active-light:hover {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: rgba(46, 204, 113, 0.4);
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+  transform: translateY(-1px);
+}
+
+.status-inactive-light {
+  background: rgba(149, 165, 166, 0.1);
+  color: #7f8c8d;
+  border-color: rgba(149, 165, 166, 0.3);
+  box-shadow: 0 2px 8px rgba(149, 165, 166, 0.1);
+}
+
+.status-inactive-light:hover {
+  background: rgba(149, 165, 166, 0.15);
+  border-color: rgba(149, 165, 166, 0.4);
+  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.2);
+  transform: translateY(-1px);
+}
+
+/* Card Border Styling Based on Status */
+.tenant-card.active {
+  border-left: 4px solid #2ecc71;
+}
+
+.tenant-card.inactive {
+  border-left: 4px solid #95a5a6;
+}
+
+.tenant-card.active:hover {
+  border-left-color: #27ae60;
+  box-shadow: 0 15px 35px rgba(46, 204, 113, 0.15);
+}
+
+.tenant-card.inactive:hover {
+  border-left-color: #7f8c8d;
+  box-shadow: 0 15px 35px rgba(149, 165, 166, 0.15);
+}
+
+/* Avatar Styling Based on Status */
+.tenant-avatar.active {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  animation: pulse-avatar-active 3s infinite;
+}
+
+.tenant-avatar.inactive {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+@keyframes pulse-avatar-active {
+  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+/* Status Icons */
+.status-icon-active::before {
+  content: "\f058"; /* fa-check-circle */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-right: 4px;
+}
+
+.status-icon-inactive::before {
+  content: "\f057"; /* fa-times-circle */
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  margin-right: 4px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .status-indicator {
+    padding: 6px 12px;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  
+  .status-indicator::after {
+    width: 4px;
+    height: 4px;
+    right: 6px;
+  }
+}
+
+
+  /* Tenant Card Body */
+  .tenant-card-body {
+    padding: 20px;
+  }
+
+  /* Quick Stats */
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .quick-stat {
+    text-align: center;
+    padding: 15px 10px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+  }
+
+  .quick-stat-label {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+  }
+
+  .quick-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  /* Toggle Switch Status Card */
+.quick-stat.status-toggle {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 15px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Top border indicator */
+.quick-stat.status-toggle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: #28a745;
+  border-radius: 12px 12px 0 0;
+}
+
+/* Status Label */
+.quick-stat.status-toggle .quick-stat-label {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* Toggle Switch Container */
+.status-toggle-switch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* Toggle Switch Track */
+.toggle-track {
+  width: 50px;
+  height: 24px;
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  border-radius: 20px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Inactive Toggle Track */
+.toggle-track.inactive {
+  background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+}
+
+/* Toggle Switch Circle/Dot */
+.toggle-circle {
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Active state circle position */
+.toggle-track.inactive .toggle-circle {
+  right: 29px;
+}
+
+/* Pulsing animation for active state */
+.toggle-track:not(.inactive) .toggle-circle {
+  animation: toggle-pulse 2s infinite;
+}
+
+@keyframes toggle-pulse {
+  0% { box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 0 0 rgba(46, 204, 113, 0.4); }
+  50% { box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 0 4px rgba(46, 204, 113, 0); }
+  100% { box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 0 0 rgba(46, 204, 113, 0); }
+}
+
+/* Status Text */
+.status-text {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.status-text.active {
+  color: #27ae60;
+}
+
+.status-text.inactive {
+  color: #7f8c8d;
+}
+
+/* Card hover effect */
+.quick-stat.status-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border-color: rgba(52, 152, 219, 0.3);
+}
+
+/* Active card styling */
+.quick-stat.status-toggle.active {
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.02) 0%, white 100%);
+  border-color: rgba(46, 204, 113, 0.2);
+}
+
+/* Inactive card styling */
+.quick-stat.status-toggle.inactive {
+  background: linear-gradient(135deg, rgba(149, 165, 166, 0.02) 0%, white 100%);
+  border-color: rgba(149, 165, 166, 0.2);
+}
+
+.quick-stat.status-toggle.inactive::before {
+  background: #95a5a6;
+}
+
+/* Alternative compact version */
+.quick-stat.status-toggle.compact {
+  padding: 12px;
+}
+
+.quick-stat.status-toggle.compact .toggle-track {
+  width: 40px;
+  height: 20px;
+}
+
+.quick-stat.status-toggle.compact .toggle-circle {
+  width: 14px;
+  height: 14px;
+  top: 3px;
+}
+
+.quick-stat.status-toggle.compact .toggle-track.inactive .toggle-circle {
+  right: 23px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .quick-stat.status-toggle {
+    padding: 12px 10px;
+  }
+  
+  .toggle-track {
+    width: 45px;
+    height: 22px;
+  }
+  
+  .toggle-circle {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .toggle-track.inactive .toggle-circle {
+    right: 26px;
+  }
+  
+  .status-text {
+    font-size: 10px;
+  }
+}
+
+  /* Stock Metrics */
+  .stock-section {
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+
+  .metric-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .metric-label {
+    font-size: 13px;
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .metric-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  /* Balance Section */
+  .balance-section {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(52, 152, 219, 0.02) 100%);
+    border: 2px solid rgba(52, 152, 219, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+
+  .balance-section.positive {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .balance-section.zero {
+    background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(108, 117, 125, 0.02) 100%);
+    border-color: rgba(108, 117, 125, 0.2);
+  }
+
+  .balance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .balance-item {
+    text-align: center;
+  }
+
+  .balance-label {
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .balance-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  /* Card Footer */
+  .tenant-card-footer {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-top: 2px solid #f1f3f7;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .last-activity {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+  }
+
+  .view-detail-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .view-detail-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    color: #3498db;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  .empty-state h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    display: none;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+    
+    .header-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .header-info {
+      margin-bottom: 20px;
+    }
+    
+    .controls-section {
+      justify-content: space-between;
+      width: 100%;
+    }
+    
+    .search-input {
+      width: 200px;
+    }
+    
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    
+    .tenant-cards-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .quick-stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .balance-grid {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .controls-section {
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .search-input {
+      width: 100%;
+    }
+    
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .header-text h3 {
+      font-size: 20px;
+    }
+    
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .tenant-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+  }
+</style>
+
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Stock Management</h3>
+            <p class="ph-header-subtitle">Adjust inventory stock levels</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:list' %}" class="ph-breadcrumb-link">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock List</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>{{ action }} Stock</span>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-content">
+              <div class="header-info">
+                <div class="icon-wrapper">
+                  <i class="fas fa-warehouse"></i>
+                </div>
+                <div class="header-text">
+                  <h3 class="fw-bold">Tenant Stock Overview</h3>
+                  <p>Monitor and manage tenant inventory levels</p>
+                </div>
+              </div>
+              
+              <div class="controls-section">
+                <div class="search-wrapper">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" id="searchInput" class="search-input" placeholder="Search tenants...">
+                  <button type="button" id="clearSearch" class="clear-btn">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                
+                <div class="stats-badge">
+                  <span class="badge">
+                    <i class="fas fa-building me-2"></i><span id="tenantCount">{{ tenant_summary|length }}</span> Tenants
+                  </span>
+                </div>
+
+                <a href="{% url 'adminapp:tenant_stock_balance' %}" class="view-details-btn">
+                  <i class="fas fa-list"></i>Detailed View
+                </a>
+
+                <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" class="add-new-btn">
+                  <i class="fas fa-plus"></i>Add Stock
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          {% if tenant_summary %}
+          <div class="stats-grid">
+            <div class="stat-card tenants">
+              <h4>Total Tenants</h4>
+              <div class="value" id="totalTenants">{{ tenant_summary|length }}</div>
+            </div>
+            <div class="stat-card with-stock">
+              <h4>With Stock</h4>
+              <div class="value" id="withStock">
+                {% with stock_count=0 %}
+                  {% for summary in tenant_summary %}
+                    {% if summary.has_stock %}
+                      {{ stock_count|add:1 }}
+                    {% endif %}
+                  {% endfor %}
+                {% endwith %}
+              </div>
+            </div>
+            <div class="stat-card empty">
+              <h4>Empty Stock</h4>
+              <div class="value" id="emptyStock">
+                {% with empty_count=0 %}
+                  {% for summary in tenant_summary %}
+                    {% if not summary.has_stock %}
+                      {{ empty_count|add:1 }}
+                    {% endif %}
+                  {% endfor %}
+                {% endwith %}
+              </div>
+            </div>
+            <div class="stat-card items">
+              <h4>Total Items</h4>
+              <div class="value" id="totalItems">
+                {% with item_total=0 %}
+                  {% for summary in tenant_summary %}
+                    {{ item_total|add:summary.item_count }}
+                  {% endfor %}
+                {% endwith %}
+              </div>
+            </div>
+          </div>
+
+          <div class="tenant-cards-grid" id="tenantCardsGrid">
+            {% for summary in tenant_summary %}
+            <div class="tenant-card {% if summary.has_stock %}has-stock{% else %}no-stock{% endif %}" 
+                 data-searchable="{{ summary.tenant.company_name|lower }} {{ summary.tenant.contact_person|lower|default:'' }}">
+              
+              <!-- Tenant Card Header -->
+              <div class="tenant-card-header">
+                <div class="tenant-info">
+                  <div style="display: flex; align-items: center;">
+                    <div class="tenant-avatar">
+                      <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="tenant-details">
+                      <div class="tenant-name">{{ summary.tenant.company_name|truncatechars:25 }}</div>
+                      {% if summary.tenant.contact_person %}
+                        <div class="tenant-contact">{{ summary.tenant.contact_person }}</div>
+                      {% else %}
+                        <div class="tenant-contact">No contact person</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  <div class="status-indicator {% if summary.has_stock %}status-active{% else %}status-empty{% endif %}">
+                    {% if summary.has_stock %}In Stock{% else %}Empty{% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tenant Card Body -->
+              <div class="tenant-card-body">
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                  <div class="quick-stat">
+                    <div class="quick-stat-label">Items</div>
+                    <div class="quick-stat-value">{{ summary.item_count }}</div>
+                  </div>
+                  <div class="quick-stat">
+                    <div class="quick-stat-label">Total KG</div>
+                    <div class="quick-stat-value">{{ summary.kg_balance|floatformat:1 }}</div>
+                  </div>
+<div class="quick-stat status-toggle {% if summary.has_stock %}active{% else %}inactive{% endif %}">
+    <div class="quick-stat-label">Status</div>
+    <div class="status-toggle-switch">
+      <div class="toggle-track {% if not summary.has_stock %}inactive{% endif %}">
+        <div class="toggle-circle"></div>
+      </div>
+    </div>
+    <div class="status-text {% if summary.has_stock %}active{% else %}inactive{% endif %}">
+      {% if summary.has_stock %}Active{% else %}Inactive{% endif %}
+    </div>
+  </div>
+                </div>
+
+                <!-- Stock Received -->
+                <div class="stock-section">
+                  <div class="section-title">
+                    <i class="fas fa-arrow-down"></i>Stock Received
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Slab</span>
+                    <span class="metric-value">{{ summary.freezing_totals.total_slab|default:0|floatformat:0 }}</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">C/S</span>
+                    <span class="metric-value">{{ summary.freezing_totals.total_cs|default:0|floatformat:0 }}</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Weight (KG)</span>
+                    <span class="metric-value">{{ summary.freezing_totals.total_kg|default:0|floatformat:1 }}</span>
+                  </div>
+                </div>
+
+                <!-- Stock Returned -->
+                <div class="stock-section">
+                  <div class="section-title">
+                    <i class="fas fa-arrow-up"></i>Stock Returned
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Slab</span>
+                    <span class="metric-value" style="color: #e74c3c;">{{ summary.return_totals.total_slab|default:0|floatformat:0 }}</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">C/S</span>
+                    <span class="metric-value" style="color: #e74c3c;">{{ summary.return_totals.total_cs|default:0|floatformat:0 }}</span>
+                  </div>
+                  <div class="metric-row">
+                    <span class="metric-label">Weight (KG)</span>
+                    <span class="metric-value" style="color: #e74c3c;">{{ summary.return_totals.total_kg|default:0|floatformat:1 }}</span>
+                  </div>
+                </div>
+
+                <!-- Current Balance -->
+                <div class="balance-section {% if summary.has_stock %}positive{% else %}zero{% endif %}">
+                  <div class="section-title" style="color: {% if summary.has_stock %}#28a745{% else %}#6c757d{% endif %};">
+                    <i class="fas fa-balance-scale"></i>Current Balance
+                  </div>
+                  <div class="balance-grid">
+                    <div class="balance-item">
+                      <div class="balance-label">Slab</div>
+                      <div class="balance-value">{{ summary.slab_balance|floatformat:0 }}</div>
+                    </div>
+                    <div class="balance-item">
+                      <div class="balance-label">C/S</div>
+                      <div class="balance-value">{{ summary.cs_balance|floatformat:0 }}</div>
+                    </div>
+                    <div class="balance-item">
+                      <div class="balance-label">KG</div>
+                      <div class="balance-value">{{ summary.kg_balance|floatformat:1 }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tenant Card Footer -->
+              <div class="tenant-card-footer">
+                <div class="last-activity">
+                  <i class="fas fa-clock"></i>
+                  Last activity: 
+                  {% if summary.tenant.updated_at %}
+                    {{ summary.tenant.updated_at|date:"M d, Y" }}
+                  {% else %}
+                    N/A
+                  {% endif %}
+                </div>
+                <a href="{% url 'adminapp:tenant_stock_detail' summary.tenant.id %}" class="view-detail-btn">
+                  <i class="fas fa-eye"></i>View Details
+                </a>
+              </div>
+            </div>
+            {% endfor %}
+
+            <!-- No Results Message -->
+            <div id="noResults" class="no-results" style="grid-column: 1 / -1;">
+              <div class="no-results-content">
+                <i class="fas fa-search-minus no-results-icon"></i>
+                <h4>No tenants found</h4>
+                <p>Try adjusting your search terms</p>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <i class="fas fa-warehouse empty-state-icon"></i>
+            <h4>No Tenant Companies Found</h4>
+            <p>Get started by registering your first tenant company to begin tracking stock levels.</p>
+            <a href="{% url 'adminapp:create_tenant_company' %}" class="add-new-btn">
+              <i class="fas fa-plus"></i>Add First Tenant Company
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tenantCardsGrid = document.getElementById('tenantCardsGrid');
+    const noResults = document.getElementById('noResults');
+    const tenantCount = document.getElementById('tenantCount');
+    const allCards = tenantCardsGrid ? tenantCardsGrid.querySelectorAll('.tenant-card') : [];
+    const totalCount = allCards.length;
+
+    // Update stats function
+    function updateStats() {
+        const visibleCards = document.querySelectorAll('.tenant-card[style=""], .tenant-card:not([style*="display: none"])');
+        let visibleCount = 0;
+        let withStock = 0;
+        let emptyStock = 0;
+        let totalItems = 0;
+
+        visibleCards.forEach(card => {
+            visibleCount++;
+            
+            // Check if has stock
+            if (card.classList.contains('has-stock')) {
+                withStock++;
+            } else {
+                emptyStock++;
+            }
+            
+            // Count items
+            const itemsValue = card.querySelector('.quick-stat-value');
+            if (itemsValue) {
+                const items = parseInt(itemsValue.textContent) || 0;
+                totalItems += items;
+            }
+        });
+
+        // Update display
+        if (document.getElementById('totalTenants')) {
+            document.getElementById('totalTenants').textContent = visibleCount;
+        }
+        if (document.getElementById('withStock')) {
+            document.getElementById('withStock').textContent = withStock;
+        }
+        if (document.getElementById('emptyStock')) {
+            document.getElementById('emptyStock').textContent = emptyStock;
+        }
+        if (document.getElementById('totalItems')) {
+            document.getElementById('totalItems').textContent = totalItems;
+        }
+        if (tenantCount) {
+            tenantCount.textContent = visibleCount;
+        }
+    }
+
+    // Search functionality
+    function filterCards() {
+        if (!searchInput || !tenantCardsGrid) return;
+        
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (searchTerm === '') {
+            // Show all cards
+            allCards.forEach(card => {
+                card.style.display = '';
+                visibleCount++;
+            });
+            if (noResults) noResults.style.display = 'none';
+            if (clearBtn) clearBtn.style.display = 'none';
+        } else {
+            // Filter cards
+            allCards.forEach(card => {
+                const searchableText = card.getAttribute('data-searchable') || card.textContent.toLowerCase();
+                
+                if (searchableText.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0 && totalCount > 0 && noResults) {
+                noResults.style.display = 'block';
+            } else if (noResults) {
+                noResults.style.display = 'none';
+            }
+            
+            if (clearBtn) clearBtn.style.display = 'block';
+        }
+
+        updateStats();
+    }
+
+    // Clear search
+    function clearSearch() {
+        if (searchInput) {
+            searchInput.value = '';
+            filterCards();
+            searchInput.focus();
+        }
+    }
+
+    // Event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', filterCards);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Initialize stats and animations
+    updateStats();
+    
+    // Add smooth animations to cards
+    allCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animation = 'fadeInUp 0.6s ease forwards';
+    });
+
+    // Add loading states for action buttons
+    document.querySelectorAll('.view-detail-btn, .add-new-btn, .view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon) {
+                const originalClass = icon.className;
+                icon.className = 'fas fa-spinner fa-spin';
+                
+                setTimeout(() => {
+                    icon.className = originalClass;
+                }, 2000);
+            }
+        });
+    });
+
+    // Keyboard navigation for tenant cards
+    allCards.forEach(card => {
+        card.setAttribute('tabindex', '0');
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const viewLink = this.querySelector('.view-detail-btn');
+                if (viewLink) {
+                    viewLink.click();
+                }
+            }
+        });
+    });
+
+    // Add visual feedback for zero values
+    const metricValues = document.querySelectorAll('.metric-value, .quick-stat-value, .balance-value');
+    metricValues.forEach(value => {
+        if (value.textContent.trim() === '0' || value.textContent.trim() === '0.0') {
+            value.style.opacity = '0.6';
+        }
+    });
+});
+
+// Animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(52, 152, 219, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(52, 152, 219, 0);
+    }
+  }
+  
+  .tenant-card.has-stock .tenant-avatar {
+    animation: pulse 2s infinite;
+  }
+`;
+document.head.appendChild(style);
+</script>
+
+{% endblock %}

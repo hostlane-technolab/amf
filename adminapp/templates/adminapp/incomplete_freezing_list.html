@@ -1,0 +1,499 @@
+{% extends 'admin_base.html' %}
+{%block title%} Admin Panel{%endblock%}
+{% block content %}
+
+<div class="container">
+  <div class="page-inner">
+    <div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+      <div>
+        <h3 class="fw-bold mb-3">Admin Panel Dashboard {{request.user}}</h3>
+        <h6 class="op-7 mb-2">AMF Management System</h6>
+      </div>
+      <div class="ms-md-auto py-2 py-md-0">
+        <a href="#" class="btn btn-label-info btn-round me-2">Manage</a>
+        <a href="#" class="btn btn-primary btn-round">Add Customer</a>
+      </div>
+    </div>
+    
+    <!-- Stats Cards Row -->
+    <div class="row">
+      <!-- Incomplete Freezing Card -->
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round stats-card-freezing">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-warning bubble-shadow-small">
+                  <i class="fa-solid fa-snowflake"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category" style="font-weight: 500;">Incomplete Freezing</p>
+                  <h4 class="card-title">{{ incomplete_freezing_count|default:"0" }}</h4>
+                  {% if incomplete_spot_freezing or incomplete_local_freezing %}
+                  <small class="text-muted">
+                    <i class="fas fa-map-marker-alt me-1"></i>Spot: {{ incomplete_spot_freezing|default:"0" }}
+                    <i class="fas fa-home ms-2 me-1"></i>Local: {{ incomplete_local_freezing|default:"0" }}
+                  </small>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Add click functionality -->
+          <div class="card-footer p-0">
+            <div class="stats-footer">
+              <a href="{% url 'adminapp:incomplete_freezing_list' %}" class="stretched-link stats-link">
+                <i class="fas fa-eye me-1"></i>View Details
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subscribers Card -->
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-info bubble-shadow-small">
+                  <i class="fas fa-user-check"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Subscribers</p>
+                  <h4 class="card-title">{{ total_subscribers|default:"1303" }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Card -->
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-success bubble-shadow-small">
+                  <i class="fas fa-luggage-cart"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Sales</p>
+                  <h4 class="card-title">$ {{ total_sales|default:"1,345" }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders Card -->
+      <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-icon">
+                <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                  <i class="far fa-check-circle"></i>
+                </div>
+              </div>
+              <div class="col col-stats ms-3 ms-sm-0">
+                <div class="numbers">
+                  <p class="card-category">Orders</p>
+                  <h4 class="card-title">{{ total_orders|default:"576" }}</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Incomplete Freezing Details Section -->
+    {% if incomplete_freezing_count > 0 %}
+    <div class="row mt-4">
+      <div class="col-md-12">
+        <div class="card card-round">
+          <div class="card-header">
+            <div class="card-head-row">
+              <div class="card-title">
+                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                Incomplete Freezing Entries
+              </div>
+              <div class="card-tools">
+                <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="btn btn-label-primary btn-round btn-sm me-2">
+                  <span class="btn-label">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </span>
+                  View Spot Entries
+                </a>
+                <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="btn btn-label-success btn-round btn-sm">
+                  <span class="btn-label">
+                    <i class="fas fa-home"></i>
+                  </span>
+                  View Local Entries
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="info-box">
+                  <div class="info-icon bg-primary">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div class="info-content">
+                    <h5 class="info-title">Spot Freezing</h5>
+                    <p class="info-subtitle">{{ incomplete_spot_freezing|default:"0" }} incomplete entries</p>
+                    <div class="info-actions">
+                      <a href="{% url 'adminapp:freezing_entry_spot_create' %}" class="btn btn-sm btn-primary">Add New</a>
+                      <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="btn btn-sm btn-outline-primary ms-2">View All</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="info-box">
+                  <div class="info-icon bg-success">
+                    <i class="fas fa-home"></i>
+                  </div>
+                  <div class="info-content">
+                    <h5 class="info-title">Local Freezing</h5>
+                    <p class="info-subtitle">{{ incomplete_local_freezing|default:"0" }} incomplete entries</p>
+                    <div class="info-actions">
+                      <a href="{% url 'adminapp:freezing_entry_local_create' %}" class="btn btn-sm btn-success">Add New</a>
+                      <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="btn btn-sm btn-outline-success ms-2">View All</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts Row -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card card-primary card-round">
+          <div class="card-header">
+            <div class="card-head-row">
+              <div class="card-title">Daily Sales</div>
+              <div class="card-tools">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-label-light dropdown-toggle" type="button" 
+                          id="dropdownMenuButton" data-bs-toggle="dropdown" 
+                          aria-haspopup="true" aria-expanded="false">
+                    Export
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="#">Action</a>
+                    <a class="dropdown-item" href="#">Another action</a>
+                    <a class="dropdown-item" href="#">Something else here</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-category">March 25 - April 02</div>
+          </div>
+          <div class="card-body pb-0">
+            <div class="mb-4 mt-2">
+              <h1>$4,578.58</h1>
+            </div>
+            <div class="pull-in">
+              <canvas id="dailySalesChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card card-round">
+          <div class="card-body pb-0">
+            <div class="h1 fw-bold float-end text-primary">+5%</div>
+            <h2 class="mb-2">17</h2>
+            <p class="text-muted">Users online</p>
+            <div class="pull-in sparkline-fix">
+              <div id="lineChart"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container-fluid d-flex justify-content-between">
+    <nav class="pull-left">
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" href="http://www.themekita.com">ThemeKita</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"> Help </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"> Licenses </a>
+        </li>
+      </ul>
+    </nav>
+    <div class="copyright">
+      2024, made with <i class="fa fa-heart heart text-danger"></i> by
+      <a href="http://www.themekita.com">ThemeKita</a>
+    </div>
+    <div>
+      Distributed by
+      <a target="_blank" href="https://themewagon.com/">ThemeWagon</a>.
+    </div>
+  </div>
+</footer>
+
+<style>
+/* Custom Styles for Enhanced Dashboard */
+.stats-card-freezing {
+  border-left: 4px solid #ff9500;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.stats-card-freezing:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 149, 0, 0.15);
+}
+
+.icon-warning {
+  background: linear-gradient(135deg, #ff9500 0%, #ff6b35 100%);
+}
+
+.stats-footer {
+  background: rgba(255, 149, 0, 0.1);
+  padding: 8px 15px;
+  border-radius: 0 0 15px 15px;
+}
+
+.stats-link {
+  color: #ff9500;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stats-link:hover {
+  color: #e68500;
+}
+
+.stretched-link::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  content: "";
+}
+
+/* Info boxes for incomplete freezing section */
+.info-box {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.info-box:hover {
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.info-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-title {
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.info-subtitle {
+  margin-bottom: 15px;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.info-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Warning alert styles */
+.alert-freezing {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.1) 0%, rgba(255, 107, 53, 0.1) 100%);
+  border: 1px solid rgba(255, 149, 0, 0.2);
+  border-left: 4px solid #ff9500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .info-box {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .info-icon {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .info-actions {
+    justify-content: center;
+  }
+}
+</style>
+
+<script>
+// Chart initialization (keeping your existing chart code)
+var ctx = document.getElementById('statisticsChart');
+if (ctx) {
+  ctx = ctx.getContext('2d');
+  
+  var statisticsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Subscribers",
+        borderColor: '#f3545d',
+        pointBackgroundColor: 'rgba(243, 84, 93, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(243, 84, 93, 0.4)',
+        legendColor: '#f3545d',
+        fill: true,
+        borderWidth: 2,
+        data: [154, 184, 175, 203, 210, 231, 240, 278, 252, 312, 320, 374]
+      }, {
+        label: "New Visitors",
+        borderColor: '#fdaf4b',
+        pointBackgroundColor: 'rgba(253, 175, 75, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(253, 175, 75, 0.4)',
+        legendColor: '#fdaf4b',
+        fill: true,
+        borderWidth: 2,
+        data: [256, 230, 245, 287, 240, 250, 230, 295, 331, 431, 456, 521]
+      }, {
+        label: "Active Users",
+        borderColor: '#177dff',
+        pointBackgroundColor: 'rgba(23, 125, 255, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(23, 125, 255, 0.4)',
+        legendColor: '#177dff',
+        fill: true,
+        borderWidth: 2,
+        data: [542, 480, 430, 550, 530, 453, 380, 434, 568, 610, 700, 900]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      tooltips: {
+        bodySpacing: 4,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest",
+        xPadding: 10,
+        yPadding: 10,
+        caretPadding: 10
+      },
+      layout: {
+        padding: { left: 5, right: 5, top: 15, bottom: 15 }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            fontStyle: "500",
+            beginAtZero: false,
+            maxTicksLimit: 5,
+            padding: 10
+          },
+          gridLines: {
+            drawTicks: false,
+            display: false
+          }
+        }],
+        xAxes: [{
+          gridLines: {
+            zeroLineColor: "transparent"
+          },
+          ticks: {
+            padding: 10,
+            fontStyle: "500"
+          }
+        }]
+      },
+      legendCallback: function(chart) {
+        var text = [];
+        text.push('<ul class="' + chart.id + '-legend html-legend">');
+        for (var i = 0; i < chart.data.datasets.length; i++) {
+          text.push('<li><span style="background-color:' + chart.data.datasets[i].legendColor + '"></span>');
+          if (chart.data.datasets[i].label) {
+            text.push(chart.data.datasets[i].label);
+          }
+          text.push('</li>');
+        }
+        text.push('</ul>');
+        return text.join('');
+      }
+    }
+  });
+
+  var myLegendContainer = document.getElementById("myChartLegend");
+  if (myLegendContainer) {
+    myLegendContainer.innerHTML = statisticsChart.generateLegend();
+  }
+}
+
+// Add click functionality to the incomplete freezing card
+document.addEventListener('DOMContentLoaded', function() {
+  const freezingCard = document.querySelector('.stats-card-freezing');
+  if (freezingCard) {
+    freezingCard.style.cursor = 'pointer';
+  }
+});
+</script>
+
+{% endblock %}

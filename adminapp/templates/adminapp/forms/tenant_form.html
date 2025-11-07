@@ -1,0 +1,1558 @@
+{% extends 'master2base.html' %}
+{% block title %}{% if object %}Update Tenant{% else %}Create Tenant{% endif %}{% endblock %}
+
+{% block content %}
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+<div class="container">
+  <div class="page-inner">
+    <!-- Page Header -->
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Financial Masters</h3>
+            <p class="ph-header-subtitle">Manage your Financial Statements.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:tenant_list'%}" class="ph-breadcrumb-link">
+                  <i class="fas fa-building"></i>
+                <span>Tenants</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="{%url 'adminapp:tenant_create'%}" >
+                                            
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Form Card -->
+    <div class="form-container">
+      <div class="form-card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <div class="card-header-content">
+            <div class="card-icon">
+              <i class="fa-solid fa-{% if object %}pen-to-square{% else %}building{% endif %}"></i>
+            </div>
+            <div class="card-title-section">
+              <h4 class="card-title">{% if object %}Update Tenant{% else %}Create Tenant{% endif %}</h4>
+              <p class="card-description">Fill in the tenant details and configure freezing tariffs</p>
+            </div>
+          </div>
+          <div class="progress-indicator">
+            <div class="progress-step active" data-step="1">
+              <div class="step-number">1</div>
+              <span class="step-label">Details</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <form method="post" class="tenant-form" id="tenantForm">
+            {% csrf_token %}
+            
+            <!-- Tenant Details Section -->
+<!-- Tenant Details Section -->
+            <div class="info-card-header">
+              <div class="d-flex align-items-center">
+                <div class="header-icon-wrapper">
+                  <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <div>
+                  <h4 class="header-card-title">Tenant Information</h4>
+                  <p class="header-card-subtitle">Enter basic tenant details</p>
+                </div>
+              </div>
+            </div>
+
+            <style>
+                /* Info Card Header Styles */
+.info-card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border: 2px solid #f1f3f7;
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: var(--spacing-xl);
+}
+
+.info-card-header .d-flex {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.header-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+  flex-shrink: 0;
+}
+
+.header-card-title {
+  font-size: 22px;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+}
+
+.header-card-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Responsive - Mobile */
+@media (max-width: 768px) {
+  .info-card-header {
+    padding: 20px;
+  }
+  
+  .header-icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .header-card-title {
+    font-size: 18px;
+  }
+  
+  .header-card-subtitle {
+    font-size: 13px;
+  }
+}
+
+/* Responsive - Small Mobile */
+@media (max-width: 480px) {
+  .info-card-header {
+    padding: 16px;
+  }
+  
+  .info-card-header .d-flex {
+    gap: 12px;
+  }
+  
+  .header-icon-wrapper {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .header-card-title {
+    font-size: 16px;
+  }
+  
+  .header-card-subtitle {
+    font-size: 12px;
+  }
+}
+            </style>
+
+            <div class="form-grid">
+              {% for field in form %}
+                <div class="form-group-wrapper">
+                  <div class="form-group">
+                    <!-- Field Label -->
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                      <span class="label-text">{{ field.label }}</span>
+                      {% if field.field.required %}
+                        <span class="required-indicator">*</span>
+                      {% endif %}
+                    </label>
+
+                    <!-- Input Container -->
+                    <div class="input-container">
+                      <!-- Textarea Field -->
+                      {% if field.field.widget.input_type == 'textarea' %}
+                        <div class="textarea-wrapper">
+                          <textarea 
+                            class="form-input textarea-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                            rows="4"
+                          >{{ field.value|default_if_none:"" }}</textarea>
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Email Field -->
+                      {% elif field.field.widget.input_type == 'email' %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                          </div>
+                          <input 
+                            type="email" 
+                            class="form-input email-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                            placeholder="Enter email address"
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      
+                      <!-- Default Text Field -->
+                      {% else %}
+                        <div class="input-wrapper">
+                          <div class="input-icon">
+                            {% if "company" in field.label|lower or "name" in field.label|lower %}
+                              <i class="fa-solid fa-building"></i>
+                            {% elif "contact" in field.label|lower or "person" in field.label|lower %}
+                              <i class="fa-solid fa-user-tie"></i>
+                            {% elif "phone" in field.label|lower %}
+                              <i class="fas fa-phone"></i>
+                            {% elif "address" in field.label|lower %}
+                              <i class="fa-solid fa-location-dot"></i>
+                            {% else %}
+                              <i class="fas fa-keyboard"></i>
+                            {% endif %}
+                          </div>
+                          <input 
+                            type="text" 
+                            class="form-input text-input{% if field.errors %} error{% endif %}" 
+                            name="{{ field.name }}" 
+                            id="{{ field.id_for_label }}"
+                            value="{{ field.value|default_if_none:"" }}"
+                            {% if field.field.required %}required{% endif %}
+                            {% if field.field.widget.attrs.placeholder %}placeholder="{{ field.field.widget.attrs.placeholder }}"{% endif %}
+                            {% if field.field.widget.attrs.maxlength %}maxlength="{{ field.field.widget.attrs.maxlength }}"{% endif %}
+                          >
+                          <div class="input-border"></div>
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Help Text -->
+                    {% if field.help_text %}
+                      <div class="help-text">
+                        <i class="fas fa-info-circle"></i>
+                        <span>{{ field.help_text }}</span>
+                      </div>
+                    {% endif %}
+
+                    <!-- Error Messages -->
+                    {% if field.errors %}
+                      <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="error-text">
+                          {% for error in field.errors %}
+                            <span>{{ error }}</span>
+                          {% endfor %}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Freezing Tariffs Section -->
+<!-- Freezing Tariffs Section -->
+<div class="info-card-header" style="margin-top: 40px;">
+  <div class="d-flex align-items-center">
+    <div class="header-icon-wrapper">
+      <i class="fa-solid fa-snowflake"></i>
+    </div>
+    <div>
+      <h4 class="header-card-title">Freezing Tariffs</h4>
+      <p class="header-card-subtitle">Configure freezing rates for different categories</p>
+    </div>
+  </div>
+</div>
+
+            {{ formset.management_form }}
+
+<div class="tariff-table-container">
+  <table class="tariff-table" id="tariff-table">
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>Tariff (₹)</th>
+        <th class="delete-col">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for subform in formset %}
+      <tr class="form-row">
+        <td>
+          <div class="table-input-wrapper">
+            {{ subform.id }}  {# Hidden field for ID #}
+            {{ subform.category }}  {# This will render as a select dropdown #}
+          </div>
+        </td>
+        <td>
+          <div class="table-input-wrapper">
+            {{ subform.tariff }}
+          </div>
+        </td>
+<td class="delete-col">
+  {% if subform.instance.pk %}
+    <div class="delete-checkbox">
+      {{ subform.DELETE }}
+      <label for="{{ subform.DELETE.id_for_label }}" class="delete-label" title="Mark for deletion">
+        <i class="fas fa-trash-alt"></i>
+        <span class="delete-text">Delete</span>
+      </label>
+    </div>
+  {% else %}
+    <button type="button" class="remove-row-btn" title="Remove row">
+      <i class="fas fa-times"></i>
+    </button>
+  {% endif %}
+</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<button type="button" class="add-row-btn" id="add-row">
+  <i class="fas fa-plus-circle"></i>
+  <span>Add More Tariffs</span>
+</button>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+              <div class="action-buttons">
+                <button type="button" class="btn-secondary" onclick="window.location.href='{% url 'adminapp:tenant_list' %}'">
+                  <i class="fas fa-arrow-left"></i>
+                  <span>Cancel</span>
+                </button>
+                <button type="submit" class="btn-primary" id="submitBtn">
+                  <i class="fas fa-save"></i>
+                  <span>{% if object %}Update{% else %}Save{% endif %} Tenant</span>
+                  <div class="btn-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Hidden template row for cloning -->
+<div style="display:none;">
+  <table id="empty-form-template">
+    <tr class="form-row">
+      <td>
+        <div class="table-input-wrapper">
+          {{ formset.empty_form.id }}
+          {{ formset.empty_form.category }}
+        </div>
+      </td>
+      <td>
+        <div class="table-input-wrapper">
+          {{ formset.empty_form.tariff }}
+        </div>
+      </td>
+      <td class="delete-col">
+        <button type="button" class="remove-row-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<script>
+// Suppress DataTables warnings - add this FIRST
+if (typeof jQuery !== 'undefined' && jQuery.fn.dataTable) {
+    jQuery.fn.dataTable.ext.errMode = 'none';
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Prevent DataTables from auto-initializing on this table
+    if (typeof jQuery !== 'undefined' && jQuery.fn.DataTable) {
+        jQuery.fn.DataTable.ext.errMode = 'none';
+    }
+    
+    let formsetPrefix = "{{ formset.prefix }}";  
+    let totalForms = document.getElementById("id_" + formsetPrefix + "-TOTAL_FORMS");
+    // ... rest of your code
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let formsetPrefix = "{{ formset.prefix }}";  
+    let totalForms = document.getElementById("id_" + formsetPrefix + "-TOTAL_FORMS");
+    let formTable = document.getElementById("tariff-table").getElementsByTagName("tbody")[0];
+    let addButton = document.getElementById("add-row");
+    let emptyFormTemplate = document.getElementById("empty-form-template").getElementsByTagName("tr")[0];
+
+    // Add new row
+    addButton.addEventListener("click", function (e) {
+        e.preventDefault();
+        
+        let currentForms = parseInt(totalForms.value);
+        let newRow = emptyFormTemplate.cloneNode(true);
+        
+        // Replace __prefix__ with actual index
+        newRow.innerHTML = newRow.innerHTML.replace(/__prefix__/g, currentForms);
+        
+        formTable.appendChild(newRow);
+        totalForms.value = currentForms + 1;
+    });
+
+    // Handle remove row (delegated event)
+    document.addEventListener("click", function (e) {
+        if (e.target.closest(".remove-row-btn")) {
+            let row = e.target.closest(".form-row");
+            row.remove();
+            
+            // Reindex remaining forms
+            let remainingRows = formTable.querySelectorAll(".form-row");
+            totalForms.value = remainingRows.length;
+        }
+    });
+
+    // Form submission loading state
+    let form = document.getElementById("tenantForm");
+    let submitBtn = document.getElementById("submitBtn");
+    
+    form.addEventListener("submit", function() {
+        submitBtn.classList.add("loading");
+        submitBtn.disabled = true;
+    });
+});
+</script>
+
+<style>
+/* Base Variables */
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #64748b;
+  --success-color: #059669;
+  --error-color: #dc2626;
+  --warning-color: #d97706;
+  --info-color: #0891b2;
+  
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-accent: #e2e8f0;
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --border-focus: #3b82f6;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+}
+
+/* Page Header */
+.page-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.icon-wrapper {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: var(--shadow-lg);
+  flex-shrink: 0;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-title {
+  font-size: 28px;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.header-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Breadcrumbs */
+.breadcrumb-nav {
+  margin-top: var(--spacing-lg);
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.breadcrumb-link:hover {
+  background: var(--bg-accent);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.breadcrumb-item.active span {
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 6px 12px;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+
+.breadcrumb-separator {
+  color: var(--text-light);
+  margin: 0 4px;
+  font-size: 12px;
+}
+
+/* Form Container */
+.form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.form-card {
+  background: var(--bg-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  padding: var(--spacing-xl);
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-lg);
+}
+
+.card-header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--success-color) 0%, #047857 100%);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.card-title {
+  font-size: 22px;
+  color: #2c3e50;
+  margin: 0 0 4px 0;
+}
+
+.card-description {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.progress-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  background: var(--bg-accent);
+  border: 2px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.progress-step.active {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-md);
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.step-label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Card Body */
+.card-body {
+  padding: var(--spacing-2xl);
+}
+
+/* Section Headers */
+.section-header {
+  margin-bottom: var(--spacing-lg);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-size: 20px;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+  font-weight: 700;
+}
+
+.section-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+  padding-left: 32px;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Form Groups */
+.form-group-wrapper {
+  position: relative;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.required-indicator {
+  color: var(--error-color);
+  font-weight: 700;
+}
+
+/* Input Container */
+.input-container {
+  position: relative;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Base Input Styling */
+.form-input {
+  width: 100%;
+  padding: 16px 20px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all 0.3s ease;
+  outline: none;
+  position: relative;
+  z-index: 1;
+}
+
+.form-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: var(--bg-primary);
+}
+
+.form-input.error {
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+/* Input Wrapper for Icons */
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .form-input {
+  padding-left: 52px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  font-size: 16px;
+  z-index: 2;
+}
+
+.form-input:focus + .input-border,
+.input-wrapper .form-input:focus ~ .input-border {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.input-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid var(--primary-color);
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Textarea */
+.textarea-wrapper {
+  position: relative;
+}
+
+.textarea-input {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Help Text */
+.help-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.help-text i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Error Messages */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(220, 38, 38, 0.05);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: var(--radius-sm);
+  color: var(--error-color);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-message i {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.error-text {
+  flex: 1;
+}
+
+/* Tariff Table Styles */
+.tariff-table-container {
+  overflow-x: auto;
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.tariff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.tariff-table thead {
+  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-accent) 100%);
+}
+
+.tariff-table th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tariff-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+}
+
+.tariff-table tbody tr:hover {
+  background: var(--bg-secondary);
+}
+
+.tariff-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.delete-col {
+  text-align: center;
+  width: 100px;
+}
+
+.table-input-wrapper select,
+.table-input-wrapper input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.table-input-wrapper select:focus,
+.table-input-wrapper input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+}
+
+.table-input-wrapper select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+.remove-row-btn {
+  background: var(--error-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.remove-row-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.delete-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.delete-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.delete-label {
+  cursor: pointer;
+  color: var(--error-color);
+  font-size: 18px;
+  transition: all 0.2s ease;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+}
+
+.delete-label:hover {
+  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.1);
+  transform: scale(1.05);
+}
+
+.delete-text {
+  font-size: 12px;
+  font-weight: 600;
+  display: none;
+}
+
+/* When checkbox is checked, show the row as marked for deletion */
+.delete-checkbox input[type="checkbox"]:checked + .delete-label {
+  color: #b91c1c;
+  background: rgba(220, 38, 38, 0.15);
+}
+
+.delete-checkbox input[type="checkbox"]:checked + .delete-label .delete-text {
+  display: inline;
+}
+/* Add Row Button */
+.add-row-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: 14px 24px;
+  background: linear-gradient(135deg, var(--success-color) 0%, #047857 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.add-row-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.add-row-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 2px solid var(--border-color);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Button Styling */
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 16px 32px;
+  border: 2px solid;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+  border-color: var(--primary-color);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, #1e40af 100%);
+  border-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--secondary-color);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Button Loading State */
+.btn-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: inherit;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+}
+
+.btn-primary.loading .btn-loading {
+  opacity: 1;
+  visibility: visible;
+}
+
+.btn-primary.loading span,
+.btn-primary.loading i:not(.btn-loading i) {
+  opacity: 0;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover Effects */
+.form-group-wrapper:hover .form-label {
+  color: var(--primary-color);
+}
+
+.form-group-wrapper:hover .input-icon {
+  color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .progress-indicator {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-xs: 6px;
+    --spacing-sm: 10px;
+    --spacing-md: 14px;
+    --spacing-lg: 20px;
+    --spacing-xl: 28px;
+    --spacing-2xl: 40px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-left {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .icon-wrapper {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+  
+  .header-title {
+    font-size: 24px;
+  }
+  
+  .card-body {
+    padding: var(--spacing-xl);
+  }
+  
+  .form-grid {
+    gap: var(--spacing-lg);
+  }
+  
+  .action-buttons {
+    justify-content: stretch;
+    flex-direction: column-reverse;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .breadcrumb-list {
+    flex-wrap: wrap;
+  }
+  
+  .tariff-table-container {
+    overflow-x: scroll;
+  }
+  
+  .tariff-table {
+    min-width: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .card-header {
+    padding: var(--spacing-lg);
+  }
+  
+  .card-body {
+    padding: var(--spacing-lg);
+  }
+  
+  .header-content {
+    gap: var(--spacing-md);
+  }
+  
+  .card-header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .progress-indicator {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-input {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+  
+  .input-wrapper .form-input {
+    padding-left: 48px;
+  }
+  
+  .input-icon {
+    left: 16px;
+  }
+}
+
+/* Focus States for Accessibility */
+.form-input:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.add-row-btn:focus-visible,
+.remove-row-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Custom Scrollbar */
+.textarea-input::-webkit-scrollbar,
+.tariff-table-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.textarea-input::-webkit-scrollbar-track,
+.tariff-table-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+.textarea-input::-webkit-scrollbar-thumb,
+.tariff-table-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.textarea-input::-webkit-scrollbar-thumb:hover,
+.tariff-table-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-light);
+}
+
+/* Print Styles */
+@media print {
+  .form-card {
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+  }
+  
+  .btn-primary,
+  .btn-secondary,
+  .add-row-btn,
+  .remove-row-btn {
+    display: none;
+  }
+  
+  .form-actions {
+    display: none;
+  }
+  
+  .breadcrumb-nav {
+    display: none;
+  }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Handle delete checkbox toggle visual feedback
+    document.addEventListener("change", function(e) {
+        if (e.target.type === "checkbox" && e.target.name.includes("-DELETE")) {
+            const row = e.target.closest(".form-row");
+            if (e.target.checked) {
+                row.style.opacity = "0.5";
+                row.style.textDecoration = "line-through";
+                console.log("Row marked for deletion");
+            } else {
+                row.style.opacity = "1";
+                row.style.textDecoration = "none";
+                console.log("Row unmarked for deletion");
+            }
+        }
+    });
+});
+</script>
+
+
+{% endblock %}

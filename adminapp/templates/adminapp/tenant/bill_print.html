@@ -1,0 +1,166 @@
+
+<!-- PRINT TEMPLATE -->
+<!-- adminapp/tenant/bill_print.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Bill #{{ bill.id }} - {{ bill.tenant.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .invoice-details div {
+            width: 48%;
+        }
+        .invoice-details h4 {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .items-table th,
+        .items-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .items-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .items-table .text-right {
+            text-align: right;
+        }
+        .total-row {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .summary {
+            float: right;
+            width: 300px;
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .summary-row.total {
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .footer {
+            clear: both;
+            margin-top: 50px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-name">Your Company Name</div>
+        <div>Freezing Services Invoice</div>
+    </div>
+
+    <div class="invoice-details">
+        <div>
+            <h4>Bill To:</h4>
+            <strong>{{ bill.tenant.name }}</strong><br>
+            {% if bill.tenant.address %}{{ bill.tenant.address }}<br>{% endif %}
+            {% if bill.tenant.email %}{{ bill.tenant.email }}<br>{% endif %}
+            {% if bill.tenant.phone %}{{ bill.tenant.phone }}{% endif %}
+        </div>
+        <div>
+            <h4>Invoice Details:</h4>
+            <strong>Invoice #{{ bill.id }}</strong><br>
+            Date: {{ bill.created_at|date:"M j, Y" }}<br>
+            Period: {{ bill.start_date|date:"M j, Y" }} - {{ bill.end_date|date:"M j, Y" }}<br>
+            Days: {{ bill.day_count }}
+        </div>
+    </div>
+
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th class="text-right">Weight (kg)</th>
+                <th class="text-right">Rate</th>
+                <th class="text-right">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.freezing_category.name }}</td>
+                <td class="text-right">{{ item.kg|floatformat:2 }}</td>
+                <td class="text-right">${{ item.tariff|floatformat:2 }}</td>
+                <td class="text-right">${{ item.amount|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td>Total</td>
+                <td class="text-right">{{ bill.total_kg|floatformat:2 }} kg</td>
+                <td></td>
+                <td class="text-right">${{ bill.total_amount|floatformat:2 }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="summary">
+        <div class="summary-row">
+            <span>Subtotal:</span>
+            <span>${{ bill.total_amount|floatformat:2 }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Tax:</span>
+            <span>$0.00</span>
+        </div>
+        <div class="summary-row total">
+            <span>Total:</span>
+            <span>${{ bill.total_amount|floatformat:2 }}</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Thank you for your business!</p>
+        <p>Generated on {{ "now"|date:"M j, Y g:i A" }}</p>
+        <button class="no-print" onclick="window.print()">Print Invoice</button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1456 @@
+{% extends 'admin_base.html' %}
+{% block title %}Stock List - Admin Panel{% endblock %}
+
+{% block content %}
+
+
+<style>
+  .custom-table th:nth-child(1),
+  .custom-table td:nth-child(1),
+  .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2) {
+    width: 15%;
+    min-width: 150px;
+  }
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3),
+  .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4) {
+    width: 12%;
+    min-width: 120px;
+  }
+  .custom-table th:nth-child(5),
+  .custom-table td:nth-child(5),
+  .custom-table th:nth-child(6),
+  .custom-table td:nth-child(6),
+  .custom-table th:nth-child(7),
+  .custom-table td:nth-child(7),
+  .custom-table th:nth-child(8),
+  .custom-table td:nth-child(8) {
+    width: 10%;
+    min-width: 100px;
+  }
+  .custom-table th:nth-child(9),
+  .custom-table td:nth-child(9),
+  .custom-table th:nth-child(10),
+  .custom-table td:nth-child(10) {
+    width: 8%;
+    min-width: 80px;
+  }
+  .custom-table th:nth-child(11),
+  .custom-table td:nth-child(11) {
+    width: 10%;
+    min-width: 100px;
+  }
+</style>
+
+<!-- Page header style -->
+<style>
+  :root {
+    --ph-primary-color: #28a745;
+    --ph-primary-hover: #20c997;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(40, 167, 69, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Stock Management</h3>
+            <p class="ph-header-subtitle">Adjust inventory stock levels</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:list' %}" class="ph-breadcrumb-link">
+                <i class="fas fa-warehouse"></i>
+                <span>Stock List</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>{{ action }} Stock</span>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats"></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-wrapper me-4">
+                  <i class="fas fa-boxes"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Stock Inventory</h3>
+                  <p class="text-muted mb-0 fs-6">Manage and monitor your stock levels and inventory</p>
+                </div>
+              </div>
+              
+              <!-- Search and Stats -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search stocks...">
+                    <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="stats-badges d-flex gap-2">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fas fa-chart-bar me-2"></i><span id="stockCount">{{ total_stocks }}</span> Total
+                  </span>
+                  <span class="badge bg-danger text-white px-3 py-2 fs-6">
+                    <i class="fas fa-exclamation-triangle me-2"></i><span id="lowStockCount">{{ low_stock_count }}</span> Low Stock
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="filters-section mt-4">
+              <form method="get" id="filterForm">
+                <div class="row g-3">
+                  <div class="col-md-2">
+                    <div class="filter-group">
+                      <label class="filter-label">Store</label>
+                      <select name="store" class="filter-select">
+                        <option value="">All Stores</option>
+                        {% for store in stores %}
+                          <option value="{{ store.id }}" {% if store.id|stringformat:"s" == selected_store %}selected{% endif %}>
+                            {{ store.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-2">
+                    <div class="filter-group">
+                      <label class="filter-label">Category</label>
+                      <select name="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                          <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                            {{ category.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-2">
+                    <div class="filter-group">
+                      <label class="filter-label">Brand</label>
+                      <select name="brand" class="filter-select">
+                        <option value="">All Brands</option>
+                        {% for brand in brands %}
+                          <option value="{{ brand.id }}" {% if brand.id|stringformat:"s" == selected_brand %}selected{% endif %}>
+                            {{ brand.name }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-2">
+                    <div class="filter-group">
+                      <label class="filter-label">Stock Level</label>
+                      <select name="low_stock" class="filter-select">
+                        <option value="">All Stock</option>
+                        <option value="true" {% if low_stock_filter == "true" %}selected{% endif %}>Low Stock (&lt;10)</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-2">
+                    <div class="filter-group">
+                      <label class="filter-label">Source</label>
+                      <select name="source" class="filter-select">
+                        <option value="">All Sources</option>
+                        <option value="spot" {% if source_filter == "spot" %}selected{% endif %}>Spot</option>
+                        <option value="local" {% if source_filter == "local" %}selected{% endif %}>Local</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-2">
+                    <div class="filter-actions">
+                      <button type="submit" class="filter-btn apply-btn">
+                        <i class="fas fa-filter me-2"></i>Apply
+                      </button>
+                      <a href="{% url 'adminapp:list' %}" class="filter-btn reset-btn">
+                        <i class="fas fa-undo me-2"></i>Reset
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Hidden search field for form submission -->
+                <input type="hidden" name="search" id="hiddenSearch" value="{{ search_query }}">
+              </form>
+            </div>
+          </div>
+          
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table id="stockTable" class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-cube header-icon"></i>
+                        <span class="header-text">Item</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tag header-icon"></i>
+                        <span class="header-text">Brand</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-list-alt header-icon"></i>
+                        <span class="header-text">Category</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-snowflake header-icon"></i>
+                        <span class="header-text">FR Category</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-ruler header-icon"></i>
+                        <span class="header-text">Unit</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tint header-icon"></i>
+                        <span class="header-text">Glaze</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-fish header-icon"></i>
+                        <span class="header-text">Species</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-star header-icon"></i>
+                        <span class="header-text">Grade</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-box header-icon"></i>
+                        <span class="header-text">CS Qty</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-weight header-icon"></i>
+                        <span class="header-text">KG Qty</span>
+                      </div>
+                    </th>
+                    <th class="table-header text-center">
+                      <div class="header-content justify-content-center">
+                        <i class="fas fa-tools header-icon"></i>
+                        <span class="header-text">Actions</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="tableBody">
+                  {% for stock in stocks %}
+                  <tr class="table-row {% if stock.cs_quantity < 10 or stock.kg_quantity < 10 %}low-stock-row{% endif %}" 
+                      data-searchable="{{ stock.item.name|lower }} {{ stock.brand.name|lower }} {{ stock.item_quality.quality|lower }} {{ stock.freezing_category.name|lower }} {{ stock.species.name|lower }} {{ stock.item_grade.grade|lower }}">
+                    
+                    <td class="table-cell">
+                      <div class="item-info">
+                        <div class="item-avatar">
+                          <i class="fas fa-cube"></i>
+                        </div>
+                        <div class="item-details">
+                          <div class="item-name">{{ stock.item.name }}</div>
+                          <div class="item-meta">Product</div>
+                        </div>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="brand-display">
+                        <span class="brand-badge">
+                          <i class="fas fa-tag me-2"></i>
+                          {{ stock.brand.name }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="category-display">
+                        <span class="category-badge">
+                          <i class="fas fa-list-alt me-2"></i>
+                          {{ stock.item_quality.quality }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="fr-category-display">
+                        <span class="fr-category-badge">
+                          <i class="fas fa-snowflake me-2"></i>
+                          {{ stock.freezing_category.name }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="unit-display">
+                        
+                        <span class="unit-code">
+                          <i class="fas fa-ruler header-icon me-2"></i>
+                          {{ stock.unit.unit_code }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="glaze-display">
+                        <span class="glaze-badge">
+                          <i class="fas fa-tint me-2"></i>
+                          {{ stock.glaze.percentage }}%
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="species-display">
+                        <span class="species-badge">
+                          <i class="fas fa-fish me-2"></i>
+                          {{ stock.species.name }}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="grade-display">
+                        <span class="grade-badge">{{ stock.item_grade.grade }}</span>
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="quantity-display cs-quantity {% if stock.cs_quantity < 10 %}low-stock{% endif %}">
+                        <span class="quantity-value">{{ stock.cs_quantity }}</span>
+                        <span class="quantity-unit">cs</span>
+                        {% if stock.cs_quantity < 10 %}
+                          <i class="fas fa-exclamation-triangle low-stock-icon" title="Low Stock"></i>
+                        {% endif %}
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="quantity-display kg-quantity {% if stock.kg_quantity < 10 %}low-stock{% endif %}">
+                        <span class="quantity-value">{{ stock.kg_quantity }}</span>
+                        <span class="quantity-unit">kg</span>
+                        {% if stock.kg_quantity < 10 %}
+                          <i class="fas fa-exclamation-triangle low-stock-icon" title="Low Stock"></i>
+                        {% endif %}
+                      </div>
+                    </td>
+                    
+                    <td class="table-cell">
+                      <div class="action-buttons">
+                        <form method="post" action="{% url 'adminapp:stock_delete_direct' stock.id %}" style="display:inline;">
+                          {% csrf_token %}
+                          <button type="submit" 
+                                  class="action-btn delete-btn" 
+                                  title="Delete Stock"
+                                  onclick="return confirm('Are you sure you want to delete this stock item?\n\nItem: {{ stock.item.name }}\nBrand: {{ stock.brand.name }}\nCS Qty: {{ stock.cs_quantity }}\nKG Qty: {{ stock.kg_quantity }}\n\nThis action cannot be undone.')">
+                            <i class="fas fa-trash-alt"></i>
+                            
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="11" class="empty-state-cell">
+                      <div class="empty-state-content">
+                        <i class="fas fa-boxes empty-state-icon"></i>
+                        <h4>No Stock Items Found</h4>
+                        <p>There are no stock items to display yet.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- No Results Message -->
+              <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No stocks found</h4>
+                  <p>Try adjusting your search terms or filters</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          {% if is_paginated %}
+          <div class="card-footer bg-white border-0 py-4">
+            <nav class="pagination-wrapper">
+              <ul class="pagination justify-content-center mb-0">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.previous_page_number }}">
+                      <i class="fas fa-chevron-left me-2"></i>Previous
+                    </a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled">
+                    <span class="page-link">
+                      <i class="fas fa-chevron-left me-2"></i>Previous
+                    </span>
+                  </li>
+                {% endif %}
+
+                {% for i in paginator.page_range %}
+                  {% if page_obj.number == i %}
+                    <li class="page-item active">
+                      <span class="page-link">{{ i }}</span>
+                    </li>
+                  {% else %}
+                    <li class="page-item">
+                      <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ i }}">{{ i }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ page_obj.next_page_number }}">
+                      Next<i class="fas fa-chevron-right ms-2"></i>
+                    </a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled">
+                    <span class="page-link">
+                      Next<i class="fas fa-chevron-right ms-2"></i>
+                    </span>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+  /* Search Controls */
+  .search-controls {
+    min-width: 350px;
+  }
+
+  .search-box-wrapper {
+    position: relative;
+  }
+
+  .search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    width: 280px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.15);
+    background: #ffffff;
+  }
+
+  .search-input::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  .stats-badges .badge {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+
+  /* Filters Section */
+  .filters-section {
+    background: #f8f9fd;
+    border-radius: 15px;
+    padding: 25px;
+    border: 2px solid #e9ecef;
+  }
+
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-select {
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    background: white;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .filter-select:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+  }
+
+  .filter-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 25px;
+  }
+
+  .filter-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .apply-btn {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+
+  .apply-btn:hover {
+    background: #218838;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .reset-btn {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border-color: rgba(108, 117, 125, 0.2);
+  }
+
+  .reset-btn:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+  }
+
+  /* Table Styling */
+  .custom-table {
+    font-size: 15px;
+  }
+
+  .table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  /* Row Styling */
+  .table-row {
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(32, 201, 151, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+
+  .low-stock-row {
+    background: rgba(220, 53, 69, 0.05) !important;
+    border-left: 4px solid #dc3545;
+  }
+
+  .low-stock-row:hover {
+    background: rgba(220, 53, 69, 0.08) !important;
+  }
+
+  .table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  /* Item Info */
+  .item-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .item-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .item-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .item-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Badge Displays */
+  .brand-badge, .fr-category-badge, .category-badge, .species-badge, .glaze-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border: 2px solid rgba(0, 123, 255, 0.2);
+  }
+
+  .fr-category-badge {
+    background: rgba(108, 92, 231, 0.1);
+    color: #6c5ce7;
+    border-color: rgba(108, 92, 231, 0.2);
+  }
+
+  .category-badge {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .species-badge {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border-color: rgba(255, 152, 0, 0.2);
+  }
+
+  .glaze-badge {
+    background: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+    border-color: rgba(23, 162, 184, 0.2);
+  }
+
+  .unit-code {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 13px;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  .grade-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 13px;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  /* Quantity Display - Beautiful Gradient Boxes */
+  .quantity-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 2px solid #ffcc80;
+    border-radius: 25px;
+    color: #e65100;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+    white-space: nowrap;
+  }
+
+  .quantity-value {
+    color: #e65100;
+  }
+
+  .quantity-unit {
+    color: #e65100;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Low Stock Warning - Red Gradient */
+  .quantity-display.low-stock {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border: 2px solid #ef9a9a;
+    color: #c62828;
+    box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+    animation: pulse-warning 2s ease-in-out infinite;
+  }
+
+  .quantity-display.low-stock .quantity-value,
+  .quantity-display.low-stock .quantity-unit {
+    color: #c62828;
+  }
+
+  @keyframes pulse-warning {
+    0%, 100% {
+      box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+    }
+    50% {
+      box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+    }
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  .action-btn i {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* Empty State Styling */
+  .empty-state-cell {
+    padding: 60px 20px !important;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .empty-state-content h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state-content p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results Styling */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Pagination Styling */
+  .pagination-wrapper {
+    background: #f8f9fd;
+    border-radius: 15px;
+    padding: 20px;
+  }
+
+  .pagination .page-link {
+    border: 2px solid #e9ecef;
+    color: #495057;
+    font-weight: 600;
+    padding: 12px 20px;
+    margin: 0 5px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    background: white;
+  }
+
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-color: #28a745;
+    color: white;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .pagination .page-link:hover {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .pagination .page-item.disabled .page-link {
+    background: #f8f9fa;
+    border-color: #e9ecef;
+    color: #6c757d;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .card-header .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+    }
+    
+    .card-header .d-flex > .d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+      margin-bottom: 20px;
+    }
+    
+    .search-controls {
+      min-width: auto;
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 0;
+    }
+    
+    .search-input {
+      width: 200px;
+    }
+    
+    .card-title {
+      font-size: 22px;
+    }
+    
+    .icon-wrapper {
+      width: 50px;
+      height: 50px;
+      font-size: 20px;
+    }
+    
+    .filters-section .row {
+      flex-direction: column;
+    }
+    
+    .filter-actions {
+      flex-direction: row;
+      justify-content: space-between;
+      padding-top: 15px;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+    }
+    
+    .item-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+    
+    .item-avatar {
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 16px !important;
+      margin-right: 12px !important;
+      margin-bottom: 0 !important;
+      flex-shrink: 0;
+    }
+    
+    .item-details {
+      flex: 1;
+    }
+    
+    .item-name {
+      font-size: 14px !important;
+    }
+    
+    .item-meta {
+      font-size: 11px !important;
+    }
+
+    .stats-badges {
+      flex-direction: column;
+      gap: 10px !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .card-header .d-flex > .d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+    
+    .search-controls {
+      flex-direction: column;
+      gap: 15px !important;
+    }
+    
+    .search-input {
+      width: 100%;
+    }
+    
+    .stats-badges {
+      align-self: center;
+      width: 100%;
+    }
+    
+    .stats-badges .badge {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .item-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+    
+    .item-avatar {
+      width: 35px !important;
+      height: 35px !important;
+      font-size: 14px !important;
+      margin-right: 10px !important;
+      margin-bottom: 0 !important;
+      flex-shrink: 0;
+    }
+    
+    .item-name {
+      font-size: 12px;
+    }
+    
+    .item-meta {
+      font-size: 10px;
+    }
+    
+    .icon-wrapper {
+      width: 45px;
+      height: 45px;
+      font-size: 18px;
+      margin-right: 15px;
+    }
+    
+    .card-title {
+      font-size: 20px;
+    }
+
+    .filters-section {
+      padding: 20px 15px;
+    }
+
+    .filter-actions .filter-btn {
+      padding: 8px 15px;
+      font-size: 13px;
+    }
+  }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const stockCount = document.getElementById('stockCount');
+    const lowStockCount = document.getElementById('lowStockCount');
+    const hiddenSearch = document.getElementById('hiddenSearch');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    function updateCounters() {
+        let visibleCount = 0;
+        let visibleLowStockCount = 0;
+        
+        allRows.forEach(row => {
+            if (row.style.display !== 'none') {
+                visibleCount++;
+                if (row.classList.contains('low-stock-row')) {
+                    visibleLowStockCount++;
+                }
+            }
+        });
+        
+        stockCount.textContent = visibleCount;
+        lowStockCount.textContent = visibleLowStockCount;
+    }
+
+    function showClearButton(show) {
+        clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (searchTerm === '') {
+            // Show all rows
+            allRows.forEach(row => {
+                row.style.display = '';
+                visibleCount++;
+            });
+            noResults.style.display = 'none';
+            showClearButton(false);
+        } else {
+            // Filter rows
+            allRows.forEach(row => {
+                const searchableText = row.getAttribute('data-searchable');
+                if (searchableText && searchableText.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Show/hide no results message
+            if (visibleCount === 0) {
+                noResults.style.display = 'block';
+            } else {
+                noResults.style.display = 'none';
+            }
+            
+            showClearButton(true);
+        }
+
+        updateCounters();
+        
+        // Update hidden search field for form submission
+        hiddenSearch.value = searchTerm;
+    }
+
+    function clearSearch() {
+        searchInput.value = '';
+        filterTable();
+        searchInput.focus();
+    }
+
+    // Enhanced delete confirmation
+    function enhancedDeleteConfirm(event) {
+        const row = event.target.closest('tr');
+        const itemName = row.querySelector('.item-name').textContent.trim();
+        const brandName = row.querySelector('.brand-badge').textContent.trim();
+        const csQty = row.querySelector('.cs-quantity .quantity-value').textContent.trim();
+        const kgQty = row.querySelector('.kg-quantity .quantity-value').textContent.trim();
+        
+        const confirmMessage = `Are you sure you want to delete this stock item?\n\nItem: ${itemName}\nBrand: ${brandName}\nCS Qty: ${csQty}\nKG Qty: ${kgQty}\n\nThis action cannot be undone.`;
+        
+        return confirm(confirmMessage);
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterTable);
+    searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+            clearSearch();
+        }
+    });
+    
+    clearBtn.addEventListener('click', clearSearch);
+
+    // Add enhanced delete confirmation to all delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', enhancedDeleteConfirm);
+    });
+
+    // Keyboard navigation
+    allRows.forEach(row => {
+        row.setAttribute('tabindex', '0');
+        row.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const deleteBtn = this.querySelector('.delete-btn');
+                if (deleteBtn && enhancedDeleteConfirm(e)) {
+                    deleteBtn.closest('form').submit();
+                }
+            }
+        });
+    });
+
+    // Filter form enhancements
+    const filterSelects = document.querySelectorAll('.filter-select');
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Auto-submit on filter change (optional)
+            // document.getElementById('filterForm').submit();
+        });
+    });
+
+    // Initialize
+    updateCounters();
+
+    // Set initial search value if coming from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+        searchInput.value = searchParam;
+        filterTable();
+    }
+});
+</script>
+
+{% endblock %}

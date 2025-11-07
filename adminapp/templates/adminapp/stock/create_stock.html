@@ -1,0 +1,269 @@
+<!-- templates/stocks/create_stock.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .form-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .form-section h5 {
+            color: #495057;
+            margin-bottom: 20px;
+        }
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0">{{ title }}</h3>
+                            <a href="{% url 'adminapp:list' %}" class="btn btn-light btn-sm">Back to List</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Messages -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <!-- Form Errors -->
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <!-- Basic Information -->
+                            <div class="form-section">
+                                <h5>Basic Information</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label required-field">Store</label>
+                                            {{ form.store }}
+                                            {% if form.store.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.store.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label required-field">Brand</label>
+                                            {{ form.brand }}
+                                            {% if form.brand.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.brand.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label required-field">Item</label>
+                                            {{ form.item }}
+                                            {% if form.item.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.item.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Item Details -->
+                            <div class="form-section">
+                                <h5>Item Specifications</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Item Quality</label>
+                                            {{ form.item_quality }}
+                                            {% if form.item_quality.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.item_quality.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Freezing Category</label>
+                                            {{ form.freezing_category }}
+                                            {% if form.freezing_category.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.freezing_category.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Packing Unit</label>
+                                            {{ form.unit }}
+                                            {% if form.unit.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.unit.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Glaze Percentage</label>
+                                            {{ form.glaze }}
+                                            {% if form.glaze.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.glaze.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <!-- <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Species</label>
+                                            {{ form.species }}
+                                            {% if form.species.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.species.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div> -->
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Item Grade</label>
+                                            {{ form.item_grade }}
+                                            {% if form.item_grade.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.item_grade.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Item Type</label>
+                                            {{ form.peeling_type }}
+                                            {% if form.peeling_type.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.peeling_type.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quantity Information -->
+                            <div class="form-section">
+                                <h5>Quantity Information</h5>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">CS Quantity</label>
+                                            {{ form.cs_quantity }}
+                                            {% if form.cs_quantity.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.cs_quantity.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">KG Quantity</label>
+                                            {{ form.kg_quantity }}
+                                            {% if form.kg_quantity.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.kg_quantity.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pricing Information -->
+                            <div class="form-section">
+                                <h5>Pricing Information</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">USD Rate per KG</label>
+                                            {{ form.usd_rate_per_kg }}
+                                            {% if form.usd_rate_per_kg.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.usd_rate_per_kg.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">USD Rate Item</label>
+                                            {{ form.usd_rate_item }}
+                                            {% if form.usd_rate_item.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.usd_rate_item.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">USD Rate Item to INR</label>
+                                            {{ form.usd_rate_item_to_inr }}
+                                            {% if form.usd_rate_item_to_inr.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {% for error in form.usd_rate_item_to_inr.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'adminapp:list' %}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">{{ action }} Stock</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Spot Purchase Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 0.5in;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            padding: 25px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #000000;
+            background: white;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #2563eb;
+        }
+
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .report-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .report-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #000000;
+        }
+
+        .date-range {
+            font-weight: 600;
+            color: #000000;
+            font-size: 16px;
+        }
+
+        .print-date {
+            font-style: italic;
+            color: #000000;
+            font-size: 14px;
+        }
+
+        .summary-stats {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #cbd5e1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #000000;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1e40af;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        .data-table thead {
+            background: #2563eb;
+            color: white;
+        }
+
+        .data-table th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border: 1px solid #1d4ed8;
+            color: white;
+        }
+
+        .data-table td {
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 11px;
+            vertical-align: top;
+            color: #000000;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .grand-total-row {
+            background: #fef3c7 !important;
+            font-weight: 700 !important;
+        }
+
+        .grand-total-row td {
+            color: #92400e !important;
+            font-weight: 700 !important;
+            border-top: 3px solid #f59e0b !important;
+            font-size: 12px !important;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #000000;
+            font-style: italic;
+            font-size: 14px;
+        }
+
+        .report-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #000000;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .print-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .pdf-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.success {
+            background: #10b981;
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: #000000 !important;
+            }
+            
+            .action-buttons {
+                display: none !important;
+            }
+            
+            .data-table {
+                page-break-inside: avoid;
+            }
+            
+            .data-table thead {
+                display: table-header-group;
+                background: #2563eb !important;
+            }
+
+            .data-table th {
+                background: #2563eb !important;
+                color: white !important;
+            }
+            
+            .data-table tbody tr {
+                page-break-inside: avoid;
+            }
+            
+            .report-header, .summary-stats {
+                page-break-after: avoid;
+            }
+
+            * {
+                color: #000000 !important;
+            }
+
+            .data-table th {
+                color: white !important;
+            }
+
+            .company-name {
+                color: #1e40af !important;
+            }
+
+            .stat-value {
+                color: #1e40af !important;
+            }
+
+            .grand-total-row td {
+                color: #92400e !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <div class="company-name">BAHRAYA EXPORTS </div>
+        <div class="report-title">Spot Purchase Report</div>
+        
+        <div class="report-info">
+            <div class="date-range">
+                {% if start_date and end_date %}
+                    Period: {{ start_date|date:"d/m/Y" }} to {{ end_date|date:"d/m/Y" }}
+                {% else %}
+                    Period: All Records
+                {% endif %}
+            </div>
+            <div class="print-date">Generated on: <span id="currentDate"></span></div>
+        </div>
+    </div>
+
+    <div class="summary-stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Total Records</div>
+                <div class="stat-value">{{ summary|length }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Boxes</div>
+                <div class="stat-value">{{ grand_totals.grand_total_boxes|floatformat:0|default:"0" }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Quantity</div>
+                <div class="stat-value">{{ grand_totals.grand_total_quantity|floatformat:2|default:"0" }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total Amount</div>
+                <div class="stat-value">₹{{ grand_totals.grand_total_amount|floatformat:2|default:"0.00" }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Purchase Amount</div>
+                <div class="stat-value">₹{{ grand_totals.grand_purchase_amount|floatformat:2|default:"0.00" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Voucher</th>
+                <th>Item</th>
+                <th>Spot</th>
+                <th>Agent</th>
+                <th class="text-right">Boxes</th>
+                <th class="text-right">Quantity</th>
+                <th class="text-right">Amount</th>
+                <th class="text-right">Avg Rate</th>
+                <th class="text-right">Purchase Amt</th>
+                <th class="text-right">Rate/Kg</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in summary %}
+            <tr>
+                <td>{{ row.purchase__date|date:"d/m/Y" }}</td>
+                <td>{{ row.purchase__voucher_number }}</td>
+                <td>{{ row.item__name }}</td>
+                <td>{{ row.purchase__spot__location_name }}</td>
+                <td>{{ row.purchase__agent__name }}</td>
+                <td class="text-right">{{ row.total_boxes|floatformat:0 }}</td>
+                <td class="text-right">{{ row.total_quantity|floatformat:2 }}</td>
+                <td class="text-right">₹{{ row.total_amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ row.avg_rate|floatformat:2 }}</td>
+                <td class="text-right">₹{{ row.purchase_amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ row.purchase_amount_per_kg|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11" class="no-data">
+                    No records found matching the selected criteria.
+                </td>
+            </tr>
+            {% endfor %}
+            {% if summary %}
+            <tr class="grand-total-row">
+                <td colspan="5" class="text-right"><strong>GRAND TOTALS:</strong></td>
+                <td class="text-right">{{ grand_totals.grand_total_boxes|floatformat:0 }}</td>
+                <td class="text-right">{{ grand_totals.grand_total_quantity|floatformat:2 }}</td>
+                <td class="text-right">₹{{ grand_totals.grand_total_amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ grand_totals.grand_avg_rate|floatformat:2 }}</td>
+                <td class="text-right">₹{{ grand_totals.grand_purchase_amount|floatformat:2 }}</td>
+                <td class="text-right">₹{{ grand_totals.grand_purchase_amount_per_kg|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="action-buttons">
+        <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
+            <span class="loading-spinner" id="pdfSpinner"></span>
+            📄 Download PDF
+        </button>
+    </div>
+
+    <div class="report-footer">
+        <div>
+            <div><strong>Generated by:</strong> Spot Purchase System</div>
+            <div><strong>Report Type:</strong> Comprehensive Purchase Summary</div>
+        </div>
+        <div style="text-align: right;">
+            <div><strong>Total Records:</strong> {{ summary|length }}</div>
+            <div><strong>Page:</strong> 1 of 1</div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        });
+
+        async function generatePDF() {
+            const pdfButton = document.querySelector('.pdf-btn');
+            const spinner = document.getElementById('pdfSpinner');
+            
+            try {
+                spinner.style.display = 'inline-block';
+                pdfButton.style.pointerEvents = 'none';
+                pdfButton.style.opacity = '0.7';
+
+                if (typeof window.jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                if (typeof window.jspdf === 'undefined') {
+                    throw new Error('jsPDF library failed to load. Please refresh the page.');
+                }
+
+                if (typeof html2canvas === 'undefined') {
+                    throw new Error('html2canvas library failed to load. Please refresh the page.');
+                }
+
+                const actionButtons = document.querySelector('.action-buttons');
+                actionButtons.style.display = 'none';
+
+                const canvas = await html2canvas(document.body, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: -window.scrollY
+                });
+
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const imgWidth = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const pageHeight = 210;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+                    heightLeft -= pageHeight;
+                }
+
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const filename = `Spot_Purchase_Report_${dateStr}.pdf`;
+
+                pdf.save(filename);
+                
+                showNotification('PDF generated successfully!', 'success');
+
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                showNotification('Error generating PDF: ' + error.message, 'error');
+            } finally {
+                spinner.style.display = 'none';
+                pdfButton.style.pointerEvents = 'auto';
+                pdfButton.style.opacity = '1';
+                
+                const actionButtons = document.querySelector('.action-buttons');
+                if (actionButtons) {
+                    actionButtons.style.display = 'flex';
+                }
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

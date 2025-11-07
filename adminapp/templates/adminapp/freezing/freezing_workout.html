@@ -1,0 +1,1613 @@
+{% extends 'admin_base.html' %}
+{% block title %} Freezing Workout {% endblock %}
+{% block content %}
+{% load indian_numbers %}
+
+<style>
+  .custom-table th:nth-child(1),
+  .custom-table td:nth-child(1),
+  .custom-table th:nth-child(2),
+  .custom-table td:nth-child(2),
+  .custom-table th:nth-child(3),
+  .custom-table td:nth-child(3) {
+    width: 12%;
+    min-width: 120px;
+  }
+  .custom-table th:nth-child(4),
+  .custom-table td:nth-child(4),
+  .custom-table th:nth-child(5),
+  .custom-table td:nth-child(5),
+  .custom-table th:nth-child(6),
+  .custom-table td:nth-child(6),
+  .custom-table th:nth-child(7),
+  .custom-table td:nth-child(7) {
+    width: 10%;
+    min-width: 100px;
+  }
+  .custom-table th:nth-child(8),
+  .custom-table td:nth-child(8),
+  .custom-table th:nth-child(9),
+  .custom-table td:nth-child(9),
+  .custom-table th:nth-child(10),
+  .custom-table td:nth-child(10),
+  .custom-table th:nth-child(13),
+  .custom-table td:nth-child(13) {
+    min-width: 140px;
+    max-width: 180px !important;
+  }
+    .custom-table th:nth-child(11),
+  .custom-table td:nth-child(11),
+  .custom-table th:nth-child(12),
+  .custom-table td:nth-child(12){
+    min-width: 180px;
+    max-width: 300px !important;
+  }
+</style>
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+        background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) {
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+<div class="container">
+  <div class="page-inner">
+        <div class="page-header-section">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="ph-icon-wrapper">
+                        <i class="fa-solid fa-snowflake"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">Freezing Operations</h3>
+                        <p class="ph-header-subtitle">Manage your freezing operations.</p>
+                    </div>
+                </div>
+
+                <!-- Breadcrumbs - Now inline with header -->
+                <nav class="ph-breadcrumb-nav">
+                    <ol class="ph-breadcrumb-list">
+                        <li class="ph-breadcrumb-item">
+                            <a href="#" class="ph-breadcrumb-link">
+                                <i class="icon-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="{%url 'adminapp:freezing_workout'%}">
+                                <span>Freezing Workouts</span>
+                            </a>
+                        </li>
+
+                    </ol>
+                </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+
+    <!-- Spot Summary Section -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-wrapper me-4">
+                  <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Spot Summary</h3>
+                  <p class="text-muted mb-0 fs-6">Detailed breakdown of spot freezing operations</p>
+                </div>
+              </div>
+              
+              <!-- Search Box -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="spotSearchInput" class="search-input" placeholder="Search spot entries...">
+                    <button type="button" id="spotClearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="stats-badge">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fas fa-chart-line me-2"></i><span id="spotEntryCount">{{ spot_summary|length }}</span> Entries
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tag header-icon"></i>
+                        <span class="header-text">Item Name</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-star header-icon"></i>
+                        <span class="header-text">Grade</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-fish header-icon"></i>
+                        <span class="header-text">Species</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-cut header-icon"></i>
+                        <span class="header-text">Peeling Type</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-trademark header-icon"></i>
+                        <span class="header-text">Brand</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tint header-icon"></i>
+                        <span class="header-text">Glaze </span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-code header-icon"></i>
+                        <span class="header-text">Unit Code</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-layer-group header-icon"></i>
+                        <span class="header-text">Total Slab</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-boxes header-icon"></i>
+                        <span class="header-text">Total C/S</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-weight header-icon"></i>
+                        <span class="header-text">Total KG</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-dollar-sign header-icon"></i>
+                        <span class="header-text">Total USD</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
+                        <span class="header-text">Total INR</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-percentage header-icon"></i>
+                        <span class="header-text">Avg Yield</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="spotTableBody">
+                  {% for row in spot_summary %}
+                  <tr class="table-row" data-searchable="{{ row.item__name|lower }} {{ row.grade__grade|lower }} {{ row.species__name|lower }} {{ row.peeling_type__name|lower }} {{ row.brand__name|lower }}">
+                    <td class="table-cell">
+                      <div class="item-info">
+                        <div class="item-avatar">
+                          <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="item-details">
+                          <div class="item-name">{{ row.item__name }}</div>
+                          <div class="item-meta">Product</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="grade-badge">
+                        <i class="fas fa-star grade-icon"></i>
+                        <span class="grade-text">{{ row.grade__grade }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="species-display">
+                        <i class="fas fa-fish me-2 text-info"></i>
+                        <span class="species-text">{{ row.species__name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="peeling-display">
+                        <i class="fas fa-cut me-2 text-warning"></i>
+                        <span class="peeling-text">{{ row.peeling_type__name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="brand-display">
+                        <i class="fas fa-trademark me-2 text-secondary"></i>
+                        <span class="brand-text">{{ row.brand__name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="percentage-display">
+                        <span class="percentage-value">{{ row.glaze__percentage|floatformat:2 }}</span>
+                        <span class="percentage-symbol">%</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="code-display">
+                        <span class="code-text">{{ row.unit__unit_code }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <span class="quantity-value">{{ row.total_slab|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <span class="quantity-value">{{ row.total_c_s|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <i class="fa-solid fa-weight-hanging yield-icon"></i>
+                        <span class="quantity-value">{{ row.total_kg|floatformat:2 }}</span>
+                        <span class="quantity-unit">kg</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="amount-display usd">
+                        <span class="currency-symbol">$</span>
+                        <span class="amount-value">{{ row.total_usd|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="amount-display">
+                        <span class="currency-symbol">₹</span>
+                        <span class="amount-value">{{ row.total_inr|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="yield-badge">
+                        <i class="fas fa-chart-line yield-icon"></i>
+                        <span class="yield-text">{{ row.total_yield_sum|floatformat:2 }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="13" class="empty-state-cell">
+                      <div class="empty-state-content">
+                        <i class="fas fa-map-marker-alt empty-state-icon"></i>
+                        <h4>No Spot Summary Found</h4>
+                        <p>There are no spot freezing summary entries to display yet.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- No Results Message -->
+              <div id="spotNoResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No entries found</h4>
+                  <p>Try adjusting your search terms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Local Summary Section -->
+    <div class="row mb-4">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-wrapper me-4" style="background: #fd7e14;">
+                  <i class="fas fa-home"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Local Summary</h3>
+                  <p class="text-muted mb-0 fs-6">Detailed breakdown of local freezing operations</p>
+                </div>
+              </div>
+              
+              <!-- Search Box -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="localSearchInput" class="search-input" placeholder="Search local entries...">
+                    <button type="button" id="localClearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="stats-badge">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fas fa-chart-line me-2"></i><span id="localEntryCount">{{ local_summary|length }}</span> Entries
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tag header-icon"></i>
+                        <span class="header-text">Item Name</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-star header-icon"></i>
+                        <span class="header-text">Grade</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-fish header-icon"></i>
+                        <span class="header-text">Species</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-cut header-icon"></i>
+                        <span class="header-text">Peeling Type</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-trademark header-icon"></i>
+                        <span class="header-text">Brand</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tint header-icon"></i>
+                        <span class="header-text">Glaze </span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-code header-icon"></i>
+                        <span class="header-text">Unit Code</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-layer-group header-icon"></i>
+                        <span class="header-text">Total Slab</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-boxes header-icon"></i>
+                        <span class="header-text">Total C/S</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-weight header-icon"></i>
+                        <span class="header-text">Total KG</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-dollar-sign header-icon"></i>
+                        <span class="header-text">Total USD</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
+                        <span class="header-text">Total INR</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-percentage header-icon"></i>
+                        <span class="header-text">Avg Yield</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="localTableBody">
+                  {% for row in local_summary %}
+                  <tr class="table-row" data-searchable="{{ row.item__name|lower }} {{ row.grade__grade|lower }} {{ row.species__name|lower }} {{ row.peeling_type__name|lower }} {{ row.brand__name|lower }}">
+                    <td class="table-cell">
+                      <div class="item-info">
+                        <div class="item-avatar" style="background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);">
+                          <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="item-details">
+                          <div class="item-name">{{ row.item__name }}</div>
+                          <div class="item-meta">Product</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="grade-badge">
+                        <i class="fas fa-star grade-icon"></i>
+                        <span class="grade-text">{{ row.grade__grade }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="species-display">
+                        <i class="fas fa-fish me-2 text-info"></i>
+                        <span class="species-text">{{ row.species__name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="peeling-display">
+                        <i class="fas fa-cut me-2 text-warning"></i>
+                        <span class="peeling-text">{{ row.peeling_type__name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="brand-display">
+                        <i class="fas fa-trademark me-2 text-secondary"></i>
+                        <span class="brand-text">{{ row.brand__name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="percentage-display">
+                        <span class="percentage-value">{{ row.glaze__percentage|floatformat:2 }}</span>
+                        <span class="percentage-symbol">%</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="code-display">
+                        <span class="code-text">{{ row.unit__unit_code }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <span class="quantity-value">{{ row.total_slab|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <span class="quantity-value">{{ row.total_c_s|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <i class="fa-solid fa-weight-hanging yield-icon"></i>
+                        <span class="quantity-value">{{ row.total_kg|floatformat:2 }}</span>
+                        <span class="quantity-unit">kg</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="amount-display usd">
+                        <span class="currency-symbol">$</span>
+                        <span class="amount-value">{{ row.total_usd|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="amount-display">
+                        <span class="currency-symbol">₹</span>
+                        <span class="amount-value">{{ row.total_inr|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="yield-badge">
+                        <i class="fas fa-chart-line yield-icon"></i>
+                        <span class="yield-text">{{ row.avg_yield|floatformat:2 }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="13" class="empty-state-cell">
+                      <div class="empty-state-content">
+                        <i class="fas fa-home empty-state-icon"></i>
+                        <h4>No Local Summary Found</h4>
+                        <p>There are no local freezing summary entries to display yet.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- No Results Message -->
+              <div id="localNoResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No entries found</h4>
+                  <p>Try adjusting your search terms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Combined Summary Section -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card border-0 shadow-lg">
+          <div class="card-header bg-white border-0 py-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+              <div class="d-flex align-items-center mb-3 mb-md-0">
+                <div class="icon-wrapper me-4" style="background: #28a745;">
+                  <i class="fas fa-chart-bar"></i>
+                </div>
+                <div>
+                  <h3 class="card-title mb-0 fw-bold">Combined Summary</h3>
+                  <p class="text-muted mb-0 fs-6">Comprehensive overview of all freezing operations</p>
+                </div>
+              </div>
+              
+              <!-- Search Box -->
+              <div class="search-controls d-flex align-items-center gap-3">
+                <div class="search-box-wrapper">
+                  <div class="search-input-group">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="combinedSearchInput" class="search-input" placeholder="Search combined entries...">
+                    <button type="button" id="combinedClearSearch" class="clear-btn" style="display: none;">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="stats-badge">
+                  <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                    <i class="fas fa-chart-line me-2"></i><span id="combinedEntryCount">{{ combined_summary|length }}</span> Entries
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0 custom-table">
+                <thead>
+                  <tr>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tag header-icon"></i>
+                        <span class="header-text">Item Name</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-star header-icon"></i>
+                        <span class="header-text">Grade</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-fish header-icon"></i>
+                        <span class="header-text">Species</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-cut header-icon"></i>
+                        <span class="header-text">Peeling Type</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-trademark header-icon"></i>
+                        <span class="header-text">Brand</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-tint header-icon"></i>
+                        <span class="header-text">Glaze </span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-code header-icon"></i>
+                        <span class="header-text">Unit Code</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-layer-group header-icon"></i>
+                        <span class="header-text">Total Slab</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-boxes header-icon"></i>
+                        <span class="header-text">Total C/S</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-weight header-icon"></i>
+                        <span class="header-text">Total KG</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-dollar-sign header-icon"></i>
+                        <span class="header-text">Total USD</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
+                        <span class="header-text">Total INR</span>
+                      </div>
+                    </th>
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-percentage header-icon"></i>
+                        <span class="header-text">Avg Yield</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="combinedTableBody">
+                  {% for row in combined_summary %}
+                  <tr class="table-row" data-searchable="{{ row.item_name|lower }} {{ row.grade_name|lower }} {{ row.species_name|lower }} {{ row.peeling_type_name|lower }} {{ row.brand_name|lower }}">
+                    <td class="table-cell">
+                      <div class="item-info">
+                        <div class="item-avatar" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                          <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="item-details">
+                          <div class="item-name">{{ row.item_name }}</div>
+                          <div class="item-meta">Product</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="grade-badge">
+                        <i class="fas fa-star grade-icon"></i>
+                        <span class="grade-text">{{ row.grade_name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="species-display">
+                        <i class="fas fa-fish me-2 text-info"></i>
+                        <span class="species-text">{{ row.species_name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="peeling-display">
+                        <i class="fas fa-cut me-2 text-warning"></i>
+                        <span class="peeling-text">{{ row.peeling_type_name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="brand-display">
+                        <i class="fas fa-trademark me-2 text-secondary"></i>
+                        <span class="brand-text">{{ row.brand_name }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="percentage-display">
+                        <span class="percentage-value">{{ row.glaze_percentage|floatformat:2 }}</span>
+                        <span class="percentage-symbol">%</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="code-display">
+                        <span class="code-text">{{ row.unit_code }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <span class="quantity-value">{{ row.total_slab|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+                        <span class="quantity-value">{{ row.total_c_s|floatformat:2 }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="quantity-display">
+
+                        <i class="fa-solid fa-weight-hanging yield-icon"></i>
+                        <span class="quantity-value">{{ row.total_kg|floatformat:2 }}</span>
+                        <span class="quantity-unit">kg</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="amount-display usd">
+                        <span class="currency-symbol">$</span>
+                        <span class="amount-value">{{ row.total_usd|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="amount-display">
+                        <span class="currency-symbol">₹</span>
+                        <span class="amount-value">{{ row.total_inr|floatformat:2|indian_comma }}</span>
+                      </div>
+                    </td>
+                    <td class="table-cell">
+                      <div class="yield-badge">
+                        <i class="fas fa-chart-line yield-icon"></i>
+                        <span class="yield-text">{{ row.avg_yield|floatformat:2 }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="13" class="empty-state-cell">
+                      <div class="empty-state-content">
+                        <i class="fas fa-chart-bar empty-state-icon"></i>
+                        <h4>No Combined Summary Found</h4>
+                        <p>There are no combined freezing summary entries to display yet.</p>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              
+              <!-- No Results Message -->
+              <div id="combinedNoResults" class="no-results" style="display: none;">
+                <div class="no-results-content">
+                  <i class="fas fa-search-minus no-results-icon"></i>
+                  <h4>No entries found</h4>
+                  <p>Try adjusting your search terms</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: #28a745;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+  }
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+  /* Search Box Styling */
+  .search-controls {
+    min-width: 300px;
+  }
+
+  .search-box-wrapper {
+    position: relative;
+  }
+
+  .search-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-input {
+    width: 280px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+    background: #ffffff;
+  }
+
+  .search-input::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    color: #6c757d;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    z-index: 2;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  .stats-badge .badge {
+    border-radius: 12px;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+  }
+
+  /* Table Styling */
+  .custom-table {
+    font-size: 15px;
+  }
+
+  .table-header {
+    background: #f8f9fd;
+    border: none;
+    padding: 20px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  /* Row Styling */
+  .table-row {
+    border: none;
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+  }
+
+  .table-cell {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  /* Item Info */
+  .item-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .item-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .item-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .item-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* Grade Badge */
+  .grade-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  .grade-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* Species Display - Beautiful Gradient Box */
+  .species-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+    border: 2px solid #7dd3fc;
+    border-radius: 25px;
+    color: #0369a1;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(3, 105, 161, 0.15);
+    white-space: nowrap;
+  }
+
+  .species-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    color: #0369a1;
+    flex-shrink: 0;
+  }
+
+  .species-text {
+    color: #0369a1;
+  }
+
+  /* Peeling Display - Beautiful Gradient Box */
+  .peeling-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 2px solid #fcd34d;
+    border-radius: 25px;
+    color: #b45309;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(180, 83, 9, 0.15);
+    white-space: nowrap;
+  }
+
+  .peeling-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    color: #b45309;
+    flex-shrink: 0;
+  }
+
+  .peeling-text {
+    color: #b45309;
+  }
+
+  /* Brand Display - Beautiful Gradient Box */
+  .brand-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    border: 2px solid #d8b4fe;
+    border-radius: 25px;
+    color: #7c3aed;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.15);
+    white-space: nowrap;
+  }
+
+  .brand-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    color: #7c3aed;
+    flex-shrink: 0;
+  }
+
+  .brand-text {
+    color: #7c3aed;
+  }
+
+  /* Yield Badge */
+  .yield-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 14px;
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .yield-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+  /* Amount Display */
+  .amount-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #a5d6a7;
+    border-radius: 25px;
+    color: #2e7d32;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+    white-space: nowrap;
+  }
+
+  .amount-display.usd {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border: 2px solid #90caf9;
+    color: #1976d2;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  }
+
+  .currency-symbol {
+    color: inherit;
+    font-size: 14px;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+
+  .amount-value {
+    color: inherit;
+  }
+
+  /* Quantity Display */
+  .quantity-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 2px solid #ffcc80;
+    border-radius: 25px;
+    color: #e65100;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+    white-space: nowrap;
+  }
+
+  .quantity-value {
+    color: #e65100;
+  }
+
+  .quantity-unit {
+    color: #e65100;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left: 4px;
+    flex-shrink: 0;
+  }
+
+  /* Percentage Display */
+  .percentage-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+    border: 2px solid #80deea;
+    border-radius: 25px;
+    color: #00838f;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(0, 131, 143, 0.15);
+    white-space: nowrap;
+  }
+
+  .percentage-symbol {
+    font-size: 14px;
+    color: inherit;
+    margin-left: 2px;
+    font-weight: 500;
+  }
+
+  /* Code Display */
+  .code-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: rgba(108, 117, 125, 0.1);
+    border: 2px solid rgba(108, 117, 125, 0.2);
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #6c757d;
+  }
+
+  /* Empty State Styling */
+  .empty-state-cell {
+    padding: 60px 20px !important;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .empty-state-content {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .empty-state-content h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state-content p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results Styling */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+  }
+
+  .no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .card-header .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+    }
+
+    .card-header .d-flex>.d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+      margin-bottom: 20px;
+    }
+
+    .search-controls {
+      min-width: auto;
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 0;
+    }
+
+    .search-input {
+      width: 500px;
+    }
+
+    .card-title {
+      font-size: 22px;
+    }
+
+    .item-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+
+    .item-avatar {
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 16px !important;
+      margin-right: 12px !important;
+      margin-bottom: 0 !important;
+      flex-shrink: 0;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-name {
+      font-size: 14px !important;
+    }
+
+    .item-meta {
+      font-size: 11px !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .card-header .d-flex > .d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+    
+    .search-controls {
+      flex-direction: column;
+      gap: 15px !important;
+    }
+    
+    .search-input {
+      width: 100%;
+    }
+    
+    .stats-badge {
+      align-self: center;
+    }
+    
+    .item-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+    
+    .item-avatar {
+      width: 35px !important;
+      height: 35px !important;
+      font-size: 14px !important;
+      margin-right: 10px !important;
+      margin-bottom: 0 !important;
+      flex-shrink: 0;
+    }
+    
+    .item-name {
+      font-size: 12px;
+    }
+    
+    .item-meta {
+      font-size: 10px;
+    }
+    
+    .icon-wrapper {
+      width: 45px;
+      height: 45px;
+      font-size: 18px;
+      margin-right: 15px;
+    }
+    
+    .card-title {
+      font-size: 20px;
+    }
+  }
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to setup search functionality for each table
+    function setupSearch(searchInputId, clearBtnId, tableBodyId, noResultsId, entryCountId) {
+        const searchInput = document.getElementById(searchInputId);
+        const clearBtn = document.getElementById(clearBtnId);
+        const tableBody = document.getElementById(tableBodyId);
+        const noResults = document.getElementById(noResultsId);
+        const entryCount = document.getElementById(entryCountId);
+        
+        if (!searchInput || !clearBtn || !tableBody || !noResults || !entryCount) return;
+        
+        const allRows = tableBody.querySelectorAll('.table-row');
+        const totalCount = allRows.length;
+
+        function updateCounter(visibleCount) {
+            entryCount.textContent = visibleCount;
+        }
+
+        function showClearButton(show) {
+            clearBtn.style.display = show ? 'block' : 'none';
+        }
+
+        function filterTable() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            if (searchTerm === '') {
+                // Show all rows
+                allRows.forEach(row => {
+                    row.style.display = '';
+                    visibleCount++;
+                });
+                noResults.style.display = 'none';
+                showClearButton(false);
+            } else {
+                // Filter rows
+                allRows.forEach(row => {
+                    const searchableText = row.getAttribute('data-searchable');
+                    if (searchableText && searchableText.includes(searchTerm)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide no results message
+                if (visibleCount === 0) {
+                    noResults.style.display = 'block';
+                } else {
+                    noResults.style.display = 'none';
+                }
+                
+                showClearButton(true);
+            }
+
+            updateCounter(visibleCount);
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            filterTable();
+            searchInput.focus();
+        }
+
+        // Event listeners
+        searchInput.addEventListener('input', filterTable);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+        
+        clearBtn.addEventListener('click', clearSearch);
+
+        // Keyboard navigation
+        allRows.forEach(row => {
+            row.setAttribute('tabindex', '0');
+        });
+
+        // Initialize
+        updateCounter(totalCount);
+    }
+
+    // Setup search for all three tables
+    setupSearch('spotSearchInput', 'spotClearSearch', 'spotTableBody', 'spotNoResults', 'spotEntryCount');
+    setupSearch('localSearchInput', 'localClearSearch', 'localTableBody', 'localNoResults', 'localEntryCount');
+    setupSearch('combinedSearchInput', 'combinedClearSearch', 'combinedTableBody', 'combinedNoResults', 'combinedEntryCount');
+});
+</script>
+
+{% endblock %}

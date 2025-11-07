@@ -1,0 +1,749 @@
+{% extends 'admin_base.html' %}
+{%block title%} Admin Panel{%endblock%}
+{% block content %}
+
+<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8" style="margin-top: 5rem;">
+  <div class="max-w-8xl mx-auto">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
+            <i class="fas fa-chart-line text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900">Admin Dashboard</h1>
+            <p class="text-base text-slate-500 font-medium mt-1">AMF Management System</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-base">
+            <i class="fas fa-cog mr-2"></i>
+            Manage
+          </button>
+          <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-base">
+            <i class="fas fa-plus mr-2"></i>
+            Add Customer
+          </button>
+        </div>
+      </div>
+    </div>
+ 
+    </div>
+
+
+        <!-- Management Section Cards (Sidebar Items as Cards) -->
+    <div class="mb-8 mt-5">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- User Management Card -->
+        {% if user_permissions.can_manage_users %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-user text-indigo-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">User Management</h3>
+              <p class="text-md text-slate-500">Manage system users and permissions</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="flex gap-2">
+              <a href="{% url 'adminapp:users_list' %}" class="flex-1 px-4 py-2.5 bg-indigo-50 text-indigo-700 text-md font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">
+                <i class="fas fa-list mr-1"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_user' %}" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-md font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
+                <i class="fas fa-plus mr-1"></i> Add
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Processing Operations Card -->
+        {% if user_permissions.can_view_processing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-amber-100 rounded-lg flex items-center justify-center group-hover:bg-amber-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-gear text-amber-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Processing Operations</h3>
+              <p class="text-md text-slate-500">Manage peeling shed operations</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="flex gap-2">
+              <a href="{% url 'adminapp:peeling_shed_supply_list' %}" class="flex-1 px-4 py-2.5 bg-amber-50 text-amber-700 text-md font-semibold rounded-lg hover:bg-amber-100 transition-colors text-center">
+                <i class="fas fa-list mr-1"></i> List
+              </a>
+              <a href="{% url 'adminapp:create_peeling_shed_supply' %}" class="flex-1 px-4 py-2.5 bg-amber-600 text-white text-md font-semibold rounded-lg hover:bg-amber-700 transition-colors text-center">
+                <i class="fas fa-plus mr-1"></i> Create
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Master Dashboard Card -->
+        {% if user_permissions.can_view_master_data or user_permissions.can_add_master_data %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+              <i class="fas fa-tachometer-alt text-purple-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Master Dashboard</h3>
+              <p class="text-md text-slate-500">Configure master data and settings</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <a href="{% url 'adminapp:master' %}" class="block w-full px-4 py-2.5 bg-purple-600 text-white text-md font-semibold rounded-lg hover:bg-purple-700 transition-colors text-center">
+              <i class="fas fa-arrow-right mr-2"></i> Open Dashboard
+            </a>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Purchase Management Card -->
+        {% if user_permissions.can_view_purchasing or user_permissions.can_add_purchasing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+              <i class="fas fa-shopping-cart text-blue-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Purchase Management</h3>
+              <p class="text-md text-slate-500">Handle spot and local purchases</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:spot_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-location-dot mr-2 text-blue-600"></i>Spot Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:local_purchase_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-store mr-2 text-blue-600"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Billing Operations Card -->
+        {% if user_permissions.can_view_billing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-file text-pink-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Billing Operations</h3>
+              <p class="text-md text-slate-500">Manage tenant and main stock bills</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:bill_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-pink-600"></i>Tenant Bill</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:sales_entry_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-import mr-2 text-pink-600"></i>Main Stock Bill</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+
+
+        <!-- Shipping Operations Card -->
+        {% if user_permissions.can_view_shipping or user_permissions.can_add_shipping %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-truck-fast text-green-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Shipping Operations</h3>
+              <p class="text-md text-slate-500">Pre-shipment and stock transfers</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:preshipment_workout_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-green-600"></i>Pre Shipment</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:store_transfer_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-tent-arrow-left-right mr-2 text-green-600"></i>Stock Transaction</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+
+
+
+        <!-- Voucher Card -->
+        {% if user_permissions.can_view_voucher or user_permissions.can_add_voucher %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-file-invoice-dollar text-rose-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Voucher Management</h3>
+              <p class="text-md text-slate-500">Manage all types of vouchers</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:spotagentvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Spot Agent</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:supervisorvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Supervisor</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:localpurchasevoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Local Purchase</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Peeling Shed</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:tenantvoucher_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-file-invoice mr-2 text-rose-600"></i>Tenat Voucher</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Freezing Operations Card -->
+        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-cyan-100 rounded-lg flex items-center justify-center group-hover:bg-cyan-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-snowflake text-cyan-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Freezing Operations</h3>
+              <p class="text-md text-slate-500">Manage freezing entries and workflow</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:freezing_entry_spot_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-cyan-600"></i>Spot Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_entry_local_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-shopping-cart mr-2 text-cyan-600"></i>Local Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:list_freezing_entry_tenant' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-store mr-2 text-cyan-600"></i>Tenant Freezing Entry</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:list_return_tenant' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-store mr-2 text-cyan-600"></i>Return Tenant Freezing</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:freezing_workout' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-warehouse mr-2 text-cyan-600"></i>Freezing Workout</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+                <!-- Stock Adjustment Card -->
+        {% if user_permissions.can_view_freezing or user_permissions.can_add_freezing %}
+        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
+          <div class="flex items-start gap-4 mb-4">
+            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+              <i class="fa-solid fa-snowflake text-purple-600 text-2xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Stock Adjustment</h3>
+              <p class="text-md text-slate-500">Manage stock adjustment</p>
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-100">
+            <div class="space-y-2">
+              <a href="{% url 'adminapp:stock_adjustment' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fa-solid fa-shop mr-2 text-purple-600"></i>Main Stocks Adjustment</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              <a href="{% url 'adminapp:tenant_stock_adjustment' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <span><i class="fas fa-shopping-cart mr-2 text-purple-600"></i>Tenant Stocks Adjustment</span>
+                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              </a>
+              
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+
+
+<!-- Spot Freezing Analytics Section -->
+<div class="mb-8">
+  <h2 class="text-2xl font-bold text-slate-900 mb-6">Spot Freezing Analytics</h2>
+  
+  <!-- Charts Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    
+    <!-- Monthly Trends Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Monthly Freezing Trends</h3>
+        <div class="flex gap-2">
+          <button onclick="changeChartView('entries')" class="chart-view-btn active px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="entries">
+            Entries
+          </button>
+          <button onclick="changeChartView('kg')" class="chart-view-btn px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="kg">
+            Weight (KG)
+          </button>
+          <button onclick="changeChartView('usd')" class="chart-view-btn px-3 py-1 text-sm font-semibold rounded-lg transition-colors" data-view="usd">
+            Value (USD)
+          </button>
+        </div>
+      </div>
+      <div class="h-80">
+        <canvas id="monthlyTrendsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Status Distribution Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Freezing Status Distribution</h3>
+      <div class="h-80 flex items-center justify-center">
+        <canvas id="statusPieChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Charts -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Weekly Activity Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Weekly Activity (Last 8 Weeks)</h3>
+      <div class="h-80">
+        <canvas id="weeklyActivityChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Items Chart -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      <h3 class="text-lg font-bold text-slate-900 mb-4">Top 5 Items by Weight</h3>
+      <div class="h-80">
+        <canvas id="topItemsChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.chart-view-btn {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.chart-view-btn:hover {
+  background-color: #e2e8f0;
+  color: #475569;
+}
+
+.chart-view-btn.active {
+  background-color: #3b82f6;
+  color: white;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Parse data from Django context
+const chartLabels = JSON.parse('{{ chart_labels|safe }}');
+const chartComplete = JSON.parse('{{ chart_complete|safe }}');
+const chartIncomplete = JSON.parse('{{ chart_incomplete|safe }}');
+const chartKg = JSON.parse('{{ chart_kg|safe }}');
+const chartUsd = JSON.parse('{{ chart_usd|safe }}');
+
+const weeklyLabels = JSON.parse('{{ weekly_labels|safe }}');
+const weeklyEntries = JSON.parse('{{ weekly_entries|safe }}');
+const weeklyKg = JSON.parse('{{ weekly_kg|safe }}');
+
+const statusLabels = JSON.parse('{{ status_labels|safe }}');
+const statusCounts = JSON.parse('{{ status_counts|safe }}');
+
+const topItemNames = JSON.parse('{{ top_item_names|safe }}');
+const topItemKg = JSON.parse('{{ top_item_kg|safe }}');
+
+let monthlyTrendsChart;
+
+// Initialize Monthly Trends Chart
+function initMonthlyTrendsChart(viewType = 'entries') {
+  const ctx = document.getElementById('monthlyTrendsChart').getContext('2d');
+  
+  if (monthlyTrendsChart) {
+    monthlyTrendsChart.destroy();
+  }
+
+  let datasets, yAxisTitle;
+  
+  if (viewType === 'entries') {
+    datasets = [
+      {
+        label: 'Complete',
+        data: chartComplete,
+        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+        borderColor: 'rgb(34, 197, 94)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      },
+      {
+        label: 'Incomplete',
+        data: chartIncomplete,
+        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+        borderColor: 'rgb(249, 115, 22)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      }
+    ];
+    yAxisTitle = 'Number of Entries';
+  } else if (viewType === 'kg') {
+    datasets = [{
+      label: 'Total Weight (KG)',
+      data: chartKg,
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: 'rgb(59, 130, 246)',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true
+    }];
+    yAxisTitle = 'Weight (KG)';
+  } else if (viewType === 'usd') {
+    datasets = [{
+      label: 'Total Value (USD)',
+      data: chartUsd,
+      backgroundColor: 'rgba(168, 85, 247, 0.2)',
+      borderColor: 'rgb(168, 85, 247)',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true
+    }];
+    yAxisTitle = 'Value (USD)';
+  }
+
+  monthlyTrendsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: yAxisTitle
+          }
+        }
+      }
+    }
+  });
+}
+
+// Change chart view
+function changeChartView(viewType) {
+  document.querySelectorAll('.chart-view-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  initMonthlyTrendsChart(viewType);
+}
+
+// Initialize Status Pie Chart
+const statusCtx = document.getElementById('statusPieChart').getContext('2d');
+new Chart(statusCtx, {
+  type: 'doughnut',
+  data: {
+    labels: statusLabels,
+    datasets: [{
+      data: statusCounts,
+      backgroundColor: [
+        'rgba(34, 197, 94, 0.8)',
+        'rgba(249, 115, 22, 0.8)',
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(168, 85, 247, 0.8)'
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }
+});
+
+// Initialize Weekly Activity Chart
+const weeklyCtx = document.getElementById('weeklyActivityChart').getContext('2d');
+new Chart(weeklyCtx, {
+  type: 'bar',
+  data: {
+    labels: weeklyLabels,
+    datasets: [
+      {
+        label: 'Entries',
+        data: weeklyEntries,
+        backgroundColor: 'rgba(59, 130, 246, 0.6)',
+        borderColor: 'rgb(59, 130, 246)',
+        borderWidth: 1,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Weight (KG)',
+        data: weeklyKg,
+        type: 'line',
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderWidth: 2,
+        tension: 0.4,
+        yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      }
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Number of Entries'
+        }
+      },
+      y1: {
+        type: 'linear',
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Weight (KG)'
+        },
+        grid: {
+          drawOnChartArea: false
+        }
+      }
+    }
+  }
+});
+
+// Initialize Top Items Chart
+const topItemsCtx = document.getElementById('topItemsChart').getContext('2d');
+new Chart(topItemsCtx, {
+  type: 'bar',
+  data: {
+    labels: topItemNames,
+    datasets: [{
+      label: 'Weight (KG)',
+      data: topItemKg,
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(34, 197, 94, 0.8)',
+        'rgba(249, 115, 22, 0.8)',
+        'rgba(168, 85, 247, 0.8)',
+        'rgba(236, 72, 153, 0.8)'
+      ],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Weight (KG)'
+        }
+      }
+    }
+  }
+});
+
+// Initialize monthly trends chart on page load
+initMonthlyTrendsChart('entries');
+</script>
+
+
+
+
+
+  </div>
+</div>
+
+<script>
+// Chart initialization
+var ctx = document.getElementById('statisticsChart');
+if (ctx) {
+  ctx = ctx.getContext('2d');
+  
+  var statisticsChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [{
+        label: "Subscribers",
+        borderColor: '#f3545d',
+        pointBackgroundColor: 'rgba(243, 84, 93, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(243, 84, 93, 0.4)',
+        legendColor: '#f3545d',
+        fill: true,
+        borderWidth: 2,
+        data: [154, 184, 175, 203, 210, 231, 240, 278, 252, 312, 320, 374]
+      }, {
+        label: "New Visitors",
+        borderColor: '#fdaf4b',
+        pointBackgroundColor: 'rgba(253, 175, 75, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(253, 175, 75, 0.4)',
+        legendColor: '#fdaf4b',
+        fill: true,
+        borderWidth: 2,
+        data: [256, 230, 245, 287, 240, 250, 230, 295, 331, 431, 456, 521]
+      }, {
+        label: "Active Users",
+        borderColor: '#177dff',
+        pointBackgroundColor: 'rgba(23, 125, 255, 0.6)',
+        pointRadius: 0,
+        backgroundColor: 'rgba(23, 125, 255, 0.4)',
+        legendColor: '#177dff',
+        fill: true,
+        borderWidth: 2,
+        data: [542, 480, 430, 550, 530, 453, 380, 434, 568, 610, 700, 900]
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      tooltips: {
+        bodySpacing: 4,
+        mode: "nearest",
+        intersect: 0,
+        position: "nearest",
+        xPadding: 10,
+        yPadding: 10,
+        caretPadding: 10
+      },
+      layout: {
+        padding: { left: 5, right: 5, top: 15, bottom: 15 }
+      },
+      scales: {
+        yAxes: [{
+          ticks: {
+            fontStyle: "500",
+            beginAtZero: false,
+            maxTicksLimit: 5,
+            padding: 10
+          },
+          gridLines: {
+            drawTicks: false,
+            display: false
+          }
+        }],
+        xAxes: [{
+          gridLines: {
+            zeroLineColor: "transparent"
+          },
+          ticks: {
+            padding: 10,
+            fontStyle: "500"
+          }
+        }]
+      },
+      legendCallback: function(chart) {
+        var text = [];
+        text.push('<ul class="' + chart.id + '-legend html-legend">');
+        for (var i = 0; i < chart.data.datasets.length; i++) {
+          text.push('<li><span style="background-color:' + chart.data.datasets[i].legendColor + '"></span>');
+          if (chart.data.datasets[i].label) {
+            text.push(chart.data.datasets[i].label);
+          }
+          text.push('</li>');
+        }
+        text.push('</ul>');
+        return text.join('');
+      }
+    }
+  });
+
+  var myLegendContainer = document.getElementById("myChartLegend");
+  if (myLegendContainer) {
+    myLegendContainer.innerHTML = statisticsChart.generateLegend();
+  }
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,1402 @@
+{% extends 'admin_base.html' %}
+{%block title%} Bills {%endblock%}
+{% load static %}
+
+{% block content %}
+
+
+
+
+<style>
+  /* No Results Styling */
+.no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+}
+
+.no-results-content {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.no-results p {
+    color: #6c757d;
+    margin: 0;
+}
+  /* Search Box Styling - Enhanced */
+.search-box-wrapper {
+  position: relative;
+}
+
+.search-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 280px;
+  padding: 12px 45px 12px 45px;
+  border: 2px solid #e9ecef;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  background: #ffffff;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #e74c3c;
+  box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+  background: #ffffff;
+}
+
+.search-input::placeholder {
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.clear-btn:hover {
+  color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+}
+  /* Card Styling */
+  .card {
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Header Styling */
+  .card-header {
+    border-radius: 20px 20px 0 0;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border-bottom: 2px solid #f1f3f7;
+    padding: 30px;
+  }
+
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    margin-right: 20px;
+  }
+
+  .header-text h3 {
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0 0 5px 0;
+  }
+
+  .header-text p {
+    color: #6c757d;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* Controls Section */
+  .controls-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* Search Box */
+  .search-wrapper {
+    position: relative;
+  }
+
+  .search-input {
+    width: 300px;
+    padding: 12px 45px 12px 45px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #ffffff;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  .search-input:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 14px;
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: none;
+  }
+
+  .clear-btn:hover {
+    color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+  }
+
+  /* Stats Badge */
+  .stats-badge .badge {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #e9ecef;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Add Button */
+  .add-new-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    color: white;
+    padding: 12px 20px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+  }
+
+  .add-new-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 25px 30px;
+    background: #f8f9fd;
+    border-bottom: 2px solid #f1f3f7;
+  }
+
+  .stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid;
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card.entries {
+    border-color: rgba(231, 76, 60, 0.2);
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.weight {
+    border-color: rgba(40, 167, 69, 0.2);
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, white 100%);
+  }
+
+  .stat-card.amount {
+    border-color: rgba(255, 193, 7, 0.2);
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, white 100%);
+  }
+
+  .stat-card h4 {
+    margin: 0 0 10px 0;
+    color: #6c757d;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-card .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .stat-card.entries .value {
+    color: #e74c3c;
+  }
+
+  .stat-card.weight .value {
+    color: #28a745;
+  }
+
+  .stat-card.amount .value {
+    color: #ffc107;
+  }
+
+  /* Table */
+  .table-responsive {
+    background: white;
+  }
+
+  .modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin: 0;
+  }
+
+  .modern-table th {
+    background: #f8f9fd;
+    padding: 20px;
+    text-align: left;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 13px;
+    border: none;
+  }
+
+  .header-content-table {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: #6c757d;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .modern-table td {
+    padding: 20px;
+    border: none;
+    border-bottom: 1px solid #f1f3f7;
+    vertical-align: middle;
+  }
+
+  .table-row {
+    transition: all 0.3s ease;
+  }
+
+  .table-row:hover {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.02) 0%, rgba(231, 76, 60, 0.05) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+  }
+
+/* Date Display */
+.date-display {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 20px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  white-space: nowrap;
+}
+
+.date-display i {
+  color: #1976d2;
+  font-size: 13px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+  .date-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+  /* Company Display */
+  .company-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .company-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .company-details .company-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .company-details .company-meta {
+    color: #6c757d;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  /* id-badge */
+    .id-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+    border: 2px solid #ce93d8;
+    border-radius: 25px;
+    color: #7b1fa2;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(123, 31, 162, 0.15);
+    white-space: nowrap;
+  }
+  /* Badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-primary {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 2px solid rgba(231, 76, 60, 0.2);
+  }
+
+  .badge-success {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .badge-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  /* Weight Display */
+  .weight-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #a5d6a7;
+    border-radius: 25px;
+    color: #2e7d32;
+    font-weight: 600;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+    white-space: nowrap;
+  }
+
+  .weight-icon {
+    margin-right: 8px;
+    font-size: 14px;
+  }
+
+
+  .weight-unit {
+    font-size: 12px;
+    color: #6c757d;
+    margin-left: 4px;
+    font-weight: 500;
+  }
+
+  /* Status Badges */
+  .status-wrapper {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .status-dot {
+    font-size: 8px;
+    margin-right: 8px;
+  }
+
+  .status-completed {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .status-pending {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  .status-returned {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border: 2px solid rgba(220, 53, 69, 0.2);
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    border: 2px solid;
+    background: none;
+    cursor: pointer;
+  }
+  .view-btn {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-color: rgba(0, 123, 255, 0.2);
+  }
+
+  .view-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  }
+
+  .edit-btn {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+    border-color: rgba(40, 167, 69, 0.2);
+  }
+
+  .edit-btn:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  }
+
+  .delete-btn {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+    border-color: rgba(220, 53, 69, 0.2);
+  }
+
+  .delete-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+  }
+
+  .empty-state-icon {
+    font-size: 64px;
+    color: #e74c3c;
+    margin-bottom: 20px;
+    opacity: 0.7;
+  }
+
+  .empty-state h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .empty-state p {
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  /* No Results */
+  .no-results {
+    padding: 60px 20px;
+    text-align: center;
+    background: #f8f9fa;
+    display: none;
+  }
+
+  .no-results-icon {
+    font-size: 48px;
+    color: #6c757d;
+    margin-bottom: 20px;
+  }
+
+  .no-results h4 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .no-results p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .card-header .d-flex {
+      flex-direction: column;
+      align-items: stretch !important;
+    }
+
+    .card-header .d-flex>.d-flex:first-child {
+      flex-direction: row !important;
+      align-items: center !important;
+      margin-bottom: 20px;
+    }
+
+    .search-controls {
+      min-width: auto;
+      width: 100%;
+      justify-content: space-between;
+      margin-top: 0;
+    }
+
+    .search-input {
+      width: 500px;
+    }
+
+    .card-title {
+      font-size: 22px;
+    }
+
+
+
+
+    .supplier-info {
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+    }
+
+
+    .supplier-details {
+      flex: 1;
+    }
+
+  }
+</style>
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+<div class="container">
+<div class="page-inner">
+        <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-file"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Billing Operations</h3>
+            <p class="ph-header-subtitle">Manage your billing operations.</p>
+          </div>
+        </div>
+                <!-- Breadcrumbs - Now inline with header -->
+                <nav class="ph-breadcrumb-nav">
+                    <ol class="ph-breadcrumb-list">
+                        <li class="ph-breadcrumb-item">
+                            <a href="#" class="ph-breadcrumb-link">
+                                <i class="icon-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="{%url 'adminapp:bill_list'%}">
+                                <span>Tenant Bills</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item ">
+                            <a href="{%url 'adminapp:generate_manual_bill'%}"  class="ph-breadcrumb-link">
+                              <i class="fa-solid fa-file"></i>
+                                <span>Create</span>
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+  
+    <!-- Filter Buttons Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <div class="header-content">
+          <div class="header-info">
+            <div class="icon-wrapper">
+              <i class="fas fa-filter"></i>
+            </div>
+            <div class="header-text">
+              <h3 class="card-title mb-0 fw-bold">Tenant Bills</h3>
+              <p>Navigate between different bill statuses with beautiful visual indicators</p>
+            </div>
+          </div>
+            <div class="controls-section">
+              <!-- Search Box -->
+              <div class="search-box-wrapper">
+                <div class="search-input-group">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" id="searchInput" class="search-input" placeholder="Search bills...">
+                  <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="stats-badge">
+                <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                  <i class="fas fa-file-invoice me-2"></i><span id="billCount">{{ bills|length }}</span> Bills
+                </span>
+              </div>
+
+              <a href="{% url 'adminapp:generate_manual_bill' %}" class="add-new-btn">
+                <i class="fas fa-plus-circle"></i> Generate Bill
+              </a>
+            </div>
+        </div>
+      </div>
+  
+  
+  
+      <!-- Bills Table -->
+      <div class="card">
+  
+  
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <!-- <th>
+                              <div class="header-content-table">
+                                  <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()">
+                              </div>
+                          </th> -->
+                    <th class="table-header">
+                      <div class="header-content">
+                        <i class="fas fa-hashtag header-icon"></i>
+                        <span class="header-text">NO</span>
+                      </div>
+                    </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-file-invoice header-icon"></i>Bill Details</div>
+                </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-building header-icon"></i>Tenant</div>
+                </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-calendar header-icon"></i>Period</div>
+                </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-dollar-sign header-icon"></i>Amount</div>
+                </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-info-circle header-icon"></i>Status</div>
+                </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-clock header-icon"></i>Created</div>
+                </th>
+                <th>
+                  <div class="header-content-table"><i class="fas fa-cogs header-icon"></i>Actions</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for bill in bills %}
+              <tr class="table-row">
+                <!-- <td>
+                              <div class="form-check">
+                                  <input type="checkbox" class="form-check-input bill-checkbox" name="bill_ids" value="{{ bill.id }}">
+                              </div>
+                          </td> -->
+
+                      <td class="table-cell">
+                      <div class="id-badge">
+                        {{ forloop.counter }}
+                      </div>
+                    </td>
+                <td>
+                  <div class="company-info">
+                    <div class="company-avatar">
+                      <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div class="company-details">
+                      <div class="company-name">{{ bill.bill_number|default:bill.id }}</div>
+                      {% if bill.is_overdue %}
+                      <div class="company-meta text-danger">
+                        <i class="fas fa-clock"></i> Overdue
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="company-info">
+                    <div class="company-avatar">
+                      <i class="fas fa-building"></i>
+                    </div>
+                    <div class="company-details">
+                      <div class="company-name">{{ bill.tenant.company_name }}</div>
+                      {% if bill.tenant.contact_person %}
+                      <div class="company-meta">{{ bill.tenant.contact_person }}</div>
+                      {% endif %}
+                      {% if bill.tenant.phone %}
+                      <div class="company-meta">
+                        <i class="fas fa-phone"></i> {{ bill.tenant.phone }}
+                      </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="date-display">
+                    <i class="fas fa-calendar"></i>
+                    <div>
+                      <strong>{{ bill.from_date|date:"M d" }} - {{ bill.to_date|date:"M d, Y" }}</strong>
+                      <br><small style="font-size: 1rem;" class="text-muted">{{ bill.from_date|timesince:bill.to_date }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="weight-display">
+                    ₹{{ bill.total_amount|floatformat:2 }}
+                    {% if bill.total_kg %}
+                    <div class="weight-unit">{{ bill.total_kg }} kg</div>
+                    {% endif %}
+                  </div>
+                </td>
+                <td>
+                  {% if bill.status == 'finalized' %}
+                  <span class="badge badge-success">{{ bill.get_status_display|default:bill.status }}</span>
+                  {% elif bill.status == 'sent' %}
+                  <span class="badge badge-primary">{{ bill.get_status_display|default:bill.status }}</span>
+                  {% elif bill.status == 'paid' %}
+                  <span class="badge badge-success">{{ bill.get_status_display|default:bill.status }}</span>
+                  {% elif bill.status == 'cancelled' %}
+                  <span class="badge badge-warning">{{ bill.get_status_display|default:bill.status }}</span>
+                  {% else %}
+                  <span class="badge badge-primary">{{ bill.get_status_display|default:bill.status }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="date-display">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                      <strong>{{ bill.created_at|date:"M d, Y" }}</strong>
+                      <br><small style="font-size: 1rem;" class="text-muted">{{ bill.created_at|time:"g:i A" }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="{% url 'adminapp:view_bill' bill.id %}" class="action-btn view-btn" title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{% url 'adminapp:bill_pdf' bill.id %}" class="action-btn edit-btn" title="Download PDF"
+                      target="_blank">
+                      <i class="fas fa-file-pdf"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="empty-state-icon">
+                      <i class="fas fa-file-invoice fa-4x"></i>
+                    </div>
+                    <h4>No Bills Found</h4>
+                    <p>
+                      {% if current_status %}
+                      No {{ current_status }} bills match your current filters.
+                      {% else %}
+                      No bills match your current filters.
+                      {% endif %}
+                    </p>
+                    <a href="{% url 'adminapp:generate_manual_bill' %}" class="add-new-btn">
+                      <i class="fas fa-plus"></i> Generate New Bill
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+  
+          <!-- Pagination -->
+          {% if is_paginated %}
+          <div class="pagination-wrapper">
+            <div class="results-info">
+              Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+            </div>
+            <nav>
+              <ul class="pagination mb-0">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page=1&{{ request.GET.urlencode }}">First</a>
+                </li>
+                <li class="page-item">
+                  <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">&laquo;</a>
+                </li>
+                {% endif %}
+  
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}">{{ num }}</a>
+                  </li>
+                  {% endif %}
+                  {% endfor %}
+  
+                  {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link"
+                      href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">&raquo;</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link"
+                      href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">Last</a>
+                  </li>
+                  {% endif %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+  
+      <script>
+        let deleteBillId = null;
+        let statusBillId = null;
+        let pendingBulkAction = null;
+  
+        // Select all functionality
+        function toggleSelectAll() {
+          const selectAll = document.getElementById('selectAll');
+          const checkboxes = document.querySelectorAll('.bill-checkbox');
+  
+          checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+          });
+  
+          updateBulkActions();
+        }
+  
+        // Update bulk actions visibility
+        function updateBulkActions() {
+          const checkedBoxes = document.querySelectorAll('.bill-checkbox:checked');
+          const bulkActions = document.querySelector('.bulk-actions');
+  
+          if (checkedBoxes.length > 0 && bulkActions) {
+            bulkActions.classList.add('show');
+          } else if (bulkActions) {
+            bulkActions.classList.remove('show');
+          }
+        }
+  
+        // Table row hover effect enhancement
+        document.addEventListener('DOMContentLoaded', function () {
+          const tableRows = document.querySelectorAll('.table-row');
+          tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function () {
+              this.style.transform = 'translateY(-2px)';
+              this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+            });
+            row.addEventListener('mouseleave', function () {
+              this.style.transform = 'translateY(0)';
+              this.style.boxShadow = 'none';
+            });
+          });
+  
+          // Add event listeners to checkboxes
+          const checkboxes = document.querySelectorAll('.bill-checkbox');
+          checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateBulkActions);
+          });
+        });
+      </script>
+    </div>
+</div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Add loading animation on click
+    const filterBtns = document.querySelectorAll('.filter-btn');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        // Add loading class
+        this.classList.add('loading');
+
+        // Remove after navigation starts
+        setTimeout(() => {
+          this.classList.remove('loading');
+        }, 1000);
+      });
+    });
+
+    // Add ripple effect
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+
+        ripple.style.cssText = `
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255,255,255,0.6);
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                transform: scale(0);
+                animation: ripple 0.6s linear;
+                pointer-events: none;
+            `;
+
+        this.appendChild(ripple);
+
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      });
+    });
+
+    // Add CSS for ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes ripple {
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+        
+        .filter-btn {
+            position: relative;
+            overflow: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+  });
+</script>
+
+<script>
+// Enhanced search functionality for the bills table
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.querySelector('.modern-table tbody');
+    const noResults = document.getElementById('noResults');
+    const billCount = document.getElementById('billCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    // Enhanced search data extraction
+    function getSearchableText(row) {
+        const searchableElements = [
+            // Bill number
+            row.querySelector('.company-name')?.textContent || '',
+            // Tenant company name
+            row.querySelectorAll('.company-name')[1]?.textContent || '',
+            // Contact person
+            row.querySelector('.company-meta')?.textContent || '',
+            // Amount
+            row.querySelector('.weight-display')?.textContent || '',
+            // Status
+            row.querySelector('.badge')?.textContent || '',
+            // Date range
+            row.querySelector('.date-display strong')?.textContent || ''
+        ];
+        
+        return searchableElements.join(' ').toLowerCase().trim();
+    }
+
+    // Update counter display
+    function updateCounter(visibleCount) {
+        billCount.textContent = visibleCount;
+    }
+
+    // Show/hide clear button
+    function showClearButton(show) {
+        clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    // Main filter function
+    function filterTable() {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        if (searchTerm === '') {
+            // Show all rows
+            allRows.forEach(row => {
+                row.style.display = '';
+                visibleCount++;
+            });
+            showClearButton(false);
+        } else {
+            // Filter rows
+            allRows.forEach(row => {
+                // Get searchable text from data attribute or extract it
+                let searchableText = row.getAttribute('data-searchable');
+                
+                // If data-searchable doesn't exist or is empty, extract text
+                if (!searchableText) {
+                    searchableText = getSearchableText(row);
+                    row.setAttribute('data-searchable', searchableText); // Cache it
+                }
+                
+                if (searchableText.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            showClearButton(true);
+        }
+
+        updateCounter(visibleCount);
+        
+        // Handle empty state message
+        const emptyStateRow = tableBody.querySelector('tr td[colspan]');
+        if (visibleCount === 0 && totalCount > 0 && !emptyStateRow) {
+            // Create and show no results message
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.innerHTML = `
+                <td colspan="7">
+                    <div class="no-results">
+                        <div class="no-results-content">
+                            <i class="fas fa-search-minus no-results-icon"></i>
+                            <h4>No bills found</h4>
+                            <p>Try adjusting your search terms</p>
+                        </div>
+                    </div>
+                </td>
+            `;
+            noResultsRow.id = 'noResultsRow';
+            tableBody.appendChild(noResultsRow);
+        } else {
+            // Remove no results message if it exists
+            const noResultsRow = document.getElementById('noResultsRow');
+            if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+    }
+
+    // Clear search function
+    function clearSearch() {
+        searchInput.value = '';
+        filterTable();
+        searchInput.focus();
+    }
+
+    // Event listeners
+    if (searchInput) {
+        searchInput.addEventListener('input', filterTable);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Escape') {
+                clearSearch();
+            }
+        });
+    }
+    
+    if (clearBtn) {
+        clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Initialize counter
+    updateCounter(totalCount);
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Spot Agent Voucher Summary Report</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .report-period {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .generated-date {
+            font-size: 10px;
+            color: #999;
+        }
+        
+        .summary-section {
+            margin-bottom: 30px;
+        }
+        
+        .summary-title {
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .summary-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .summary-row {
+            display: table-row;
+        }
+        
+        .summary-cell {
+            display: table-cell;
+            width: 25%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+            background-color: #f8f9fa;
+        }
+        
+        .summary-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .agent-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .agent-summary-table th {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #0056b3;
+        }
+        
+        .agent-summary-table td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .agent-summary-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .voucher-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        
+        .voucher-table th {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #0056b3;
+        }
+        
+        .voucher-table td {
+            padding: 6px;
+            border: 1px solid #ddd;
+        }
+        
+        .voucher-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        .section-break {
+            page-break-before: always;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="report-title">Spot Agent Voucher Summary Report</div>
+        <div class="report-period">Period: {{ period_name }}</div>
+        <div class="generated-date">Generated on {{ generated_date|date:"F d, Y \a\t H:i A" }}</div>
+    </div>
+
+    <!-- Overall Summary -->
+    <div class="summary-section">
+        <div class="summary-title">Overall Summary</div>
+        <div class="summary-grid">
+            <div class="summary-row">
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_receipts|floatformat:2 }}</div>
+                    <div class="summary-label">Total Receipts</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_payments|floatformat:2 }}</div>
+                    <div class="summary-label">Total Payments</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.net_amount|floatformat:2 }}</div>
+                    <div class="summary-label">Net Amount</div>
+                </div>
+                <div class="summary-cell">
+                    <div class="summary-value">{{ summary.total_vouchers }}</div>
+                    <div class="summary-label">Total Vouchers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent-wise Summary -->
+    {% if agent_summary %}
+    <div class="summary-section">
+        <div class="summary-title">Agent-wise Summary</div>
+        <table class="agent-summary-table">
+            <thead>
+                <tr>
+                    <th>Agent Name</th>
+                    <th>Mobile</th>
+                    <th class="text-right">Vouchers</th>
+                    <th class="text-right">Receipts</th>
+                    <th class="text-right">Payments</th>
+                    <th class="text-right">Net Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agent in agent_summary %}
+                <tr>
+                    <td>{{ agent.agent__name }}</td>
+                    <td>{{ agent.agent__mobile|default:"-" }}</td>
+                    <td class="text-right">{{ agent.voucher_count }}</td>
+                    <td class="text-right text-success">{{ agent.total_receipts|floatformat:2 }}</td>
+                    <td class="text-right text-danger">{{ agent.total_payments|floatformat:2 }}</td>
+                    <td class="text-right {% if agent.net_amount > 0 %}text-success{% elif agent.net_amount < 0 %}text-danger{% else %}text-muted{% endif %}">
+                        {{ agent.net_amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Detailed Voucher List -->
+    {% if vouchers %}
+    <div class="section-break">
+        <div class="summary-title">Detailed Voucher List</div>
+        <table class="voucher-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Voucher No.</th>
+                    <th>Agent</th>
+                    <th>Description</th>
+                    <th class="text-right">Receipt</th>
+                    <th class="text-right">Payment</th>
+                    <th class="text-right">Net Amount</th>
+                    <th class="text-right">Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voucher in vouchers %}
+                <tr>
+                    <td>{{ voucher.date|date:"M d, Y" }}</td>
+                    <td>{{ voucher.voucher_no }}</td>
+                    <td>{{ voucher.agent.name }}</td>
+                    <td>{{ voucher.description|default:"-"|truncatechars:40 }}</td>
+                    <td class="text-right">
+                        {% if voucher.receipt > 0 %}
+                            <span class="text-success">{{ voucher.receipt|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-muted">0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if voucher.payment > 0 %}
+                            <span class="text-danger">{{ voucher.payment|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="text-muted">0.00</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% with net=voucher.receipt|add:voucher.payment|floatformat:"-2" %}
+                        <span class="{% if voucher.receipt > voucher.payment %}text-success{% elif voucher.payment > voucher.receipt %}text-danger{% else %}text-muted{% endif %}">
+                            {{ voucher.receipt|floatformat:2|add:"-"|add:voucher.payment|floatformat:2 }}
+                        </span>
+                        {% endwith %}
+                    </td>
+                    <td class="text-right">
+                        <span class="{% if voucher.total_amount > 0 %}text-success{% elif voucher.total_amount < 0 %}text-danger{% else %}text-muted{% endif %}">
+                            {{ voucher.total_amount|floatformat:2 }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This is a computer-generated report. No signature required.</p>
+        <p>{{ company_name }} - Spot Agent Voucher Management System</p>
+    </div>
+</body>
+</html>

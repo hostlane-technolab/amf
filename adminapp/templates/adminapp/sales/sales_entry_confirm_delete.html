@@ -1,0 +1,41 @@
+<!-- adminapp/sales/sales_entry_confirm_delete.html -->
+{% extends "base.html" %}
+
+{% block title %}Delete Sales Entry{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4>Confirm Delete</h4>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete this sales entry?</p>
+                    <ul class="list-unstyled">
+                        <li><strong>Invoice No:</strong> {{ sales_entry.invoice_no }}</li>
+                        <li><strong>Voucher No:</strong> {{ sales_entry.voucher_no }}</li>
+                        <li><strong>Buyer:</strong> {{ sales_entry.buyer.name }}</li>
+                        <li><strong>Date:</strong> {{ sales_entry.date }}</li>
+                        <li><strong>Total Amount:</strong> ${{ sales_entry.total_amount_usd }}</li>
+                    </ul>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Note:</strong> Deleting this entry will restore the stock quantities.
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Yes, Delete
+                        </button>
+                        <a href="{% url 'adminapp:sales_entry_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

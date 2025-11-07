@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tenant Statement</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', 'Arial', 'Helvetica', sans-serif;
+            margin: 15px;
+            font-size: 11px;
+            color: #333;
+            background: white;
+        }
+        
+        /* Rupee symbol fix */
+        .rupee {
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 8px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .header .period {
+            margin-top: 3px;
+            font-size: 11px;
+            color: #555;
+        }
+        
+        .info-section {
+            margin-bottom: 15px;
+            padding: 8px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+            font-size: 10px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .summary-section {
+            background: #f5f5f5;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+        }
+        
+        .summary-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #000;
+            border-bottom: 1px solid #999;
+            padding-bottom: 4px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 6px;
+            background: white;
+            border: 1px solid #ddd;
+        }
+        
+        .summary-label {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .summary-value {
+            font-weight: bold;
+            font-size: 11px;
+            color: #000;
+        }
+        
+        .balance-box {
+            background: #e8e8e8;
+            padding: 8px 10px;
+            margin-top: 8px;
+            border: 1px solid #999;
+            text-align: center;
+        }
+        
+        .balance-label {
+            font-size: 11px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        .balance-amount {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 2px;
+        }
+        
+        .balance-positive {
+            color: #c62828;
+        }
+        
+        .balance-negative {
+            color: #2e7d32;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin: 15px 0 8px 0;
+            color: #000;
+            border-bottom: 1px solid #999;
+            padding-bottom: 3px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            font-size: 10px;
+        }
+        
+        th {
+            background: #e0e0e0;
+            color: #000;
+            font-weight: bold;
+            padding: 6px 4px;
+            text-align: left;
+            border: 1px solid #999;
+            font-size: 10px;
+        }
+        
+        td {
+            padding: 5px 4px;
+            border: 1px solid #ccc;
+            background: white;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        /* Very light shading for different row types */
+        .opening-row {
+            background-color: #fffef0 !important;
+            font-weight: bold;
+        }
+        
+        .bill-row {
+            background-color: #fafafa !important;
+        }
+        
+        .receipt-row {
+            background-color: #f1f8f1 !important;
+        }
+        
+        .payment-row {
+            background-color: #fff5f5 !important;
+        }
+        
+        .total-row {
+            background-color: #e8e8e8 !important;
+            font-weight: bold;
+            border-top: 2px solid #000 !important;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            background: #f9f9f9;
+            border: 1px dashed #ccc;
+            color: #666;
+        }
+        
+        .footer {
+            margin-top: 25px;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+            text-align: center;
+            font-size: 9px;
+            color: #777;
+        }
+        
+        .footer p {
+            margin: 2px 0;
+        }
+        
+        /* Print optimizations */
+        @media print {
+            body {
+                margin: 10px;
+            }
+            
+            .header {
+                page-break-after: avoid;
+            }
+            
+            table {
+                page-break-inside: auto;
+            }
+            
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+            
+            thead {
+                display: table-header-group;
+            }
+            
+            tfoot {
+                display: table-footer-group;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>TENANT STATEMENT</h1>
+        <div class="period">{{ period_name }}</div>
+    </div>
+
+    <!-- Tenant Information -->
+    <div class="info-section">
+        <div class="info-row">
+            <span class="info-label">Tenant Name:</span>
+            <span>{{ tenant.company_name }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Contact:</span>
+            <span>{{ tenant.phone_number }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Statement Date:</span>
+            <span>{{ generated_date|date:"d M Y" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Generated By:</span>
+            <span>{{ generated_by }}</span>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="summary-section">
+        <div class="summary-title">Financial Summary</div>
+        
+        <table style="width: 100%; border: none; margin-top: 5px;">
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 6px; background: white; width: 25%;">
+                    <div style="font-size: 10px; color: #666; margin-bottom: 3px;">Opening Balance</div>
+                    <div style="font-weight: bold; font-size: 11px; color: #000;" class="rupee">₹ {{ opening_balance|floatformat:2 }}</div>
+                </td>
+                <td style="border: 1px solid #ddd; padding: 6px; background: white; width: 25%;">
+                    <div style="font-size: 10px; color: #666; margin-bottom: 3px;">Total Bills ({{ bills_count }})</div>
+                    <div style="font-weight: bold; font-size: 11px; color: #000;" class="rupee">₹ {{ bills_total|floatformat:2 }}</div>
+                </td>
+                <td style="border: 1px solid #ddd; padding: 6px; background: white; width: 25%;">
+                    <div style="font-size: 10px; color: #666; margin-bottom: 3px;">Total Receipts</div>
+                    <div style="font-weight: bold; font-size: 11px; color: #000;" class="rupee">₹ {{ total_receipts|floatformat:2 }}</div>
+                </td>
+                <td style="border: 1px solid #ddd; padding: 6px; background: white; width: 25%;">
+                    <div style="font-size: 10px; color: #666; margin-bottom: 3px;">Total Payments</div>
+                    <div style="font-weight: bold; font-size: 11px; color: #000;" class="rupee">₹ {{ total_payments|floatformat:2 }}</div>
+                </td>
+            </tr>
+        </table>
+        
+        <div class="balance-box">
+            <div class="balance-label">OUTSTANDING BALANCE</div>
+            <div class="balance-amount rupee {% if outstanding_balance > 0 %}balance-positive{% else %}balance-negative{% endif %}">
+                ₹ {{ outstanding_balance|floatformat:2 }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details -->
+    <div class="section-title">Transaction Details</div>
+    
+    {% if has_transactions %}
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 12%;">Date</th>
+                <th style="width: 10%;">Type</th>
+                <th style="width: 15%;">Reference</th>
+                <th style="width: 33%;">Description</th>
+                <th style="width: 12%;" class="text-right">Debit (<span class="rupee">₹</span>)</th>
+                <th style="width: 12%;" class="text-right">Credit (<span class="rupee">₹</span>)</th>
+                <th style="width: 12%;" class="text-right">Balance (<span class="rupee">₹</span>)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr class="{% if transaction.is_opening %}opening-row{% elif transaction.type == 'Bill' %}bill-row{% elif transaction.type == 'Receipt' %}receipt-row{% elif transaction.type == 'Payment' %}payment-row{% endif %}">
+                <td>{{ transaction.date|date:"d M Y" }}</td>
+                <td>{{ transaction.type }}</td>
+                <td>{{ transaction.reference }}</td>
+                <td>{{ transaction.description }}</td>
+                <td class="text-right">
+                    {% if transaction.debit > 0 %}
+                        {{ transaction.debit|floatformat:2 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if transaction.credit > 0 %}
+                        {{ transaction.credit|floatformat:2 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="text-right {% if transaction.balance > 0 %}balance-positive{% elif transaction.balance < 0 %}balance-negative{% endif %}">
+                    {% if transaction.balance is not None %}
+                        {{ transaction.balance|floatformat:2 }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            
+            <!-- Total Row -->
+            <tr class="total-row">
+                <td colspan="4" class="text-right"><strong>TOTAL</strong></td>
+                <td class="text-right rupee"><strong>₹ {{ bills_total|floatformat:2 }}</strong></td>
+                <td class="text-right rupee"><strong>₹ {{ total_receipts|floatformat:2 }}</strong></td>
+                <td class="text-right rupee {% if outstanding_balance > 0 %}balance-positive{% else %}balance-negative{% endif %}">
+                    <strong>₹ {{ outstanding_balance|floatformat:2 }}</strong>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">
+        No transactions found for the selected period.
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>This is a computer-generated statement and does not require a signature.</p>
+        <p>For any queries, please contact the billing department.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Draft Bills</h1>
+
+{% if bills %}
+<table border="1" cellspacing="0" cellpadding="5">
+  <tr>
+    <th>Tenant</th>
+    <th>Bill No</th>
+    <th>Created</th>
+    <th>Total</th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+  {% for bill in bills %}
+  <tr>
+    <td>{{ bill.tenant.name }}</td>
+    <td>{{ bill.id }}</td>
+    <td>{{ bill.created_at|date:"d M Y" }}</td>
+    <td>{{ bill.total_amount }}</td>
+    <td>{{ bill.get_status_display }}</td>
+    <td>
+      <a href="{% url 'adminapp:view_bill' bill.id %}">View</a> |
+      <a href="{% url 'adminapp:bill_pdf' bill.id %}" target="_blank">PDF</a>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No draft bills found.</p>
+{% endif %}
+
+</body>
+</html>

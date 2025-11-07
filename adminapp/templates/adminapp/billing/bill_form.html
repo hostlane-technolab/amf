@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Bill</title>
+</head>
+<body>
+    <h1>Create Bill</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">💾 Save</button>
+    </form>
+
+    <p><a href="{% url 'adminapp:bill_list' %}">← Back to List</a></p>
+</body>
+</html>

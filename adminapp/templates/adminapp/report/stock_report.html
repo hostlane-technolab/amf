@@ -1,0 +1,1582 @@
+
+{% extends 'admin_base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Load required libraries from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    /* Enhanced Filter Card Styles */
+    .filter-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 30px;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        padding: 24px 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 30px 30px;
+        animation: float 25s infinite linear;
+    }
+
+    @keyframes float {
+        0% { transform: rotate(0deg) translate(0, 0); }
+        100% { transform: rotate(360deg) translate(0, 0); }
+    }
+
+    .card-header h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+    }
+
+    .card-body {
+        padding: 32px;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .filter-section {
+        background: linear-gradient(145deg, #f8fafc, #f1f5f9);
+        border-radius: 16px;
+        padding: 24px;
+        border: 2px solid transparent;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #4f46e5, #7c3aed, #ec4899);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .filter-section:hover {
+        border-color: rgba(79, 70, 229, 0.2);
+        box-shadow: 0 12px 30px rgba(79, 70, 229, 0.1);
+        transform: translateY(-3px);
+        background: linear-gradient(145deg, #ffffff, #f8fafc);
+    }
+
+    .filter-section:hover::before {
+        opacity: 1;
+    }
+
+    .filter-section > label:first-child {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 16px;
+        font-size: 1.05rem;
+    }
+
+    .selected-count {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        min-width: 24px;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        0% { opacity: 0; transform: scale(0.8) translateX(10px); }
+        100% { opacity: 1; transform: scale(1) translateX(0); }
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        margin-bottom: 16px;
+        background: white;
+        font-weight: 500;
+    }
+
+    .search-box:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .search-box::placeholder {
+        color: #94a3b8;
+    }
+
+    .options-container {
+        max-height: 180px;
+        overflow-y: auto;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+    }
+
+    .options-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .options-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }
+
+    .options-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-radius: 3px;
+    }
+
+    .option-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .option-item:last-child {
+        border-bottom: none;
+    }
+
+    .option-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        transition: width 0.3s ease;
+    }
+
+    .option-item:hover {
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08));
+        padding-left: 20px;
+    }
+
+    .option-item:hover::before {
+        width: 4px;
+    }
+
+    .option-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #4f46e5;
+        cursor: pointer;
+    }
+
+    .option-item label {
+        cursor: pointer;
+        flex: 1;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .option-item:hover label {
+        color: #4f46e5;
+        font-weight: 600;
+    }
+
+    .filter-section select:not([multiple]),
+    .filter-section input[type="text"] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        background: white;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .filter-section select:not([multiple]):focus,
+    .filter-section input[type="text"]:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    .checkbox-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .checkbox-item:hover {
+        border-color: #4f46e5;
+        background: rgba(79, 70, 229, 0.05);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #4f46e5;
+        cursor: pointer;
+    }
+
+    .checkbox-item label {
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .checkbox-item:hover label {
+        color: #4f46e5;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 16px 24px;
+        border: none;
+        border-radius: 16px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        flex: 1;
+        min-width: 140px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .filter-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .filter-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-btn:hover::before {
+        left: 100%;
+    }
+
+    .filter-btn.primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+    }
+
+    .filter-btn.secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+    }
+
+    .filter-btn.export {
+        background: linear-gradient(135deg, #059669, #0891b2);
+        color: white;
+    }
+
+    /* Page Header */
+    .outer {
+        min-height: 100vh;
+        padding: 20px;
+        color: #1e293b;
+        margin-top: 5rem;
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+        border-radius: 20px;
+        padding: 24px 32px;
+        margin-bottom: 40px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        border: 2px solid #f1f3f7;
+    }
+
+    .icon-wrapper {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+        margin-right: 1.5rem;
+    }
+
+    .card-title {
+        font-size: 26px;
+        color: #2c3e50;
+        letter-spacing: -0.5px;
+        margin-bottom: 0;
+    }
+
+    .text-muted {
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    /* Date Section Styling */
+    .date-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .date-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .date-group label {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1.05rem;
+    }
+
+    .date-group select,
+    .date-group input[type="date"] {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        background: white;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .date-group select:focus,
+    .date-group input[type="date"]:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Report Display Styles */
+    .report-header {
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 20px;
+        border: 2px solid #007bff;
+        background: white;
+        border-radius: 8px;
+    }
+
+    .report-title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+
+    .report-subtitle {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #666;
+    }
+
+    .company-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border: 1px solid #28a745;
+        margin-bottom: 10px;
+        border-radius: 4px;
+    }
+
+    .company-name {
+        font-weight: bold;
+        font-size: 18px;
+        text-align: center;
+        margin-bottom: 5px;
+        color: #155724;
+    }
+
+    .company-location {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 3px;
+        color: #155724;
+    }
+
+    .date-range {
+        font-size: 16px;
+        margin-top: 10px;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .section-header {
+        background: #007bff;
+        color: white;
+        padding: 15px;
+        margin: 25px 0 10px 0;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+        border-radius: 4px;
+    }
+
+    .section-title {
+        text-transform: uppercase;
+    }
+
+    .section-summary {
+        background: #fff3cd;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ffc107;
+        border-radius: 4px;
+        font-size: 14px;
+        text-align: center;
+        font-weight: bold;
+        color: #856404;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        border: 1px solid #007bff;
+        background-color: white;
+        font-size: 12px;
+    }
+
+    .data-table th {
+        background: #007bff;
+        color: white;
+        border: 1px solid #004085;
+        padding: 10px 8px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 11px;
+    }
+
+    .data-table td {
+        border: 1px solid #dee2e6;
+        padding: 8px 6px;
+        text-align: left;
+        vertical-align: middle;
+        font-size: 11px;
+    }
+
+    .data-table .number-col {
+        text-align: right;
+        padding-right: 10px;
+        font-weight: bold;
+    }
+
+    .data-table .center-col {
+        text-align: center;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .section-total-row {
+        background: #d4edda !important;
+        font-weight: bold;
+    }
+
+    .section-total-row td {
+        border-top: 2px solid #28a745;
+        border-bottom: 2px solid #28a745;
+        font-weight: bold;
+        padding: 12px 8px;
+        color: #155724;
+    }
+
+    .stock-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        color: white;
+        font-size: 10px;
+        text-align: center;
+    }
+
+    .stock-status.in-stock {
+        background: #28a745;
+    }
+
+    .stock-status.low-stock {
+        background: #ffc107;
+        color: #212529;
+    }
+
+    .stock-status.out-of-stock {
+        background: #dc3545;
+    }
+
+    .grand-total-section {
+        margin-top: 30px;
+        border: 2px solid #dc3545;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .grand-total-header {
+        background: #dc3545;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .grand-total-content {
+        background: white;
+    }
+
+    .grand-total-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-bottom: 1px solid #dc3545;
+    }
+
+    .grand-total-row:last-child {
+        border-bottom: none;
+    }
+
+    .grand-total-label {
+        background: #f8d7da;
+        padding: 12px 20px;
+        font-weight: bold;
+        color: #721c24;
+        border-right: 1px solid #dc3545;
+    }
+
+    .grand-total-value {
+        padding: 12px 20px;
+        text-align: right;
+        font-weight: bold;
+        font-size: 16px;
+        color: #212529;
+    }
+
+    .no-data {
+        text-align: center;
+        padding: 40px 20px;
+        font-style: italic;
+        color: #6c757d;
+        font-size: 16px;
+        border: 2px dashed #dee2e6;
+        margin: 25px 0;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 12px 20px;
+        border: 1px solid #007bff;
+        background: white;
+        font-size: 14px;
+        font-weight: bold;
+        text-decoration: none;
+        cursor: pointer;
+        border-radius: 4px;
+        min-width: 150px;
+        text-align: center;
+        transition: background-color 0.3s;
+        color: #007bff;
+    }
+
+    .action-btn:hover {
+        background: #f8f9fa;
+    }
+
+    .print-btn {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    .print-btn:hover {
+        background: #218838;
+    }
+
+    .pdf-btn {
+        background: #dc3545;
+        color: white;
+        border-color: #dc3545;
+    }
+
+    .pdf-btn:hover {
+        background: #c82333;
+    }
+
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        font-size: 14px;
+        z-index: 1000;
+        max-width: 300px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .notification.success {
+        background: #28a745;
+    }
+
+    .notification.error {
+        background: #dc3545;
+    }
+
+    /* Print styles */
+    @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+
+        body {
+            font-size: 14px;
+            background: white;
+            padding: 0;
+        }
+
+        .filter-card,
+        .action-buttons,
+        .notification,
+        .page-header {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        .report-header {
+            margin-bottom: 15mm;
+            padding: 10mm;
+        }
+
+        .section-header {
+            page-break-after: avoid;
+        }
+
+        .data-table {
+            page-break-inside: avoid;
+        }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .filter-buttons {
+            flex-direction: column;
+        }
+
+        .filter-btn {
+            min-width: auto;
+        }
+
+        .checkbox-group {
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+
+    /* Stock Section Styling */
+    .stock-section {
+        margin-bottom: 40px;
+        page-break-inside: avoid;
+    }
+
+    .section-number {
+        font-size: 18px;
+        font-weight: bold;
+        color: #007bff;
+        margin-bottom: 10px;
+        padding: 8px 12px;
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+    }
+
+    .section-header-row {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+    }
+
+    .section-info-box {
+        text-align: center;
+    }
+
+    .section-info-label {
+        font-size: 11px;
+        font-weight: bold;
+        color: #6c757d;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .section-info-value {
+        font-size: 14px;
+        font-weight: bold;
+        color: #212529;
+    }
+</style>
+
+<!-- Page Header -->
+<div class="outer">
+    <div class="container">
+        <div class="page-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div style="display: flex; align-items: center;">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title">Comprehensive Stock Report</h3>
+                            <p class="text-muted">Detailed inventory breakdown by {{ section_by|title }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'adminapp:stock_report_amt' %}" class="filter-btn export" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 14px 24px; font-size: 1rem;">
+                        <i class="fas fa-dollar-sign"></i>
+                        Stock Report Amount
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Filter Form -->
+        <div class="filter-card">
+            <div class="card-header">
+                <h3>🔍 Advanced Filters</h3>
+            </div>
+
+            <div class="card-body">
+                <form method="GET" id="filterForm">
+                    <div class="filters-grid">
+
+
+                        <!-- Items -->
+                        <div class="filter-section">
+                            <label>Items: <span id="itemsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search items..." id="itemsSearch">
+                            <div class="options-container" id="itemsContainer">
+                                {% for item in items %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="items" value="{{ item.id }}" id="item_{{ item.id }}" {% if item.id|stringformat:"s" in selected_items %}checked{% endif %}>
+                                        <label for="item_{{ item.id }}">{{ item.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Item Sub (formerly Item Quality) -->
+                        <div class="filter-section">
+                            <label>Item Sub: <span id="itemSubCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search item sub..." id="itemSubSearch">
+                            <div class="options-container" id="itemSubContainer">
+                                {% for quality in item_qualities %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="item_qualities" value="{{ quality.id }}" id="item_quality_{{ quality.id }}" {% if quality.id|stringformat:"s" in selected_item_qualities %}checked{% endif %}>
+                                        <label for="item_quality_{{ quality.id }}">{{ quality.quality }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if units %}
+                        <!-- Units -->
+                        <div class="filter-section">
+                            <label>Units: <span id="unitsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search units..." id="unitsSearch">
+                            <div class="options-container" id="unitsContainer">
+                                {% for unit in units %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="units" value="{{ unit.id }}" id="unit_{{ unit.id }}" {% if unit.id|stringformat:"s" in selected_units %}checked{% endif %}>
+                                        <label for="unit_{{ unit.id }}">{{ unit.description }}{% if unit.unit_code %} ({{ unit.unit_code }}){% endif %}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if glazes %}
+                        <!-- Glazes -->
+                        <div class="filter-section">
+                            <label>Glazes: <span id="glazesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search glazes..." id="glazesSearch">
+                            <div class="options-container" id="glazesContainer">
+                                {% for glaze in glazes %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="glazes" value="{{ glaze.id }}" id="glaze_{{ glaze.id }}" {% if glaze.id|stringformat:"s" in selected_glazes %}checked{% endif %}>
+                                        <label for="glaze_{{ glaze.id }}">{{ glaze.percentage }}%</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Categories -->
+                        <div class="filter-section">
+                            <label>Categories: <span id="categoriesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search categories..." id="categoriesSearch">
+                            <div class="options-container" id="categoriesContainer">
+                                {% for category in categories %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="categories" value="{{ category.id }}" id="category_{{ category.id }}" {% if category.id|stringformat:"s" in selected_categories %}checked{% endif %}>
+                                        <label for="category_{{ category.id }}">{{ category.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Brands -->
+                        <div class="filter-section">
+                            <label>Brands: <span id="brandsCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search brands..." id="brandsSearch">
+                            <div class="options-container" id="brandsContainer">
+                                {% for brand in brands %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="brands" value="{{ brand.id }}" id="brand_{{ brand.id }}" {% if brand.id|stringformat:"s" in selected_brands %}checked{% endif %}>
+                                        <label for="brand_{{ brand.id }}">{{ brand.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Peeling -->
+                        <div class="filter-section">
+                            <label>Peeling Types: <span id="peelingTypesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search peeling types..." id="peelingTypesSearch">
+                            <div class="options-container" id="peelingTypesContainer">
+                                {% for peeling_type in peeling_types %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="peeling_types" value="{{ peeling_type.id }}" id="peeling_type_{{ peeling_type.id }}" {% if peeling_type.id|stringformat:"s" in selected_peeling_types %}checked{% endif %}>
+                                        <label for="peeling_type_{{ peeling_type.id }}">{{ peeling_type.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Freezing Categories -->
+                        <div class="filter-section">
+                            <label>Freezing Categories: <span id="freezingCategoriesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search freezing categories..." id="freezingCategoriesSearch">
+                            <div class="options-container" id="freezingCategoriesContainer">
+                                {% for freezing_cat in freezing_categories %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="freezing_categories" value="{{ freezing_cat.id }}" id="freezing_cat_{{ freezing_cat.id }}" {% if freezing_cat.id|stringformat:"s" in selected_freezing_categories %}checked{% endif %}>
+                                        <label for="freezing_cat_{{ freezing_cat.id }}">{{ freezing_cat.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Processing Centers -->
+                        <div class="filter-section">
+                            <label>Processing Centers: <span id="processingCentersCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search processing centers..." id="processingCentersSearch">
+                            <div class="options-container" id="processingCentersContainer">
+                                {% for pc in processing_centers %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="processing_centers" value="{{ pc.id }}" id="pc_{{ pc.id }}" {% if pc.id|stringformat:"s" in selected_processing_centers %}checked{% endif %}>
+                                        <label for="pc_{{ pc.id }}">{{ pc.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Stores -->
+                        <div class="filter-section">
+                            <label>Stores: <span id="storesCount" class="selected-count" style="display: none;">0</span></label>
+                            <input type="text" class="search-box" placeholder="Search stores..." id="storesSearch">
+                            <div class="options-container" id="storesContainer">
+                                {% for store in stores %}
+                                    <div class="option-item">
+                                        <input type="checkbox" name="stores" value="{{ store.id }}" id="store_{{ store.id }}" {% if store.id|stringformat:"s" in selected_stores %}checked{% endif %}>
+                                        <label for="store_{{ store.id }}">{{ store.name }}</label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+
+                        <!-- Voucher Search -->
+                        <div class="filter-section">
+                            <label>Voucher Search:</label>
+                            <input type="text" name="voucher_search" id="voucher_search" value="{{ voucher_search }}" placeholder="Search voucher number...">
+                        </div>
+                    </div>
+
+                    <!-- Date Section -->
+                    <div class="date-section">
+                        <div class="date-group">
+                            <label>Quick Date:</label>
+                            <select name="date_filter" id="date_filter">
+                                <option value="" {% if not date_filter %}selected{% endif %}>All Time</option>
+                                <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                                <option value="quarter" {% if date_filter == 'quarter' %}selected{% endif %}>This Quarter</option>
+                                <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                                <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                            </select>
+                        </div>
+
+                        <div class="date-group" id="startDateGroup" style="display: none;">
+                            <label>Start Date:</label>
+                            <input type="date" name="start_date" id="start_date" value="{{ start_date }}">
+                        </div>
+
+                        <div class="date-group" id="endDateGroup" style="display: none;">
+                            <label>End Date:</label>
+                            <input type="date" name="end_date" id="end_date" value="{{ end_date }}">
+                        </div>
+                    </div>
+
+                    <div class="filter-buttons">
+                        <button type="submit" class="filter-btn primary">Generate Report</button>
+                        <button type="button" onclick="resetForm()" class="filter-btn secondary">Reset Filters</button>
+                        <button type="button" onclick="exportToCSV()" class="filter-btn export">Export CSV</button>
+                        <button type="button" onclick="exportToExcel()" class="filter-btn export">Export Excel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Report Header -->
+        <div class="report-header">
+            <div class="report-title">COMPREHENSIVE STOCK REPORT</div>
+            <div class="report-subtitle">Detailed Inventory Breakdown by {{ section_by|title }}</div>
+            
+            <div class="company-info">
+                <div class="company-name">BAHRAYA EXPORTS </div>
+                <div class="company-location">VANDANAM, ALAPPUZHA</div>
+                <div class="company-location">KERALA, INDIA</div>
+            </div>
+            
+            <div class="date-range">
+                Generated: {{ "now"|date:"d-M-Y H:i" }}
+                | Sectioned by: {{ section_by|upper }}
+                {% if source_type != 'all' %}| Source: {{ source_type|upper }}{% endif %}
+            </div>
+        </div>
+
+        <!-- Sectioned Stock Data -->
+        <div id="report-content">
+            {% for section_key, section_data in sectioned_data.items %}
+            <div class="stock-section">
+                <!-- Section Number and Header Info -->
+                <div class="section-number">No. {{ forloop.counter }}</div>
+                
+                <div class="section-header-row">
+                    <div class="section-info-box">
+                        <div class="section-info-label">Item Sub</div>
+                        <div class="section-info-value">{{ section_data.item_quality }}</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Unit</div>
+                        <div class="section-info-value">{{ section_data.unit_code }}</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Glaze</div>
+                        <div class="section-info-value">{{ section_data.glaze }}%</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Category</div>
+                        <div class="section-info-value">{{ section_data.category }}</div>
+                    </div>
+                    <div class="section-info-box">
+                        <div class="section-info-label">Brand</div>
+                        <div class="section-info-value">{{ section_data.brand }}</div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Grade</th>
+                            <th>Opening</th>
+                            <th>Freezing</th>
+                            <th>Shipment</th>
+                            <th>Transfer IN</th>
+                            <th>Transfer OUT</th>
+                            <th colspan="2" style="text-align: center;">Adjustment</th>
+                            <th>Total KG</th>
+                            <th>Total Case</th>
+                        </tr>
+                        <tr>
+                            <th colspan="7"></th>
+                            <th>(+)</th>
+                            <th>(-)</th>
+                            <th colspan="2"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in section_data.items %}
+                        <tr>
+                            <td class="center-col">{{ forloop.counter }}</td>
+                            <td class="center-col">{{ item.grade }}</td>
+                            <td class="number-col">{{ item.opening|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.freezing|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.shipment|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.transfer_in|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.transfer_out|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.adjustment_plus|floatformat:2 }}</td>
+                            <td class="number-col">{{ item.adjustment_minus|floatformat:2 }}</td>
+                            <td class="number-col"><strong>{{ item.total_slab|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ item.total_case|floatformat:2 }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Section Total Row -->
+                        <tr class="section-total-row">
+                            <td colspan="2"><strong>Total</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.opening|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.freezing|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.shipment|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.transfer_in|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.transfer_out|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.adjustment_plus|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.adjustment_minus|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.total_slab|floatformat:2 }}</strong></td>
+                            <td class="number-col"><strong>{{ section_data.totals.total_case|floatformat:2 }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+            {% empty %}
+            <div class="no-data">
+                <h3>No Stock Data Available</h3>
+                <p>No stock records found matching your filter criteria.</p>
+            </div>
+            {% endfor %}
+
+            <!-- Grand Total -->
+            {% if sectioned_data %}
+            <div class="grand-total-section">
+                <div class="grand-total-header">GRAND TOTAL</div>
+                <div class="grand-total-content">
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Sections:</div>
+                        <div class="grand-total-value">{{ grand_totals.section_count }}</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total KG:</div>
+                        <div class="grand-total-value">{{ grand_totals.total_slab|floatformat:2 }}</div>
+                    </div>
+                    <div class="grand-total-row">
+                        <div class="grand-total-label">Total Case:</div>
+                        <div class="grand-total-value">{{ grand_totals.total_case|floatformat:2 }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
+                Generate PDF
+            </button>
+            <button type="button" onclick="exportToCSV()" class="action-btn">
+                Export CSV
+            </button>
+            <button type="button" onclick="exportToExcel()" class="action-btn">
+                Export Excel
+            </button>
+            <button type="button" onclick="showReportSummary()" class="action-btn">
+                Report Summary
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search and counter functionality
+function setupSearch(searchId, containerId, countId) {
+    const searchInput = document.getElementById(searchId);
+    const container = document.getElementById(containerId);
+    const countSpan = document.getElementById(countId);
+    
+    if (!searchInput || !container || !countSpan) return;
+    
+    const options = container.querySelectorAll('.option-item');
+
+    // Search functionality
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        options.forEach(option => {
+            const label = option.querySelector('label').textContent.toLowerCase();
+            if (label.includes(searchTerm)) {
+                option.style.display = 'flex';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+    });
+
+    // Count selected items
+    function updateCount() {
+        const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
+        const count = checkedBoxes.length;
+        if (count > 0) {
+            countSpan.textContent = count;
+            countSpan.style.display = 'inline-block';
+        } else {
+            countSpan.style.display = 'none';
+        }
+    }
+
+    // Add event listeners to checkboxes
+    options.forEach(option => {
+        const checkbox = option.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.addEventListener('change', updateCount);
+        }
+    });
+
+    // Click anywhere on option item to toggle checkbox
+    options.forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox') {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                    checkbox.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    });
+
+    // Initial count update
+    updateCount();
+}
+
+// Setup all functionality when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup search for all filter sections
+    setupSearch('itemsSearch', 'itemsContainer', 'itemsCount');
+    setupSearch('itemSubSearch', 'itemSubContainer', 'itemSubCount');
+    setupSearch('gradesSearch', 'gradesContainer', 'gradesCount');
+    setupSearch('categoriesSearch', 'categoriesContainer', 'categoriesCount');
+    setupSearch('storesSearch', 'storesContainer', 'storesCount');
+    setupSearch('brandsSearch', 'brandsContainer', 'brandsCount');
+    setupSearch('peelingTypesSearch', 'peelingTypesContainer', 'peelingTypesCount');
+    setupSearch('freezingCategoriesSearch', 'freezingCategoriesContainer', 'freezingCategoriesCount');
+    setupSearch('processingCentersSearch', 'processingCentersContainer', 'processingCentersCount');
+    
+    // Setup conditional sections
+    if (document.getElementById('unitsSearch')) {
+        setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
+    }
+    if (document.getElementById('glazesSearch')) {
+        setupSearch('glazesSearch', 'glazesContainer', 'glazesCount');
+    }
+
+    // Date filter logic
+    const dateFilter = document.getElementById('date_filter');
+    const startDateGroup = document.getElementById('startDateGroup');
+    const endDateGroup = document.getElementById('endDateGroup');
+
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                startDateGroup.style.display = 'flex';
+                endDateGroup.style.display = 'flex';
+            } else {
+                startDateGroup.style.display = 'none';
+                endDateGroup.style.display = 'none';
+            }
+        });
+
+        // Initial state
+        if (dateFilter.value === 'custom') {
+            startDateGroup.style.display = 'flex';
+            endDateGroup.style.display = 'flex';
+        }
+    }
+});
+
+// Auto-submit form when section_by changes
+document.getElementById('section_by').addEventListener('change', function() {
+    showNotification('Updating report...', 'success');
+    setTimeout(() => {
+        document.getElementById('filterForm').submit();
+    }, 500);
+});
+
+// Reset form function
+function resetForm() {
+    const form = document.getElementById('filterForm');
+    if (form) {
+        form.reset();
+        
+        // Reset to default values
+        document.getElementById('section_by').value = 'category';
+        document.getElementById('entry_type').value = 'all';
+        
+        // Uncheck all checkboxes
+        const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Reset counters
+        document.querySelectorAll('.selected-count').forEach(counter => {
+            counter.style.display = 'none';
+            counter.textContent = '0';
+        });
+        
+        setTimeout(() => {
+            window.location.href = window.location.pathname;
+        }, 100);
+    }
+}
+
+// Generate PDF - Opens print view in new window
+function generatePDF() {
+    const currentParams = window.location.search;
+    const printUrl = '{% url "adminapp:stock_report_print" %}' + currentParams;
+    const printWindow = window.open(printUrl, '_blank');
+    
+    if (!printWindow) {
+        showNotification('Please allow popups to generate PDF', 'error');
+    }
+}
+
+// CSV Export function
+function exportToCSV() {
+    try {
+        let csvContent = '\uFEFF';
+        const tables = document.querySelectorAll('.data-table');
+        
+        if (tables.length === 0) {
+            showNotification('No data to export', 'error');
+            return;
+        }
+
+        const reportTitle = document.querySelector('.report-title');
+        const companyName = document.querySelector('.company-name');
+        const dateRange = document.querySelector('.date-range');
+        
+        if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
+        if (companyName) csvContent += companyName.textContent.trim() + '\n';
+        if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
+
+        tables.forEach((table, index) => {
+            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
+            if (sectionHeader) {
+                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+            }
+
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csvContent += headers.join(',') + '\n';
+
+            table.querySelectorAll('tbody tr:not(.section-total-row)').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    let cellText = td.textContent.trim().replace(/"/g, '""');
+                    if (td.classList.contains('number-col')) {
+                        cellText = cellText.replace(/[$₹,]/g, '');
+                    }
+                    cells.push('"' + cellText + '"');
+                });
+                if (cells.length > 0) {
+                    csvContent += cells.join(',') + '\n';
+                }
+            });
+        });
+
+        const grandTotalSection = document.querySelector('.grand-total-section');
+        if (grandTotalSection) {
+            csvContent += '\n\nGRAND TOTALS\n';
+            grandTotalSection.querySelectorAll('.grand-total-row').forEach(row => {
+                const label = row.querySelector('.grand-total-label');
+                const value = row.querySelector('.grand-total-value');
+                if (label && value) {
+                    csvContent += `"${label.textContent.trim()}","${value.textContent.trim()}"\n`;
+                }
+            });
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const now = new Date().toISOString().split('T')[0];
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Stock_Report_${sectionBy}_${now}.csv`;
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('CSV exported successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('CSV Error:', error);
+        showNotification('CSV export failed: ' + error.message, 'error');
+    }
+}
+
+// Excel Export function
+function exportToExcel() {
+    try {
+        let csvContent = '\uFEFF';
+        const tables = document.querySelectorAll('.data-table');
+        
+        if (tables.length === 0) {
+            showNotification('No data to export', 'error');
+            return;
+        }
+
+        const reportTitle = document.querySelector('.report-title');
+        const companyName = document.querySelector('.company-name');
+        const dateRange = document.querySelector('.date-range');
+        
+        if (reportTitle) csvContent += reportTitle.textContent.trim() + '\n';
+        if (companyName) csvContent += companyName.textContent.trim() + '\n';
+        if (dateRange) csvContent += dateRange.textContent.trim() + '\n\n';
+
+        tables.forEach((table, index) => {
+            const sectionHeader = table.parentElement.querySelector('.section-header .section-title');
+            if (sectionHeader) {
+                csvContent += (index > 0 ? '\n\n' : '') + sectionHeader.textContent.trim() + '\n';
+            }
+
+            const headers = [];
+            table.querySelectorAll('thead th').forEach(th => {
+                headers.push('"' + th.textContent.trim().replace(/"/g, '""') + '"');
+            });
+            csvContent += headers.join(',') + '\n';
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = [];
+                row.querySelectorAll('td').forEach(td => {
+                    let cellText = td.textContent.trim().replace(/"/g, '""');
+                    if (td.classList.contains('number-col')) {
+                        cellText = cellText.replace(/[$₹,]/g, '');
+                    }
+                    cells.push('"' + cellText + '"');
+                });
+                if (cells.length > 0) {
+                    csvContent += cells.join(',') + '\n';
+                }
+            });
+        });
+
+        const grandTotalSection = document.querySelector('.grand-total-section');
+        if (grandTotalSection) {
+            csvContent += '\n\nGRAND TOTALS\n';
+            grandTotalSection.querySelectorAll('.grand-total-row').forEach(row => {
+                const label = row.querySelector('.grand-total-label');
+                const value = row.querySelector('.grand-total-value');
+                if (label && value) {
+                    csvContent += `"${label.textContent.trim()}","${value.textContent.trim()}"\n`;
+                }
+            });
+        }
+
+        const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement('a');
+        const now = new Date().toISOString().split('T')[0];
+        const sectionBy = document.getElementById('section_by')?.value || 'category';
+        const filename = `Stock_Report_${sectionBy}_${now}.xls`;
+
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showNotification('Excel file exported successfully!', 'success');
+        }
+    } catch (error) {
+        console.error('Excel Error:', error);
+        showNotification('Excel export failed: ' + error.message, 'error');
+    }
+}
+
+// Show report summary
+function showReportSummary() {
+    const grandTotalSection = document.querySelector('.grand-total-section');
+    if (!grandTotalSection) {
+        showNotification('No summary data available', 'error');
+        return;
+    }
+    
+    let summary = 'STOCK REPORT SUMMARY\n\n';
+    grandTotalSection.querySelectorAll('.grand-total-row').forEach(row => {
+        const label = row.querySelector('.grand-total-label');
+        const value = row.querySelector('.grand-total-value');
+        if (label && value) {
+            summary += label.textContent.trim() + ': ' + value.textContent.trim() + '\n';
+        }
+    });
+    
+    alert(summary);
+}
+
+// Notification system
+function showNotification(message, type) {
+    document.querySelectorAll('.notification').forEach(notification => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    });
+
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Print event handlers
+window.addEventListener('beforeprint', function() {
+    document.querySelectorAll('.filter-card, .action-buttons, .page-header').forEach(el => {
+        if (el) el.style.display = 'none';
+    });
+});
+
+window.addEventListener('afterprint', function() {
+    document.querySelectorAll('.filter-card, .action-buttons, .page-header').forEach(el => {
+        if (el) el.style.display = '';
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Spot Agent Statement - {{ agent.name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .statement-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .agent-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .agent-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+        
+        .agent-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .period-info {
+            text-align: center;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .balance-summary {
+            margin-bottom: 30px;
+        }
+        
+        .balance-title {
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .balance-grid {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .balance-row {
+            display: table-row;
+        }
+        
+        .balance-cell {
+            display: table-cell;
+            width: 25%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        
+        .balance-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .balance-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .outstanding {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .credit {
+            background-color: #d1e7dd;
+            color: #0a3622;
+        }
+        
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .transaction-table th {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            border: 1px solid #0056b3;
+            font-size: 11px;
+        }
+        
+        .transaction-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            font-size: 10px;
+        }
+        
+        .transaction-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .text-warning {
+            color: #fd7e14;
+            font-weight: bold;
+        }
+        
+        .text-info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+        }
+        
+        .final-balance {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .signature-section {
+            margin-top: 40px;
+            display: table;
+            width: 100%;
+        }
+        
+        .signature-left, .signature-right {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding: 20px;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-top: 40px;
+            margin-bottom: 10px;
+            height: 1px;
+        }
+        
+        .signature-label {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="statement-title">SPOT AGENT ACCOUNT STATEMENT</div>
+        <div style="font-size: 10px; color: #999;">Generated on {{ generated_date|date:"F d, Y \a\t H:i A" }}</div>
+    </div>
+
+    <!-- Agent Information -->
+    <div class="agent-info">
+        <div class="agent-name">{{ agent.name }}</div>
+        <div class="agent-details">
+            {% if agent.mobile %}<strong>Mobile:</strong> {{ agent.mobile }}<br>{% endif %}
+            {% if agent.code %}<strong>Code:</strong> {{ agent.code }}<br>{% endif %}
+            <strong>Agent ID:</strong> {{ agent.id }}
+        </div>
+    </div>
+
+    <!-- Period Information -->
+    <div class="period-info">
+        Statement Period: {{ period_name }}
+    </div>
+
+    <!-- Balance Summary -->
+    <div class="balance-summary">
+        <div class="balance-title">Account Summary</div>
+        <div class="balance-grid">
+            <div class="balance-row">
+                <div class="balance-cell">
+                    <div class="balance-value text-info">{{ purchases_total|floatformat:2 }}</div>
+                    <div class="balance-label">Total Purchases</div>
+                </div>
+                <div class="balance-cell">
+                    <div class="balance-value text-success">{{ total_receipts|floatformat:2 }}</div>
+                    <div class="balance-label">Total Receipts from Agent</div>
+                </div>
+                <div class="balance-cell">
+                    <div class="balance-value text-danger">{{ total_payments|floatformat:2 }}</div>
+                    <div class="balance-label">Total Payments to Agent</div>
+                </div>
+                <div class="balance-cell {% if outstanding_balance > 0 %}outstanding{% elif outstanding_balance < 0 %}credit{% endif %}">
+                    <div class="balance-value">{{ outstanding_balance|floatformat:2 }}</div>
+                    <div class="balance-label">
+                        {% if outstanding_balance > 0 %}
+                            Outstanding Balance
+                        {% elif outstanding_balance < 0 %}
+                            Credit Balance
+                        {% else %}
+                            Balanced Account
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction History -->
+    {% if transactions %}
+    <div class="balance-title">Transaction History</div>
+    <table class="transaction-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Reference</th>
+                <th>Description</th>
+                <th class="text-right">Debit</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Running Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.date|date:"M d, Y" }}</td>
+                <td>
+                    {% if transaction.type == 'Purchase' %}
+                        <span class="text-info">Purchase</span>
+                    {% elif transaction.type == 'Receipt' %}
+                        <span class="text-success">Receipt</span>
+                    {% elif transaction.type == 'Payment' %}
+                        <span class="text-danger">Payment</span>
+                    {% endif %}
+                </td>
+                <td>{{ transaction.reference }}</td>
+                <td>{{ transaction.description|truncatechars:30 }}</td>
+                <td class="text-right">
+                    {% if transaction.debit > 0 %}
+                        <span class="text-danger">{{ transaction.debit|floatformat:2 }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if transaction.credit > 0 %}
+                        <span class="text-success">{{ transaction.credit|floatformat:2 }}</span>
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    <span class="{% if transaction.balance > 0 %}text-danger{% elif transaction.balance < 0 %}text-success{% else %}text-muted{% endif %}">
+                        {{ transaction.balance|floatformat:2 }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            
+            <!-- Final Balance Row -->
+            <tr class="final-balance">
+                <td colspan="6" class="text-center"><strong>FINAL OUTSTANDING BALANCE</strong></td>
+                <td class="text-right">
+                    <strong>{{ outstanding_balance|floatformat:2 }}</strong>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% else %}
+    <div class="text-center" style="padding: 40px; background-color: #f8f9fa; border-radius: 5px;">
+        <h4 class="text-muted">No transactions found for the selected period</h4>
+        <p class="text-muted">This agent has no purchases or voucher transactions in the specified date range.</p>
+    </div>
+    {% endif %}
+
+    <!-- Terms and Notes -->
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-top: 20px; margin-bottom: 20px;">
+        <h5 style="margin-bottom: 10px; color: #007bff;">Terms & Notes:</h5>
+        <ul style="margin-bottom: 0; font-size: 10px; color: #666;">
+            <li>All amounts are in Indian Rupees (₹)</li>
+            <li>Debit entries represent purchases made by the agent and payments made to the agent</li>
+            <li>Credit entries represent amounts received from the agent</li>
+            <li>Positive balance indicates amount due from agent</li>
+            <li>Negative balance indicates credit due to agent</li>
+            <li>Purchase transactions represent goods bought by the agent on our behalf</li>
+            <li>Please verify this statement and report any discrepancies within 7 days</li>
+        </ul>
+    </div>
+
+    <!-- Signature Section -->
+    <div class="signature-section">
+        <div class="signature-left">
+            <div class="signature-line"></div>
+            <div class="signature-label">Prepared By</div>
+        </div>
+        <div class="signature-right">
+            <div class="signature-line"></div>
+            <div class="signature-label">Agent Acknowledgment</div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p><strong>{{ company_name }}</strong></p>
+        <p>This is a computer-generated statement and does not require a physical signature for validity.</p>
+        <p>For queries, please contact the accounts department.</p>
+    </div>
+</body>
+</html>
