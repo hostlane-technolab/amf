@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         * {
@@ -16,10 +16,10 @@
         }
 
         body {
-            font-family: Arial, sans-serif;
-            font-size: 10px;
+            font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif;
+            font-size: 16px;
             line-height: 1.2;
-            background: white;
+            background: #f0f8ff;
             padding: 10px;
         }
 
@@ -32,28 +32,34 @@
             text-align: center;
             margin-bottom: 20px;
             padding: 15px;
-            background: #0066cc;
-            color: white;
+            background: linear-gradient(135deg, #a2ceff 0%, #add1f7 100%);
+            color: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .report-title {
-            font-size: 20px;
+            font-size: 26px;
             font-weight: bold;
             margin-bottom: 5px;
         }
 
         .section {
             margin-bottom: 15px;
-            border: 2px solid #0066cc;
+            border: 2px solid #add1f7;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
             page-break-inside: avoid;
         }
 
         .section-header {
-            background: #0066cc;
-            color: white;
+            background: linear-gradient(135deg, #9ccaff 0%, #add1f7 100%);
+            color: #000;
             padding: 8px;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 18px;
             text-align: center;
         }
 
@@ -71,23 +77,24 @@
         .grid-4 { grid-template-columns: repeat(4, 1fr); }
 
         .data-item {
-            border: 1px solid #0066cc;
-            padding: 5px;
+            border: 1px solid #a3cef1;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .data-label {
-            background: #0066cc;
-            color: white;
+            background: linear-gradient(135deg, #9ccaff 0%, #9ccaff 100%);
+            color: #000;
             padding: 4px;
             font-weight: bold;
-            font-size: 9px;
+            font-size: 14px;
             text-align: center;
         }
 
         .data-value {
             padding: 4px;
             text-align: center;
-            background: white;
+            background: #f0f8ff;
             font-weight: bold;
         }
 
@@ -95,12 +102,14 @@
             width: 100%;
             border-collapse: collapse;
             margin: 10px 0;
-            font-size: 9px;
+            font-size: 14px;
+            border-radius: 6px;
+            overflow: hidden;
         }
 
         table th {
-            background: #0066cc;
-            color: white;
+            background: linear-gradient(135deg, #9ccaff 0%, #add1f7 100%);
+            color: #000;
             padding: 6px 4px;
             text-align: center;
             font-weight: bold;
@@ -109,18 +118,20 @@
 
         table td {
             padding: 4px;
-            border: 1px solid #0066cc;
+            border: 1px solid #c5dff5;
             text-align: center;
+            background: white;
         }
 
         .text-left { text-align: left !important; }
         .text-right { text-align: right !important; }
-        .bg-yellow { background: #ffeb3b; }
-        .bg-light-blue { background: #e3f2fd; }
+        .bg-yellow { background: #fff9e6 !important; }
+        .bg-light-blue { background: #e3f2fd !important; }
 
         .cost-summary {
-            background: #fff9c4;
-            border: 2px solid #fbc02d;
+            background: #e6f3ff;
+            border: 2px solid #add1f7;
+            border-radius: 6px;
             padding: 10px;
             margin: 10px 0;
         }
@@ -129,13 +140,11 @@
             display: flex;
             justify-content: space-between;
             padding: 3px 0;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #c5dff5;
         }
 
         .cost-row:last-child {
             border-bottom: none;
-            font-weight: bold;
-            font-size: 11px;
         }
 
         .action-buttons {
@@ -148,35 +157,46 @@
         .btn {
             padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            transition: all 0.3s;
+            font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif;
         }
-
-        .btn-primary { background: #0066cc; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
+        
+        .btn-danger { 
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white; 
+        }
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
 
         @media print {
             .action-buttons { display: none; }
-            body { padding: 0; }
-            .section { page-break-inside: avoid; }
+            body { padding: 0; background: white; }
+            .section { 
+                page-break-inside: avoid;
+            }
         }
 
-        .profit { color: green; font-weight: bold; }
-        .loss { color: red; font-weight: bold; }
+        .profit { color: #04c414; font-weight: bold; }
+        .loss { color: #ff1900; font-weight: bold; }
         
         .grand-total {
-            background: #0066cc !important;
-            color: white !important;
+            background: linear-gradient(135deg, #add1f7 0%, #357abd 100%) !important;
+            color: #000 !important;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 17px;
         }
     </style>
 </head>
 <body>
     <div class="report-container">
         <div class="report-header">
-            <div class="report-title">PROFIT & LOSS ANALYSIS</div>
+            <div class="report-title">SPOT PURCHASE PROFIT & LOSS ANALYSIS</div>
             <div>Period: {{ start_date }} to {{ end_date }}</div>
         </div>
 
@@ -192,7 +212,7 @@
 
         {% if report_data %}
         {% for purchase in report_data %}
-        <div class="section">
+        <div class="section purchase-section" data-purchase-index="{{ forloop.counter0 }}">
             <div class="section-header">PURCHASE DATAS</div>
             
             <div class="section-content">
@@ -226,29 +246,29 @@
                     </div>
                     <div class="data-item">
                         <div class="data-label">PURCHASE AMOUNT</div>
-                        <div class="data-value">Rs/ {{ purchase.purchase_amount|floatformat:2 }}</div>
+                        <div class="data-value">Rs/ <span class="format-number">{{ purchase.purchase_amount|floatformat:2 }}</span></div>
                     </div>
                 </div>
 
                 <div class="data-grid grid-3">
                     <div class="data-item">
                         <div class="data-label">TOTAL PURCHASE EXPENSE</div>
-                        <div class="data-value">Rs/ {{ purchase.purchase_expense|floatformat:2 }}</div>
+                        <div class="data-value">Rs/ <span class="format-number">{{ purchase.purchase_expense|floatformat:2 }}</span></div>
                     </div>
                     <div class="data-item">
                         <div class="data-label">TOTAL COST</div>
-                        <div class="data-value bg-yellow">Rs/ {{ purchase.total_purchase_cost|floatformat:2 }}</div>
+                        <div class="data-value bg-yellow">Rs/ <span class="format-number">{{ purchase.total_purchase_cost|floatformat:2 }}</span></div>
                     </div>
                     <div class="data-item">
                         <div class="data-label">COST/KG</div>
-                        <div class="data-value bg-yellow">Rs/ {{ purchase.cost_per_kg|floatformat:2 }}</div>
+                        <div class="data-value bg-yellow">Rs/ <span class="format-number">{{ purchase.cost_per_kg|floatformat:2 }}</span></div>
                     </div>
                 </div>
 
                 <div class="data-grid grid-2" style="margin-top: 10px;">
                     <div class="data-item">
                         <div class="data-label">PURCHASE RATE/KG</div>
-                        <div class="data-value">Rs/ {{ purchase.purchase_rate_per_kg|floatformat:2 }}</div>
+                        <div class="data-value">Rs/ <span class="format-number">{{ purchase.purchase_rate_per_kg|floatformat:2 }}</span></div>
                     </div>
                     <div></div>
                 </div>
@@ -260,13 +280,13 @@
                     <div class="data-item">
                         <div class="data-label">PROFIT/LOSS PER KG</div>
                         <div class="data-value {% if purchase.profit_loss_per_kg > 0 %}profit{% elif purchase.profit_loss_per_kg < 0 %}loss{% endif %}">
-                            Rs/ {{ purchase.profit_loss_per_kg|floatformat:2 }}
+                            Rs/ <span class="format-number">{{ purchase.profit_loss_per_kg|floatformat:2 }}</span>
                         </div>
                     </div>
                     <div class="data-item">
                         <div class="data-label">TOTAL PROFIT/LOSS</div>
                         <div class="data-value {% if purchase.total_profit_loss > 0 %}profit{% elif purchase.total_profit_loss < 0 %}loss{% endif %}">
-                            Rs/ {{ purchase.total_profit_loss|floatformat:2 }}
+                            Rs/ <span class="format-number">{{ purchase.total_profit_loss|floatformat:2 }}</span>
                         </div>
                     </div>
                     <div class="data-item">
@@ -275,7 +295,7 @@
                     </div>
                     <div class="data-item">
                         <div class="data-label">PROCESSING OVERHEADS PER KG</div>
-                        <div class="data-value bg-yellow">Rs/ {{ purchase.processing_overhead_per_kg|floatformat:2 }}</div>
+                        <div class="data-value bg-yellow">Rs/ <span class="format-number">{{ purchase.processing_overhead_per_kg|floatformat:2 }}</span></div>
                     </div>
                 </div>
 
@@ -294,9 +314,9 @@
                             <tr>
                                 <td class="bg-yellow">{{ purchase.total_freezing_kg|floatformat:2 }}</td>
                                 <td class="bg-yellow">${{ purchase.total_freezing_usd|floatformat:2 }}</td>
-                                <td class="bg-yellow">Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</td>
-                                <td class="bg-yellow">Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</td>
-                                <td class="bg-yellow">Rs/ {{ purchase.income|floatformat:2 }}</td>
+                                <td class="bg-yellow">Rs/ <span class="format-number">{{ purchase.freezing_revenue|floatformat:2 }}</span></td>
+                                <td class="bg-yellow">Rs/ <span class="format-number">{{ purchase.total_all_overheads|floatformat:2 }}</span></td>
+                                <td class="bg-yellow">Rs/ <span class="format-number">{{ purchase.income|floatformat:2 }}</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -306,7 +326,7 @@
             {% if purchase.peeling_breakdown %}
             <div class="section-header">PEELING DATAS</div>
             <div class="section-content">
-                <table>
+                <table class="peeling-table">
                     <thead>
                         <tr>
                             <th>SHED NAMES</th>
@@ -323,13 +343,13 @@
                             <td>{{ peeling.rate|floatformat:0 }}</td>
                             <td>{{ peeling.item_type }}</td>
                             <td>{{ peeling.quantity|floatformat:2 }}</td>
-                            <td class="text-right">{{ peeling.amount|floatformat:2 }}</td>
+                            <td class="text-right"><span class="format-number">{{ peeling.amount|floatformat:2 }}</span></td>
                         </tr>
                         {% endfor %}
                         <tr class="grand-total">
                             <td colspan="3">GRAND TOTAL</td>
                             <td>{{ purchase.peeling_kg|floatformat:2 }}</td>
-                            <td class="text-right">Rs/ {{ purchase.peeling_expenses|floatformat:2 }}</td>
+                            <td class="text-right">Rs/ <span class="format-number">{{ purchase.peeling_expenses|floatformat:2 }}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -339,12 +359,11 @@
             {% if purchase.processing_details %}
             <div class="section-header">PROCESSING DETAILS</div>
             <div class="section-content">
-                <table>
+                <table class="processing-table">
                     <thead>
                         <tr>
                             <th>ITEM SUB</th>
                             <th>PACKING</th>
-                            <th>UNIT</th>
                             <th>GRADE</th>
                             <th>TOTAL SLAB</th>
                             <th>TOTAL QUANTITY</th>
@@ -358,22 +377,21 @@
                         <tr>
                             <td class="text-left">{{ detail.item_quality }}</td>
                             <td>{{ detail.packing }}</td>
-                            <td>{{ detail.unit }}</td>
                             <td>{{ detail.grade }}</td>
                             <td>{{ detail.total_slab|floatformat:0 }}</td>
                             <td class="bg-yellow">{{ detail.total_quantity|floatformat:2 }}</td>
                             <td class="bg-yellow">${{ detail.price_usd|floatformat:2 }}</td>
                             <td class="bg-yellow">${{ detail.amount_usd|floatformat:2 }}</td>
-                            <td class="bg-yellow">{{ detail.amount_inr|floatformat:2 }}</td>
+                            <td class="bg-yellow"><span class="format-number">{{ detail.amount_inr|floatformat:2 }}</span></td>
                         </tr>
                         {% endfor %}
                         <tr class="grand-total">
-                            <td colspan="4">SUBTOTAL</td>
+                            <td colspan="3">SUBTOTAL</td>
                             <td>{{ purchase.total_slabs|floatformat:0 }}</td>
                             <td>{{ purchase.total_kg_processed|floatformat:2 }}</td>
                             <td>${{ purchase.avg_price_usd|floatformat:2 }}</td>
                             <td>${{ purchase.total_freezing_usd|floatformat:2 }}</td>
-                            <td>Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</td>
+                            <td>Rs/ <span class="format-number">{{ purchase.freezing_revenue|floatformat:2 }}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -383,7 +401,7 @@
             <div class="section-header">OVERHEADS</div>
             <div class="section-content">
                 {% if purchase.overhead_breakdown %}
-                <table>
+                <table class="overhead-table">
                     <thead>
                         <tr>
                             <th>OVERHEAD TYPE</th>
@@ -395,13 +413,13 @@
                         {% for overhead in purchase.overhead_breakdown %}
                         <tr>
                             <td class="text-left">{{ overhead.type }}</td>
-                            <td>Rs/ {{ overhead.rate|floatformat:2 }}</td>
-                            <td class="text-right">Rs/ {{ overhead.amount|floatformat:2 }}</td>
+                            <td>Rs/ <span class="format-number">{{ overhead.rate|floatformat:2 }}</span></td>
+                            <td class="text-right">Rs/ <span class="format-number">{{ overhead.amount|floatformat:2 }}</span></td>
                         </tr>
                         {% endfor %}
                         <tr class="grand-total">
                             <td colspan="2">TOTAL</td>
-                            <td class="text-right">Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</td>
+                            <td class="text-right">Rs/ <span class="format-number">{{ purchase.total_all_overheads|floatformat:2 }}</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -413,42 +431,42 @@
                 <div class="cost-summary">
                     <div class="cost-row">
                         <span>Purchase Amount:</span>
-                        <span>Rs/ {{ purchase.purchase_amount|floatformat:2 }}</span>
+                        <span>Rs/ <span class="format-number">{{ purchase.purchase_amount|floatformat:2 }}</span></span>
                     </div>
                     <div class="cost-row">
                         <span>Purchase Expenses:</span>
-                        <span>Rs/ {{ purchase.purchase_expense|floatformat:2 }}</span>
+                        <span>Rs/ <span class="format-number">{{ purchase.purchase_expense|floatformat:2 }}</span></span>
                     </div>
                     <div class="cost-row">
                         <span>Peeling Expenses:</span>
-                        <span>Rs/ {{ purchase.peeling_expenses|floatformat:2 }}</span>
+                        <span>Rs/ <span class="format-number">{{ purchase.peeling_expenses|floatformat:2 }}</span></span>
                     </div>
                     <div class="cost-row">
                         <span>All Overheads:</span>
-                        <span>Rs/ {{ purchase.total_all_overheads|floatformat:2 }}</span>
+                        <span>Rs/ <span class="format-number">{{ purchase.total_all_overheads|floatformat:2 }}</span></span>
                     </div>
                     <div class="cost-row">
                         <span>Freezing Tariff:</span>
-                        <span>Rs/ {{ purchase.freezing_tariff|floatformat:2 }}</span>
+                        <span>Rs/ <span class="format-number">{{ purchase.freezing_tariff|floatformat:2 }}</span></span>
                     </div>
-                    <div class="cost-row" style="background: #e3f2fd; padding: 5px;">
-                        <span>Grand Total Cost:</span>
-                        <span>Rs/ {{ purchase.grand_total_cost|floatformat:2 }}</span>
+                    <div class="cost-row" style="background: #d6ebff; padding: 5px; border-radius: 4px;">
+                        <span><strong>Grand Total Cost:</strong></span>
+                        <span><strong>Rs/ <span class="format-number">{{ purchase.grand_total_cost|floatformat:2 }}</span></strong></span>
                     </div>
-                    <div class="cost-row" style="background: #c8e6c9; padding: 5px;">
-                        <span>Total Revenue:</span>
-                        <span>Rs/ {{ purchase.freezing_revenue|floatformat:2 }}</span>
+                    <div class="cost-row" style="background: #d4edda; padding: 5px; border-radius: 4px; margin-top: 5px;">
+                        <span><strong>Total Revenue:</strong></span>
+                        <span><strong>Rs/ <span class="format-number">{{ purchase.freezing_revenue|floatformat:2 }}</span></strong></span>
                     </div>
-                    <div class="cost-row" style="background: {% if purchase.total_profit_loss > 0 %}#a5d6a7{% else %}#ef9a9a{% endif %}; padding: 8px;">
-                        <span>TOTAL PROFIT/LOSS:</span>
+                    <div class="cost-row" style="background: {% if purchase.total_profit_loss > 0 %}#d4edda{% else %}#f8d7da{% endif %}; padding: 8px; border-radius: 4px; margin-top: 5px;">
+                        <span><strong>TOTAL PROFIT/LOSS:</strong></span>
                         <span class="{% if purchase.total_profit_loss > 0 %}profit{% else %}loss{% endif %}">
-                            Rs/ {{ purchase.total_profit_loss|floatformat:2 }} ({{ purchase.profit_percentage|floatformat:1 }}%)
+                            <strong>Rs/ <span class="format-number">{{ purchase.total_profit_loss|floatformat:2 }}</span> ({{ purchase.profit_percentage|floatformat:1 }}%)</strong>
                         </span>
                     </div>
-                    <div class="cost-row" style="background: #fff; padding: 5px; border: 2px solid #0066cc;">
-                        <span>Profit/Loss Per KG:</span>
+                    <div class="cost-row" style="background: #e3f2fd; padding: 5px; border-radius: 4px; margin-top: 5px; border: 2px solid #add1f7;">
+                        <span><strong>Profit/Loss Per KG:</strong></span>
                         <span class="{% if purchase.profit_loss_per_kg > 0 %}profit{% else %}loss{% endif %}">
-                            Rs/ {{ purchase.profit_loss_per_kg|floatformat:2 }}
+                            <strong>Rs/ <span class="format-number">{{ purchase.profit_loss_per_kg|floatformat:2 }}</span></strong>
                         </span>
                     </div>
                 </div>
@@ -474,32 +492,32 @@
                         </tr>
                         <tr>
                             <td class="text-left">Total Purchase Amount</td>
-                            <td>Rs/ {{ summary.total_purchase_amount|floatformat:2 }}</td>
+                            <td>Rs/ <span class="format-number">{{ summary.total_purchase_amount|floatformat:2 }}</span></td>
                         </tr>
                         <tr>
                             <td class="text-left">Total Peeling Expenses</td>
-                            <td>Rs/ {{ summary.total_peeling_expenses|floatformat:2 }}</td>
+                            <td>Rs/ <span class="format-number">{{ summary.total_peeling_expenses|floatformat:2 }}</span></td>
                         </tr>
                         <tr>
                             <td class="text-left">Total All Overheads</td>
-                            <td>Rs/ {{ summary.total_all_overheads|floatformat:2 }}</td>
+                            <td>Rs/ <span class="format-number">{{ summary.total_all_overheads|floatformat:2 }}</span></td>
                         </tr>
                         <tr>
                             <td class="text-left">Total Freezing Tariff</td>
-                            <td>Rs/ {{ summary.total_freezing_tariff|floatformat:2 }}</td>
+                            <td>Rs/ <span class="format-number">{{ summary.total_freezing_tariff|floatformat:2 }}</span></td>
                         </tr>
-                        <tr style="background: #e3f2fd;">
+                        <tr style="background: #d6ebff;">
                             <td class="text-left"><strong>Total Cost</strong></td>
-                            <td><strong>Rs/ {{ summary.total_cost|floatformat:2 }}</strong></td>
+                            <td><strong>Rs/ <span class="format-number">{{ summary.total_cost|floatformat:2 }}</span></strong></td>
                         </tr>
-                        <tr style="background: #c8e6c9;">
+                        <tr style="background: #d4edda;">
                             <td class="text-left"><strong>Total Revenue</strong></td>
-                            <td><strong>Rs/ {{ summary.total_revenue|floatformat:2 }}</strong></td>
+                            <td><strong>Rs/ <span class="format-number">{{ summary.total_revenue|floatformat:2 }}</span></strong></td>
                         </tr>
-                        <tr style="background: {% if summary.total_profit_loss > 0 %}#a5d6a7{% else %}#ef9a9a{% endif %};">
+                        <tr style="background: {% if summary.total_profit_loss > 0 %}#d4edda{% else %}#f8d7da{% endif %};">
                             <td class="text-left"><strong>NET PROFIT/LOSS</strong></td>
                             <td><strong class="{% if summary.total_profit_loss > 0 %}profit{% else %}loss{% endif %}">
-                                Rs/ {{ summary.total_profit_loss|floatformat:2 }} ({{ summary.overall_profit_margin|floatformat:1 }}%)
+                                Rs/ <span class="format-number">{{ summary.total_profit_loss|floatformat:2 }}</span> ({{ summary.overall_profit_margin|floatformat:1 }}%)
                             </strong></td>
                         </tr>
                         <tr>
@@ -521,13 +539,35 @@
         {% endif %}
 
         {% else %}
-        <div style="text-align: center; padding: 40px; color: #666;">
+        <div style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);">
             <p>No purchase data found for the selected criteria.</p>
         </div>
         {% endif %}
     </div>
 
     <script>
+        // Format numbers with commas on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            formatAllNumbers();
+        });
+
+        function formatAllNumbers() {
+            const numberElements = document.querySelectorAll('.format-number');
+            numberElements.forEach(el => {
+                const text = el.textContent.trim();
+                const number = parseFloat(text);
+                if (!isNaN(number)) {
+                    el.textContent = formatNumberWithCommas(number);
+                }
+            });
+        }
+
+        function formatNumberWithCommas(num) {
+            const parts = num.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.join('.');
+        }
+
         async function generatePDF() {
             const btn = document.getElementById('pdfBtn');
             try {
@@ -535,43 +575,505 @@
                 btn.textContent = 'Generating...';
 
                 const { jsPDF } = window.jspdf;
-                const container = document.querySelector('.report-container');
-                
-                document.querySelector('.action-buttons').style.display = 'none';
-                
-                const canvas = await html2canvas(container, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                });
-
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
-                    format: 'a4'
+                    format: 'a4',
+                    compress: true
                 });
 
-                const imgWidth = 190;
-                const pageHeight = 277;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                let heightLeft = imgHeight;
-                let position = 10;
+                // Set Book Antiqua font (use Times as fallback since it's similar)
+                pdf.setFont('times', 'normal');
 
-                const imgData = canvas.toDataURL('image/png');
-                pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+                let yPos = 20;
+                const pageHeight = pdf.internal.pageSize.height;
+                const pageWidth = pdf.internal.pageSize.width;
+                const margin = 10;
+                const maxY = pageHeight - 15;
 
-                while (heightLeft >= 0) {
-                    position = heightLeft - imgHeight + 10;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+                function checkPageBreak(requiredSpace) {
+                    if (yPos + requiredSpace > maxY) {
+                        pdf.addPage();
+                        yPos = 15;
+                        return true;
+                    }
+                    return false;
+                }
+
+                function addSectionHeader(text) {
+                    checkPageBreak(10);
+                    pdf.setFontSize(11);
+                    pdf.setFont('times', 'bold');
+                    pdf.setFillColor(156, 202, 255);
+                    pdf.rect(margin, yPos, pageWidth - 2 * margin, 7, 'F');
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text(text, pageWidth / 2, yPos + 5, { align: 'center' });
+                    yPos += 10;
+                }
+
+                function formatNumber(num) {
+                    if (typeof num === 'string') {
+                        num = parseFloat(num.replace(/,/g, ''));
+                    }
+                    if (isNaN(num)) return num;
+                    return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                }
+
+                // Main Title
+                pdf.setFontSize(16);
+                pdf.setFont('times', 'bold');
+                pdf.setFillColor(162, 206, 255);
+                pdf.rect(margin, 10, pageWidth - 2 * margin, 12, 'F');
+                pdf.text('SPOT PURCHASE PROFIT & LOSS ANALYSIS', pageWidth / 2, 17.5, { align: 'center' });
+
+                // Period
+                const periodText = document.querySelector('.report-header div:last-child').textContent;
+                pdf.setFontSize(9);
+                pdf.text(periodText, pageWidth / 2, 25, { align: 'center' });
+                yPos = 30;
+
+                // Process each purchase section
+                const sections = document.querySelectorAll('.purchase-section');
+
+                sections.forEach((section, sectionIndex) => {
+                    if (sectionIndex > 0) {
+                        checkPageBreak(20);
+                        yPos += 5;
+                    }
+
+                    // Get all data items
+                    const dataGrids = section.querySelectorAll('.data-grid');
+                    const allTables = section.querySelectorAll('table');
+                    const costSummary = section.querySelector('.cost-summary');
+
+                    // PURCHASE DATAS Header
+                    addSectionHeader('PURCHASE DATAS');
+
+                    // Process data grids (Purchase info) - Display in grid format
+                    dataGrids.forEach((grid, gridIndex) => {
+                        if (gridIndex < 4) { // First 4 grids (including purchase rate)
+                            const items = grid.querySelectorAll('.data-item');
+                            const gridHeaders = [];
+                            const gridValues = [];
+                            const gridColors = [];
+
+                            items.forEach(item => {
+                                const label = item.querySelector('.data-label')?.textContent.trim();
+                                let value = item.querySelector('.data-value')?.textContent.trim();
+                                const hasYellow = item.querySelector('.data-value')?.classList.contains('bg-yellow');
+
+                                if (label && value) {
+                                    gridHeaders.push(label);
+                                    gridValues.push(value);
+                                    gridColors.push(hasYellow);
+                                }
+                            });
+
+                            if (gridHeaders.length > 0) {
+                                checkPageBreak(15);
+                                pdf.autoTable({
+                                    head: [gridHeaders],
+                                    body: [gridValues],
+                                    startY: yPos,
+                                    margin: { left: margin, right: margin },
+                                    styles: {
+                                        font: 'times',
+                                        fontSize: 7,
+                                        cellPadding: 1.5,
+                                        lineWidth: 0.1,
+                                        lineColor: [163, 206, 241],
+                                        halign: 'center',
+                                        valign: 'middle'
+                                    },
+                                    headStyles: {
+                                        fillColor: [156, 202, 255],
+                                        textColor: [0, 0, 0],
+                                        fontStyle: 'bold',
+                                        halign: 'center'
+                                    },
+                                    bodyStyles: {
+                                        fontStyle: 'bold'
+                                    },
+                                    didParseCell: function (data) {
+                                        if (data.section === 'body' && data.column.index < gridColors.length) {
+                                            if (gridColors[data.column.index]) {
+                                                data.cell.styles.fillColor = [255, 249, 230]; // Yellow
+                                            } else {
+                                                data.cell.styles.fillColor = [240, 248, 255]; // Light blue
+                                            }
+                                        }
+                                    },
+                                    theme: 'grid'
+                                });
+                                yPos = pdf.lastAutoTable.finalY + 2;
+                            }
+                        }
+                    });
+
+                    // FREEZING DATAS section
+                    addSectionHeader('FREEZING DATAS');
+
+                    // Get the actual freezing grid (skip the purchase rate grid)
+                    const freezingGrid = dataGrids[4]; // Grid index 4 is the actual freezing data grid
+                    if (freezingGrid) {
+                        const items = freezingGrid.querySelectorAll('.data-item');
+                        const gridHeaders = [];
+                        const gridValues = [];
+                        const gridColors = [];
+                        const textColors = [];
+
+                        items.forEach(item => {
+                            const label = item.querySelector('.data-label')?.textContent.trim();
+                            const value = item.querySelector('.data-value')?.textContent.trim();
+                            const hasYellow = item.querySelector('.data-value')?.classList.contains('bg-yellow');
+                            const isProfit = item.querySelector('.data-value')?.classList.contains('profit');
+                            const isLoss = item.querySelector('.data-value')?.classList.contains('loss');
+
+                            if (label && value) {
+                                gridHeaders.push(label);
+                                gridValues.push(value);
+                                gridColors.push(hasYellow);
+                                textColors.push({ isProfit, isLoss });
+                            }
+                        });
+
+                        if (gridHeaders.length > 0) {
+                            checkPageBreak(15);
+                            pdf.autoTable({
+                                head: [gridHeaders],
+                                body: [gridValues],
+                                startY: yPos,
+                                margin: { left: margin, right: margin },
+                                styles: {
+                                    font: 'times',
+                                    fontSize: 7,
+                                    cellPadding: 1.5,
+                                    lineWidth: 0.1,
+                                    lineColor: [163, 206, 241],
+                                    halign: 'center',
+                                    valign: 'middle'
+                                },
+                                headStyles: {
+                                    fillColor: [156, 202, 255],
+                                    textColor: [0, 0, 0],
+                                    fontStyle: 'bold',
+                                    halign: 'center'
+                                },
+                                bodyStyles: {
+                                    fontStyle: 'bold'
+                                },
+                                didParseCell: function (data) {
+                                    if (data.section === 'body' && data.column.index < gridColors.length) {
+                                        if (gridColors[data.column.index]) {
+                                            data.cell.styles.fillColor = [255, 249, 230]; // Yellow
+                                        } else {
+                                            data.cell.styles.fillColor = [240, 248, 255]; // Light blue
+                                        }
+
+                                        // Apply text color for profit/loss
+                                        if (textColors[data.column.index].isProfit) {
+                                            data.cell.styles.textColor = [4, 196, 20]; // Green
+                                        } else if (textColors[data.column.index].isLoss) {
+                                            data.cell.styles.textColor = [255, 25, 0]; // Red
+                                        }
+                                    }
+                                },
+                                theme: 'grid'
+                            });
+                            yPos = pdf.lastAutoTable.finalY + 3;
+                        }
+                    }
+
+                    // Process all tables
+                    allTables.forEach((table, tableIndex) => {
+                        const headers = [];
+                        const rows = [];
+
+                        // Determine table type by class or content
+                        const isPeelingTable = table.classList.contains('peeling-table') ||
+                            table.querySelector('th')?.textContent.includes('SHED NAMES');
+                        const isProcessingTable = table.classList.contains('processing-table') ||
+                            table.querySelector('th')?.textContent.includes('ITEM SUB');
+                        const isOverheadTable = table.classList.contains('overhead-table') ||
+                            table.querySelector('th')?.textContent.includes('OVERHEAD TYPE');
+
+                        // Add section header if it's a new table type
+                        if (isPeelingTable) {
+                            addSectionHeader('PEELING DATAS');
+                        } else if (isProcessingTable) {
+                            addSectionHeader('PROCESSING DETAILS');
+                        } else if (isOverheadTable) {
+                            addSectionHeader('OVERHEADS');
+                        }
+
+                        // Get headers
+                        const headerCells = table.querySelectorAll('thead th');
+                        headerCells.forEach(cell => headers.push(cell.textContent.trim()));
+
+                        // Get rows with styling info
+                        const bodyRows = table.querySelectorAll('tbody tr');
+                        bodyRows.forEach(row => {
+                            const rowData = [];
+                            const cellStyles = [];
+                            const cells = row.querySelectorAll('td');
+
+                            cells.forEach(cell => {
+                                rowData.push(cell.textContent.trim());
+                                cellStyles.push({
+                                    hasYellow: cell.classList.contains('bg-yellow'),
+                                    alignLeft: cell.classList.contains('text-left'),
+                                    alignRight: cell.classList.contains('text-right')
+                                });
+                            });
+
+                            const isGrandTotal = row.classList.contains('grand-total');
+                            rows.push({ data: rowData, isGrandTotal, cellStyles });
+                        });
+
+                        // Add table with page break handling
+                        checkPageBreak(20);
+
+                        pdf.autoTable({
+                            head: [headers],
+                            body: rows.map(r => r.data),
+                            startY: yPos,
+                            margin: { left: margin, right: margin },
+                            styles: {
+                                font: 'times',
+                                fontSize: 7,
+                                cellPadding: 1.5,
+                                overflow: 'linebreak',
+                                lineWidth: 0.1,
+                                lineColor: [197, 223, 245],
+                                halign: 'center'
+                            },
+                            headStyles: {
+                                fillColor: [156, 202, 255],
+                                textColor: [0, 0, 0],
+                                fontStyle: 'bold',
+                                halign: 'center'
+                            },
+                            bodyStyles: {
+                                fillColor: [255, 255, 255]
+                            },
+                            alternateRowStyles: {
+                                fillColor: [245, 245, 245]
+                            },
+                            didParseCell: function (data) {
+                                if (data.section === 'body') {
+                                    const rowIndex = data.row.index;
+                                    const colIndex = data.column.index;
+
+                                    // Grand total rows
+                                    if (rows[rowIndex] && rows[rowIndex].isGrandTotal) {
+                                        data.cell.styles.fillColor = [173, 209, 247];
+                                        data.cell.styles.fontStyle = 'bold';
+                                        data.cell.styles.fontSize = 8;
+                                    }
+                                    // Yellow cells (not in grand total)
+                                    else if (rows[rowIndex] && rows[rowIndex].cellStyles[colIndex]?.hasYellow) {
+                                        data.cell.styles.fillColor = [255, 249, 230];
+                                    }
+
+                                    // Text alignment
+                                    if (rows[rowIndex] && rows[rowIndex].cellStyles[colIndex]?.alignLeft) {
+                                        data.cell.styles.halign = 'left';
+                                    } else if (rows[rowIndex] && rows[rowIndex].cellStyles[colIndex]?.alignRight) {
+                                        data.cell.styles.halign = 'right';
+                                    }
+                                }
+                            },
+                            theme: 'grid',
+                            pageBreak: 'auto',
+                            rowPageBreak: 'avoid'
+                        });
+
+                        yPos = pdf.lastAutoTable.finalY + 3;
+                    });
+
+                    // PROFIT/LOSS SUMMARY
+                    if (costSummary) {
+                        addSectionHeader('PROFIT/LOSS SUMMARY');
+
+                        const costRows = costSummary.querySelectorAll('.cost-row');
+                        const summaryData = [];
+                        const rowColors = [];
+                        const textColors = [];
+
+                        costRows.forEach((row, index) => {
+                            const spans = row.querySelectorAll('span');
+                            if (spans.length === 2) {
+                                const leftText = spans[0].textContent.trim();
+                                const rightText = spans[1].textContent.trim();
+
+                                summaryData.push([leftText, rightText]);
+
+                                // Determine background color based on row style
+                                const bgStyle = row.style.background;
+                                let bgColor = [230, 243, 255]; // default light blue
+
+                                if (bgStyle.includes('#d6ebff')) {
+                                    bgColor = [214, 235, 255]; // Grand Total Cost
+                                } else if (bgStyle.includes('#d4edda')) {
+                                    bgColor = [212, 237, 218]; // Total Revenue / Profit
+                                } else if (bgStyle.includes('#f8d7da')) {
+                                    bgColor = [248, 215, 218]; // Loss
+                                } else if (bgStyle.includes('#e3f2fd')) {
+                                    bgColor = [227, 242, 253]; // Per KG
+                                }
+
+                                rowColors.push(bgColor);
+
+                                // Check for profit/loss text color
+                                const hasProfit = spans[1].classList.contains('profit');
+                                const hasLoss = spans[1].classList.contains('loss');
+                                textColors.push({ isProfit: hasProfit, isLoss: hasLoss });
+                            }
+                        });
+
+                        if (summaryData.length > 0) {
+                            checkPageBreak(summaryData.length * 7 + 5);
+                            pdf.autoTable({
+                                body: summaryData,
+                                startY: yPos,
+                                margin: { left: margin, right: margin },
+                                styles: {
+                                    font: 'times',
+                                    fontSize: 8,
+                                    cellPadding: 2,
+                                    lineWidth: 0.1,
+                                    lineColor: [197, 223, 245]
+                                },
+                                columnStyles: {
+                                    0: {
+                                        cellWidth: 80,
+                                        fontStyle: 'bold',
+                                        halign: 'left'
+                                    },
+                                    1: {
+                                        halign: 'right',
+                                        fontStyle: 'bold'
+                                    }
+                                },
+                                didParseCell: function (data) {
+                                    if (data.section === 'body') {
+                                        const rowIndex = data.row.index;
+
+                                        // Apply background color
+                                        if (rowColors[rowIndex]) {
+                                            data.cell.styles.fillColor = rowColors[rowIndex];
+                                        }
+
+                                        // Apply text color for profit/loss (second column)
+                                        if (data.column.index === 1 && textColors[rowIndex]) {
+                                            if (textColors[rowIndex].isProfit) {
+                                                data.cell.styles.textColor = [4, 196, 20]; // Green
+                                            } else if (textColors[rowIndex].isLoss) {
+                                                data.cell.styles.textColor = [255, 25, 0]; // Red
+                                            }
+                                        }
+                                    }
+                                },
+                                theme: 'grid'
+                            });
+                            yPos = pdf.lastAutoTable.finalY + 5;
+                        }
+                    }
+                });
+
+                // Overall Summary
+                const overallSummary = document.querySelector('.section:not(.purchase-section)');
+                if (overallSummary) {
+                    checkPageBreak(30);
+                    addSectionHeader('OVERALL SUMMARY - ALL PURCHASES');
+
+                    const summaryTable = overallSummary.querySelector('table');
+                    if (summaryTable) {
+                        const rows = [];
+                        const bodyRows = summaryTable.querySelectorAll('tbody tr');
+
+                        bodyRows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length === 2) {
+                                const leftText = cells[0].textContent.trim();
+                                const rightText = cells[1].textContent.trim();
+
+                                // Get background color
+                                const bgStyle = row.style.background;
+                                let bgColor = [255, 255, 255]; // default white
+
+                                if (bgStyle.includes('#d6ebff')) {
+                                    bgColor = [214, 235, 255]; // Total Cost
+                                } else if (bgStyle.includes('#d4edda')) {
+                                    bgColor = [212, 237, 218]; // Total Revenue / Profit
+                                } else if (bgStyle.includes('#f8d7da')) {
+                                    bgColor = [248, 215, 218]; // Loss
+                                }
+
+                                // Check for profit/loss text color in second cell
+                                const hasProfit = cells[1].classList.contains('profit') ||
+                                    cells[1].querySelector('.profit');
+                                const hasLoss = cells[1].classList.contains('loss') ||
+                                    cells[1].querySelector('.loss');
+
+                                rows.push({
+                                    data: [leftText, rightText],
+                                    bgColor: bgColor,
+                                    textColor: { isProfit: hasProfit, isLoss: hasLoss }
+                                });
+                            }
+                        });
+
+                        pdf.autoTable({
+                            body: rows.map(r => r.data),
+                            startY: yPos,
+                            margin: { left: margin, right: margin },
+                            styles: {
+                                font: 'times',
+                                fontSize: 8,
+                                cellPadding: 2,
+                                lineWidth: 0.1,
+                                lineColor: [197, 223, 245]
+                            },
+                            columnStyles: {
+                                0: {
+                                    cellWidth: 100,
+                                    fontStyle: 'bold',
+                                    halign: 'left'
+                                },
+                                1: {
+                                    halign: 'right',
+                                    fontStyle: 'bold'
+                                }
+                            },
+                            didParseCell: function (data) {
+                                if (data.section === 'body') {
+                                    const rowIndex = data.row.index;
+
+                                    // Apply background color
+                                    if (rows[rowIndex]) {
+                                        data.cell.styles.fillColor = rows[rowIndex].bgColor;
+
+                                        // Apply text color for profit/loss (second column)
+                                        if (data.column.index === 1 && rows[rowIndex].textColor) {
+                                            if (rows[rowIndex].textColor.isProfit) {
+                                                data.cell.styles.textColor = [4, 196, 20]; // Green
+                                            } else if (rows[rowIndex].textColor.isLoss) {
+                                                data.cell.styles.textColor = [255, 25, 0]; // Red
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            theme: 'grid',
+                            pageBreak: 'auto'
+                        });
+                    }
                 }
 
                 const filename = `Spot_Purchase_PL_${new Date().toISOString().split('T')[0]}.pdf`;
                 pdf.save(filename);
-                
+
                 alert('PDF generated successfully!');
             } catch (error) {
                 console.error('PDF Error:', error);
@@ -579,7 +1081,6 @@
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Generate PDF';
-                document.querySelector('.action-buttons').style.display = 'flex';
             }
         }
     </script>

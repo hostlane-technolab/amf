@@ -792,19 +792,6 @@
                             </div>
                         </div>
 
-                        <!-- Species -->
-                        <div class="filter-section">
-                            <label>Species: <span id="speciesCount" class="selected-count" style="display: none;">0</span></label>
-                            <input type="text" class="search-box" placeholder="Search species..." id="speciesSearch">
-                            <div class="options-container" id="speciesContainer">
-                                {% for species in all_species %}
-                                    <div class="option-item">
-                                        <input type="checkbox" name="species" value="{{ species.id }}" id="species_{{ species.id }}" {% if species.id|stringformat:"s" in selected_species %}checked{% endif %}>
-                                        <label for="species_{{ species.id }}">{{ species.name }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
 
                         <!-- Item Categories -->
                         <div class="filter-section">
