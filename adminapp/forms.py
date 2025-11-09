@@ -346,8 +346,8 @@ class SpotPurchaseItemForm(forms.ModelForm):
         fields = ['item','total_rate', 'quantity', 'rate', 'boxes']
         widgets = {
             'item': forms.Select(attrs={'class': 'form-control'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'boxes': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.001'}),
+            'boxes': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.001'}),
             'total_rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'rate': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
@@ -400,7 +400,7 @@ class LocalPurchaseItemForm(forms.ModelForm):
             'item_quality': forms.Select(attrs={'class': 'form-control', 'id': 'id_item_quality'}),
             'grade': forms.Select(attrs={'class': 'form-control'}),
             'item_type': forms.Select(attrs={'class': 'form-control'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control quantity-input', 'step': '0.01'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control quantity-input', 'step': '0.001'}),
             'rate': forms.NumberInput(attrs={'class': 'form-control rate-input', 'step': '0.01'}),
         }
 
@@ -649,7 +649,7 @@ class PreShipmentWorkOutItemForm(forms.ModelForm):
             }),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-control quantity',
-                'step': '0.01',
+                'step': '0.001',
                 'readonly': True
             }),
             'usd_rate_per_kg': forms.NumberInput(attrs={
@@ -806,7 +806,7 @@ class ReturnTenantItemForm(forms.ModelForm):
             'grade': forms.Select(attrs={'class': 'form-control'}),
             'slab_quantity': forms.NumberInput(attrs={'class': 'form-control slab-quantity', 'step': '0.01'}),
             'c_s_quantity': forms.NumberInput(attrs={'class': 'form-control cs-quantity', 'step': '0.01'}),
-            'kg': forms.NumberInput(attrs={'class': 'form-control kg', 'step': '0.01'}),
+            'kg': forms.NumberInput(attrs={'class': 'form-control kg', 'step': '0.001'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -914,7 +914,7 @@ class StoreTransferItemForm(forms.ModelForm):
             "species": forms.Select(attrs={"class": "form-control species-select"}),
             "item_grade": forms.Select(attrs={"class": "form-control grade-select"}),
             "cs_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
-            "kg_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "kg_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.001"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -1179,7 +1179,7 @@ class StockForm(forms.ModelForm):
             }),
             'kg_quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'step': '0.01',
+                'step': '0.001',
           
             }),
             'usd_rate_per_kg': forms.NumberInput(attrs={
@@ -1361,7 +1361,7 @@ class StockAdjustmentForm(forms.Form):  # Changed from ModelForm to Form
         required=False,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'step': '0.01',
+            'step': '0.001',
             'placeholder': 'e.g., 100 or -50'
         }),
         help_text="Enter positive to add, negative to reduce",
@@ -1676,7 +1676,7 @@ class SalesEntryItemForm(forms.ModelForm):
             }),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'step': '0.01',
+                'step': '0.001',
                 'placeholder': 'Quantity (kg)'
             }),
             'price_usd_per_kg': forms.NumberInput(attrs={
@@ -1789,7 +1789,7 @@ class TenantStockForm(forms.ModelForm):
             }),
             'available_kg': forms.NumberInput(attrs={
                 'class': 'form-control',
-                'step': '0.01'
+                'step': '0.001'
             }),
             'remarks': forms.Textarea(attrs={
                 'class': 'form-control',
@@ -1999,7 +1999,7 @@ class TenantStockAdjustmentForm(forms.Form):
         help_text="Enter positive value to add, negative to subtract",
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
-            'step': '0.01',
+            'step': '0.001',
             'placeholder': '0.00'
         })
     )

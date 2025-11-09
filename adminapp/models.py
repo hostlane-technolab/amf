@@ -404,7 +404,7 @@ class Shed(models.Model):
     code = models.CharField(max_length=50, unique=True)
     address = models.TextField()
     contact_number = models.CharField(max_length=20)
-    capacity_per_day_kg = models.DecimalField(max_digits=100, decimal_places=2)
+    capacity_per_day_kg = models.DecimalField(max_digits=100, decimal_places=3)
 
     def __str__(self):
         return self.name
@@ -485,7 +485,7 @@ class SpotPurchaseItem(BaseModel):
     purchase = models.ForeignKey(SpotPurchase, on_delete=models.CASCADE, related_name='items')
     item = models.ForeignKey('Item', on_delete=models.CASCADE)
     quantity = models.DecimalField(max_digits=100, decimal_places=3)
-    boxes = models.DecimalField(max_digits=100, decimal_places=2, null=True, blank=True)
+    boxes = models.DecimalField(max_digits=100, decimal_places=3, null=True, blank=True)
     total_rate = models.DecimalField(max_digits=100, decimal_places=2)
     rate = models.DecimalField(max_digits=100, decimal_places=2)
     amount = models.DecimalField(max_digits=100, decimal_places=2)
@@ -611,7 +611,7 @@ class FreezingEntrySpot(BaseModel):
     total_inr = models.DecimalField(max_digits=100, decimal_places=2)
     total_slab = models.DecimalField(max_digits=100, decimal_places=2)
     total_c_s = models.DecimalField(max_digits=100, decimal_places=2)
-    total_kg = models.DecimalField(max_digits=100, decimal_places=2)
+    total_kg = models.DecimalField(max_digits=100, decimal_places=3)
 
     FREEZING_STATUS_CHOICES = [
         ('complete', 'Complete'),
@@ -665,7 +665,7 @@ class FreezingEntryLocal(BaseModel):
     total_inr = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     total_slab = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     total_c_s = models.DecimalField(max_digits=100, decimal_places=2, default=0)
-    total_kg = models.DecimalField(max_digits=100, decimal_places=2, default=0)
+    total_kg = models.DecimalField(max_digits=100, decimal_places=3, default=0)
 
     FREEZING_STATUS_CHOICES = [
         ('complete', 'Complete'),
@@ -756,12 +756,12 @@ class TenantStock(BaseModel):
     # Quantities
     available_slab = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     available_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    available_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    available_kg = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     
     # Original quantities (for tracking)
     original_slab = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     original_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    original_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    original_kg = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     
     remarks = models.TextField(blank=True, null=True)
     
@@ -784,7 +784,7 @@ class FreezingEntryTenant(BaseModel):
 
     total_slab = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    total_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_kg = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     FREEZING_STATUS_CHOICES = [
@@ -833,7 +833,7 @@ class ReturnTenant(BaseModel):
 
     total_slab = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    total_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_kg = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     RETURN_STATUS_CHOICES = [  # Changed from FREEZING_STATUS_CHOICES
@@ -981,7 +981,7 @@ class TenantBill(models.Model):
 
     total_slabs = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total_c_s = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    total_kg = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_kg = models.DecimalField(max_digits=12, decimal_places=3, default=0)
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     status = models.CharField(max_length=20, choices=BILL_STATUS_CHOICES, default='draft')

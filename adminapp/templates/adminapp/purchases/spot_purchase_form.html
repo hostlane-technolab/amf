@@ -370,37 +370,37 @@
               <tbody id="item-container">
                 {% for form in item_formset %}
                   <tr class="item-row table-row">
-                    <td class="table-cell">
+                    <td class="table-cell2">
                       {{ form.item.as_widget }}
                       {% if form.item.errors %}
                         <div class="validation-error">{{ form.item.errors }}</div>
                       {% endif %}
                     </td>
-                    <td class="table-cell">
+                    <td class="table-cell2">
                       {{ form.quantity.as_widget }}
                       {% if form.quantity.errors %}
                         <div class="validation-error">{{ form.quantity.errors }}</div>
                       {% endif %}
                     </td>
-                    <td class="table-cell">
+                    <td class="table-cell2">
                       {{ form.total_rate.as_widget }}
                       {% if form.total_rate.errors %}
                         <div class="validation-error">{{ form.total_rate.errors }}</div>
                       {% endif %}
                     </td>
-                    <td class="table-cell">
+                    <td class="table-cell2">
                       {{ form.rate.as_widget }}
                       {% if form.rate.errors %}
                         <div class="validation-error">{{ form.rate.errors }}</div>
                       {% endif %}
                     </td>
-                    <td class="table-cell">
+                    <td class="table-cell2">
                       {{ form.boxes.as_widget }}
                       {% if form.boxes.errors %}
                         <div class="validation-error">{{ form.boxes.errors }}</div>
                       {% endif %}
                     </td>
-                    <td class="table-cell text-center">
+                    <td class="table-cell2 text-center">
                       <button type="button" class="action-btn delete-btn">
                         <i class="fas fa-trash-alt"></i>
                         <span>Delete</span>
@@ -577,7 +577,7 @@
         <div class="row">
           <div class="col-lg-6 mb-3">
             <button type="submit" class="submit-btn">
-              <i class="fas fa-save me-2"></i>Update
+              <i class="fas fa-save me-2"></i>Create
             </button>
           </div>
           <div class="col-lg-6 mb-3">
@@ -595,23 +595,23 @@
 <template id="row-template">
   <tr class="item-row table-row">
     {% with item_formset.empty_form as form %}
-      <td class="table-cell">
+      <td class="table-cell2">
         {{ form.item.as_widget }}
       </td>
-      <td class="table-cell">
+      <td class="table-cell2">
         {{ form.quantity.as_widget }}
       </td>
-      <td class="table-cell">
+      <td class="table-cell2">
         {{ form.total_rate.as_widget }}
       </td>
-      <td class="table-cell">
+      <td class="table-cell2">
         {{ form.rate.as_widget }}
       </td>
-      <td class="table-cell">
+      <td class="table-cell2">
         {{ form.boxes.as_widget }}
       </td>
     {% endwith %}
-    <td class="table-cell text-center">
+    <td class="table-cell2 text-center">
       <button type="button" class="action-btn delete-btn">
         <i class="fas fa-trash-alt"></i>
         <span>Delete</span>
@@ -759,11 +759,11 @@
 }
 
 .table-header {
-  background: #f8f9fd;
+  background:#28a745;
   border: none;
   padding: 20px;
   font-weight: 700;
-  color: #495057;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 13px;
@@ -775,7 +775,7 @@
 }
 
 .header-icon {
-  color: #6c757d;
+  color: #ffffff;
   margin-right: 10px;
   font-size: 14px;
 }
@@ -807,6 +807,21 @@
   font-size: 13px !important;
 }
 
+.table-cell2 {
+  /* padding-bottom: 20px; */
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+.table-cell2 input, .table-cell2 select {
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
 /* Action Buttons */
 .action-btn {
   display: inline-flex;
@@ -815,7 +830,7 @@
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   transition: all 0.3s ease;
   border: 2px solid;
   background: none;
@@ -837,7 +852,7 @@
 
 .action-btn i {
   margin-right: 6px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* Summary Table Styling */

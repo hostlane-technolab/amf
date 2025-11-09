@@ -167,290 +167,11 @@
 }
 </style>
 
-
-<div class="container">
-  <div class="page-inner">
-    <div class="page-header-section">
-      <div class="ph-header-content">
-        <div class="ph-header-left">
-          <div class="ph-icon-wrapper">
-            <i class="fa-solid fa-cart-shopping"></i>
-          </div>
-          <div class="ph-header-text">
-            <h3 class="ph-header-title">Purchase Management</h3>
-            <p class="ph-header-subtitle">Manage your purchase orders.</p>
-          </div>
-        </div>
-
-        <!-- Breadcrumbs - Now inline with header -->
-        <nav class="ph-breadcrumb-nav">
-          <ol class="ph-breadcrumb-list">
-            <li class="ph-breadcrumb-item">
-              <a href="#" class="ph-breadcrumb-link">
-                <i class="icon-home"></i>
-                <span>Home</span>
-              </a>
-            </li>
-            <li class="ph-breadcrumb-separator">
-              <i class="icon-arrow-right"></i>
-            </li>
-            <li class="ph-breadcrumb-item ">
-              <a href="{%url 'adminapp:local_purchase_list'%}" class="ph-breadcrumb-link">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span>Local Purchases</span>
-              </a>
-            </li>
-            <li class="ph-breadcrumb-separator">
-              <i class="icon-arrow-right"></i>
-            </li>
-            <li class="ph-breadcrumb-item active">
-                           <a href="">
-                <span>Edit</span>
-              </a>
-            </li>
-          </ol>
-        </nav>
-        <div class="ph-header-stats">
-
-        </div>
-      </div>
-    </div>
-
-    <form method="post" class="purchase-form">
-      {% csrf_token %}
-      {{ formset.management_form }}
-
-      <!-- Purchase Details Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center">
-            <div class="icon-wrapper me-4">
-              <i class="fas fa-file-invoice"></i>
-            </div>
-            <div>
-              <h3 class="card-title mb-0">Purchase Details</h3>
-              <p class="text-muted mb-0">Edit basic purchase information</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-card" style="padding: 20px;">
-          <div class="row g-4">
-            {% for field in form %}
-            <div class="col-md-6 col-lg-4">
-              <div class="form-group">
-                <label class="form-label">{{ field.label }}</label>
-                <div class="input-wrapper">
-                  <i class="fas fa-edit input-icon"></i>
-                  {{ field }}
-                </div>
-                {% if field.errors %}
-                <div class="validation-error">{{ field.errors }}</div>
-                {% endif %}
-              </div>
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Purchase Items Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-              <div class="icon-wrapper me-4">
-                <i class="fas fa-boxes"></i>
-              </div>
-              <div>
-                <h4 class="card-title mb-0">Purchase Items</h4>
-                <p class="text-muted mb-0">Edit items in your purchase</p>
-              </div>
-            </div>
-            <button type="button" id="add-more-items" class="add-btn">
-              <i class="fas fa-plus me-2"></i>Add Item
-            </button>
-          </div>
-        </div>
-
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="modern-table">
-              <thead>
-                <tr>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-tag header-icon"></i>
-                      <span class="header-text">Item</span>
-                    </div>
-                  </th>
-                  <th  class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-folder header-icon"></i>
-                      <span class="header-text">Item sub</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-cogs header-icon"></i>
-                      <span class="header-text">Type</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-star header-icon"></i>
-                      <span class="header-text">Grade</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-weight-hanging header-icon"></i>
-                      <span class="header-text">Quantity</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-rupee-sign header-icon"></i>
-                      <span class="header-text">Rate</span>
-                    </div>
-                  </th>
-                  <th class="table-header text-center">
-                    <div class="header-content justify-content-center">
-                      <!-- <i class="fas fa-tools header-icon"></i>
-                      <span class="header-text">Action</span> -->
-                    </div>
-                  </th>
-                  <th class="table-header text-center">
-                    <div class="header-content justify-content-center">
-                      <i class="fas fa-tools header-icon"></i>
-                      <span class="header-text">Action</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="item-container">
-                {% for form in formset %}
-                <tr class="item-row table-row">
-                  <!-- Render hidden fields like DELETE -->
-                  {% for hidden in form.hidden_fields %}
-                  {{ hidden }}
-                  {% endfor %}
-
-                  {% for field in form.visible_fields %}
-                  <td class="table-cell2">
-                    {{ field.as_widget }}
-                    {% if field.errors %}
-                    <div class="validation-error">{{ field.errors }}</div>
-                    {% endif %}
-                  </td>
-                  {% endfor %}
-                  <td class="table-cell2 text-center">
-                    <button type="button" class="action-btn delete-btn">
-                      <i class="fas fa-trash-alt"></i>
-                      <span>Delete</span>
-                    </button>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Purchase Summary Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center">
-            <div class="icon-wrapper me-4">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <div>
-              <h4 class="card-title mb-0">Purchase Summary</h4>
-              <p class="text-muted mb-0">Overview of purchase totals</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="summary-table">
-              <thead>
-                <tr>
-                  <th class="table-header">Total Quantity</th>
-                  <th class="table-header">Total Amount</th>
-                  <th class="table-header">Total Items</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="summary-row">
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span id="quantity-total" class="calculated-value">0.00</span>
-                      <small class="unit">kg</small>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span class="currency">₹</span>
-                      <span id="amount-total" class="calculated-value">0.00</span>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span id="items-count" class="calculated-value">0</span>
-                      <small class="unit">items</small>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Section -->
-<div class="form-actions">
-  <div class="row">
-    <div class="col-lg-6 mb-3">
-      <button type="submit" class="submit-btn">
-        <i class="fas fa-save me-2"></i>Update
-      </button>
-    </div>
-    <div class="col-lg-6 mb-3">
-      <a href="{% url 'adminapp:local_purchase_list' %}" class="cancel-btn">
-        <i class="fas fa-times me-2"></i>Cancel
-      </a>
-    </div>
-  </div>
-</div>
-    </form>
-  </div>
-</div>
-
-<!-- Hidden empty form template -->
-<template id="row-template">
-  <tr class="item-row table-row">
-    {% with formset.empty_form as form %}
-    {% for field in form.visible_fields %}
-    <td class="table-cell">
-      {{ field.as_widget }}
-    </td>
-    {% endfor %}
-    {% endwith %}
-    <td class="table-cell text-center">
-      <button type="button" class="action-btn delete-btn">
-        <i class="fas fa-trash-alt"></i>
-        <span>Delete</span>
-      </button>
-    </td>
-  </tr>
-</template>
-
 <style>
+  input[name$="-DELETE"] {
+  display: none !important;
+}
+
   small.unit {
     font-size: 0.8rem;
     font-weight: 600;
@@ -597,30 +318,28 @@
   }
 
   .table-header {
-    background: #f8f9fd;
-    border: none;
-    padding: 20px;
-    font-weight: 700;
-    color: #495057;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-size: 13px;
-    text-align: center;
+  background: #28a745;
+  border: none;
+  padding: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+      text-align: center;
     vertical-align: middle;
-    /* optional: vertically center text too */
-  }
+}
 
-  .header-content {
-    display: flex;
-    align-items: center;
-  }
+.header-content {
+  display: flex;
+  align-items: center;
+}
 
-  .header-icon {
-    color: #6c757d;
-    margin-right: 10px;
-    font-size: 14px;
-  }
-
+.header-icon {
+  color: #ffffff;
+  margin-right: 10px;
+  font-size: 14px;
+}
   /* Table Rows */
   .table-row {
     border: none;
@@ -663,7 +382,7 @@
     border-radius: 8px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 14px;
     transition: all 0.3s ease;
     border: 2px solid;
     background: none;
@@ -685,7 +404,7 @@
 
   .action-btn i {
     margin-right: 6px;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   /* Summary Table Styling */
@@ -871,6 +590,287 @@
     }
   }
 </style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Purchase Management</h3>
+            <p class="ph-header-subtitle">Manage your purchase orders.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:local_purchase_list'%}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Local Purchases</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="">
+                <span>Edit</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <form method="post" class="purchase-form">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <!-- Purchase Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Purchase Details</h3>
+              <p class="text-muted mb-0">Edit basic purchase information</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            {% for field in form %}
+            <div class="col-md-6 col-lg-4">
+              <div class="form-group">
+                <label class="form-label">{{ field.label }}</label>
+                <div class="input-wrapper">
+                  <i class="fas fa-edit input-icon"></i>
+                  {{ field }}
+                </div>
+                {% if field.errors %}
+                <div class="validation-error">{{ field.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Items Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4">
+                <i class="fas fa-boxes"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Purchase Items</h4>
+                <p class="text-muted mb-0">Edit items in your purchase</p>
+              </div>
+            </div>
+            <button type="button" id="add-more-items" class="add-btn">
+              <i class="fas fa-plus me-2"></i>Add Item
+            </button>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tag header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th  class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-folder header-icon"></i>
+                      <span class="header-text">Item sub</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-cogs header-icon"></i>
+                      <span class="header-text">Type</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-star header-icon"></i>
+                      <span class="header-text">Grade</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-weight-hanging header-icon"></i>
+                      <span class="header-text">Quantity</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Rate</span>
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <!-- <i class="fas fa-tools header-icon"></i>
+                      <span class="header-text">Action</span> -->
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <i class="fas fa-tools header-icon"></i>
+                      <span class="header-text">Action</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="item-container">
+                {% for form in formset %}
+                <tr class="item-row table-row">
+                  <!-- Render hidden fields like DELETE -->
+                  {% for hidden in form.hidden_fields %}
+                  {{ hidden }}
+                  {% endfor %}
+
+                  {% for field in form.visible_fields %}
+                  <td class="table-cell2">
+                    {{ field.as_widget }}
+                    {% if field.errors %}
+                    <div class="validation-error">{{ field.errors }}</div>
+                    {% endif %}
+                  </td>
+                  {% endfor %}
+                  <td class="table-cell2 text-center">
+                    <button type="button" class="action-btn delete-btn">
+                      <i class="fas fa-trash-alt"></i>
+                      <span>Delete</span>
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Summary</h4>
+              <p class="text-muted mb-0">Overview of purchase totals</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th class="table-header">Total Quantity</th>
+                  <th class="table-header">Total Amount</th>
+                  <th class="table-header">Total Items</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="summary-row">
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span id="quantity-total" class="calculated-value">0.00</span>
+                      <small class="unit">kg</small>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span class="currency">₹</span>
+                      <span id="amount-total" class="calculated-value">0.00</span>
+                    </div>
+                  </td>
+                  <td class="table-cell">
+                    <div class="summary-value">
+                      <span id="items-count" class="calculated-value">0</span>
+                      <small class="unit">items</small>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+<div class="form-actions">
+  <div class="row">
+    <div class="col-lg-6 mb-3">
+      <button type="submit" class="submit-btn">
+        <i class="fas fa-save me-2"></i>Update
+      </button>
+    </div>
+    <div class="col-lg-6 mb-3">
+      <a href="{% url 'adminapp:local_purchase_list' %}" class="cancel-btn">
+        <i class="fas fa-times me-2"></i>Cancel
+      </a>
+    </div>
+  </div>
+</div>
+    </form>
+  </div>
+</div>
+
+<!-- Hidden empty form template -->
+<template id="row-template">
+  <tr class="item-row table-row">
+    {% with formset.empty_form as form %}
+    {% for field in form.visible_fields %}
+    <td class="table-cell2">
+      {{ field.as_widget }}
+    </td>
+    {% endfor %}
+    {% endwith %}
+    <td class="table-cell2 text-center">
+      <button type="button" class="action-btn delete-btn">
+        <i class="fas fa-trash-alt"></i>
+        <span>Delete</span>
+      </button>
+    </td>
+  </tr>
+</template>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -1138,29 +1138,54 @@ $(document).on("change", "select[name$='-item']", function () {
     }
   }
 
-  // Handle delete button clicks
-  document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
-      const button = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
-      const row = button.closest('.item-row');
-      if (row) {
-        // Check if this row has a delete checkbox (existing item)
-        const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
-        if (deleteCheckbox) {
-          toggleDeletion(button);
-        } else {
-          // This is a new item, remove it completely
-          if (document.querySelectorAll('.item-row').length > 1) {
-            row.remove();
-            updateFormCount(-1);
-            calculatePurchaseTotals();
-          } else {
-            alert("At least one item is required.");
-          }
-        }
-      }
+
+// Handle delete button clicks properly (for both existing and new rows)
+document.addEventListener('click', function (e) {
+  const target = e.target.closest('.delete-btn');
+  if (!target) return; // only run for delete buttons
+
+  const row = target.closest('.item-row');
+  if (!row) return;
+
+  const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+
+  if (deleteCheckbox) {
+    // ✅ Existing item (already in DB)
+    // Toggle deletion mark
+    deleteCheckbox.checked = !deleteCheckbox.checked;
+
+    if (deleteCheckbox.checked) {
+      // Mark visually deleted
+      row.classList.add('deletion-marked');
+      target.innerHTML = '<i class="fas fa-undo"></i><span>Restore</span>';
+      target.classList.add('deletion-marked');
+    } else {
+      // Restore visually
+      row.classList.remove('deletion-marked');
+      target.innerHTML = '<i class="fas fa-trash-alt"></i><span>Delete</span>';
+      target.classList.remove('deletion-marked');
     }
-  });
+  } else {
+    // ✅ Newly added unsaved row — just remove it completely
+    const totalRows = document.querySelectorAll('.item-row').length;
+    if (totalRows > 1) {
+      row.remove();
+      updateFormCount(-1);
+    } else {
+      alert("At least one item is required.");
+    }
+  }
+
+  calculatePurchaseTotals();
+});
+
+// Helper to update TOTAL_FORMS count after deleting/adding
+function updateFormCount(change) {
+  const totalFormsInput = document.querySelector('input[name$="-TOTAL_FORMS"]');
+  totalFormsInput.value = parseInt(totalFormsInput.value) + change;
+}
+
+
 
   // Add more button functionality
   document.getElementById('add-more-items').addEventListener('click', function () {

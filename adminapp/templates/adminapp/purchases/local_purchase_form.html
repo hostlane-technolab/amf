@@ -168,281 +168,10 @@
 }
 </style>
 
-
-<div class="container">
-  <div class="page-inner">
-    <div class="page-header-section">
-      <div class="ph-header-content">
-        <div class="ph-header-left">
-          <div class="ph-icon-wrapper">
-            <i class="fa-solid fa-cart-shopping"></i>
-          </div>
-          <div class="ph-header-text">
-            <h3 class="ph-header-title">Purchase Management</h3>
-            <p class="ph-header-subtitle">Manage your purchase orders.</p>
-          </div>
-        </div>
-
-        <!-- Breadcrumbs - Now inline with header -->
-        <nav class="ph-breadcrumb-nav">
-          <ol class="ph-breadcrumb-list">
-            <li class="ph-breadcrumb-item">
-              <a href="#" class="ph-breadcrumb-link">
-                <i class="icon-home"></i>
-                <span>Home</span>
-              </a>
-            </li>
-            <li class="ph-breadcrumb-separator">
-              <i class="icon-arrow-right"></i>
-            </li>
-            <li class="ph-breadcrumb-item ">
-              <a href="{%url 'adminapp:local_purchase_list'%}" class="ph-breadcrumb-link">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span>Local Purchases</span>
-              </a>
-            </li>
-            <li class="ph-breadcrumb-separator">
-              <i class="icon-arrow-right"></i>
-            </li>
-            <li class="ph-breadcrumb-item active">
-                           <a href="{%url 'adminapp:local_purchase_create'%}">
-                <span>Create</span>
-              </a>
-            </li>
-          </ol>
-        </nav>
-
-        <div class="ph-header-stats">
-
-        </div>
-      </div>
-    </div>
-
-    <form method="post" class="purchase-form">
-      {% csrf_token %}
-      {{ formset.management_form }}
-
-      <!-- Purchase Details Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center">
-            <div class="icon-wrapper me-4">
-              <i class="fas fa-file-invoice"></i>
-            </div>
-            <div>
-              <h3 class="card-title mb-0">Purchase Details</h3>
-              <p class="text-muted mb-0">Enter basic purchase information</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-card" style="padding: 20px;">
-          <div class="row g-4">
-            {% for field in form %}
-              <div class="col-md-6 col-lg-4">
-                <div class="form-group">
-                  <label class="form-label">{{ field.label }}</label>
-                  <div class="input-wrapper">
-                    <i class="fas fa-tag input-icon"></i>
-                    {{ field }}
-                  </div>
-                  {% if field.errors %}
-                    <div class="validation-error">{{ field.errors }}</div>
-                  {% endif %}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Purchase Items Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-              <div class="icon-wrapper me-4">
-                <i class="fas fa-boxes"></i>
-              </div>
-              <div>
-                <h4 class="card-title mb-0">Purchase Items</h4>
-                <p class="text-muted mb-0">Add items to your purchase</p>
-              </div>
-            </div>
-            <button type="button" id="add-more-items" class="add-btn">
-              <i class="fas fa-plus me-2"></i>Add Item
-            </button>
-          </div>
-        </div>
-        
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="modern-table">
-              <thead>
-                <tr>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-tag header-icon"></i>
-                      <span class="header-text">Item</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-folder header-icon"></i>
-                      <span class="header-text">Item Sub</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-cogs header-icon"></i>
-                      <span class="header-text">Type</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-star header-icon"></i>
-                      <span class="header-text">Grade</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-weight-hanging header-icon"></i>
-                      <span class="header-text">Quantity</span>
-                    </div>
-                  </th>
-                  <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-rupee-sign header-icon"></i>
-                      <span class="header-text">Rate</span>
-                    </div>
-                  </th>
-                  <th class="table-header text-center">
-                    <div class="header-content justify-content-center">
-                      <i class="fas fa-tools header-icon"></i>
-                      <span class="header-text">Action</span>
-                    </div>
-                  </th>
-                  <th class="table-header text-center">
-                    <div class="header-content justify-content-center">
-                      <i class="fas fa-trash header-icon"></i>
-                      <span class="header-text">Delete</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="item-container">
-                {% for form in formset %}
-                  <tr class="item-row table-row">
-                    {% for field in form.visible_fields %}
-                      <td class="table-cell">
-                        {{ field.as_widget }}
-                        {% if field.errors %}
-                          <div class="validation-error">{{ field.errors }}</div>
-                        {% endif %}
-                      </td>
-                    {% endfor %}
-                    <td class="table-cell text-center">
-                      <button type="button" class="action-btn delete-btn">
-                        <i class="fas fa-trash-alt"></i>
-                        <span>Delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Purchase Summary Card -->
-      <div class="form-card mb-4">
-        <div class="card-header">
-          <div class="d-flex align-items-center">
-            <div class="icon-wrapper me-4">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <div>
-              <h4 class="card-title mb-0">Purchase Summary</h4>
-              <p class="text-muted mb-0">Overview of purchase totals</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card-body">
-          <div class="totals-grid">
-            <div class="total-item">
-              <div class="total-icon">
-                <i class="fas fa-cubes"></i>
-              </div>
-              <div class="total-details">
-                <span class="total-label">Total Quantity</span>
-                <span class="total-value" id="quantity-total">0.00</span>
-              </div>
-            </div>
-            
-            <div class="total-item">
-              <div class="total-icon">
-                <i class="fas fa-rupee-sign"></i>
-              </div>
-              <div class="total-details">
-                <span class="total-label">Total Amount</span>
-                <span class="total-value amount-value">₹<span id="amount-total">0.00</span></span>
-              </div>
-            </div>
-            
-            <div class="total-item">
-              <div class="total-icon">
-                <i class="fas fa-box"></i>
-              </div>
-              <div class="total-details">
-                <span class="total-label">Total Items</span>
-                <span class="total-value" id="items-count">0</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Section -->
-<div class="form-actions">
-  <div class="row">
-    <div class="col-lg-6 mb-3">
-      <button type="submit" class="submit-btn">
-        <i class="fas fa-save me-2"></i>Save
-      </button>
-    </div>
-    <div class="col-lg-6 mb-3">
-      <a href="{% url 'adminapp:local_purchase_list' %}" class="cancel-btn">
-        <i class="fas fa-times me-2"></i>Cancel
-      </a>
-    </div>
-  </div>
-</div>
-    </form>
-  </div>
-</div>
-
-<!-- Hidden empty form template -->
-<template id="row-template">
-  <tr class="item-row table-row">
-    {% with formset.empty_form as form %}
-      {% for field in form.visible_fields %}
-        <td class="table-cell">
-          {{ field.as_widget }}
-        </td>
-      {% endfor %}
-    {% endwith %}
-    <td class="table-cell text-center">
-      <button type="button" class="action-btn delete-btn">
-        <i class="fas fa-trash-alt"></i>
-        <span>Delete</span>
-      </button>
-    </td>
-  </tr>
-</template>
-
 <style>
+    input[name$="-DELETE"] {
+  display: none !important;
+}
 small.unit {
   font-size: 0.8rem;        
   font-weight: 600;        
@@ -582,11 +311,11 @@ small.unit {
 }
 
 .table-header {
-  background: #f8f9fd;
+  background: #28a745;
   border: none;
   padding: 20px;
   font-weight: 700;
-  color: #495057;
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 13px;
@@ -598,7 +327,7 @@ small.unit {
 }
 
 .header-icon {
-  color: #6c757d;
+  color: #ffffff;
   margin-right: 10px;
   font-size: 14px;
 }
@@ -616,7 +345,7 @@ small.unit {
 }
 
 .table-cell {
-  padding-bottom: 20px;
+  /* padding-bottom: 20px; */
   border: none;
   border-bottom: 1px solid #f1f3f7;
   vertical-align: middle;
@@ -638,7 +367,7 @@ small.unit {
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   transition: all 0.3s ease;
   border: 2px solid;
   background: none;
@@ -660,7 +389,7 @@ small.unit {
 
 .action-btn i {
   margin-right: 6px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* Totals Grid Styling */
@@ -852,6 +581,282 @@ small.unit {
   }
 }
 </style>
+
+<div class="container">
+  <div class="page-inner">
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fa-solid fa-cart-shopping"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Purchase Management</h3>
+            <p class="ph-header-subtitle">Manage your purchase orders.</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs - Now inline with header -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item ">
+              <a href="{%url 'adminapp:local_purchase_list'%}" class="ph-breadcrumb-link">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Local Purchases</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+                           <a href="{%url 'adminapp:local_purchase_create'%}">
+                <span>Create</span>
+              </a>
+            </li>
+          </ol>
+        </nav>
+
+        <div class="ph-header-stats">
+
+        </div>
+      </div>
+    </div>
+
+    <form method="post" class="purchase-form">
+      {% csrf_token %}
+      {{ formset.management_form }}
+
+      <!-- Purchase Details Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div>
+              <h3 class="card-title mb-0">Purchase Details</h3>
+              <p class="text-muted mb-0">Enter basic purchase information</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-card" style="padding: 20px;">
+          <div class="row g-4">
+            {% for field in form %}
+              <div class="col-md-6 col-lg-4">
+                <div class="form-group">
+                  <label class="form-label">{{ field.label }}</label>
+                  <div class="input-wrapper">
+                    <i class="fas fa-tag input-icon"></i>
+                    {{ field }}
+                  </div>
+                  {% if field.errors %}
+                    <div class="validation-error">{{ field.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Items Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrapper me-4">
+                <i class="fas fa-boxes"></i>
+              </div>
+              <div>
+                <h4 class="card-title mb-0">Purchase Items</h4>
+                <p class="text-muted mb-0">Add items to your purchase</p>
+              </div>
+            </div>
+            <button type="button" id="add-more-items" class="add-btn">
+              <i class="fas fa-plus me-2"></i>Add Item
+            </button>
+          </div>
+        </div>
+        
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-tag header-icon"></i>
+                      <span class="header-text">Item</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-folder header-icon"></i>
+                      <span class="header-text">Item Sub</span>
+                    </div>
+                  </th>
+
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-cogs header-icon"></i>
+                      <span class="header-text">Type</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-star header-icon"></i>
+                      <span class="header-text">Grade</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-weight-hanging header-icon"></i>
+                      <span class="header-text">Quantity</span>
+                    </div>
+                  </th>
+                  <th class="table-header">
+                    <div class="header-content">
+                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <span class="header-text">Rate</span>
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <!-- <i class="fas fa-tools header-icon"></i>
+                      <span class="header-text">Action</span> -->
+                    </div>
+                  </th>
+                  <th class="table-header text-center">
+                    <div class="header-content justify-content-center">
+                      <i class="fas fa-trash header-icon"></i>
+                      <span class="header-text">Delete</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="item-container">
+                {% for form in formset %}
+                  <tr class="item-row table-row">
+                    {% for field in form.visible_fields %}
+                      <td class="table-cell">
+                        {{ field.as_widget }}
+                        {% if field.errors %}
+                          <div class="validation-error">{{ field.errors }}</div>
+                        {% endif %}
+                      </td>
+                    {% endfor %}
+                    <td class="table-cell text-center">
+                      <button type="button" class="action-btn delete-btn">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Purchase Summary Card -->
+      <div class="form-card mb-4">
+        <div class="card-header">
+          <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-4">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+              <h4 class="card-title mb-0">Purchase Summary</h4>
+              <p class="text-muted mb-0">Overview of purchase totals</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="totals-grid">
+            <div class="total-item">
+              <div class="total-icon">
+                <i class="fas fa-cubes"></i>
+              </div>
+              <div class="total-details">
+                <span class="total-label">Total Quantity</span>
+                <span class="total-value" id="quantity-total">0.00</span>
+              </div>
+            </div>
+            
+            <div class="total-item">
+              <div class="total-icon">
+                <i class="fas fa-rupee-sign"></i>
+              </div>
+              <div class="total-details">
+                <span class="total-label">Total Amount</span>
+                <span class="total-value amount-value">₹<span id="amount-total">0.00</span></span>
+              </div>
+            </div>
+            
+            <div class="total-item">
+              <div class="total-icon">
+                <i class="fas fa-box"></i>
+              </div>
+              <div class="total-details">
+                <span class="total-label">Total Items</span>
+                <span class="total-value" id="items-count">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Section -->
+<div class="form-actions">
+  <div class="row">
+    <div class="col-lg-6 mb-3">
+      <button type="submit" class="submit-btn">
+        <i class="fas fa-save me-2"></i>Save
+      </button>
+    </div>
+    <div class="col-lg-6 mb-3">
+      <a href="{% url 'adminapp:local_purchase_list' %}" class="cancel-btn">
+        <i class="fas fa-times me-2"></i>Cancel
+      </a>
+    </div>
+  </div>
+</div>
+    </form>
+  </div>
+</div>
+
+<!-- Hidden empty form template -->
+<template id="row-template">
+  <tr class="item-row table-row">
+    {% with formset.empty_form as form %}
+      {% for field in form.visible_fields %}
+        <td class="table-cell">
+          {{ field.as_widget }}
+        </td>
+      {% endfor %}
+    {% endwith %}
+    <td class="table-cell text-center">
+      <button type="button" class="action-btn delete-btn">
+        <i class="fas fa-trash-alt"></i>
+        <span>Delete</span>
+      </button>
+    </td>
+  </tr>
+</template>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
