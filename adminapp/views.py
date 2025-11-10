@@ -4473,12 +4473,15 @@ class PreShipmentWorkOutView(CustomPermissionMixin, View):
                     # Dynamically adjust species & peeling_type querysets for validation
                     if selected_item:
                         for form in formset.forms:
-                            form.fields["species"].queryset = Species.objects.filter(
-                                item=selected_item
-                            )
-                            form.fields["peeling_type"].queryset = ItemType.objects.filter(
-                                item=selected_item
-                            )
+                            # Check if fields exist before setting querysets
+                            if "species" in form.fields:
+                                form.fields["species"].queryset = Species.objects.filter(
+                                    item=selected_item
+                                )
+                            if "peeling_type" in form.fields:
+                                form.fields["peeling_type"].queryset = ItemType.objects.filter(
+                                    item=selected_item
+                                )
                     
                     # Validate formset
                     if formset.is_valid():
@@ -4509,29 +4512,35 @@ class PreShipmentWorkOutView(CustomPermissionMixin, View):
                         
                         messages.success(
                             request,
-                            f"Pre-Shipment WorkOut created successfully with {formset.forms.__len__()} items."
+                            f"Pre-Shipment WorkOut created successfully with {len(formset.forms)} items."
                         )
                         return redirect(request.path)
                     else:
-                        # Formset validation failed
+                        # Formset validation failed - transaction will rollback automatically
                         logger.error(f"Formset errors: {formset.errors}")
                         messages.error(
                             request,
                             "Please correct the item form errors below."
                         )
+                        # No need for set_rollback - exception will handle it
+                        raise ValueError("Formset validation failed")
+                        
             except Exception as e:
+                # Transaction automatically rolls back when exception exits the atomic block
                 logger.error(f"Error saving Pre-Shipment WorkOut: {str(e)}")
                 messages.error(request, f"Error saving data: {str(e)}")
-                transaction.set_rollback(True)
+                # Don't call transaction.set_rollback here - we're outside the atomic block
         else:
             # Main form validation failed
             logger.error(f"Workout form errors: {workout_form.errors}")
             messages.error(request, "Please correct the workout form errors below.")
-            formset = PreShipmentWorkOutItemFormSet(
-                request.POST,
-                prefix="items",
-                instance=PreShipmentWorkOut()
-            )
+            
+        # Initialize formset for re-rendering (whether error or validation failure)
+        formset = PreShipmentWorkOutItemFormSet(
+            request.POST,
+            prefix="items",
+            instance=PreShipmentWorkOut()
+        )
 
         # Re-render form with errors
         context = {
