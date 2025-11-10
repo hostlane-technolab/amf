@@ -1,10 +1,11 @@
 {% extends 'admin_base.html' %}
 {% load static %}
-
+{% block title %} Create Preshipment {% endblock %}
 {% block content %}
 
-<!-- Page header style -->
+    <!-- Page header style -->
 <style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
   :root {
     --ph-primary-color: #2563eb;
     --ph-primary-hover: #1d4ed8;
@@ -28,6 +29,7 @@
     --ph-spacing-2xl: 48px;
   }
 
+  /* Page Header Section */
   .page-header-section {
     margin-bottom: var(--ph-spacing-2xl);
   }
@@ -36,6 +38,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* Changed from flex-start to center */
     flex-wrap: wrap;
     gap: var(--ph-spacing-lg);
   }
@@ -80,6 +83,24 @@
     font-weight: 500;
   }
 
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
   .ph-breadcrumb-nav {
     margin-top: 3rem;
   }
@@ -91,6 +112,7 @@
     padding: 0;
     list-style: none;
     flex-wrap: wrap;
+
   }
 
   .ph-breadcrumb-item {
@@ -133,32 +155,34 @@
     margin: 0 4px;
     font-size: 12px;
   }
-
-  @media (max-width: 768px) {
-    .ph-header-stats {
-      display: none !important;
-    }
-    .ph-breadcrumb-nav {
-      margin-top: 5px;
-    }
-    .ph-header-title {
-      font-size: 1.7rem;
-    }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
   }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
 
-  /* Card Styling */
+<style>
+
   .card {
     border-radius: 20px;
     background: #ffffff;
     box-shadow: 0 10px 40px rgba(0,0,0,0.08);
     border: none;
+    margin-bottom: 30px;
   }
 
   .card-header {
     border-radius: 20px 20px 0 0;
     background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
     border-bottom: 2px solid #f1f3f7;
-    padding: 30px;
+    padding: 35px 40px;
   }
 
   .header-content {
@@ -236,16 +260,19 @@
   }
 
   .edit-btn {
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    border-color: rgba(40, 167, 69, 0.2);
-  }
 
-  .edit-btn:hover {
     background: #28a745;
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+    padding: 15px;
+  }
+
+  .edit-btn:hover {
+    background: rgba(40, 167, 69, 0.1);
+    background: #218838;
+    color: white;
+    border-color: rgba(40, 167, 69, 0.2);
   }
 
   .delete-btn {
@@ -300,11 +327,11 @@
   }
 
   .modern-table th {
-    background: #f8f9fd;
-    padding: 12px 10px !important;
+    background:#CA3E2F;
+    padding: 15px !important;
     text-align: left;
     font-weight: 700;
-    color: #495057;
+    color: #ffffff;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     font-size: 12px !important;
@@ -319,7 +346,7 @@
   }
 
   .header-icon {
-    color: #6c757d;
+    color: #ffffff;
     margin-right: 6px !important;
     font-size: 12px !important;
   }
@@ -345,13 +372,14 @@
   .modern-table select.form-select,
   .modern-table input.form-control {
     margin: 0 !important;
-    padding: 8px 12px !important;
-    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    border-radius: 10px !important;
     border: 2px solid #e9ecef !important;
-    font-size: 14px !important;
+    font-size: 15px !important;
     background: white !important;
     transition: all 0.2s ease !important;
     width: 100%;
+    min-height: 46px !important;
   }
 
   .modern-table select.form-select:focus,
@@ -439,10 +467,35 @@
     margin-bottom: 0 !important;
   }
 
+
+  /* Action Buttons - Full Width 2 Column Layout */
   .text-center.mt-4 {
     margin-top: 20px !important;
     padding: 0 20px 20px 20px !important;
   }
+
+  .text-center .action-buttons {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 15px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .text-center .action-buttons .add-new-btn,
+  .text-center .action-buttons .edit-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+
+  /* Responsive - Stack on mobile */
+  @media (max-width: 768px) {
+    .text-center .action-buttons {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
 
   /* Responsive Design */
   @media (max-width: 1400px) {
@@ -508,7 +561,7 @@
 
 <div class="container">
   <div class="page-inner">
-    <div class="page-header-section">
+        <div class="page-header-section">
       <div class="ph-header-content">
         <div class="ph-header-left">
           <div class="ph-icon-wrapper">
@@ -520,6 +573,7 @@
           </div>
         </div>
 
+        <!-- Breadcrumbs -->
         <nav class="ph-breadcrumb-nav">
           <ol class="ph-breadcrumb-list">
             <li class="ph-breadcrumb-item">
@@ -547,6 +601,7 @@
             </li>
           </ol>
         </nav>
+        <div class="ph-header-stats"></div>
       </div>
     </div>
 
@@ -571,7 +626,7 @@
         </div>
       </div>
 
-      <form method="post" class="p-4">
+      <form method="post" class="">
         {% csrf_token %}
 
         <!-- Main Workout Form -->
@@ -645,7 +700,7 @@
                   <td>
                     <div class="action-buttons">
                       <button type="button" class="action-btn delete-btn remove-row">
-                        <i class="fas fa-trash"></i> Remove
+                        <i class="fas fa-trash"></i> 
                       </button>
                     </div>
                   </td>
@@ -658,11 +713,11 @@
         <!-- Action Buttons -->
         <div class="text-center mt-4">
           <div class="action-buttons">
-            <button type="button" id="add-row" class="add-new-btn">
-              <i class="fas fa-plus"></i> Add More Rows
-            </button>
             <button type="submit" class="action-btn edit-btn">
               <i class="fas fa-save"></i> Save WorkOut
+            </button>
+            <button type="button" id="add-row" class="add-new-btn">
+              <i class="fas fa-plus"></i> Add More Rows
             </button>
           </div>
         </div>
@@ -694,7 +749,7 @@
           <td>
             <div class="action-buttons">
               <button type="button" class="action-btn delete-btn remove-row">
-                <i class="fas fa-trash"></i> Remove
+                <i class="fas fa-trash"></i>
               </button>
             </div>
           </td>

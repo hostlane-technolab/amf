@@ -976,7 +976,7 @@
             <div class="report-subtitle">Comprehensive Inventory with USD & INR Valuations</div>
             
             <div class="company-info">
-                <div class="company-name">BAHRAYA EXPORTS </div>
+                <div class="company-name">PREMIER MARINE FOOD</div>
                 <div class="company-location">VANDANAM, ALAPPUZHA</div>
                 <div class="company-location">KERALA, INDIA</div>
             </div>
@@ -1156,6 +1156,9 @@
             <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
                 Generate PDF
             </button>
+            <a href="{% url 'adminapp:stock_report_print_amt' %}?{{ request.GET.urlencode }}" target="_blank" class="action-btn print-btn">
+                Print Preview
+            </a>
             <button type="button" onclick="exportToCSV()" class="action-btn">
                 Export CSV
             </button>

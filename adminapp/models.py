@@ -893,7 +893,7 @@ class PreShipmentWorkOut(BaseModel):
 class PreShipmentWorkOutItem(BaseModel):
     workout = models.ForeignKey(PreShipmentWorkOut, on_delete=models.CASCADE, related_name="items")
     species = models.ForeignKey('Species', on_delete=models.CASCADE, null=True, blank=True)
-    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE)
+    peeling_type = models.ForeignKey('ItemType', on_delete=models.CASCADE, null=True, blank=True)
     grade = models.ForeignKey('ItemGrade', on_delete=models.CASCADE)
     cartons = models.DecimalField(max_digits=100, decimal_places=2, default=0)
     quantity = models.DecimalField(max_digits=100, decimal_places=3, default=0)

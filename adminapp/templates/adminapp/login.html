@@ -714,6 +714,26 @@
                         <h2>Welcome Back</h2>
                         <p>Please sign in to your account</p>
                     </div>
+<!-- Error Messages -->
+                    {% if messages %}
+                    <div class="error-message">
+                        {% for message in messages %}
+                        <div class="error-box">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>{{ message }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if error %}
+                    <div class="error-message">
+                        <div class="error-box">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <p>{{ error }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
 
                     <!-- Login Form -->
                     <form method="post" class="login-form">

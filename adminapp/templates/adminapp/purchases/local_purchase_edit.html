@@ -168,17 +168,110 @@
 </style>
 
 <style>
+/* Badge Styles - Add these to your existing styles */
+
+/* Transfer Badge (Serial Number) */
+.transfer-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 17px;
+  background: rgba(108, 92, 231, 0.1);
+  color: #6c5ce7;
+  border: 2px solid rgba(108, 92, 231, 0.2);
+}
+
+.transfer-text {
+  font-weight: 700;
+}
+
+.transfer-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Quantity Display - Blue Theme */
+.quantity2-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #0d47a1;
+  font-weight: 600;
+  font-size: 17px;
+  box-shadow: 0 2px 8px rgba(13, 71, 161, 0.15);
+  white-space: nowrap;
+}
+
+.quantity2-value {
+  color: #0d47a1;
+}
+
+.quantity2-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Amount Display - Green Theme */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 18px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 17px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.currency-symbol {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.amount-value {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.amount-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Center the badges in summary table cells */
+.summary-table .table-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.summary-row .table-cell {
+  text-align: center;
+}
   input[name$="-DELETE"] {
   display: none !important;
 }
 
   small.unit {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    color: #2c3e50;
+    color:#0d47a1;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-left: 4px;
+    margin-top: 2px;
   }
 
   /* Base Styles */
@@ -320,7 +413,7 @@
   .table-header {
   background: #28a745;
   border: none;
-  padding: 20px;
+  padding: 15px;
   font-weight: 700;
   color: #ffffff;
   text-transform: uppercase;
@@ -431,10 +524,15 @@
     font-weight: 700;
   }
 
-  .unit {
-    color: #6c757d;
+  .unit-item {
+    color:#6c5ce7;
     font-size: 12px;
     margin-left: 4px;
+    margin-top: 1px;
+        text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 4px;
+
   }
 
   .total-highlight .calculated-value {
@@ -733,7 +831,7 @@
                   </th>
                   <th class="table-header">
                     <div class="header-content">
-                      <i class="fas fa-rupee-sign header-icon"></i>
+                      <i class="fa-solid fa-indian-rupee-sign header-icon"></i>
                       <span class="header-text">Rate</span>
                     </div>
                   </th>
@@ -805,28 +903,35 @@
                   <th class="table-header">Total Items</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr class="summary-row">
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span id="quantity-total" class="calculated-value">0.00</span>
-                      <small class="unit">kg</small>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span class="currency">₹</span>
-                      <span id="amount-total" class="calculated-value">0.00</span>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span id="items-count" class="calculated-value">0</span>
-                      <small class="unit">items</small>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+<tbody>
+      <tr class="summary-row">
+        <!-- Total Quantity with Badge -->
+        <td class="table-cell">
+          <div class="quantity2-display">
+            <i class="fa-solid fa-weight-hanging quantity2-icon"></i>
+            <span id="quantity-total" class="quantity2-value">0.00</span>
+            <small class="unit">kg</small>
+          </div>
+        </td>
+        
+        <!-- Total Amount with Badge -->
+        <td class="table-cell">
+          <div class="amount-display">
+            <i class="fa-solid fa-indian-rupee-sign amount-icon"></i>
+            <span id="amount-total" class="amount-value">0.00</span>
+          </div>
+        </td>
+        
+        <!-- Total Items with Badge -->
+        <td class="table-cell">
+          <div class="transfer-badge">
+            <i class="fa-solid fa-box transfer-icon"></i>
+            <span id="items-count" class="transfer-text">0</span>
+            <small class="unit-item">items</small>
+          </div>
+        </td>
+      </tr>
+    </tbody>
             </table>
           </div>
         </div>
@@ -1381,6 +1486,70 @@ $(document).ready(function() {
         }
     });
 });
+</script>
+
+<script>
+  // Simple Indian comma formatting function
+function formatIndianComma(number) {
+    const num = parseFloat(number).toFixed(2);
+    const [integer, decimal] = num.split('.');
+    
+    // Handle last 3 digits separately
+    const lastThree = integer.slice(-3);
+    const remaining = integer.slice(0, -3);
+    
+    // Add comma every 2 digits in remaining part
+    const formatted = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    
+    // Combine all parts
+    return (formatted ? formatted + ',' : '') + lastThree + '.' + decimal;
+}
+
+// Examples:
+// 1234567.89  → "12,34,567.89"
+// 12345.50    → "12,345.50"  
+// 123.45      → "123.45"
+// 987654321.5 → "98,76,54,321.50"
+</script>
+
+<script>
+  // Indian comma format
+  function formatIndianComma(number) {
+      const num = parseFloat(number).toFixed(2);
+      const [integer, decimal] = num.split('.');
+      
+      const lastThree = integer.slice(-3);
+      const remaining = integer.slice(0, -3);
+      const formatted = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+      
+      return (formatted ? formatted + ',' : '') + lastThree + '.' + decimal;
+  }
+
+  // Update your existing calculatePurchaseTotals function:
+  function calculatePurchaseTotals() {
+    let totalAmount = 0;
+    let totalQuantity = 0;
+    let totalItems = 0;
+
+    document.querySelectorAll('.item-row').forEach(row => {
+      const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+      if (deleteCheckbox && deleteCheckbox.checked) return;
+
+      const quantity = parseFloat(row.querySelector('input[name$="-quantity"]')?.value) || 0;
+      const rate = parseFloat(row.querySelector('input[name$="-rate"]')?.value) || 0;
+
+      if (quantity > 0 || rate > 0) {
+        totalItems += 1;
+        totalQuantity += quantity;
+        totalAmount += quantity * rate;
+      }
+    });
+
+    // Use formatIndianComma here
+    document.getElementById('quantity-total').textContent = formatIndianComma(totalQuantity);
+    document.getElementById('amount-total').textContent = formatIndianComma(totalAmount);
+    document.getElementById('items-count').textContent = totalItems;
+  }
 </script>
 
 

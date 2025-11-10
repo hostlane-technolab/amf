@@ -7,9 +7,58 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
     <style>
-        .link-hover:hover{
-            color: rgb(254, 248, 248);
-        }
+.link-hover {
+  color: #ffffff; /* clean white text */
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease, text-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.link-hover:hover {
+  color: #132440; /* subtle light gray hover */
+  text-shadow: 0 0 6px rgba(36, 36, 36, 0.6);
+  transform: translateY(-1px);
+}
+
+        /* Dollar Rate Display Styling - Synced with Design */
+#dollarRateDisplay {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 12px 24px !important;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.25);
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 140px;
+    margin: 0 !important;
+    display: inline-block;
+    border: none;
+    margin-left: 2rem !important;
+}
+
+#dollarRateDisplay:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+}
+
+/* Adjust parent container alignment */
+.card-header .d-flex.align-items-center.justify-content-between {
+    align-items: center !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    #dollarRateDisplay {
+        font-size: 14px;
+        padding: 10px 20px !important;
+        min-width: 120px;
+    }
+}
+
         /* Page Header Styles */
         .page-header {
             display: flex;
@@ -1531,7 +1580,7 @@
                                 <i class="fas fa-snowflake"></i>
                             </div>
                             <div>
-                                <h3 class="card-title">Freezing Details</h3>
+                                <h3 class="card-title">Spot Freezing Details</h3>
                                 <p class="text-muted mb-0">Enter basic freezing information</p>
                             </div>
                         </div>
@@ -1605,15 +1654,16 @@
                                     <h4 class="card-title mb-0">Items</h4>
                                     <p class="text-muted mb-0">Add items to your freezing entry</p>
                                 </div>
-                                 <div>
-                                    <h4 class="card-title mb-0 p-4" id="dollarRateDisplay">
-                                        $ (Loading...)
-                                    </h4>           
-                                </div>
+
                             </div>
-                            <button type="button" id="add-more-btn" class="add-btn">
-                                <i class="fas fa-plus me-2"></i>Add Item
-                            </button>
+                            <div>
+                                <h4 class="card-title mb-0 p-4" id="dollarRateDisplay">
+                                    $ (Loading...)
+                                </h4>
+                                <button type="button" id="add-more-btn" class="add-btn">
+                                    <i class="fas fa-plus me-2"></i>Add Item
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1769,7 +1819,7 @@
                                         <td class="hidden">{{ form.usd_rate_item_to_inr }} {{ form.usd_rate_item_to_inr.errors }}</td>
                                         <td class="table-cell col-yield">{{ form.yield_percentage }} {{ form.yield_percentage.errors }}</td>
                                         <td class="table-cell col-action text-center">
-                                            <button type="button" class="action-btn delete-btn remove-btn">
+                                            <button type="button" class="action-btn delete-btn remove-btn mt-2">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </td>

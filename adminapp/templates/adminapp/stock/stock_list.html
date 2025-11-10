@@ -92,7 +92,7 @@
   .ph-icon-wrapper {
     width: 64px;
     height: 64px;
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    background: linear-gradient(135deg, #004ff9ff 0%, #004ff9ff 100%);
     border-radius: var(--ph-radius-lg);
     display: flex;
     align-items: center;
@@ -179,13 +179,13 @@
   }
 
   .ph-breadcrumb-item.active span {
-    color: var(--ph-primary-color);
+    color: #0643F8;
     font-weight: 600;
     padding: 6px 12px;
-    background: rgba(40, 167, 69, 0.1);
+    background: rgba(6, 67, 248, 0.08);
     border-radius: var(--ph-radius-sm);
     font-size: 14px;
-  }
+}
 
   .ph-breadcrumb-separator {
     color: var(--ph-text-light);
@@ -467,8 +467,7 @@
                     <td class="table-cell">
                       <div class="brand-display">
                         <span class="brand-badge">
-                          <i class="fas fa-tag me-2"></i>
-                          {{ stock.brand.name }}
+                          <i class="fas fa-tag me-2"></i>{{ stock.brand.name }}
                         </span>
                       </div>
                     </td>
@@ -476,8 +475,7 @@
                     <td class="table-cell">
                       <div class="category-display">
                         <span class="category-badge">
-                          <i class="fas fa-list-alt me-2"></i>
-                          {{ stock.item_quality.quality }}
+                          <i class="fas fa-list-alt me-2"></i>{{ stock.item_quality.quality }}
                         </span>
                       </div>
                     </td>
@@ -485,18 +483,15 @@
                     <td class="table-cell">
                       <div class="fr-category-display">
                         <span class="fr-category-badge">
-                          <i class="fas fa-snowflake me-2"></i>
-                          {{ stock.freezing_category.name }}
+                          <i class="fas fa-snowflake me-2"></i>{{ stock.freezing_category.name }}
                         </span>
                       </div>
                     </td>
                     
                     <td class="table-cell">
                       <div class="unit-display">
-                        
                         <span class="unit-code">
-                          <i class="fas fa-ruler header-icon me-2"></i>
-                          {{ stock.unit.unit_code }}
+                          <i class="fas fa-ruler me-2"></i>{{ stock.unit.unit_code }}
                         </span>
                       </div>
                     </td>
@@ -504,8 +499,7 @@
                     <td class="table-cell">
                       <div class="glaze-display">
                         <span class="glaze-badge">
-                          <i class="fas fa-tint me-2"></i>
-                          {{ stock.glaze.percentage }}%
+                          <i class="fas fa-tint me-2"></i>{{ stock.glaze.percentage }}%
                         </span>
                       </div>
                     </td>
@@ -513,21 +507,23 @@
                     <td class="table-cell">
                       <div class="species-display">
                         <span class="species-badge">
-                          <i class="fas fa-fish me-2"></i>
-                          {{ stock.species.name }}
+                          <i class="fas fa-fish me-2"></i>{{ stock.species.name }}
                         </span>
                       </div>
                     </td>
                     
                     <td class="table-cell">
                       <div class="grade-display">
-                        <span class="grade-badge">{{ stock.item_grade.grade }}</span>
+                        <span class="grade-badge">
+                          <i class="fas fa-star me-2"></i>{{ stock.item_grade.grade }}
+                        </span>
                       </div>
                     </td>
                     
                     <td class="table-cell">
                       <div class="quantity-display cs-quantity {% if stock.cs_quantity < 10 %}low-stock{% endif %}">
-                        <span class="quantity-value">{{ stock.cs_quantity }}</span>
+                        <span class="quantity-value">
+                          <i class="fas fa-box me-2"></i>{{ stock.cs_quantity }}</span>
                         <span class="quantity-unit">cs</span>
                         {% if stock.cs_quantity < 10 %}
                           <i class="fas fa-exclamation-triangle low-stock-icon" title="Low Stock"></i>
@@ -537,6 +533,7 @@
                     
                     <td class="table-cell">
                       <div class="quantity-display kg-quantity {% if stock.kg_quantity < 10 %}low-stock{% endif %}">
+                        <i class="fas fa-weight me-2"></i>
                         <span class="quantity-value">{{ stock.kg_quantity }}</span>
                         <span class="quantity-unit">kg</span>
                         {% if stock.kg_quantity < 10 %}
@@ -551,10 +548,9 @@
                           {% csrf_token %}
                           <button type="submit" 
                                   class="action-btn delete-btn" 
-                                  title="Delete Stock"
+                                  title="Delete Entry"
                                   onclick="return confirm('Are you sure you want to delete this stock item?\n\nItem: {{ stock.item.name }}\nBrand: {{ stock.brand.name }}\nCS Qty: {{ stock.cs_quantity }}\nKG Qty: {{ stock.kg_quantity }}\n\nThis action cannot be undone.')">
                             <i class="fas fa-trash-alt"></i>
-                            
                           </button>
                         </form>
                       </div>
@@ -916,17 +912,21 @@
     font-weight: 500;
   }
 
-  /* Badge Displays */
+  /* Badge Displays - Single Line Fix */
   .brand-badge, .fr-category-badge, .category-badge, .species-badge, .glaze-badge {
     display: inline-flex;
     align-items: center;
-    padding: 8px 15px;
+    padding: 10px 18px;
     border-radius: 20px;
     font-weight: 600;
     font-size: 13px;
     background: rgba(0, 123, 255, 0.1);
     color: #007bff;
     border: 2px solid rgba(0, 123, 255, 0.2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   .fr-category-badge {
@@ -953,26 +953,38 @@
     border-color: rgba(23, 162, 184, 0.2);
   }
 
-  .unit-code {
+  .unit-display {
     display: inline-block;
-    padding: 6px 12px;
-    background: rgba(255, 193, 7, 0.1);
-    color: #ffc107;
-    border-radius: 15px;
+  }
+
+  .unit-code {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-radius: 20px;
     font-weight: 600;
     font-size: 13px;
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
     border: 2px solid rgba(255, 193, 7, 0.2);
+    white-space: nowrap;
+  }
+
+  .grade-display {
+    display: inline-block;
   }
 
   .grade-badge {
-    display: inline-block;
-    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 18px;
     background: rgba(40, 167, 69, 0.1);
     color: #28a745;
-    border-radius: 15px;
+    border-radius: 20px;
     font-weight: 600;
     font-size: 13px;
     border: 2px solid rgba(40, 167, 69, 0.2);
+    white-space: nowrap;
   }
 
   /* Quantity Display - Beautiful Gradient Boxes */
@@ -1035,7 +1047,7 @@
   .action-btn {
     display: inline-flex;
     align-items: center;
-    padding: 10px 20px;
+    padding: 15px 20px;
     border-radius: 10px;
     text-decoration: none;
     font-weight: 600;
@@ -1060,7 +1072,6 @@
   }
 
   .action-btn i {
-    margin-right: 8px;
     font-size: 14px;
   }
 

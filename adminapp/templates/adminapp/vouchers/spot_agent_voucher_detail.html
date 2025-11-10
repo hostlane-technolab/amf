@@ -1,6 +1,7 @@
 {% extends 'admin_base.html' %}
 {% block title %} Spot Agent Voucher Detail {% endblock %}
 {% block content %}
+{% load indian_numbers %}
 
 <!-- Page header style -->
 <style>
@@ -346,28 +347,28 @@
   <td class="table-cell">
     <div class="{% if voucher.total_amount < 0 %}expense-display{% else %}amount-display{% endif %}">
       <span class="">₹</span>
-      <span class="{% if voucher.total_amount < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.total_amount|floatformat:2 }}</span>
+      <span class="{% if voucher.total_amount < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.total_amount|floatformat:2|indian_comma }}</span>
     </div>
   </td>
   
   <td class="table-cell">
     <div class="{% if voucher.receipt < 0 %}expense-display{% else %}amount-display{% endif %}">
       <span class="">₹</span>
-      <span class="{% if voucher.receipt < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.receipt|floatformat:2 }}</span>
+      <span class="{% if voucher.receipt < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.receipt|floatformat:2|indian_comma }}</span>
     </div>
   </td>
   
   <td class="table-cell">
     <div class="{% if voucher.payment < 0 %}expense-display{% else %}amount-display{% endif %}">
       <span class="">₹</span>
-      <span class="{% if voucher.payment < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.payment|floatformat:2 }}</span>
+      <span class="{% if voucher.payment < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.payment|floatformat:2|indian_comma }}</span>
     </div>
   </td>
   
   <td class="table-cell">
     <div class="{% if voucher.remain_amount < 0 %}expense-display{% else %}amount-display{% endif %}">
       <span class="">₹</span>
-      <span class="{% if voucher.remain_amount < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.remain_amount|floatformat:2 }}</span>
+      <span class="{% if voucher.remain_amount < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.remain_amount|floatformat:2|indian_comma }}</span>
     </div>
   </td>
 </tr>                
@@ -409,7 +410,7 @@
                 <td class="table-cell">
                   <div class="{% if voucher.remain_amount < 0 %}expense-display{% else %}amount-display{% endif %}">
                     <span class="">₹</span>
-                    <span class="{% if voucher.remain_amount < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.remain_amount|floatformat:2|default:"0.00" }}</span>
+                    <span class="{% if voucher.remain_amount < 0 %}expense-value{% else %}amount-value{% endif %}">{{ voucher.remain_amount|floatformat:2|default:"0.00"|indian_comma }}</span>
                     <small class="unit">balance</small>
                   </div>
                 </td>

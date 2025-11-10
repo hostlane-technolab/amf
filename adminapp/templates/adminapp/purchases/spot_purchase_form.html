@@ -168,6 +168,549 @@
 }
 </style>
 
+
+<style>
+  /* Badge Styles for Summary */
+
+/* Transfer Badge (Total Items) - Purple */
+.transfer-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 14px;
+  background: rgba(108, 92, 231, 0.1);
+  color: #6c5ce7;
+  border: 2px solid rgba(108, 92, 231, 0.2);
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15);
+  white-space: nowrap;
+}
+
+.transfer-text {
+  font-weight: 700;
+}
+
+.transfer-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Quantity Display - Blue Theme */
+.quantity2-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border: 2px solid #90caf9;
+  border-radius: 25px;
+  color: #0d47a1;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(13, 71, 161, 0.15);
+  white-space: nowrap;
+}
+
+.quantity2-value {
+  color: #0d47a1;
+  font-weight: 700;
+}
+
+.quantity2-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Amount Display - Green Theme */
+.amount-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 2px solid #a5d6a7;
+  border-radius: 25px;
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+  white-space: nowrap;
+}
+
+.amount-value {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.amount-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Expense Display - Red Theme */
+.expense-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border: 2px solid #ef9a9a;
+  border-radius: 25px;
+  color: #c62828;
+  font-weight: 600;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+  white-space: nowrap;
+}
+
+.expense-value {
+  color: #c62828;
+  font-weight: 700;
+}
+
+.expense-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* Total Purchase Badge - Orange/Yellow Theme */
+.total-purchase-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  border: 2px solid #ffcc80;
+  border-radius: 25px;
+  color: #e65100;
+  font-weight: 700;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+  white-space: nowrap;
+}
+
+.total-purchase-value {
+  color: #e65100;
+  font-weight: 700;
+}
+
+.total-purchase-icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+/* Center badges in summary table */
+.summary-table .table-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.summary-row .table-cell {
+  text-align: center;
+}
+
+.currency-symbol {
+  font-size: 14px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+    small.unit {
+  font-size: 0.8rem;        
+  font-weight: 600;        
+  color: #2c3e50;     
+  text-transform: uppercase;
+  letter-spacing: 0.5px;   
+  margin-left: 4px;         
+}
+/* Base Styles */
+.purchase-form {
+  margin-top: 2rem;
+}
+
+/* Card Styling */
+.form-card {
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  border: none;
+  overflow: hidden;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+  border-bottom: 2px solid #f1f3f7;
+  padding: 25px 30px;
+  border-radius: 20px 20px 0 0;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  background: #28a745;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+  .card-title {
+    font-size: 26px;
+    color: #2c3e50;
+    letter-spacing: -0.5px;
+  }
+
+.card-header p {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Card Body */
+.card-body {
+  padding: 30px;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 0;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #6c757d;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* Form Controls Styling */
+.form-control, input, select, textarea {
+  padding: 12px 15px 12px 45px !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #ffffff !important;
+  transition: all 0.3s ease !important;
+  width: 100% !important;
+  box-sizing: border-box;
+}
+
+.form-control:focus, input:focus, select:focus, textarea:focus {
+  border-color: #28a745 !important;
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
+  outline: none !important;
+}
+
+/* Add Button */
+.add-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.add-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+/* Table Styling */
+.modern-table, .summary-table {
+  width: 100%;
+  margin: 0;
+  font-size: 14px;
+}
+
+.table-header {
+  background:#28a745;
+  border: none;
+  padding: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.header-icon {
+  color: #ffffff;
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+/* Table Rows */
+.table-row {
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.table-row:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.table-cell {
+  padding: 20px;
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+.table-cell input, .table-cell select {
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+.table-cell2 {
+  /* padding-bottom: 20px; */
+  border: none;
+  border-bottom: 1px solid #f1f3f7;
+  vertical-align: middle;
+}
+
+.table-cell2 input, .table-cell2 select {
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 2px solid #e9ecef !important;
+  border-radius: 8px !important;
+  font-size: 13px !important;
+}
+
+/* Action Buttons */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  border: 2px solid;
+  background: none;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border-color: rgba(220, 53, 69, 0.2);
+}
+
+.delete-btn:hover {
+  background: #dc3545;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.action-btn i {
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+/* Summary Table Styling */
+.summary-row {
+  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+}
+
+.summary-value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.currency {
+  color: #28a745;
+  margin-right: 4px;
+  font-size: 14px;
+}
+
+.calculated-value {
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.unit {
+  color: #6c757d;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.total-highlight .calculated-value {
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.total-highlight .currency {
+  color: #dc3545;
+}
+
+.submit-btn {
+  background: #28a745;
+  color: white;
+  border: 2px solid #28a745;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: #218838;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: 2px solid #dc3545;
+  padding: 15px 30px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  width: 100%;
+}
+
+.cancel-btn:hover {
+  background: #c82333;
+  color: white;
+  text-decoration: none;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+
+/* Validation Errors */
+.validation-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+  
+  .card-header .d-flex:first-child {
+    flex-direction: row !important;
+    align-items: center !important;
+    margin-bottom: 20px;
+  }
+  
+  .add-btn {
+    align-self: center;
+    margin-top: 15px;
+  }
+  
+  .icon-wrapper {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    margin-right: 15px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-body {
+    padding: 20px;
+  }
+  
+  .card-header {
+    padding: 20px;
+  }
+  
+  .table-cell {
+    padding: 15px 10px;
+  }
+  
+  .summary-value {
+    font-size: 14px;
+  }
+  
+  .total-highlight .calculated-value {
+    font-size: 16px;
+  }
+}
+</style>
+
+
 <div class="container">
   <div class="page-inner">
     <div class="page-header-section">
@@ -441,48 +984,60 @@
                   <th class="table-header">Total Purchase Amount / kg</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr class="summary-row">
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span id="quantity-total" class="calculated-value">0.00</span>
-                      <small class="unit">kg</small>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span class="currency">₹</span>
-                      <span id="amount-total" class="calculated-value">0.00</span>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span id="items-count" class="calculated-value">0</span>
-                      <small class="unit">items</small>
-
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value">
-                      <span class="currency">₹</span>
-                      <span id="expense-total" class="calculated-value">0.00</span>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value total-highlight">
-                      <span class="currency">₹</span>
-                      <span id="total-purchase-amount" class="calculated-value">0.00</span>
-                    </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="summary-value total-highlight">
-                      <span class="currency">₹</span>
-                      <span id="total-purchase-amount-per-kg" class="calculated-value">0.00</span>
-                      <small class="unit">/kg</small>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+            <tbody>
+              <tr class="summary-row">
+                <!-- Total Quantity Badge -->
+                <td class="table-cell">
+                  <div class="quantity2-display">
+                    <i class="fa-solid fa-weight-hanging quantity2-icon"></i>
+                    <span id="quantity-total" class="quantity2-value">0.00</span>
+                    <small class="unit">kg</small>
+                  </div>
+                </td>
+                
+                <!-- Total Amount Badge -->
+                <td class="table-cell">
+                  <div class="amount-display">
+                    <i class="fa-solid fa-indian-rupee-sign amount-icon"></i>
+                    <span id="amount-total" class="amount-value">0.00</span>
+                  </div>
+                </td>
+                
+                <!-- Total Items Badge -->
+                <td class="table-cell">
+                  <div class="transfer-badge">
+                    <i class="fa-solid fa-box transfer-icon"></i>
+                    <span id="items-count" class="transfer-text">0</span>
+                    <small class="unit">items</small>
+                  </div>
+                </td>
+                
+                <!-- Total Expense Badge -->
+                <td class="table-cell">
+                  <div class="expense-display">
+                    <i class="fa-solid fa-indian-rupee-sign expense-icon  "></i>
+                    <span id="expense-total" class="expense-value">0.00</span>
+                  </div>
+                </td>
+                
+                <!-- Total Purchase Amount Badge -->
+                <td class="table-cell">
+                  <div class="total-purchase-display">
+                    <i class="fa-solid fa-calculator total-purchase-icon"></i>
+                    <span id="total-purchase-amount" class="total-purchase-value">0.00</span>
+                  </div>
+                </td>
+                
+                <!-- Total Purchase Amount Per Kg Badge -->
+                <td class="table-cell">
+                  <div class="total-purchase-display">
+                    <i class="fa-solid fa-balance-scale total-purchase-icon"></i>
+                    <span id="total-purchase-amount-per-kg" class="total-purchase-value">0.00</span>
+                    <small class="unit">/kg</small>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
             </table>
           </div>
         </div>
@@ -620,400 +1175,6 @@
   </tr>
 </template>
 
-<style>
-    small.unit {
-  font-size: 0.8rem;        
-  font-weight: 600;        
-  color: #2c3e50;     
-  text-transform: uppercase;
-  letter-spacing: 0.5px;   
-  margin-left: 4px;         
-}
-/* Base Styles */
-.purchase-form {
-  margin-top: 2rem;
-}
-
-/* Card Styling */
-.form-card {
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-  border: none;
-  overflow: hidden;
-}
-
-/* Card Header */
-.card-header {
-  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
-  border-bottom: 2px solid #f1f3f7;
-  padding: 25px 30px;
-  border-radius: 20px 20px 0 0;
-}
-
-.icon-wrapper {
-  width: 60px;
-  height: 60px;
-  background: #28a745;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24px;
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
-}
-
-  .card-title {
-    font-size: 26px;
-    color: #2c3e50;
-    letter-spacing: -0.5px;
-  }
-
-.card-header p {
-  color: #6c757d;
-  font-size: 14px;
-  margin: 0;
-}
-
-/* Card Body */
-.card-body {
-  padding: 30px;
-}
-
-/* Form Groups */
-.form-group {
-  margin-bottom: 0;
-}
-
-.form-label {
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 8px;
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Input Wrapper */
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 15px;
-  color: #6c757d;
-  font-size: 14px;
-  z-index: 2;
-}
-
-/* Form Controls Styling */
-.form-control, input, select, textarea {
-  padding: 12px 15px 12px 45px !important;
-  border: 2px solid #e9ecef !important;
-  border-radius: 12px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  background: #ffffff !important;
-  transition: all 0.3s ease !important;
-  width: 100% !important;
-  box-sizing: border-box;
-}
-
-.form-control:focus, input:focus, select:focus, textarea:focus {
-  border-color: #28a745 !important;
-  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1) !important;
-  outline: none !important;
-}
-
-/* Add Button */
-.add-btn {
-  background: #28a745;
-  color: white;
-  border: 2px solid #28a745;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.add-btn:hover {
-  background: #218838;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-}
-
-/* Table Styling */
-.modern-table, .summary-table {
-  width: 100%;
-  margin: 0;
-  font-size: 14px;
-}
-
-.table-header {
-  background:#28a745;
-  border: none;
-  padding: 20px;
-  font-weight: 700;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 13px;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-}
-
-.header-icon {
-  color: #ffffff;
-  margin-right: 10px;
-  font-size: 14px;
-}
-
-/* Table Rows */
-.table-row {
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.table-row:hover {
-  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-}
-
-.table-cell {
-  padding: 20px;
-  border: none;
-  border-bottom: 1px solid #f1f3f7;
-  vertical-align: middle;
-}
-
-.table-cell input, .table-cell select {
-  padding: 10px 12px !important;
-  margin: 0 !important;
-  border: 2px solid #e9ecef !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-}
-
-.table-cell2 {
-  /* padding-bottom: 20px; */
-  border: none;
-  border-bottom: 1px solid #f1f3f7;
-  vertical-align: middle;
-}
-
-.table-cell2 input, .table-cell2 select {
-  padding: 10px 12px !important;
-  margin: 0 !important;
-  border: 2px solid #e9ecef !important;
-  border-radius: 8px !important;
-  font-size: 13px !important;
-}
-
-/* Action Buttons */
-.action-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 8px 16px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  border: 2px solid;
-  background: none;
-  cursor: pointer;
-}
-
-.delete-btn {
-  background: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
-  border-color: rgba(220, 53, 69, 0.2);
-}
-
-.delete-btn:hover {
-  background: #dc3545;
-  color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-}
-
-.action-btn i {
-  margin-right: 6px;
-  font-size: 14px;
-}
-
-/* Summary Table Styling */
-.summary-row {
-  background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
-}
-
-.summary-value {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.currency {
-  color: #28a745;
-  margin-right: 4px;
-  font-size: 14px;
-}
-
-.calculated-value {
-  color: #2c3e50;
-  font-weight: 700;
-}
-
-.unit {
-  color: #6c757d;
-  font-size: 12px;
-  margin-left: 4px;
-}
-
-.total-highlight .calculated-value {
-  color: #dc3545;
-  font-size: 18px;
-}
-
-.total-highlight .currency {
-  color: #dc3545;
-}
-
-.submit-btn {
-  background: #28a745;
-  color: white;
-  border: 2px solid #28a745;
-  padding: 15px 30px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  text-decoration: none;
-  width: 100%;
-}
-
-.submit-btn:hover {
-  background: #218838;
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
-}
-
-.cancel-btn {
-  background: #dc3545;
-  color: white;
-  border: 2px solid #dc3545;
-  padding: 15px 30px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  width: 100%;
-}
-
-.cancel-btn:hover {
-  background: #c82333;
-  color: white;
-  text-decoration: none;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
-}
-
-
-/* Validation Errors */
-.validation-error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
-  font-weight: 500;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .card-header .d-flex {
-    flex-direction: column;
-    align-items: stretch !important;
-  }
-  
-  .card-header .d-flex:first-child {
-    flex-direction: row !important;
-    align-items: center !important;
-    margin-bottom: 20px;
-  }
-  
-  .add-btn {
-    align-self: center;
-    margin-top: 15px;
-  }
-  
-  .icon-wrapper {
-    width: 50px;
-    height: 50px;
-    font-size: 20px;
-    margin-right: 15px;
-  }
-  
-  .card-title {
-    font-size: 20px;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .submit-btn, .cancel-btn {
-    width: 100%;
-    max-width: 300px;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 576px) {
-  .card-body {
-    padding: 20px;
-  }
-  
-  .card-header {
-    padding: 20px;
-  }
-  
-  .table-cell {
-    padding: 15px 10px;
-  }
-  
-  .summary-value {
-    font-size: 14px;
-  }
-  
-  .total-highlight .calculated-value {
-    font-size: 16px;
-  }
-}
-</style>
 
 
 <script>
@@ -1373,4 +1534,106 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- Updated JavaScript with Indian Comma Formatting -->
+<script>
+// Indian comma formatting function
+function formatIndianComma(number) {
+    const num = parseFloat(number).toFixed(2);
+    const [integer, decimal] = num.split('.');
+    
+    const lastThree = integer.slice(-3);
+    const remaining = integer.slice(0, -3);
+    const formatted = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    
+    return (formatted ? formatted + ',' : '') + lastThree + '.' + decimal;
+}
+
+// Updated calculate functions with Indian comma formatting
+function calculatePurchaseTotals() {
+    let totalAmount = 0;
+    let totalQuantity = 0;
+    let totalItems = 0;
+
+    const itemRows = document.querySelectorAll('.item-row');
+
+    itemRows.forEach(row => {
+        const quantityInput = row.querySelector('input[name$="-quantity"]');
+        const totalRateInput = row.querySelector('input[name$="-total_rate"]');
+
+        const quantity = parseFloat(quantityInput?.value) || 0;
+        const totalRate = parseFloat(totalRateInput?.value) || 0;
+
+        if (quantity > 0 || totalRate > 0) {
+            totalItems += 1;
+            totalQuantity += quantity;
+            totalAmount += totalRate;
+        }
+    });
+
+    // Update with Indian comma formatting
+    document.getElementById('quantity-total').textContent = formatIndianComma(totalQuantity);
+    document.getElementById('amount-total').textContent = formatIndianComma(totalAmount);
+    document.getElementById('items-count').textContent = totalItems;
+    
+    calculateTotalPurchaseAmount();
+}
+
+function calculateExpenseTotals() {
+    const expenseFields = [
+        'ice_expense',
+        'vehicle_rent',
+        'loading_and_unloading',
+        'peeling_charge',
+        'other_expense'
+    ];
+
+    let totalExpense = 0;
+
+    expenseFields.forEach(field => {
+        const input = document.querySelector(`[name$="${field}"]`);
+        if (input) {
+            totalExpense += parseFloat(input.value) || 0;
+        }
+    });
+
+    // Update with Indian comma formatting
+    document.getElementById('expense-total').textContent = formatIndianComma(totalExpense);
+    
+    calculateTotalPurchaseAmount();
+}
+
+function calculateTotalPurchaseAmount() {
+    // Remove commas before parsing
+    const totalAmountText = document.getElementById('amount-total').textContent.replace(/,/g, '');
+    const totalExpenseText = document.getElementById('expense-total').textContent.replace(/,/g, '');
+    const totalQuantityText = document.getElementById('quantity-total').textContent.replace(/,/g, '');
+    
+    const totalAmount = parseFloat(totalAmountText) || 0;
+    const totalExpense = parseFloat(totalExpenseText) || 0;
+    const totalQuantity = parseFloat(totalQuantityText) || 0;
+    
+    const totalPurchaseAmount = totalAmount + totalExpense;
+    
+    const totalPurchaseElement = document.getElementById('total-purchase-amount');
+    if (totalPurchaseElement) {
+        totalPurchaseElement.textContent = formatIndianComma(totalPurchaseAmount);
+    }
+    
+    const totalPurchaseAmountPerKgElement = document.getElementById('total-purchase-amount-per-kg');
+    if (totalPurchaseAmountPerKgElement) {
+        if (totalQuantity > 0) {
+            const totalPurchaseAmountPerKg = totalPurchaseAmount / totalQuantity;
+            totalPurchaseAmountPerKgElement.textContent = formatIndianComma(totalPurchaseAmountPerKg);
+        } else {
+            totalPurchaseAmountPerKgElement.textContent = '0.00';
+        }
+    }
+}
+
+// Call on page load
+document.addEventListener('DOMContentLoaded', function() {
+    calculatePurchaseTotals();
+    calculateExpenseTotals();
+});
+</script>
 {% endblock %}

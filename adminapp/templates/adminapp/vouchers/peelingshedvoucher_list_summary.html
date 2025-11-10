@@ -5,758 +5,7 @@
 
 {% block content %}
 
-
-    <!-- Page header style -->
-<style>
-  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
-  :root {
-    --ph-primary-color: #2563eb;
-    --ph-primary-hover: #1d4ed8;
-    --ph-secondary-color: #64748b;
-    --ph-bg-secondary: #f8fafc;
-    --ph-bg-tertiary: #f1f5f9;
-    --ph-bg-accent: #e2e8f0;
-    --ph-text-primary: #0f172a;
-    --ph-text-secondary: #4a4a4a;
-    --ph-text-light: #94a3b8;
-    --ph-border-color: #e2e8f0;
-    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --ph-radius-sm: 8px;
-    --ph-radius-md: 12px;
-    --ph-radius-lg: 16px;
-    --ph-spacing-xs: 8px;
-    --ph-spacing-sm: 12px;
-    --ph-spacing-md: 16px;
-    --ph-spacing-lg: 24px;
-    --ph-spacing-xl: 32px;
-    --ph-spacing-2xl: 48px;
-  }
-
-  /* Page Header Section */
-  .page-header-section {
-    margin-bottom: var(--ph-spacing-2xl);
-  }
-
-  .ph-header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    /* Changed from flex-start to center */
-    flex-wrap: wrap;
-    gap: var(--ph-spacing-lg);
-  }
-
-  .ph-header-left {
-    display: flex;
-    align-items: center;
-    gap: var(--ph-spacing-md);
-    flex-shrink: 0;
-  }
-
-  .ph-icon-wrapper {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    border-radius: var(--ph-radius-lg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 24px;
-    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
-    flex-shrink: 0;
-  }
-
-  .ph-header-text {
-    flex: 1;
-  }
-
-  .ph-header-title {
-    font-weight: 500;
-    font-size: 28px;
-    color: #2c3e50;
-    margin: 0 0 4px 0;
-    letter-spacing: -0.02em;
-  }
-
-  .ph-header-subtitle {
-    font-size: 16px;
-    color: var(--ph-text-secondary);
-    margin: 0;
-    font-weight: 500;
-  }
-
-  .ph-header-stats {
-    margin-left: auto;
-  }
-
-  .ph-stat-badge {
-    display: flex;
-    align-items: center;
-
-    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
-    background: var(--ph-bg-tertiary);
-    border: 2px solid var(--ph-border-color);
-    border-radius: var(--ph-radius-md);
-    font-weight: 600;
-    color: var(--ph-text-secondary);
-    font-size: 14px;
-  }
-
-  /* Breadcrumbs */
-  .ph-breadcrumb-nav {
-    margin-top: 3rem;
-  }
-
-  .ph-breadcrumb-list {
-    display: flex;
-    align-items: center;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    flex-wrap: wrap;
-
-  }
-
-  .ph-breadcrumb-item {
-    display: flex;
-    align-items: center;
-  }
-
-  .ph-breadcrumb-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: var(--ph-bg-secondary);
-    border-radius: var(--ph-radius-sm);
-    text-decoration: none;
-    color: var(--ph-text-secondary);
-    font-weight: 500;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
-  }
-
-  .ph-breadcrumb-link:hover {
-    background: var(--ph-bg-accent);
-    color: var(--ph-text-primary);
-    border-color: var(--ph-border-color);
-  }
-
-  .ph-breadcrumb-item.active span {
-    color: var(--ph-primary-color);
-    font-weight: 600;
-    padding: 6px 12px;
-    background: rgba(37, 99, 235, 0.1);
-    border-radius: var(--ph-radius-sm);
-    font-size: 14px;
-  }
-
-  .ph-breadcrumb-separator {
-    color: var(--ph-text-light);
-    margin: 0 4px;
-    font-size: 12px;
-  }
-  @media (max-width: 768px) { /* adjust breakpoint as needed */
-  .ph-header-stats {
-    display: none !important;
-  }
-  .ph-breadcrumb-nav {
-    margin-top: 5px;
-  }
-  .ph-header-title {
-    font-size: 1.7rem;
-  }
-}
-</style>
-
-<div class="container-fluid" style="margin-top: 5rem;">
-    <div class="page-inner">
-        <div class="page-header-section">
-            <div class="ph-header-content">
-                <div class="ph-header-left">
-                    <div class="ph-icon-wrapper">
-                        <i class="fa-solid fa-file-invoice-dollar"></i>
-                    </div>
-                    <div class="ph-header-text">
-                        <h3 class="ph-header-title">Voucher Operations</h3>
-                        <p class="ph-header-subtitle">Manage your voucher operations.</p>
-                    </div>
-                </div>
-
-                <!-- Breadcrumbs - Now inline with header -->
-                <nav class="ph-breadcrumb-nav">
-                    <ol class="ph-breadcrumb-list">
-                        <li class="ph-breadcrumb-item">
-                            <a href="#" class="ph-breadcrumb-link">
-                                <i class="icon-home"></i>
-                                <span>Home</span>
-                            </a>
-                        </li>
-                        <li class="ph-breadcrumb-separator">
-                            <i class="icon-arrow-right"></i>
-                        </li>
-                        <li class="ph-breadcrumb-item active">
-                            <a href="{%url 'adminapp:peeling_shed_voucher_list'%}">
-                                <span>Peeling Shed Vouchers</span>
-                            </a>
-                        </li>
-                        <li class="ph-breadcrumb-separator">
-                            <i class="icon-arrow-right"></i>
-                        </li>
-                        <li class="ph-breadcrumb-item ">
-                            <a href="{%url 'adminapp:create_peeling_shed_voucher'%}"  class="ph-breadcrumb-link">
-                              <i class="fa-solid fa-file-invoice-dollar"></i>
-                                <span>Create</span>
-                            </a>
-                        </li>
-                    </ol>
-                </nav>
-                <div class="ph-header-stats">
-
-                </div>
-            </div>
-        </div>
-
-        <div class="myclass">
-            <!-- Summary Cards -->
-            <div class="form-card mb-4 supply-info-card">
-                <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-wrapper me-4">
-                            <i class="fas fa-chart-bar"></i>
-                        </div>
-                        <div>
-                            <h3 class="card-title mb-0">Financial Overview</h3>
-                            <p class="text-muted mb-0">Complete peeling shed financial summary.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card-body p-0">
-                    <div class="supply-info-grid">
-                        <div class="info-card work-amount-card">
-                            <div class="info-background">
-                                <i class="fas fa-tools bg-icon"></i>
-                            </div>
-                            <div class="info-content">
-                                <div class="info-label">Total Work Amount</div>
-                                <div class="info-value">₹{{ summary.total_work_amount|floatformat:2 }}</div>
-                                <div class="info-badge">
-                                    <i class="fas fa-hammer"></i>
-                                    <span>Work</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="info-card receipts-card">
-                            <div class="info-background">
-                                <i class="fas fa-arrow-down bg-icon"></i>
-                            </div>
-                            <div class="info-content">
-                                <div class="info-label">Total Receipts</div>
-                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
-                                <div class="info-badge">
-                                    <i class="fas fa-plus-circle"></i>
-                                    <span>Incoming</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="info-card payments-card">
-                            <div class="info-background">
-                                <i class="fas fa-arrow-up bg-icon"></i>
-                            </div>
-                            <div class="info-content">
-                                <div class="info-label">Total Payments</div>
-                                <div class="info-value">₹{{ summary.total_payments|floatformat:2 }}</div>
-                                <div class="info-badge">
-                                    <i class="fas fa-minus-circle"></i>
-                                    <span>Outgoing</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="info-card outstanding-card">
-                            <div class="info-background">
-                                <i class="fas fa-balance-scale bg-icon"></i>
-                            </div>
-                            <div class="info-content">
-                                <div class="info-label">Total Outstanding</div>
-                                <div class="info-value">₹{{ summary.total_remaining|floatformat:2 }}</div>
-                                <div class="info-badge">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                    <span>Due</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="info-card net-card">
-                            <div class="info-background">
-                                <i class="fas fa-calculator bg-icon"></i>
-                            </div>
-                            <div class="info-content">
-                                <div class="info-label">Net Amount</div>
-                                <div class="info-value">₹{{ summary.net_amount|floatformat:2 }}</div>
-                                <div class="info-badge">
-                                    <i class="fas fa-balance-scale"></i>
-                                    <span>Balance</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="info-card vouchers-card">
-                            <div class="info-background">
-                                <i class="fas fa-receipt bg-icon"></i>
-                            </div>
-                            <div class="info-content">
-                                <div class="info-label">Total Vouchers</div>
-                                <div class="info-value">{{ summary.total_vouchers }}</div>
-                                <div class="info-badge">
-                                    <i class="fas fa-file-alt"></i>
-                                    <span>Count</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content Card -->
-            <!-- Peeling Shed Vouchers Data Section -->
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card border-0 shadow-lg">
-                        <div class="card-header bg-white border-0 py-4">
-                            <div class="d-flex align-items-center justify-content-between flex-wrap">
-                                <div class="d-flex align-items-center mb-3 mb-md-0">
-                                    <div class="icon-wrapper me-4">
-                                        <i class="fas fa-warehouse"></i>
-                                    </div>
-                                    <div>
-                                        <h3 class="card-title mb-0 fw-bold">Peeling Shed Vouchers</h3>
-                                        <p class="text-muted mb-0 fs-6">Manage shed voucher transactions</p>
-                                    </div>
-                                </div>
-                                
-                                <!-- Search and Filter Controls -->
-                                <div class="search-controls d-flex align-items-center gap-3">
-                                    <div class="search-box-wrapper">
-                                        <div class="search-input-group">
-                                            <i class="fas fa-search search-icon"></i>
-                                            <input type="text" id="searchInput" class="search-input" placeholder="Search vouchers...">
-                                            <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="stats-badge">
-                                        <span class="badge bg-light text-dark px-3 py-2 fs-6">
-                                            <i class="fas fa-warehouse me-2"></i><span id="voucherCount">{{ total_count }}</span> Vouchers
-                                        </span>
-                                    </div>
-
-                                    <a href="{% url 'adminapp:create_peeling_shed_voucher' %}" class="add-new-btn">
-                                        <i class="fas fa-plus me-2"></i>Add New Voucher
-                                    </a>
-                                </div>
-                            </div>
-
-                            <!-- Filters Section -->
-                            <form method="GET" class="filters-section mt-4 pt-4 border-top">
-                                <div class="row g-3">
-                                    <!-- Date Filter -->
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-bold text-muted">Date Filter</label>
-                                        <select name="date_filter" class="form-select filter-select" id="dateFilter">
-                                            <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
-                                            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
-                                            <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
-                                            <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
-                                            <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
-                                            <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Custom Date Range -->
-                                    <div class="col-md-2" id="startDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
-                                        <label class="form-label fw-bold text-muted">Start Date</label>
-                                        <input type="date" name="start_date" class="form-control date-input" value="{{ start_date }}">
-                                    </div>
-                                    <div class="col-md-2" id="endDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
-                                        <label class="form-label fw-bold text-muted">End Date</label>
-                                        <input type="date" name="end_date" class="form-control date-input" value="{{ end_date }}">
-                                    </div>
-
-                                    <!-- Shed Filter -->
-                                    <div class="col-md-3">
-                                        <label class="form-label fw-bold text-muted">Shed</label>
-                                        <select name="shed" class="form-select filter-select">
-                                            <option value="">All Sheds</option>
-                                            {% for shed in all_sheds %}
-                                            <option value="{{ shed.id }}" {% if shed_filter == shed.id|stringformat:"s" %}selected{% endif %}>
-                                                {{ shed.name }} - {{ shed.code }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
-
-                                    <!-- Filter Actions -->
-                                    <div class="col-md-2">
-                                        <label class="form-label">&nbsp;</label>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-success filter-btn">
-                                                <i class="fas fa-filter"></i>
-                                            </button>
-                                            <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="btn btn-outline-secondary filter-btn">
-                                                <i class="fas fa-times"></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table id="multi-filter" class="table table-hover mb-0 custom-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-hashtag header-icon"></i>
-                                                    <span class="header-text">Voucher No.</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-warehouse header-icon"></i>
-                                                    <span class="header-text">Shed</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-calendar header-icon"></i>
-                                                    <span class="header-text">Date</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-tools header-icon"></i>
-                                                    <span class="header-text">Work Amount</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-arrow-down header-icon"></i>
-                                                    <span class="header-text">Receipt (+)</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-arrow-up header-icon"></i>
-                                                    <span class="header-text">Payment (-)</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header">
-                                                <div class="header-content">
-                                                    <i class="fas fa-balance-scale header-icon"></i>
-                                                    <span class="header-text">Balance</span>
-                                                </div>
-                                            </th>
-                                            <th class="table-header text-center">
-                                                <div class="header-content justify-content-center">
-                                                    <i class="fas fa-cogs header-icon"></i>
-                                                    <span class="header-text">Actions</span>
-                                                </div>
-                                            </th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody id="tableBody">
-                                        {% for voucher in vouchers %}
-                                        <tr class="table-row" data-searchable="{{ voucher.voucher_no|lower }} {{ voucher.shed.name|lower }} {{ voucher.shed.code|lower }} {{ voucher.date }} {{ voucher.description|lower }}">
-                                            <td class="table-cell">
-                                                <div class="voucher-display">
-                                                    <span class="voucher-badge">{{ voucher.voucher_no }}</span>
-                                                    <!-- {% if voucher.description %}
-                                                    <div class="voucher-meta">{{ voucher.description|truncatechars:30 }}</div>
-                                                    {% endif %} -->
-                                                </div>
-                                            </td>
-                                            
-                                            <td class="table-cell">
-                                                <div class="shed-info">
-                                                    <div class="shed-avatar">
-                                                        <i class="fas fa-warehouse"></i>
-                                                    </div>
-                                                    <div class="shed-details">
-                                                        <div class="shed-name">{{ voucher.shed.name }}</div>
-                                                        {% if voucher.shed.code %}
-                                                        <div class="shed-meta">{{ voucher.shed.code }}</div>
-                                                        {% endif %}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            
-                                            <td class="table-cell">
-                                                <div class="date-display">
-                                                    <i class="fas fa-calendar-day me-2"></i>
-                                                    <span class="date-text">{{ voucher.date|date:"M d, Y" }}</span>
-                                                </div>
-                                            </td>
-                                            
-                                            <td class="table-cell">
-                                                <div class="amount-display">
-                                                    <span class="currency-symbol">₹</span>
-                                                    <span class="amount-value">{{ voucher.total_amount|floatformat:2 }}</span>
-                                                </div>
-                                            </td>
-                                            
-<td class="table-cell">
-    <div class="receipt-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
-        {% if voucher.receipt > 0 %}
-        <span class="currency-symbol">+₹</span>
-        <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
-        {% else %}
-        <span class="text-muted">₹0.00</span>
-        {% endif %}
-    </div>
-</td>
-                                            
-<td class="table-cell">
-    <div class="payment-display {% if voucher.payment > 0 %}amount-negative{% endif %}">
-        {% if voucher.payment > 0 %}
-        <span class="currency-symbol">-₹</span>
-        <span class="payment-value">{{ voucher.payment|floatformat:2 }}</span>
-        {% else %}
-        <span class="text-muted">₹0.00</span>
-        {% endif %}
-    </div>
-</td>
-                                            
-                        <td class="table-cell">
-                            <div class="balance-display {% if voucher.remain_amount > 0 %}amount-success{% elif voucher.remain_amount < 0 %}amount-negative{% else %}amount-success{% endif %}">
-                                <span class="currency-symbol">₹</span>
-                                <span class="balance-value">{{ voucher.remain_amount|floatformat:2 }}</span>
-                            </div>
-                        </td>
-                                            
-                                            <td class="table-cell">
-                                                <div class="action-buttons">
-                                                    <a href="{% url 'adminapp:shed_statement_pdf' voucher.shed.id %}?{{ request.GET.urlencode }}" 
-                                                       class="action-btn view-btn" 
-                                                       title="Shed Statement"
-                                                       target="_blank">
-                                                        <i class="fas fa-file-invoice"></i>
-                                                    </a>
-                                                    <a href="{% url 'adminapp:peeling_shed_voucher_detail' voucher.pk %}" 
-                                                       class="action-btn view-btn" 
-                                                       title="View Details">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="{% url 'adminapp:peelingshedvoucher_delete_list' voucher.pk %}"
-                                                    class="action-btn delete-btn"
-                                                    title="Delete Voucher"
-                                                    onclick="return confirm('Are you sure you want to delete this voucher?');">
-                                                        <i class="fas fa-trash-alt"></i>
-                                                    </a>
-
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr>
-                                            <td colspan="8" class="empty-state-cell">
-                                                <div class="empty-state-content">
-                                                    <i class="fas fa-warehouse empty-state-icon"></i>
-                                                    <h4>No Vouchers Found</h4>
-                                                    <p>There are no peeling shed vouchers to display yet.</p>
-                                                    <a href="{% url 'adminapp:create_peeling_shed_voucher' %}" class="add-new-btn">Create Your First Voucher</a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                
-                                <!-- No Results Message -->
-                                <div id="noResults" class="no-results" style="display: none;">
-                                    <div class="no-results-content">
-                                        <i class="fas fa-search-minus no-results-icon"></i>
-                                        <h4>No vouchers found</h4>
-                                        <p>Try adjusting your search terms</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Shed-wise Summary Card -->
-            <div class="card border-0 shadow-lg mb-4">
-                <div class="card-header bg-white border-0 py-4">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-wrapper me-4">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <div>
-                            <h4 class="card-title mb-0 fw-bold">Shed-wise Summary</h4>
-                            <p class="text-muted mb-0 fs-6">Overview by individual sheds</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card-body p-0">
-                    <div class="shed-summary-container" style="max-height: 600px; overflow-y: auto; padding: 20px;">
-                        {% for shed in shed_summary %}
-                        <div class="shed-summary-item">
-                            <div class="shed-summary-content">
-                                <!-- Shed Info Section -->
-                                <div class="shed-info-section">
-                                    <div class="shed-avatar">
-                                        <i class="fas fa-warehouse"></i>
-                                    </div>
-                                    <div class="shed-details">
-                                        <div style="font-size: 20px;" class="shed-name">{{ shed.shed__name|truncatechars:20|capfirst }}</div>
-                                        <div style="font-size: 15px;" class="shed-code">{{ shed.shed__code|default:"—" }}</div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Financial Summary Section -->
-                                <div class="financial-summary-section">
-                                    <div class="financial-metrics">
-                                        <div class="metric-item receipt-metric">
-                                            <div class="metric-label"><i class="fas fa-receipt me-1"></i>Vouchers</div>
-                                            <div class="metric-value">{{ shed.voucher_count }}</div>
-                                        </div>
-
-                                        <div class="metric-item work-metric">
-                                            <div class="metric-label">Work Amount</div>
-                                            <div class="metric-value">₹{{ shed.total_work_amount|floatformat:2 }}</div>
-                                        </div>
-
-                                        <div class="metric-item receipt-metric">
-                                            <div class="metric-label">Receipts</div>
-                                            <div class="metric-value">+₹{{ shed.total_receipts|floatformat:2 }}</div>
-                                        </div>
-
-                                        <div class="metric-item payment-metric">
-                                            <div class="metric-label">Payments</div>
-                                            <div class="metric-value">-₹{{ shed.total_payments|floatformat:2 }}</div>
-                                        </div>
-                                        
-                                        <div class="metric-item net-metric">
-                                            <div class="metric-label">Balance</div>
-                                            <div class="metric-value net-amount {% if shed.total_remaining > 0 %}positive{% elif shed.total_remaining < 0 %}negative{% else %}neutral{% endif %}">
-                                                ₹{{ shed.total_remaining|floatformat:2 }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Action Button -->
-                                    <div class="action-section">
-                                        <a href="{% url 'adminapp:shed_statement_pdf' shed.shed__id %}?{{ request.GET.urlencode }}" 
-                                           class="statement-btn" 
-                                           title="Generate Statement" 
-                                           target="_blank">
-                                            <i class="fas fa-file-alt"></i>
-                                            <span>Statement</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Progress Bar for Visual Representation -->
-                            <div class="financial-progress">
-                                {% if shed.total_receipts > 0 or shed.total_payments > 0 %}
-                                {% with max_amount=shed.total_receipts|add:shed.total_payments %}
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar receipt-bar" 
-                                         style="width: {% widthratio shed.total_receipts max_amount 100 %}%"></div>
-                                    <div class="progress-bar payment-bar" 
-                                         style="width: {% widthratio shed.total_payments max_amount 100 %}%"></div>
-                                </div>
-                                {% endwith %}
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% empty %}
-                        <div class="empty-state">
-                            <div class="empty-state-content">
-                                <i class="fas fa-warehouse empty-state-icon"></i>
-                                <h5>No Shed Data Available</h5>
-                                <p>There are no shed summaries to display yet.</p>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Stats Card -->
-            <div class="form-card mb-4">
-                <div class="card-header">
-                    <div class="d-flex align-items-center">
-                        <div class="icon-wrapper me-4" style="background: #6c757d;">
-                            <i class="fas fa-info-circle"></i>
-                        </div>
-                        <div>
-                            <h6 class="card-title mb-0">Quick Stats</h6>
-                            <p class="text-muted mb-0">Summary statistics</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="summary-table">
-                            <thead>
-                                <tr>
-                                    <th class="table-header">Active Sheds</th>
-                                    <th class="table-header">Net Balance</th>
-                                    <th class="table-header">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-<tr class="summary-row">
-    <td class="table-cell">
-        <div class="summary-value">
-            <span class="summary-badge agents-badge">
-                <i class="fas fa-users me-2"></i>
-                <span class="badge-value">{{ agent_summary|length }}</span>
-                <span class="badge-label">AGENTS</span>
-            </span>
-        </div>
-    </td>
-    <td class="table-cell">
-        <div class="summary-value">
-            <span class="summary-badge {% if summary.net_amount > 0 %}balance-positive-badge{% elif summary.net_amount < 0 %}balance-negative-badge{% else %}balance-neutral-badge{% endif %}">
-                <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
-                <span class="badge-value">
-                    {% if summary.net_amount > 0 %}
-                        +₹{{ summary.net_amount|floatformat:0 }}
-                    {% elif summary.net_amount < 0 %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
-                    {% else %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
-                    {% endif %}
-                </span>
-                <span class="badge-label">BALANCE</span>
-            </span>
-        </div>
-    </td>
-    <td class="table-cell">
-        <div class="summary-value">
-            <span class="summary-badge status-badge">
-                <i class="fas fa-check-circle me-2"></i>
-                <span class="badge-value">Active</span>
-            </span>
-        </div>
-    </td>
-</tr>
+{% load indian_numbers %}
 
 <style>
 
@@ -946,170 +195,6 @@
     }
 }
 </style>
-                            </tbody>
-                        </table>
-                    </div>
-                    <hr>
-                    <div class="small text-muted text-center mt-3">
-                        <i class="fas fa-info-circle me-2"></i> 
-                        Positive amounts indicate money owed by agents, negative amounts indicate credits due to agents.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dateFilter = document.getElementById('dateFilter');
-    const startDateDiv = document.getElementById('startDateDiv');
-    const endDateDiv = document.getElementById('endDateDiv');
-
-    if (dateFilter) {
-        dateFilter.addEventListener('change', function() {
-            if (this.value === 'custom') {
-                if (startDateDiv) startDateDiv.style.display = 'block';
-                if (endDateDiv) endDateDiv.style.display = 'block';
-            } else {
-                if (startDateDiv) startDateDiv.style.display = 'none';
-                if (endDateDiv) endDateDiv.style.display = 'none';
-            }
-        });
-    }
-});
-</script>
-
-<script>
-  // Enhanced search functionality for vouchers table
-  document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const clearBtn = document.getElementById('clearSearch');
-    const tableBody = document.getElementById('tableBody');
-    const noResults = document.getElementById('noResults');
-    const voucherCount = document.getElementById('voucherCount');
-    const allRows = tableBody.querySelectorAll('.table-row');
-    const totalCount = allRows.length;
-
-    // Enhanced search data extraction
-    function getSearchableText(row) {
-      const searchableElements = [
-        // Voucher number
-        row.querySelector('.voucher-badge')?.textContent || '',
-        // Voucher description
-        row.querySelector('.voucher-meta')?.textContent || '',
-        // Shed name
-        row.querySelector('.shed-name')?.textContent || '',
-        // Shed code
-        row.querySelector('.shed-meta')?.textContent || '',
-        // Date
-        row.querySelector('.date-text')?.textContent || '',
-        // Work amount
-        row.querySelector('.work-amount-value')?.textContent || '',
-        // Receipt amount
-        row.querySelector('.receipt-value')?.textContent || '',
-        // Payment amount
-        row.querySelector('.payment-value')?.textContent || '',
-        // Balance
-        row.querySelector('.balance-value')?.textContent || ''
-      ];
-      
-      return searchableElements.join(' ').toLowerCase().trim();
-    }
-
-    // Update counter display
-    function updateCounter(visibleCount) {
-      voucherCount.textContent = visibleCount;
-    }
-
-    // Show/hide clear button
-    function showClearButton(show) {
-      clearBtn.style.display = show ? 'block' : 'none';
-    }
-
-    // Main filter function
-    function filterTable() {
-      const searchTerm = searchInput.value.toLowerCase().trim();
-      let visibleCount = 0;
-
-      if (searchTerm === '') {
-        // Show all rows
-        allRows.forEach(row => {
-          row.style.display = '';
-          visibleCount++;
-        });
-        noResults.style.display = 'none';
-        showClearButton(false);
-      } else {
-        // Filter rows
-        allRows.forEach(row => {
-          // Get searchable text from data attribute or extract it
-          let searchableText = row.getAttribute('data-searchable');
-          
-          // If data-searchable doesn't exist or is empty, extract text
-          if (!searchableText) {
-            searchableText = getSearchableText(row);
-            row.setAttribute('data-searchable', searchableText); // Cache it
-          }
-          
-          if (searchableText.includes(searchTerm)) {
-            row.style.display = '';
-            visibleCount++;
-          } else {
-            row.style.display = 'none';
-          }
-        });
-        
-        // Show/hide no results message
-        if (visibleCount === 0 && totalCount > 0) {
-          noResults.style.display = 'block';
-        } else {
-          noResults.style.display = 'none';
-        }
-        
-        showClearButton(true);
-      }
-
-      updateCounter(visibleCount);
-    }
-
-    // Clear search function
-    function clearSearch() {
-      searchInput.value = '';
-      filterTable();
-      searchInput.focus();
-    }
-
-    // Event listeners
-    if (searchInput) {
-      searchInput.addEventListener('input', filterTable);
-      searchInput.addEventListener('keyup', function(e) {
-        if (e.key === 'Escape') {
-          clearSearch();
-        }
-      });
-    }
-    
-    if (clearBtn) {
-      clearBtn.addEventListener('click', clearSearch);
-    }
-
-    // Keyboard navigation for table rows
-    allRows.forEach(row => {
-      row.setAttribute('tabindex', '0');
-      row.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          const viewLink = this.querySelector('.view-btn');
-          if (viewLink) {
-            viewLink.click();
-          }
-        }
-      });
-    });
-
-    // Initialize counter
-    updateCounter(totalCount);
-  });
-</script>
 
 <style>
 /* Base Styles */
@@ -2575,5 +1660,925 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
+
+    <!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Changed from flex-start to center */
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: 0 8px 25px rgba(231, 76, 60, 0.2);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+  @media (max-width: 768px) { /* adjust breakpoint as needed */
+  .ph-header-stats {
+    display: none !important;
+  }
+  .ph-breadcrumb-nav {
+    margin-top: 5px;
+  }
+  .ph-header-title {
+    font-size: 1.7rem;
+  }
+}
+</style>
+
+<div class="container-fluid" style="margin-top: 5rem;">
+    <div class="page-inner">
+        <div class="page-header-section">
+            <div class="ph-header-content">
+                <div class="ph-header-left">
+                    <div class="ph-icon-wrapper">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                    <div class="ph-header-text">
+                        <h3 class="ph-header-title">Voucher Operations</h3>
+                        <p class="ph-header-subtitle">Manage your voucher operations.</p>
+                    </div>
+                </div>
+
+                <!-- Breadcrumbs - Now inline with header -->
+                <nav class="ph-breadcrumb-nav">
+                    <ol class="ph-breadcrumb-list">
+                        <li class="ph-breadcrumb-item">
+                            <a href="#" class="ph-breadcrumb-link">
+                                <i class="icon-home"></i>
+                                <span>Home</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item active">
+                            <a href="{%url 'adminapp:peeling_shed_voucher_list'%}">
+                                <span>Peeling Shed Vouchers</span>
+                            </a>
+                        </li>
+                        <li class="ph-breadcrumb-separator">
+                            <i class="icon-arrow-right"></i>
+                        </li>
+                        <li class="ph-breadcrumb-item ">
+                            <a href="{%url 'adminapp:create_peeling_shed_voucher'%}"  class="ph-breadcrumb-link">
+                              <i class="fa-solid fa-file-invoice-dollar"></i>
+                                <span>Create</span>
+                            </a>
+                        </li>
+                    </ol>
+                </nav>
+                <div class="ph-header-stats">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="myclass">
+            <!-- Summary Cards -->
+            <div class="form-card mb-4 supply-info-card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div>
+                            <h3 class="card-title mb-0">Financial Overview</h3>
+                            <p class="text-muted mb-0">Complete peeling shed financial summary.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="supply-info-grid">
+                        <div class="info-card work-amount-card">
+                            <div class="info-background">
+                                <i class="fas fa-tools bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Work Amount</div>
+                                <div class="info-value">₹{{ summary.total_work_amount|floatformat:2|indian_comma }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-hammer"></i>
+                                    <span>Work</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card receipts-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-down bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Receipts</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2|indian_comma }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Incoming</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card payments-card">
+                            <div class="info-background">
+                                <i class="fas fa-arrow-up bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Payments</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2|indian_comma }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-minus-circle"></i>
+                                    <span>Outgoing</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card outstanding-card">
+                            <div class="info-background">
+                                <i class="fas fa-balance-scale bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Outstanding</div>
+                                <div class="info-value">₹{{ summary.total_remaining|floatformat:2|indian_comma }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Due</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card net-card">
+                            <div class="info-background">
+                                <i class="fas fa-calculator bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Net Amount</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2|indian_comma }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-balance-scale"></i>
+                                    <span>Balance</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card vouchers-card">
+                            <div class="info-background">
+                                <i class="fas fa-receipt bg-icon"></i>
+                            </div>
+                            <div class="info-content">
+                                <div class="info-label">Total Vouchers</div>
+                                <div class="info-value">{{ summary.total_vouchers }}</div>
+                                <div class="info-badge">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Count</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Card -->
+            <!-- Peeling Shed Vouchers Data Section -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card border-0 shadow-lg">
+                        <div class="card-header bg-white border-0 py-4">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                                <div class="d-flex align-items-center mb-3 mb-md-0">
+                                    <div class="icon-wrapper me-4">
+                                        <i class="fas fa-warehouse"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="card-title mb-0 fw-bold">Peeling Shed Vouchers</h3>
+                                        <p class="text-muted mb-0 fs-6">Manage shed voucher transactions</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Search and Filter Controls -->
+                                <div class="search-controls d-flex align-items-center gap-3">
+                                    <div class="search-box-wrapper">
+                                        <div class="search-input-group">
+                                            <i class="fas fa-search search-icon"></i>
+                                            <input type="text" id="searchInput" class="search-input" placeholder="Search vouchers...">
+                                            <button type="button" id="clearSearch" class="clear-btn" style="display: none;">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="stats-badge">
+                                        <span class="badge bg-light text-dark px-3 py-2 fs-6">
+                                            <i class="fas fa-warehouse me-2"></i><span id="voucherCount">{{ total_count }}</span> Vouchers
+                                        </span>
+                                    </div>
+
+                                    <a href="{% url 'adminapp:create_peeling_shed_voucher' %}" class="add-new-btn">
+                                        <i class="fas fa-plus me-2"></i>Add New Voucher
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Filters Section -->
+                            <form method="GET" class="filters-section mt-4 pt-4 border-top">
+                                <div class="row g-3">
+                                    <!-- Date Filter -->
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold text-muted">Date Filter</label>
+                                        <select name="date_filter" class="form-select filter-select" id="dateFilter">
+                                            <option value="all" {% if date_filter == 'all' %}selected{% endif %}>All Time</option>
+                                            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Today</option>
+                                            <option value="week" {% if date_filter == 'week' %}selected{% endif %}>This Week</option>
+                                            <option value="month" {% if date_filter == 'month' %}selected{% endif %}>This Month</option>
+                                            <option value="year" {% if date_filter == 'year' %}selected{% endif %}>This Year</option>
+                                            <option value="custom" {% if date_filter == 'custom' %}selected{% endif %}>Custom Range</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Custom Date Range -->
+                                    <div class="col-md-2" id="startDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
+                                        <label class="form-label fw-bold text-muted">Start Date</label>
+                                        <input type="date" name="start_date" class="form-control date-input" value="{{ start_date }}">
+                                    </div>
+                                    <div class="col-md-2" id="endDateDiv" style="{% if date_filter != 'custom' %}display:none;{% endif %}">
+                                        <label class="form-label fw-bold text-muted">End Date</label>
+                                        <input type="date" name="end_date" class="form-control date-input" value="{{ end_date }}">
+                                    </div>
+
+                                    <!-- Shed Filter -->
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-bold text-muted">Shed</label>
+                                        <select name="shed" class="form-select filter-select">
+                                            <option value="">All Sheds</option>
+                                            {% for shed in all_sheds %}
+                                            <option value="{{ shed.id }}" {% if shed_filter == shed.id|stringformat:"s" %}selected{% endif %}>
+                                                {{ shed.name }} - {{ shed.code }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <!-- Filter Actions -->
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success filter-btn">
+                                                <i class="fas fa-filter"></i>
+                                            </button>
+                                            <a href="{% url 'adminapp:peeling_shed_voucher_list' %}" class="btn btn-outline-secondary filter-btn">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table id="multi-filter" class="table table-hover mb-0 custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-hashtag header-icon"></i>
+                                                    <span class="header-text">Voucher No.</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-warehouse header-icon"></i>
+                                                    <span class="header-text">Shed</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-calendar header-icon"></i>
+                                                    <span class="header-text">Date</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-tools header-icon"></i>
+                                                    <span class="header-text">Work Amount</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-arrow-down header-icon"></i>
+                                                    <span class="header-text">Receipt (+)</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-arrow-up header-icon"></i>
+                                                    <span class="header-text">Payment (-)</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header">
+                                                <div class="header-content">
+                                                    <i class="fas fa-balance-scale header-icon"></i>
+                                                    <span class="header-text">Balance</span>
+                                                </div>
+                                            </th>
+                                            <th class="table-header text-center">
+                                                <div class="header-content justify-content-center">
+                                                    <i class="fas fa-cogs header-icon"></i>
+                                                    <span class="header-text">Actions</span>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="tableBody">
+                                        {% for voucher in vouchers %}
+                                        <tr class="table-row" data-searchable="{{ voucher.voucher_no|lower }} {{ voucher.shed.name|lower }} {{ voucher.shed.code|lower }} {{ voucher.date }} {{ voucher.description|lower }}">
+                                            <td class="table-cell">
+                                                <div class="voucher-display">
+                                                    <span class="voucher-badge">{{ voucher.voucher_no }}</span>
+                                                    <!-- {% if voucher.description %}
+                                                    <div class="voucher-meta">{{ voucher.description|truncatechars:30 }}</div>
+                                                    {% endif %} -->
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="shed-info">
+                                                    <div class="shed-avatar">
+                                                        <i class="fas fa-warehouse"></i>
+                                                    </div>
+                                                    <div class="shed-details">
+                                                        <div class="shed-name">{{ voucher.shed.name }}</div>
+                                                        {% if voucher.shed.code %}
+                                                        <div class="shed-meta">{{ voucher.shed.code }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="date-display">
+                                                    <i class="fas fa-calendar-day me-2"></i>
+                                                    <span class="date-text">{{ voucher.date|date:"M d, Y" }}</span>
+                                                </div>
+                                            </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="amount-display">
+                                                    <span class="currency-symbol">₹</span>
+                                                    <span class="amount-value">{{ voucher.total_amount|floatformat:2|indian_comma }}</span>
+                                                </div>
+                                            </td>
+                                            
+<td class="table-cell">
+    <div class="receipt-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
+        {% if voucher.receipt > 0 %}
+        <span class="currency-symbol">+₹</span>
+        <span class="receipt-value">{{ voucher.receipt|floatformat:2|indian_comma }}</span>
+        {% else %}
+        <span class="text-muted">₹0.00</span>
+        {% endif %}
+    </div>
+</td>
+                                            
+<td class="table-cell">
+    <div class="payment-display {% if voucher.payment > 0 %}amount-negative{% endif %}">
+        {% if voucher.payment > 0 %}
+        <span class="currency-symbol">-₹</span>
+        <span class="payment-value">{{ voucher.payment|floatformat:2|indian_comma }}</span>
+        {% else %}
+        <span class="text-muted">₹0.00</span>
+        {% endif %}
+    </div>
+</td>
+                                            
+                        <td class="table-cell">
+                            <div class="balance-display {% if voucher.remain_amount > 0 %}amount-success{% elif voucher.remain_amount < 0 %}amount-negative{% else %}amount-success{% endif %}">
+                                <span class="currency-symbol">₹</span>
+                                <span class="balance-value">{{ voucher.remain_amount|floatformat:2|indian_comma }}</span>
+                            </div>
+                        </td>
+                                            
+                                            <td class="table-cell">
+                                                <div class="action-buttons">
+                                                    <a href="{% url 'adminapp:shed_statement_pdf' voucher.shed.id %}?{{ request.GET.urlencode }}" 
+                                                       class="action-btn view-btn" 
+                                                       title="Shed Statement"
+                                                       target="_blank">
+                                                        <i class="fas fa-file-invoice"></i>
+                                                    </a>
+                                                    <a href="{% url 'adminapp:peeling_shed_voucher_detail' voucher.pk %}" 
+                                                       class="action-btn view-btn" 
+                                                       title="View Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'adminapp:peelingshedvoucher_delete_list' voucher.pk %}"
+                                                    class="action-btn delete-btn"
+                                                    title="Delete Voucher"
+                                                    onclick="return confirm('Are you sure you want to delete this voucher?');">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </a>
+
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="8" class="empty-state-cell">
+                                                <div class="empty-state-content">
+                                                    <i class="fas fa-warehouse empty-state-icon"></i>
+                                                    <h4>No Vouchers Found</h4>
+                                                    <p>There are no peeling shed vouchers to display yet.</p>
+                                                    <a href="{% url 'adminapp:create_peeling_shed_voucher' %}" class="add-new-btn">Create Your First Voucher</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                
+                                <!-- No Results Message -->
+                                <div id="noResults" class="no-results" style="display: none;">
+                                    <div class="no-results-content">
+                                        <i class="fas fa-search-minus no-results-icon"></i>
+                                        <h4>No vouchers found</h4>
+                                        <p>Try adjusting your search terms</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shed-wise Summary Card -->
+            <div class="card border-0 shadow-lg mb-4">
+                <div class="card-header bg-white border-0 py-4">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h4 class="card-title mb-0 fw-bold">Shed-wise Summary</h4>
+                            <p class="text-muted mb-0 fs-6">Overview by individual sheds</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body p-0">
+                    <div class="shed-summary-container" style="max-height: 600px; overflow-y: auto; padding: 20px;">
+                        {% for shed in shed_summary %}
+                        <div class="shed-summary-item">
+                            <div class="shed-summary-content">
+                                <!-- Shed Info Section -->
+                                <div class="shed-info-section">
+                                    <div class="shed-avatar">
+                                        <i class="fas fa-warehouse"></i>
+                                    </div>
+                                    <div class="shed-details">
+                                        <div style="font-size: 20px;" class="shed-name">{{ shed.shed__name|truncatechars:20|capfirst }}</div>
+                                        <div style="font-size: 15px;" class="shed-code">{{ shed.shed__code|default:"—" }}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Financial Summary Section -->
+                                <div class="financial-summary-section">
+                                    <div class="financial-metrics">
+                                        <div class="metric-item receipt-metric">
+                                            <div class="metric-label"><i class="fas fa-receipt me-1"></i>Vouchers</div>
+                                            <div class="metric-value">{{ shed.voucher_count }}</div>
+                                        </div>
+
+                                        <div class="metric-item work-metric">
+                                            <div class="metric-label">Work Amount</div>
+                                            <div class="metric-value">₹{{ shed.total_work_amount|floatformat:2|indian_comma }}</div>
+                                        </div>
+
+                                        <div class="metric-item receipt-metric">
+                                            <div class="metric-label">Receipts</div>
+                                            <div class="metric-value">+₹{{ shed.total_receipts|floatformat:2|indian_comma }}</div>
+                                        </div>
+
+                                        <div class="metric-item payment-metric">
+                                            <div class="metric-label">Payments</div>
+                                            <div class="metric-value">-₹{{ shed.total_payments|floatformat:2|indian_comma }}</div>
+                                        </div>
+                                        
+                                        <div class="metric-item net-metric">
+                                            <div class="metric-label">Balance</div>
+                                            <div class="metric-value net-amount {% if shed.total_remaining > 0 %}positive{% elif shed.total_remaining < 0 %}negative{% else %}neutral{% endif %}">
+                                                ₹{{ shed.total_remaining|floatformat:2|indian_comma }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Action Button -->
+                                    <div class="action-section">
+                                        <a href="{% url 'adminapp:shed_statement_pdf' shed.shed__id %}?{{ request.GET.urlencode }}" 
+                                           class="statement-btn" 
+                                           title="Generate Statement" 
+                                           target="_blank">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>Statement</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar for Visual Representation -->
+                            <div class="financial-progress">
+                                {% if shed.total_receipts > 0 or shed.total_payments > 0 %}
+                                {% with max_amount=shed.total_receipts|add:shed.total_payments %}
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar receipt-bar" 
+                                         style="width: {% widthratio shed.total_receipts max_amount 100 %}%"></div>
+                                    <div class="progress-bar payment-bar" 
+                                         style="width: {% widthratio shed.total_payments max_amount 100 %}%"></div>
+                                </div>
+                                {% endwith %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="empty-state">
+                            <div class="empty-state-content">
+                                <i class="fas fa-warehouse empty-state-icon"></i>
+                                <h5>No Shed Data Available</h5>
+                                <p>There are no shed summaries to display yet.</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Card -->
+            <div class="form-card mb-4">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="icon-wrapper me-4" style="background: #6c757d;">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-title mb-0">Quick Stats</h6>
+                            <p class="text-muted mb-0">Summary statistics</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Active Sheds</th>
+                                    <th class="table-header">Net Balance</th>
+                                    <th class="table-header">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+<tr class="summary-row">
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge agents-badge">
+                <i class="fas fa-users me-2"></i>
+                <span class="badge-value">{{ agent_summary|length }}</span>
+                <span class="badge-label">AGENTS</span>
+            </span>
+        </div>
+    </td>
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge {% if summary.net_amount > 0 %}balance-positive-badge{% elif summary.net_amount < 0 %}balance-negative-badge{% else %}balance-neutral-badge{% endif %}">
+                <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
+                <span class="badge-value">
+                    {% if summary.net_amount > 0 %}
+                        +₹{{ summary.net_amount|floatformat:0|indian_comma }}
+                    {% elif summary.net_amount < 0 %}
+                        ₹{{ summary.net_amount|floatformat:0|indian_comma }}
+                    {% else %}
+                        ₹{{ summary.net_amount|floatformat:0|indian_comma }}
+                    {% endif %}
+                </span>
+                <span class="badge-label">BALANCE</span>
+            </span>
+        </div>
+    </td>
+    <td class="table-cell">
+        <div class="summary-value">
+            <span class="summary-badge status-badge">
+                <i class="fas fa-check-circle me-2"></i>
+                <span class="badge-value">Active</span>
+            </span>
+        </div>
+    </td>
+</tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <div class="small text-muted text-center mt-3">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Positive amounts indicate money owed by agents, negative amounts indicate credits due to agents.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateFilter = document.getElementById('dateFilter');
+    const startDateDiv = document.getElementById('startDateDiv');
+    const endDateDiv = document.getElementById('endDateDiv');
+
+    if (dateFilter) {
+        dateFilter.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                if (startDateDiv) startDateDiv.style.display = 'block';
+                if (endDateDiv) endDateDiv.style.display = 'block';
+            } else {
+                if (startDateDiv) startDateDiv.style.display = 'none';
+                if (endDateDiv) endDateDiv.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+
+<script>
+  // Enhanced search functionality for vouchers table
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearch');
+    const tableBody = document.getElementById('tableBody');
+    const noResults = document.getElementById('noResults');
+    const voucherCount = document.getElementById('voucherCount');
+    const allRows = tableBody.querySelectorAll('.table-row');
+    const totalCount = allRows.length;
+
+    // Enhanced search data extraction
+    function getSearchableText(row) {
+      const searchableElements = [
+        // Voucher number
+        row.querySelector('.voucher-badge')?.textContent || '',
+        // Voucher description
+        row.querySelector('.voucher-meta')?.textContent || '',
+        // Shed name
+        row.querySelector('.shed-name')?.textContent || '',
+        // Shed code
+        row.querySelector('.shed-meta')?.textContent || '',
+        // Date
+        row.querySelector('.date-text')?.textContent || '',
+        // Work amount
+        row.querySelector('.work-amount-value')?.textContent || '',
+        // Receipt amount
+        row.querySelector('.receipt-value')?.textContent || '',
+        // Payment amount
+        row.querySelector('.payment-value')?.textContent || '',
+        // Balance
+        row.querySelector('.balance-value')?.textContent || ''
+      ];
+      
+      return searchableElements.join(' ').toLowerCase().trim();
+    }
+
+    // Update counter display
+    function updateCounter(visibleCount) {
+      voucherCount.textContent = visibleCount;
+    }
+
+    // Show/hide clear button
+    function showClearButton(show) {
+      clearBtn.style.display = show ? 'block' : 'none';
+    }
+
+    // Main filter function
+    function filterTable() {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      if (searchTerm === '') {
+        // Show all rows
+        allRows.forEach(row => {
+          row.style.display = '';
+          visibleCount++;
+        });
+        noResults.style.display = 'none';
+        showClearButton(false);
+      } else {
+        // Filter rows
+        allRows.forEach(row => {
+          // Get searchable text from data attribute or extract it
+          let searchableText = row.getAttribute('data-searchable');
+          
+          // If data-searchable doesn't exist or is empty, extract text
+          if (!searchableText) {
+            searchableText = getSearchableText(row);
+            row.setAttribute('data-searchable', searchableText); // Cache it
+          }
+          
+          if (searchableText.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+        
+        // Show/hide no results message
+        if (visibleCount === 0 && totalCount > 0) {
+          noResults.style.display = 'block';
+        } else {
+          noResults.style.display = 'none';
+        }
+        
+        showClearButton(true);
+      }
+
+      updateCounter(visibleCount);
+    }
+
+    // Clear search function
+    function clearSearch() {
+      searchInput.value = '';
+      filterTable();
+      searchInput.focus();
+    }
+
+    // Event listeners
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+      searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Escape') {
+          clearSearch();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', clearSearch);
+    }
+
+    // Keyboard navigation for table rows
+    allRows.forEach(row => {
+      row.setAttribute('tabindex', '0');
+      row.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          const viewLink = this.querySelector('.view-btn');
+          if (viewLink) {
+            viewLink.click();
+          }
+        }
+      });
+    });
+
+    // Initialize counter
+    updateCounter(totalCount);
+  });
+</script>
+
+
 
 {% endblock %}

@@ -627,15 +627,12 @@ class PreShipmentWorkOutItemForm(forms.ModelForm):
     class Meta:
         model = PreShipmentWorkOutItem
         fields = [
-            'species', 'peeling_type', 'grade', 'cartons', 'quantity',
+            'peeling_type', 'grade', 'cartons', 'quantity',
             'usd_rate_per_kg', 'usd_rate_item', 'usd_rate_item_to_inr',
             'usd_rate_per_kg_get', 'usd_rate_item_get', 'usd_rate_item_to_inr_get',
             'profit', 'loss'
         ]
         widgets = {
-            'species': forms.Select(attrs={
-                'class': 'form-select species',
-            }),
             'peeling_type': forms.Select(attrs={
                 'class': 'form-select'
             }),

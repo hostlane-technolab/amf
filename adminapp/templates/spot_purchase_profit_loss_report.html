@@ -431,6 +431,76 @@
         font-weight: 500;
     }
 
+    /* Charts Section */
+    .charts-section {
+        margin-bottom: 30px;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(15px);
+        border-radius: 24px;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .chart-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .chart-header {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        padding: 20px 32px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chart-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+        animation: float 30s infinite linear;
+    }
+
+    .chart-header h4 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+    }
+
+    .chart-body {
+        padding: 32px;
+        position: relative;
+        min-height: 350px;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 350px;
+    }
+
+    .full-width-chart {
+        grid-column: 1 / -1;
+    }
+
     .table-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(15px);
@@ -633,6 +703,16 @@
         letter-spacing: -0.5px;
     }
 
+    @media (max-width: 1024px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width-chart {
+            grid-column: 1;
+        }
+    }
+
     @media (max-width: 768px) {
         .card-body {
             padding: 20px;
@@ -693,6 +773,19 @@
             height: 50px;
             font-size: 20px;
         }
+
+        .chart-body {
+            padding: 20px;
+        }
+
+        .chart-container {
+            height: 300px;
+        }
+
+        .charts-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
     }
 
     @media (max-width: 640px) {
@@ -731,6 +824,10 @@
         .card-title {
             font-size: 20px;
         }
+
+        .chart-container {
+            height: 250px;
+        }
     }
 </style>
 
@@ -749,6 +846,8 @@
                 </div>
             </div>
         </div>
+
+        
 
         <div class="filter-card">
             <div class="card-header">
@@ -1070,112 +1169,217 @@
                 </div>
             </div>
         </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="charts-grid">
+                <!-- Profit/Loss Distribution -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4>💰 Profit/Loss Distribution</h4>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="profitLossChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cost Breakdown -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4>📉 Cost Breakdown</h4>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="costBreakdownChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue vs Cost Trend -->
+                <div class="chart-card full-width-chart">
+                    <div class="chart-header">
+                        <h4>📈 Revenue vs Cost Comparison</h4>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="revenueCostChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top 10 Profitable Purchases -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4>🏆 Top 10 Profitable Purchases</h4>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="topProfitChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top 10 Loss Making Purchases -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h4>⚠️ Top 10 Loss Making Purchases</h4>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="topLossChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profit Margin Distribution -->
+                <div class="chart-card full-width-chart">
+                    <div class="chart-header">
+                        <h4>📊 Profit Margin Distribution</h4>
+                    </div>
+                    <div class="chart-body">
+                        <div class="chart-container">
+                            <canvas id="marginDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% endif %}
 
-        {% if report_data %}
         <div class="table-card">
             <div class="table-header">
-                <h3>📈 Profit/Loss Analysis Report</h3>
+                <h3>📋 Detailed Purchase Records</h3>
                 <div class="export-buttons">
-                    <a href="{% url 'adminapp:spot_purchase_profit_loss_report_print' %}" id="printLink" target="_blank" class="export-btn print-btn">
-                        <i class="fas fa-print"></i> Print Report
-                    </a>
+<a href="#" onclick="openPrintReport(event)" class="export-btn print-btn">
+    <i class="fas fa-print"></i> Print Report
+</a>
                 </div>
             </div>
             
             <div class="table-container">
-                <table>
+                <table id="reportTable">
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Voucher #</th>
                             <th>Spot</th>
                             <th>Agent</th>
                             <th>Supervisor</th>
-                            <th>Purchase Amount</th>
-                            <th>Peeling Expenses</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Purchase Amt</th>
+                            <th>Peeling Exp</th>
                             <th>Processing OH</th>
                             <th>Freezing Tariff</th>
                             <th>Total Cost</th>
                             <th>Revenue</th>
                             <th>Profit/Loss</th>
                             <th>Margin %</th>
-                            <th>Status</th>
-                            <th>Items</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for purchase in report_data %}
-                        <tr>
-                            <td>{{ purchase.date|date:"M d, Y" }}</td>
-                            <td>{{ purchase.voucher_number|default:"N/A" }}</td>
-                            <td>{{ purchase.spot_name }}</td>
-                            <td>{{ purchase.agent_name }}</td>
-                            <td>{{ purchase.supervisor_name }}</td>
-                            <td>₹{{ purchase.purchase_amount|floatformat:2 }}</td>
-                            <td>₹{{ purchase.peeling_expenses|floatformat:2 }}</td>
-                            <td>₹{{ purchase.processing_overhead|floatformat:2 }}</td>
-                            <td>₹{{ purchase.freezing_tariff|floatformat:2 }}</td>
-                            <td>₹{{ purchase.total_cost|floatformat:2 }}</td>
-                            <td>₹{{ purchase.freezing_revenue|floatformat:2 }}</td>
-                            <td class="{% if purchase.profit_loss > 0 %}profit-cell{% elif purchase.profit_loss < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
-                                ₹{{ purchase.profit_loss|floatformat:2 }}
-                            </td>
-                            <td class="{% if purchase.profit_percentage > 0 %}profit-cell{% elif purchase.profit_percentage < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
-                                {{ purchase.profit_percentage|floatformat:1 }}%
-                            </td>
-                            <td>
-                                <span class="{% if purchase.profit_status == 'Profit' %}profit-cell{% elif purchase.profit_status == 'Loss' %}loss-cell{% else %}break-even-cell{% endif %}">
-                                    {{ purchase.profit_status }}
-                                </span>
-                            </td>
-                            <td>{{ purchase.total_items|default:0 }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
+<tbody>
+    {% if report_data %}
+        {% for purchase in report_data %}
+            <tr>
+                <td>{{ purchase.date|date:"d M Y" }}</td>
+                <td>{{ purchase.spot_name }}</td>
+                <td>{{ purchase.agent_name }}</td>
+                <td>{{ purchase.supervisor_name|default:"-" }}</td>
+                <td>{{ purchase.total_items }} items</td>
+                <td>{{ purchase.total_kg|floatformat:2 }} kg</td>
+                <td>₹{{ purchase.purchase_amount|floatformat:2 }}</td>
+                <td>₹{{ purchase.peeling_expenses|floatformat:2 }}</td>
+                <td>₹{{ purchase.processing_overhead|floatformat:2 }}</td>
+                <td>₹{{ purchase.freezing_tariff|floatformat:2 }}</td>
+                <td>₹{{ purchase.total_cost|floatformat:2 }}</td>
+                <td>₹{{ purchase.freezing_revenue|floatformat:2 }}</td>
+                <td class="{% if purchase.profit_loss > 0 %}profit-cell{% elif purchase.profit_loss < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
+                    ₹{{ purchase.profit_loss|floatformat:2 }}
+                </td>
+                <td class="{% if purchase.profit_percentage > 0 %}profit-cell{% elif purchase.profit_percentage < 0 %}loss-cell{% else %}break-even-cell{% endif %}">
+                    {{ purchase.profit_percentage|floatformat:1 }}%
+                </td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr class="empty-state">
+            <td colspan="14">
+                <i class="fas fa-inbox"></i><br>
+                No purchases found for the selected filters
+            </td>
+        </tr>
+    {% endif %}
+</tbody>
                 </table>
             </div>
         </div>
-        {% endif %}
-
-        {% if not report_data and not error and not message %}
-        <div class="table-card">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Voucher #</th>
-                            <th>Spot</th>
-                            <th>Agent</th>
-                            <th>Supervisor</th>
-                            <th>Purchase Amount</th>
-                            <th>Peeling Expenses</th>
-                            <th>Processing OH</th>
-                            <th>Freezing Tariff</th>
-                            <th>Total Cost</th>
-                            <th>Revenue</th>
-                            <th>Profit/Loss</th>
-                            <th>Margin %</th>
-                            <th>Status</th>
-                            <th>Items</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="empty-state">
-                            <td colspan="15">📋 No data available. Please apply filters and generate report.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Setup search for all filter sections
+    function openPrintReport(event) {
+    event.preventDefault();
+    
+    // Get current form data
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+    
+    // Build query string from form
+    for (let [key, value] of formData.entries()) {
+        if (value !== '') {
+            params.append(key, value);
+        }
+    }
+    
+    // Build print URL
+    const printUrl = "{% url 'adminapp:spot_purchase_profit_loss_report_print' %}";
+    const queryString = params.toString();
+    const fullUrl = queryString ? `${printUrl}?${queryString}` : printUrl;
+    
+    console.log('Opening print URL:', fullUrl);
+    
+    // Open in new tab
+    window.open(fullUrl, '_blank');
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Search functionality for all filters
+    function setupSearch(searchId, containerId, countId) {
+        const searchBox = document.getElementById(searchId);
+        const container = document.getElementById(containerId);
+        const countElement = document.getElementById(countId);
+        const options = container.querySelectorAll('.option-item');
+        
+        searchBox.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            options.forEach(option => {
+                const label = option.querySelector('label').textContent.toLowerCase();
+                option.style.display = label.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+
+        // Update count on checkbox change
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+        function updateCount() {
+            const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+            if (checked > 0) {
+                countElement.textContent = checked;
+                countElement.style.display = 'inline-block';
+            } else {
+                countElement.style.display = 'none';
+            }
+        }
+        
+        checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
+        updateCount(); // Initial count
+    }
+
+    // Setup all search boxes
     setupSearch('spotsSearch', 'spotsContainer', 'spotsCount');
     setupSearch('agentsSearch', 'agentsContainer', 'agentsCount');
     setupSearch('supervisorsSearch', 'supervisorsContainer', 'supervisorsCount');
@@ -1191,315 +1395,328 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSearch('unitsSearch', 'unitsContainer', 'unitsCount');
     setupSearch('glazeSearch', 'glazeContainer', 'glazeCount');
 
-    setupQuickDateFilter();
-    initializeDefaultValues();
-    updatePrintLink();
-
-    const form = document.getElementById('filterForm');
-    if (form) {
-        form.addEventListener('change', updatePrintLink);
-        form.addEventListener('input', debounce(updatePrintLink, 300));
-        
-        form.addEventListener('submit', function(e) {
-            const startDate = document.querySelector('input[name="start_date"]').value;
-            const endDate = document.querySelector('input[name="end_date"]').value;
-            
-            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-                e.preventDefault();
-                alert('Start date cannot be later than end date.');
-                return false;
-            }
-            
-            const submitBtn = this.querySelector('.apply-button');
-            if (submitBtn) {
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Report...';
-                submitBtn.style.opacity = '0.7';
-                submitBtn.disabled = true;
-                
-                setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.style.opacity = '1';
-                    submitBtn.disabled = false;
-                }, 10000);
-            }
-        });
-    }
-
-    const exportButtons = document.querySelectorAll('.export-btn');
-    exportButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            const originalText = this.innerHTML;
-            this.style.opacity = '0.7';
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
-            
-            setTimeout(() => {
-                this.style.opacity = '1';
-                this.innerHTML = originalText;
-            }, 3000);
-        });
-    });
-
-    setTimeout(highlightRows, 100);
-});
-
-function setupSearch(searchId, containerId, countId) {
-    const searchInput = document.getElementById(searchId);
-    const container = document.getElementById(containerId);
-    const countSpan = document.getElementById(countId);
-    
-    if (!searchInput || !container || !countSpan) return;
-    
-    const options = container.querySelectorAll('.option-item');
-
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        options.forEach(option => {
-            const label = option.querySelector('label').textContent.toLowerCase();
-            if (label.includes(searchTerm)) {
-                option.style.display = 'flex';
-            } else {
-                option.style.display = 'none';
-            }
-        });
-    });
-
-    function updateCount() {
-        const checkedBoxes = container.querySelectorAll('input[type="checkbox"]:checked');
-        const count = checkedBoxes.length;
-        if (count > 0) {
-            countSpan.textContent = count;
-            countSpan.style.display = 'inline-block';
-        } else {
-            countSpan.style.display = 'none';
-        }
-        updatePrintLink();
-    }
-
-    options.forEach(option => {
-        const checkbox = option.querySelector('input[type="checkbox"]');
-        if (checkbox) {
-            checkbox.addEventListener('change', updateCount);
-        }
-    });
-
-    options.forEach(item => {
-        item.addEventListener('click', function(e) {
-            if (e.target.type !== 'checkbox' && e.target.tagName !== 'LABEL') {
-                const checkbox = this.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    checkbox.dispatchEvent(new Event('change'));
-                }
-            }
-        });
-    });
-
-    updateCount();
-}
-
-function setupQuickDateFilter() {
+    // Handle quick filter and custom date range
     const quickFilter = document.getElementById('quickFilter');
     const customDateRange = document.getElementById('customDateRange');
     const startDate = document.getElementById('startDate');
     const endDate = document.getElementById('endDate');
 
-    if (!quickFilter || !customDateRange || !startDate || !endDate) return;
-
     quickFilter.addEventListener('change', function() {
-        const selectedValue = this.value;
-        
-        if (selectedValue === '') {
-            customDateRange.style.display = 'block';
+        if (this.value === '') {
             customDateRange.style.opacity = '1';
-            updatePrintLink();
-            return;
+            startDate.required = true;
+            endDate.required = true;
+        } else {
+            customDateRange.style.opacity = '0.5';
+            startDate.required = false;
+            endDate.required = false;
         }
-
-        customDateRange.style.opacity = '0.5';
-        
-        const dates = calculateDateRange(selectedValue);
-        if (dates) {
-            startDate.value = dates.start;
-            endDate.value = dates.end;
-        }
-        updatePrintLink();
     });
 
-    startDate.addEventListener('change', updatePrintLink);
-    endDate.addEventListener('change', updatePrintLink);
-
+    // Initial state
     if (quickFilter.value !== '') {
         customDateRange.style.opacity = '0.5';
-    } else {
-        customDateRange.style.display = 'block';
-        customDateRange.style.opacity = '1';
+        startDate.required = false;
+        endDate.required = false;
     }
-}
 
-function calculateDateRange(filterType) {
-    const today = new Date();
-    const formatDate = (date) => date.toISOString().split('T')[0];
-    
-    switch (filterType) {
-        case 'today':
-            return { start: formatDate(today), end: formatDate(today) };
-            
-        case 'yesterday':
-            const yesterday = new Date(today);
-            yesterday.setDate(today.getDate() - 1);
-            return { start: formatDate(yesterday), end: formatDate(yesterday) };
-            
-        case 'this_week':
-            const thisWeekStart = new Date(today);
-            const dayOfWeek = today.getDay();
-            const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            thisWeekStart.setDate(diff);
-            return { start: formatDate(thisWeekStart), end: formatDate(today) };
-            
-        case 'last_week':
-            const lastWeekEnd = new Date(today);
-            lastWeekEnd.setDate(today.getDate() - today.getDay());
-            const lastWeekStart = new Date(lastWeekEnd);
-            lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
-            return { start: formatDate(lastWeekStart), end: formatDate(lastWeekEnd) };
-            
-        case 'this_month':
-            const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-            return { start: formatDate(thisMonthStart), end: formatDate(today) };
-            
-        case 'last_month':
-            const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-            return { start: formatDate(lastMonthStart), end: formatDate(lastMonthEnd) };
-            
-        case 'this_quarter':
-            const quarterStart = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 1);
-            return { start: formatDate(quarterStart), end: formatDate(today) };
-            
-        case 'last_quarter':
-            const lastQuarterStart = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3 - 3, 1);
-            const lastQuarterEnd = new Date(today.getFullYear(), Math.floor(today.getMonth() / 3) * 3, 0);
-            return { start: formatDate(lastQuarterStart), end: formatDate(lastQuarterEnd) };
-            
-        case 'this_year':
-            const thisYearStart = new Date(today.getFullYear(), 0, 1);
-            return { start: formatDate(thisYearStart), end: formatDate(today) };
-            
-        case 'last_year':
-            const lastYearStart = new Date(today.getFullYear() - 1, 0, 1);
-            const lastYearEnd = new Date(today.getFullYear() - 1, 11, 31);
-            return { start: formatDate(lastYearStart), end: formatDate(lastYearEnd) };
-            
-        default:
-            return null;
-    }
-}
+    {% if summary and chart_data %}
+    // Chart.js configuration
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.font.size = 13;
+    Chart.defaults.color = '#475569';
 
-function initializeDefaultValues() {
-    const startDate = document.getElementById('startDate');
-    const endDate = document.getElementById('endDate');
-    const quickFilter = document.getElementById('quickFilter');
-    
-    const hasExistingData = document.querySelector('.table-card tbody tr:not(.empty-state)');
-    const hasUrlParams = window.location.search.length > 0;
-    
-    if (startDate && endDate && quickFilter) {
-        const hasStartDate = startDate.value !== '';
-        const hasEndDate = endDate.value !== '';
-        const hasQuickFilter = quickFilter.value !== '';
-        
-        if (!hasStartDate && !hasEndDate && !hasQuickFilter && !hasUrlParams) {
-            const today = new Date().toISOString().split('T')[0];
-            startDate.value = today;
-            endDate.value = today;
-            quickFilter.value = 'today';
-        }
-    }
-}
-
-function updatePrintLink() {
-    const printLink = document.getElementById('printLink');
-    if (!printLink) return;
-
-    try {
-        const baseUrl = printLink.href.split('?')[0];
-        const form = document.getElementById('filterForm');
-        if (!form) return;
-        
-        const formData = new FormData(form);
-        const params = new URLSearchParams();
-        
-        for (let [key, value] of formData.entries()) {
-            if (key !== 'format' && value !== '') {
-                params.append(key, value);
-            }
-        }
-        
-        const queryString = params.toString();
-        const newUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
-        printLink.href = newUrl;
-        
-    } catch (error) {
-        console.error('Error updating print link:', error);
-    }
-}
-
-function highlightRows() {
-    const rows = document.querySelectorAll('tbody tr:not(.empty-state)');
-    rows.forEach(row => {
-        const profitCell = row.querySelector('.profit-cell, .loss-cell, .break-even-cell');
-        if (profitCell) {
-            if (profitCell.classList.contains('profit-cell')) {
-                row.style.borderLeft = '4px solid #059669';
-            } else if (profitCell.classList.contains('loss-cell')) {
-                row.style.borderLeft = '4px solid #dc2626';
-            } else {
-                row.style.borderLeft = '4px solid #64748b';
+    // Profit/Loss Distribution Pie Chart
+    new Chart(document.getElementById('profitLossChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Profitable', 'Loss Making'],
+            datasets: [{
+                data: [{{ summary.profit_count }}, {{ summary.loss_count }}],
+                backgroundColor: ['#059669', '#dc2626'],
+                borderWidth: 3,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: { size: 14, weight: '600' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = {{ summary.total_purchases }};
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                        }
+                    }
+                }
             }
         }
     });
-}
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-function addSmoothAnimations() {
-    const statItems = document.querySelectorAll('.stat-item');
-    statItems.forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            item.style.transition = 'all 0.6s ease';
-            item.style.opacity = '1';
-            item.style.transform = 'translateY(0)';
-        }, index * 100);
+    // Cost Breakdown Pie Chart
+    new Chart(document.getElementById('costBreakdownChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Purchase Amount', 'Peeling Expenses', 'Processing Overhead', 'Freezing Tariff'],
+            datasets: [{
+                data: [
+                    {{ summary.total_purchase_amount }},
+                    {{ summary.total_peeling_expenses }},
+                    {{ summary.total_processing_overhead }},
+                    {{ summary.total_freezing_tariff }}
+                ],
+                backgroundColor: ['#4f46e5', '#7c3aed', '#ec4899', '#f59e0b'],
+                borderWidth: 3,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: { size: 12, weight: '600' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ₹' + context.parsed.toLocaleString('en-IN', {maximumFractionDigits: 2});
+                        }
+                    }
+                }
+            }
+        }
     });
 
-    const tableRows = document.querySelectorAll('tbody tr');
-    tableRows.forEach((row, index) => {
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(-20px)';
-        setTimeout(() => {
-            row.style.transition = 'all 0.4s ease';
-            row.style.opacity = '1';
-            row.style.transform = 'translateX(0)';
-        }, index * 50);
+    // Revenue vs Cost Bar Chart
+    new Chart(document.getElementById('revenueCostChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.labels|safe }},
+            datasets: [{
+                label: 'Total Cost',
+                data: {{ chart_data.costs|safe }},
+                backgroundColor: '#dc2626',
+                borderRadius: 8
+            }, {
+                label: 'Revenue',
+                data: {{ chart_data.revenues|safe }},
+                backgroundColor: '#059669',
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        font: { size: 14, weight: '600' }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString('en-IN', {maximumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString('en-IN');
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
     });
-}
 
-window.addEventListener('load', () => {
-    setTimeout(addSmoothAnimations, 200);
-});
+    // Top 10 Profitable Purchases
+    new Chart(document.getElementById('topProfitChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.top_profit_labels|safe }},
+            datasets: [{
+                label: 'Profit',
+                data: {{ chart_data.top_profit_values|safe }},
+                backgroundColor: '#059669',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Profit: ₹' + context.parsed.x.toLocaleString('en-IN', {maximumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString('en-IN');
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Top 10 Loss Making Purchases
+    new Chart(document.getElementById('topLossChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ chart_data.top_loss_labels|safe }},
+            datasets: [{
+                label: 'Loss',
+                data: {{ chart_data.top_loss_values|safe }},
+                backgroundColor: '#dc2626',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Loss: ₹' + Math.abs(context.parsed.x).toLocaleString('en-IN', {maximumFractionDigits: 2});
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + Math.abs(value).toLocaleString('en-IN');
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Profit Margin Distribution
+    new Chart(document.getElementById('marginDistributionChart'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Profit Margin',
+                data: {{ chart_data.margin_distribution|safe }},
+                backgroundColor: function(context) {
+                    const value = context.parsed.y;
+                    return value >= 0 ? '#059669' : '#dc2626';
+                },
+                borderColor: function(context) {
+                    const value = context.parsed.y;
+                    return value >= 0 ? '#047857' : '#b91c1c';
+                },
+                borderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Purchase #' + (context.dataIndex + 1) + 
+                                   ' | Margin: ' + context.parsed.y.toFixed(2) + '%';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Purchase Index',
+                        font: { size: 14, weight: '600' }
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Profit Margin (%)',
+                        font: { size: 14, weight: '600' }
+                    },
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: '#e2e8f0'
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
 </script>
 
 {% endblock %}
+
+        

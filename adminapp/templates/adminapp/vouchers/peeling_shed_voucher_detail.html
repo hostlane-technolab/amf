@@ -2,6 +2,8 @@
 {% block title %} Peeling Shed Voucher Detail {% endblock %}
 {% block content %}
 
+{% load indian_numbers %}
+
 <!-- Page header style -->
 <style>
   /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
@@ -664,7 +666,7 @@ small.unit {
   background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
   border: 2px solid #81c784;
   border-radius: 25px;
-  color: #2e7d32;
+  color: #2e7d32 !important;
   font-weight: 600;
   font-size: 14px;
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
@@ -1055,22 +1057,22 @@ small.unit {
                 <tr class="table-row">
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.total_amount|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.total_amount|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.receipt|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.receipt|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.payment|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.payment|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.remain_amount|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.remain_amount|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                 </tr>
@@ -1108,10 +1110,10 @@ small.unit {
                 <tr class="summary-row">
                   <td class="table-cell">
                     <div class="summary-value">
-                      <span class="calculated-value {% if voucher.remain_amount > 0 %}text-danger{% else %}text-success{% endif %}">
+                      <span class="calculated-value {% if voucher.remain_amount > 0 %}text-success{% else %}text-danger{% endif %}">
                         ₹ {{ voucher.remain_amount|floatformat:2|default:"0.00" }}
+                        <small class="unit">balance</small>
                       </span>
-                      <small class="unit">balance</small>
                     </div>
                   </td>
                   <td class="table-cell">
@@ -1135,8 +1137,8 @@ small.unit {
                         {% else %}
                           0 %
                         {% endif %}
+                        <small class="unit">settled</small>
                       </span>
-                      <small class="unit">settled</small>
                     </div>
                   </td>
                 </tr>

@@ -378,6 +378,13 @@
   background-color: #a7f3d0;
 }
 
+
+
+.purple .action-nav-link span i {
+  color: #9333ea;
+}
+
+
 .rose .card-icon-box {
   background-color: #ffe4e6;
 }
@@ -786,7 +793,7 @@
         <div class="management-card purple">
           <div class="card-header">
             <div class="card-icon-box">
-              <i class="fa-solid fa-snowflake"></i>
+              <i class="fa-solid fa-cart-plus"></i>
             </div>
             <div class="card-content">
               <h3>Stock Adjustment</h3>
@@ -796,11 +803,11 @@
           <div class="card-actions">
             <div class="action-links">
               <a href="{% url 'adminapp:stock_adjustment' %}" class="action-nav-link">
-                <span><i class="fa-solid fa-shop"></i>Main Stocks Adjustment</span>
+                <span><i class="fas fa-shopping-cart"></i>Main Stocks Adjustment</span>
                 <i class="fas fa-chevron-right chevron"></i>
               </a>
               <a href="{% url 'adminapp:tenant_stock_adjustment' %}" class="action-nav-link">
-                <span><i class="fas fa-shopping-cart"></i>Tenant Stocks Adjustment</span>
+                <span><i class="fa-solid fa-shop"></i>Tenant Stocks Adjustment</span>
                 <i class="fas fa-chevron-right chevron"></i>
               </a>
             </div>

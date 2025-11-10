@@ -1,302 +1,653 @@
-
 {% extends 'master2base.html' %}
 {%block title%} Master Home{%endblock%}
 {% block content %}
 
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-<div class="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8" style="margin-top: 5rem;">
-  <div class="max-w-8xl mx-auto">
+<style>
+/* Master Dashboard Styles */
+.master-container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 32px 16px;
+  margin-top: 5rem;
+}
+
+.master-wrapper {
+  max-width: 1536px;
+  margin: 0 auto;
+}
+
+/* Header Card */
+.master-header-card {
+  background-color: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.master-header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.master-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.master-header-icon {
+  width: 64px;
+  height: 64px;
+  background-color: #3b82f6;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.master-header-icon i {
+  color: white;
+  font-size: 24px;
+}
+
+.master-header-title h1 {
+  font-size: 25px;
+  font-weight: bold;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.master-header-title p {
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 500;
+  margin: 0;
+}
+
+.master-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.master-btn-manage {
+  padding: 12px 24px;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  font-weight: 600;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.master-btn-manage:hover {
+  background-color: #f8fafc;
+}
+
+.master-btn-manage i {
+  margin-right: 8px;
+}
+
+.master-btn-add {
+  padding: 12px 24px;
+  background-color: #2563eb;
+  color: white;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+}
+
+.master-btn-add:hover {
+  background-color: #1d4ed8;
+}
+
+.master-btn-add i {
+  margin-right: 8px;
+}
+
+/* Cards Section */
+.master-cards-section {
+  margin-bottom: 32px;
+  margin-top: 20px;
+}
+
+.master-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.master-card {
+  background-color: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.master-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.master-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.master-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+  flex-shrink: 0;
+}
+
+.master-card-icon i {
+  font-size: 24px;
+}
+
+.master-card-content {
+  flex: 1;
+}
+
+.master-card-content h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.master-card-content p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+.master-card-actions {
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.master-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.master-action-link {
+  flex: 1;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+  display: inline-block;
+}
+
+.master-action-link i {
+  margin-right: 4px;
+}
+
+.master-action-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.master-action-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.master-action-nav-link:hover {
+  background-color: #f8fafc;
+}
+
+.master-action-nav-link span i {
+  margin-right: 8px;
+}
+
+.master-action-nav-link .chevron {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+/* Color Schemes */
+.indigo .master-card-icon {
+  background-color: #e0e7ff;
+}
+
+.indigo .master-card-icon i {
+  color: #4f46e5;
+}
+
+.indigo .master-action-link.list-btn {
+  background-color: #eef2ff;
+  color: #4338ca;
+}
+
+.indigo .master-action-link.list-btn:hover {
+  background-color: #e0e7ff;
+}
+
+.indigo .master-action-link.add-btn {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.indigo .master-action-link.add-btn:hover {
+  background-color: #4338ca;
+}
+
+.indigo:hover .master-card-icon {
+  background-color: #c7d2fe;
+}
+
+.blue .master-card-icon {
+  background-color: #dbeafe;
+}
+
+.blue .master-card-icon i {
+  color: #2563eb;
+}
+
+.blue .master-action-link.list-btn {
+  background-color: #eff6ff;
+  color: #1e40af;
+}
+
+.blue .master-action-link.list-btn:hover {
+  background-color: #dbeafe;
+}
+
+.blue .master-action-link.add-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
+.blue .master-action-link.add-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.blue .master-action-nav-link span i {
+  color: #2563eb;
+}
+
+.blue:hover .master-card-icon {
+  background-color: #bfdbfe;
+}
+
+.purple .master-card-icon {
+  background-color: #f3e8ff;
+}
+
+.purple .master-card-icon i {
+  color: #9333ea;
+}
+
+.purple .master-action-link.dashboard-btn {
+  background-color: #9333ea;
+  color: white;
+  width: 100%;
+}
+
+.purple .master-action-link.dashboard-btn:hover {
+  background-color: #7e22ce;
+}
+
+.purple:hover .master-card-icon {
+  background-color: #e9d5ff;
+}
+
+.pink .master-card-icon {
+  background-color: #fce7f3;
+}
+
+.pink .master-card-icon i {
+  color: #ec4899;
+}
+
+.pink .master-action-nav-link span i {
+  color: #ec4899;
+}
+
+.pink:hover .master-card-icon {
+  background-color: #fbcfe8;
+}
+
+.green .master-card-icon {
+  background-color: #d1fae5;
+}
+
+.green .master-card-icon i {
+  color: #059669;
+}
+
+.green .master-action-nav-link span i {
+  color: #059669;
+}
+
+.green:hover .master-card-icon {
+  background-color: #a7f3d0;
+}
+
+.rose .master-card-icon {
+  background-color: #ffe4e6;
+}
+
+.rose .master-card-icon i {
+  color: #e11d48;
+}
+
+.rose .master-action-nav-link span i {
+  color: #e11d48;
+}
+
+.rose:hover .master-card-icon {
+  background-color: #fecdd3;
+}
+
+/* Responsive Design */
+@media (min-width: 640px) {
+  .master-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .master-container {
+    padding: 32px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .master-header-content {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .master-cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .master-container {
+    padding: 32px;
+  }
+}
+</style>
+
+<div class="master-container">
+  <div class="master-wrapper">
     
     <!-- Header -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-8">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 bg-blue-500 rounded-xl flex items-center justify-center shadow-md">
-            <i class="fas fa-chart-line text-white text-2xl"></i>
+    <div class="master-header-card">
+      <div class="master-header-content">
+        <div class="master-header-left">
+          <div class="master-header-icon">
+            <i class="fas fa-chart-line"></i>
           </div>
-          <div>
-            <h1 class="text-3xl font-bold text-slate-900">Master Dashboard</h1>
-            <p class="text-base text-slate-500 font-medium mt-1">AMF Management System</p>
+          <div class="master-header-title">
+            <h1>Master Dashboard</h1>
+            <p>AMF Management System</p>
           </div>
         </div>
         
-        <div class="flex items-center gap-3">
-          <button class="px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors text-base">
-            <i class="fas fa-cog mr-2"></i>
+        <div class="master-header-buttons">
+          <button class="master-btn-manage">
+            <i class="fas fa-cog"></i>
             Manage
           </button>
-          <button class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-base">
-            <i class="fas fa-plus mr-2"></i>
+          <button class="master-btn-add">
+            <i class="fas fa-plus"></i>
             Add Customer
           </button>
         </div>
       </div>
     </div>
- 
-    </div>
 
-
-    <!-- Management Section Cards (Sidebar Items as Cards) -->
-    <div class="mb-8 mt-5">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Management Section Cards -->
+    <div class="master-cards-section">
+      <div class="master-cards-grid">
         
         <!-- Buyer Masters -->
-         <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-user-tie text-indigo-600 text-2xl"></i>
+        <div class="master-card indigo">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fa-solid fa-user-tie"></i>
             </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Buyer Masters</h3>
-              <p class="text-md text-slate-500">Manage Your Customers</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="flex gap-2">
-              <a href="{% url 'adminapp:buyer_list' %}" class="flex-1 px-4 py-2.5 bg-indigo-50 text-indigo-700 text-md font-semibold rounded-lg hover:bg-indigo-100 transition-colors text-center">
-                <i class="fas fa-list mr-1"></i> List
-              </a>
-              <a href="{% url 'adminapp:buyer_create' %}" class="flex-1 px-4 py-2.5 bg-indigo-600 text-white text-md font-semibold rounded-lg hover:bg-indigo-700 transition-colors text-center">
-                <i class="fas fa-plus mr-1"></i> Add
-              </a>
+            <div class="master-card-content">
+              <h3>Buyer Masters</h3>
+              <p>Manage Your Customers</p>
             </div>
           </div>
-        </div>
-
-                <!-- Destination Master Card -->
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fa-gear text-blue-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Destination Masters</h3>
-              <p class="text-md text-slate-500">Manage and control your delivery routes and destinations.</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="flex gap-2">
-              <a href="{% url 'adminapp:destination_list' %}" class="flex-1 px-4 py-2.5 bg-blue-50 text-blue-700 text-md font-semibold rounded-lg hover:bg-blue-100 transition-colors text-center">
-                <i class="fas fa-list mr-1"></i> List
+          <div class="master-card-actions">
+            <div class="master-action-buttons">
+              <a href="{% url 'adminapp:buyer_list' %}" class="master-action-link list-btn">
+                <i class="fas fa-list"></i> List
               </a>
-              <a href="{% url 'adminapp:destination_create' %}" class="flex-1 px-4 py-2.5 bg-blue-600 text-white text-md font-semibold rounded-lg hover:bg-blue-700 transition-colors text-center">
-                <i class="fas fa-plus mr-1"></i> Create
+              <a href="{% url 'adminapp:buyer_create' %}" class="master-action-link add-btn">
+                <i class="fas fa-plus"></i> Add
               </a>
             </div>
           </div>
         </div>
 
-                <!-- Admin Panel Card -->
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
-              <i class="fas fa-tachometer-alt text-purple-600 text-2xl"></i>
+        <!-- Destination Master Card -->
+        <div class="master-card blue">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fa-solid fa-gear"></i>
             </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Admin Panel</h3>
-              <p class="text-md text-slate-500">Configure admin data and settings</p>
+            <div class="master-card-content">
+              <h3>Destination Masters</h3>
+              <p>Manage your delivery routes and destinations.</p>
             </div>
           </div>
-          <div class="pt-4 border-t border-slate-100">
-            <a href="{% url 'adminapp:admin_dashboard' %}" class="block w-full px-4 py-2.5 bg-purple-600 text-white text-md font-semibold rounded-lg hover:bg-purple-700 transition-colors text-center">
-              <i class="fas fa-arrow-right mr-2"></i> Open Dashboard
+          <div class="master-card-actions">
+            <div class="master-action-buttons">
+              <a href="{% url 'adminapp:destination_list' %}" class="master-action-link list-btn">
+                <i class="fas fa-list"></i> List
+              </a>
+              <a href="{% url 'adminapp:destination_create' %}" class="master-action-link add-btn">
+                <i class="fas fa-plus"></i> Create
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Panel Card -->
+        <div class="master-card purple">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fas fa-tachometer-alt"></i>
+            </div>
+            <div class="master-card-content">
+              <h3>Admin Panel</h3>
+              <p>Configure admin data and settings</p>
+            </div>
+          </div>
+          <div class="master-card-actions">
+            <a href="{% url 'adminapp:admin_dashboard' %}" class="master-action-link dashboard-btn">
+              <i class="fas fa-arrow-right"></i> Open Dashboard
             </a>
           </div>
         </div>
 
         <!-- Personnel Masters Card -->
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
-              <i class="fas fa-users text-blue-600 text-2xl"></i>
+        <div class="master-card blue">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fas fa-users"></i>
             </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Personnel Masters</h3>
-              <p class="text-md text-slate-500">Manage your Personnel operations.</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:purchasing_supervisor_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-user-tie mr-2 text-blue-600"></i>Purchasing Supervisor</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:purchasing_agent_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-user-friends mr-2 text-blue-600"></i>Purchasing Agent</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
+            <div class="master-card-content">
+              <h3>Personnel Masters</h3>
+              <p>Manage your Personnel operations.</p>
             </div>
           </div>
-        </div>
-   
-
-                <!--Financial Masters  Card -->
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-pink-100 rounded-lg flex items-center justify-center group-hover:bg-pink-200 transition-colors flex-shrink-0">
-              <i class="fas fa-dollar-sign text-pink-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Financial Masters</h3>
-              <p class="text-md text-slate-500">Manage your Financial Statements.</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:tenant_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-building mr-2 text-pink-600"></i>Tenants</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+          <div class="master-card-actions">
+            <div class="master-action-links">
+              <a href="{% url 'adminapp:purchasing_supervisor_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-user-tie"></i>Purchasing Supervisor</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:purchase_overhead_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-shopping-cart mr-2 text-pink-600"></i>Purchase Overheads</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:peeling_overhead_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-warehouse mr-2 text-pink-600"></i>Peeling Overheads</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:processing_overhead_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-cogs mr-2 text-pink-600"></i>Processing Overheads</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:shipment_overhead_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-shipping-fast mr-2 text-pink-600"></i>Shipment Overheads</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:settings_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-cog mr-2 text-pink-600"></i>Settings</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:purchasing_agent_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-user-friends"></i>Purchasing Agent</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
             </div>
           </div>
         </div>
 
-
-
-        <!-- Location master Card -->
-      
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fas fa-building text-green-600 text-2xl"></i>
+        <!-- Financial Masters Card -->
+        <div class="master-card pink">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fas fa-dollar-sign"></i>
             </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Locations Masters</h3>
-              <p class="text-md text-slate-500">Manage your operations location.</p>
+            <div class="master-card-content">
+              <h3>Financial Masters</h3>
+              <p>Manage your Financial Statements.</p>
             </div>
           </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:processing_center_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-industry mr-2 text-green-600"></i>Processing Centers</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+          <div class="master-card-actions">
+            <div class="master-action-links">
+              <a href="{% url 'adminapp:tenant_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-building"></i>Tenants</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:store_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-store mr-2 text-green-600"></i>Stores</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:purchase_overhead_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-shopping-cart"></i>Purchase Overheads</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:peeling_center_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-warehouse mr-2 text-green-600"></i>Peeling Centers</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:peeling_overhead_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-warehouse"></i>Peeling Overheads</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:purchasing_spot_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-map-marker-alt mr-2 text-green-600"></i>Purchasing Spots</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:processing_overhead_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-cogs"></i>Processing Overheads</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:LocalParty_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-map-marker-alt mr-2 text-green-600"></i>LocalParty Create</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:shipment_overhead_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-shipping-fast"></i>Shipment Overheads</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:settings_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-cog"></i>Settings</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
             </div>
           </div>
         </div>
 
-
-
-
+        <!-- Location Master Card -->
+        <div class="master-card green">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fa-solid fas fa-building"></i>
+            </div>
+            <div class="master-card-content">
+              <h3>Locations Masters</h3>
+              <p>Manage your operations location.</p>
+            </div>
+          </div>
+          <div class="master-card-actions">
+            <div class="master-action-links">
+              <a href="{% url 'adminapp:processing_center_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-industry"></i>Processing Centers</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:store_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-store"></i>Stores</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:peeling_center_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-warehouse"></i>Peeling Centers</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:purchasing_spot_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-map-marker-alt"></i>Purchasing Spots</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+              <a href="{% url 'adminapp:LocalParty_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-map-marker-alt"></i>LocalParty Create</span>
+                <i class="fas fa-chevron-right chevron"></i>
+              </a>
+            </div>
+          </div>
+        </div>
 
         <!-- Products Masters Card -->
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fas fa-box text-rose-600 text-2xl"></i>
+        <div class="master-card rose">
+          <div class="master-card-header">
+            <div class="master-card-icon">
+              <i class="fa-solid fas fa-box"></i>
             </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Products Masters</h3>
-              <p class="text-md text-slate-500">Manage your Item & Products.</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:item_category_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-tags mr-2 text-rose-600"></i>Item Categories</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:item_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-box mr-2 text-rose-600"></i>Items</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:item_quality_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-snowflake mr-2 text-rose-600"></i>Item Sub</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:species_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-fish mr-2 text-rose-600"></i>Item Species</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
-              <a href="{% url 'adminapp:item_grade_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-star mr-2 text-rose-600"></i>Item Grades</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
-              </a>
+            <div class="master-card-content">
+              <h3>Products Masters</h3>
+              <p>Manage your Item & Products.</p>
             </div>
           </div>
-        </div>
-        <!-- Products Masters second Card -->
-        <div class="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all hover:-translate-y-1 cursor-pointer group">
-          <div class="flex items-start gap-4 mb-4">
-            <div class="w-16 h-16 bg-rose-100 rounded-lg flex items-center justify-center group-hover:bg-rose-200 transition-colors flex-shrink-0">
-              <i class="fa-solid fas fa-box text-rose-600 text-2xl"></i>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-semibold text-slate-900 mb-1">Products Masters</h3>
-              <p class="text-md text-slate-500">Manage your Item & Products.</p>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-slate-100">
-            <div class="space-y-2">
-              <a href="{% url 'adminapp:freezing_category_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-snowflake mr-2 text-rose-600"></i>Freezing Group</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+          <div class="master-card-actions">
+            <div class="master-action-links">
+              <a href="{% url 'adminapp:item_category_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-tags"></i>Item Categories</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:packing_unit_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-cubes mr-2 text-rose-600"></i>Packing Units</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:item_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-box"></i>Items</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:glaze_percentage_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-percent mr-2 text-rose-600"></i>Glaze Percentages</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:item_quality_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-snowflake"></i>Item Sub</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:item_brand_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-award mr-2 text-rose-600"></i>Item Brands</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:species_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-fish"></i>Item Species</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
-              <a href="{% url 'adminapp:item_type_list' %}" class="flex items-center justify-between px-3 py-2 text-md font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
-                <span><i class="fas fa-layer-group mr-2 text-rose-600"></i>Peeling Types</span>
-                <i class="fas fa-chevron-right text-slate-400 text-xs"></i>
+              <a href="{% url 'adminapp:item_grade_list' %}" class="master-action-nav-link">
+                <span><i class="fas fa-star"></i>Item Grades</span>
+                <i class="fas fa-chevron-right chevron"></i>
               </a>
             </div>
           </div>
         </div>
+
 
       </div>
     </div>
 
-
-
-
   </div>
 </div>
-
-
 
 {% endblock %}

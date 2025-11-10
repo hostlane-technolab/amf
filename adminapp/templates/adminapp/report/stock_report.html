@@ -1064,7 +1064,7 @@
             <div class="report-subtitle">Detailed Inventory Breakdown by {{ section_by|title }}</div>
             
             <div class="company-info">
-                <div class="company-name">BAHRAYA EXPORTS </div>
+                <div class="company-name">PREMIER MARINE FOOD</div>
                 <div class="company-location">VANDANAM, ALAPPUZHA</div>
                 <div class="company-location">KERALA, INDIA</div>
             </div>
@@ -1196,6 +1196,9 @@
             <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
                 Generate PDF
             </button>
+            <a href="{% url 'adminapp:stock_report_print' %}?{{ request.GET.urlencode }}" target="_blank" class="action-btn">
+                Print Preview
+            </a>
             <button type="button" onclick="exportToCSV()" class="action-btn">
                 Export CSV
             </button>

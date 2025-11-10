@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% load indian_numbers %}
+
 <!-- Page header style -->
 <style>
   /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
@@ -1411,7 +1413,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Receipts</div>
-                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2|default:"0.00"|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-plus-circle"></i>
                                     <span>Incoming</span>
@@ -1425,7 +1427,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Payments</div>
-                                <div class="info-value">₹{{ summary.total_payments|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2|default:"0.00"|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-minus-circle"></i>
                                     <span>Outgoing</span>
@@ -1439,7 +1441,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Net Amount</div>
-                                <div class="info-value">₹{{ summary.net_amount|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2|default:"0.00"|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-balance-scale"></i>
                                     <span>Balance</span>
@@ -1453,7 +1455,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Purchases</div>
-                                <div class="info-value">₹{{ total_purchases|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-value">₹{{ total_purchases|floatformat:2|default:"0.00"|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-cart-plus"></i>
                                     <span>Purchase</span>
@@ -1467,7 +1469,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Outstanding</div>
-                                <div class="info-value">₹{{ total_outstanding|floatformat:2|default:"0.00" }}</div>
+                                <div class="info-value">₹{{ total_outstanding|floatformat:2|default:"0.00"|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-exclamation-triangle"></i>
                                     <span>Due</span>
@@ -1629,7 +1631,7 @@
                                                 <div class="amount-display">
                                                     {% if voucher.receipt > 0 %}
                                                     <span class="currency-symbol">+₹</span>
-                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
+                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2|indian_comma }}</span>
                                                     {% else %}
                                                     <span class="text-muted">₹0.00</span>
                                                     {% endif %}
@@ -1640,7 +1642,7 @@
     <div class="amount-display {% if voucher.payment > 0 %}amount-negative{% endif %}">
         {% if voucher.payment > 0 %}
         <span class="currency-symbol">-₹</span>
-        <span class="payment-value">{{ voucher.payment|floatformat:2 }}</span>
+        <span class="payment-value">{{ voucher.payment|floatformat:2|indian_comma }}</span>
         {% else %}
         <span class="text-muted">₹0.00</span>
         {% endif %}
@@ -1659,9 +1661,9 @@
       </span>
       <span class="{% if receipt > payment %}amount-value{% elif payment > receipt %}expense-value{% else %}balanced-value{% endif %}">
         {% if receipt > payment %}
-          {{ receipt|add:payment|floatformat:2 }}
+          {{ receipt|add:payment|floatformat:2|indian_comma }}
         {% else %}
-          {{ payment|add:receipt|floatformat:2 }}
+          {{ payment|add:receipt|floatformat:2|indian_comma }}
         {% endif %}
       </span>
     </div>
@@ -1671,7 +1673,7 @@
               <td class="table-cell">
                 <div class="{% if voucher.total_amount > 0 %}amount-display{% elif voucher.total_amount < 0 %}expense-display{% else %}balanced-display{% endif %}">
                   <span class="currency-symbol">₹</span>
-                  <span class="{% if voucher.total_amount > 0 %}amount-value{% elif voucher.total_amount < 0 %}expense-value{% else %}balanced-value{% endif %}">{{ voucher.total_amount|floatformat:2 }}</span>
+                  <span class="{% if voucher.total_amount > 0 %}amount-value{% elif voucher.total_amount < 0 %}expense-value{% else %}balanced-value{% endif %}">{{ voucher.total_amount|floatformat:2|indian_comma }}</span>
                 </div>
               </td>
                                             
@@ -1761,18 +1763,18 @@
 
                                         <div class="metric-item receipt-metric">
                                             <div class="metric-label">Receipts</div>
-                                            <div class="metric-value">+₹{{ supervisor.total_receipts|floatformat:2|default:"0.00" }}</div>
+                                            <div class="metric-value">+₹{{ supervisor.total_receipts|floatformat:2|default:"0.00"|indian_comma }}</div>
                                         </div>
 
                                         <div class="metric-item payment-metric">
                                             <div class="metric-label">Payments</div>
-                                            <div class="metric-value">-₹{{ supervisor.total_payments|floatformat:2|default:"0.00" }}</div>
+                                            <div class="metric-value">-₹{{ supervisor.total_payments|floatformat:2|default:"0.00"|indian_comma }}</div>
                                         </div>
                                         
                                         <div class="metric-item net-metric">
                                             <div class="metric-label">Net Amount</div>
                                             <div class="metric-value net-amount {% if supervisor.net_amount > 0 %}positive{% elif supervisor.net_amount < 0 %}negative{% else %}neutral{% endif %}">
-                                                {% if supervisor.net_amount >= 0 %}₹{{ supervisor.net_amount|floatformat:2 }}{% else %}₹{{ supervisor.net_amount|floatformat:2 }}{% endif %}
+                                                {% if supervisor.net_amount >= 0 %}₹{{ supervisor.net_amount|floatformat:2|indian_comma }}{% else %}₹{{ supervisor.net_amount|floatformat:2|indian_comma }}{% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -1856,11 +1858,11 @@
                 <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
                 <span class="badge-value">
                     {% if summary.net_amount > 0 %}
-                        +₹{{ summary.net_amount|floatformat:0 }}
+                        +₹ {{ summary.net_amount|floatformat:0|indian_comma }}
                     {% elif summary.net_amount < 0 %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
+                        ₹ {{ summary.net_amount|floatformat:0|indian_comma }}
                     {% else %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
+                        ₹ {{ summary.net_amount|floatformat:0|indian_comma }}
                     {% endif %}
                 </span>
                 <span class="badge-label">BALANCE</span>

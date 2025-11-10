@@ -313,7 +313,7 @@ small.unit {
 .table-header {
   background: #28a745;
   border: none;
-  padding: 20px;
+  padding: 15px;
   font-weight: 700;
   color: #ffffff;
   text-transform: uppercase;
@@ -1316,5 +1316,68 @@ $(document).ready(function() {
 });
 </script>
 
+<script>
+  // Simple Indian comma formatting function
+function formatIndianComma(number) {
+    const num = parseFloat(number).toFixed(2);
+    const [integer, decimal] = num.split('.');
+    
+    // Handle last 3 digits separately
+    const lastThree = integer.slice(-3);
+    const remaining = integer.slice(0, -3);
+    
+    // Add comma every 2 digits in remaining part
+    const formatted = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+    
+    // Combine all parts
+    return (formatted ? formatted + ',' : '') + lastThree + '.' + decimal;
+}
+
+// Examples:
+// 1234567.89  → "12,34,567.89"
+// 12345.50    → "12,345.50"  
+// 123.45      → "123.45"
+// 987654321.5 → "98,76,54,321.50"
+</script>
+
+<script>
+  // Indian comma format
+  function formatIndianComma(number) {
+      const num = parseFloat(number).toFixed(2);
+      const [integer, decimal] = num.split('.');
+      
+      const lastThree = integer.slice(-3);
+      const remaining = integer.slice(0, -3);
+      const formatted = remaining.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+      
+      return (formatted ? formatted + ',' : '') + lastThree + '.' + decimal;
+  }
+
+  // Update your existing calculatePurchaseTotals function:
+  function calculatePurchaseTotals() {
+    let totalAmount = 0;
+    let totalQuantity = 0;
+    let totalItems = 0;
+
+    document.querySelectorAll('.item-row').forEach(row => {
+      const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+      if (deleteCheckbox && deleteCheckbox.checked) return;
+
+      const quantity = parseFloat(row.querySelector('input[name$="-quantity"]')?.value) || 0;
+      const rate = parseFloat(row.querySelector('input[name$="-rate"]')?.value) || 0;
+
+      if (quantity > 0 || rate > 0) {
+        totalItems += 1;
+        totalQuantity += quantity;
+        totalAmount += quantity * rate;
+      }
+    });
+
+    // Use formatIndianComma here
+    document.getElementById('quantity-total').textContent = formatIndianComma(totalQuantity);
+    document.getElementById('amount-total').textContent = formatIndianComma(totalAmount);
+    document.getElementById('items-count').textContent = totalItems;
+  }
+</script>
 
 {% endblock %}

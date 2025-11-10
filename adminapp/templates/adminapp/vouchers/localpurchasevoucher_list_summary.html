@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% load indian_numbers %}
+
 
     <!-- Page header style -->
 <style>
@@ -1872,7 +1874,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Receipts</div>
-                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-plus-circle"></i>
                                     <span>Incoming</span>
@@ -1886,7 +1888,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Payments</div>
-                                <div class="info-value">₹{{ summary.total_payments|floatformat:2 }}</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-minus-circle"></i>
                                     <span>Outgoing</span>
@@ -1900,7 +1902,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Net Amount</div>
-                                <div class="info-value">₹{{ summary.net_amount|floatformat:2 }}</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-balance-scale"></i>
                                     <span>Balance</span>
@@ -2111,7 +2113,7 @@
                                                 <div class="receipt-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
                                                     {% if voucher.receipt > 0 %}
                                                     <span class="currency-symbol">+₹</span>
-                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
+                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2|indian_comma }}</span>
                                                     {% else %}
                                                     <span class="text-muted">₹0.00</span>
                                                     {% endif %}
@@ -2122,7 +2124,7 @@
                   <div class="expense-display">
                     {% if voucher.payment > 0 %}
                     <span class="currency-symbol">-₹</span>
-                    <span class="expense-value">{{ voucher.payment|floatformat:2 }}</span>
+                    <span class="expense-value">{{ voucher.payment|floatformat:2|indian_comma }}</span>
                     {% else %}
                     <span class="text-muted">₹0.00</span>
                     {% endif %}
@@ -2136,7 +2138,7 @@
         {% if receipt > payment %}+₹{% elif payment > receipt %}-₹{% else %}₹{% endif %}
       </span>
       <span class="{% if receipt > payment %}amount-value{% elif payment > receipt %}expense-value{% else %}balanced-value{% endif %}">
-        {{ voucher.remain_amount|floatformat:2 }}
+        {{ voucher.remain_amount|floatformat:2|indian_comma }}
       </span>
     </div>
   {% endwith %}
@@ -2259,18 +2261,18 @@
 
                                         <div class="metric-item receipt-metric">
                                             <div class="metric-label">Receipts</div>
-                                            <div class="metric-value">+₹{{ party.total_receipts|floatformat:2 }}</div>
+                                            <div class="metric-value">+₹{{ party.total_receipts|floatformat:2|indian_comma }}</div>
                                         </div>
 
                                         <div class="metric-item payment-metric">
                                             <div class="metric-label">Payments</div>
-                                            <div class="metric-value">-₹{{ party.total_payments|floatformat:2 }}</div>
+                                            <div class="metric-value">-₹{{ party.total_payments|floatformat:2|indian_comma }}</div>
                                         </div>
                                         
                                         <div class="metric-item net-metric">
                                             <div class="metric-label">Net Amount</div>
                                             <div class="metric-value net-amount {% if party.net_amount > 0 %}positive{% elif party.net_amount < 0 %}negative{% else %}neutral{% endif %}">
-                                                ₹{{ party.net_amount|floatformat:2 }}
+                                                ₹{{ party.net_amount|floatformat:2|indian_comma }}
                                             </div>
                                         </div>
                                     </div>
@@ -2344,11 +2346,11 @@
                 <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
                 <span class="badge-value">
                     {% if summary.net_amount > 0 %}
-                        +₹{{ summary.net_amount|floatformat:0 }}
+                        +₹{{ summary.net_amount|floatformat:0|indian_comma }}
                     {% elif summary.net_amount < 0 %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
+                        ₹{{ summary.net_amount|floatformat:0|indian_comma }}
                     {% else %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
+                        ₹{{ summary.net_amount|floatformat:0|indian_comma }}
                     {% endif %}
                 </span>
                 <span class="badge-label">BALANCE</span>

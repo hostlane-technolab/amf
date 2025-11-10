@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create User - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --border-color: #dee2e6;
+            --text-muted: #6c757d;
+            --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --shadow-medium: 0 4px 20px rgba(0, 0, 0, 0.12);
+            --shadow-heavy: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            background: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--primary-color);
+        }
+
+        /* Navbar Styles */
+        .admin-navbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-light);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .admin-navbar.scrolled {
+            box-shadow: var(--shadow-medium);
+        }
+
+        .navbar-brand {
+            color: var(--primary-color) !important;
+            font-weight: 700;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            color: var(--secondary-color) !important;
+            transform: scale(1.05);
+        }
+
+        .brand-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--white);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--primary-color) !important;
+            font-weight: 500;
+            padding: 8px 16px !important;
+            margin: 0 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--secondary-color) !important;
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav .nav-link.active {
+            background: var(--secondary-color);
+            color: var(--white) !important;
+        }
+
+        .dropdown-menu {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px 0;
+            margin-top: 8px;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .dropdown-item {
+            color: var(--primary-color) !important;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: var(--secondary-color) !important;
+            transform: translateX(5px);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .navbar-toggler {
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger-color);
+            color: var(--white);
+            font-size: 0.7rem;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 90px;
+            padding: 40px 0;
+            min-height: calc(100vh - 90px);
+        }
+
+        .page-header {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--success-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--white);
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .breadcrumb-item a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item.active {
+            color: var(--text-muted);
+        }
+
+        /* Form Container */
+        .form-container {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow-medium);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .form-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success-color), var(--secondary-color));
+        }
+
+        /* Django Form Styling */
+        .django-form p {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .django-form label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .django-form label::before {
+            content: attr(data-icon);
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .django-form input[type="text"],
+        .django-form input[type="email"],
+        .django-form input[type="password"],
+        .django-form input[type="tel"],
+        .django-form select,
+        .django-form textarea {
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--white);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .django-form input:focus,
+        .django-form select:focus,
+        .django-form textarea:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.1);
+            background: rgba(52, 152, 219, 0.02);
+            outline: none;
+        }
+
+        .django-form input:hover,
+        .django-form select:hover,
+        .django-form textarea:hover {
+            border-color: rgba(52, 152, 219, 0.5);
+        }
+
+        /* File Input Special Styling */
+        .django-form input[type="file"] {
+            display: none;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: var(--light-bg);
+            cursor: pointer;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: var(--secondary-color);
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .file-input-wrapper.dragover {
+            border-color: var(--success-color);
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .file-input-content {
+            pointer-events: none;
+        }
+
+        .file-input-icon {
+            font-size: 2.5rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+
+        .file-input-text {
+            color: var(--primary-color);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .file-input-subtext {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Error Styling */
+        .django-form .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0 0 0;
+        }
+
+        .django-form .errorlist li {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--danger-color);
+            margin-top: 5px;
+        }
+
+        .django-form input.error,
+        .django-form select.error,
+        .django-form textarea.error {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.1);
+        }
+
+        /* Help Text */
+        .django-form .helptext {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        /* Messages */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            box-shadow: var(--shadow-light);
+        }
+
+        .alert-danger {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--text-muted);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+            color: var(--white);
+        }
+
+        /* Form Sections */
+        .form-section-header {
+            color: var(--primary-color);
+            margin: 30px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .form-section-header:first-child {
+            margin-top: 0;
+        }
+
+        .form-section-header i {
+            color: var(--secondary-color);
+        }
+
+        /* Grid Layout for Form Fields */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-row .django-form p {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 25px;
+                margin: 15px;
+            }
+            
+            .page-header {
+                padding: 20px;
+                margin: 15px;
+            }
+            
+            .main-content {
+                margin-top: 80px;
+                padding: 20px 0;
+            }
+        }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+
+        /* Icon colors for different sections */
+        .icon-master { color: var(--warning-color); }
+        .icon-user { color: var(--success-color); }
+        .icon-purchase { color: #e67e22; }
+        .icon-processing { color: #16a085; }
+        .icon-freezing { color: var(--secondary-color); }
+        .icon-shipment { color: var(--danger-color); }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg admin-navbar" id="adminNavbar">
+        <div class="container">
+            <!-- Brand -->
+            <a class="navbar-brand" href="#master">
+                <div class="brand-icon">
+                    <i class="fas fa-cogs"></i>
+                </div>
+                Admin Panel
+            </a>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Menu -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto">
+                    <!-- Master Control -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="#master">
+                            <i class="fas fa-crown icon-master"></i>
+                            Master
+                        </a>
+                    </li>
+
+                    <!-- User Management -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle active" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-users icon-user"></i>
+                            Users
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#create-user">
+                                <i class="fas fa-user-plus"></i>
+                                Create New User
+                            </a></li>
+                            <li><a class="dropdown-item" href="#user-list">
+                                <i class="fas fa-list"></i>
+                                User List
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Purchase Management -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-shopping-cart icon-purchase"></i>
+                            Purchase
+                            <span class="notification-badge">3</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#spot-purchase">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Spot Purchase
+                            </a></li>
+                            <li><a class="dropdown-item" href="#local-purchase">
+                                <i class="fas fa-home"></i>
+                                Local Purchase
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#spot-workout">
+                                <i class="fas fa-calculator"></i>
+                                Spot Workout
+                            </a></li>
+                            <li><a class="dropdown-item" href="#local-workout">
+                                <i class="fas fa-calculator"></i>
+                                Local Workout
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Processing Operations -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-industry icon-processing"></i>
+                            Processing
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#peeling-shed">
+                                <i class="fas fa-warehouse"></i>
+                                Peeling Shed Supply
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Freezing Operations -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-snowflake icon-freezing"></i>
+                            Freezing
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#spot-freezing">
+                                <i class="fas fa-map-marker-alt"></i>
+                                Spot Freezing
+                            </a></li>
+                            <li><a class="dropdown-item" href="#local-freezing">
+                                <i class="fas fa-home"></i>
+                                Local Freezing
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#freezing-workout">
+                                <i class="fas fa-calculator"></i>
+                                Freezing Workout
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- Shipment Operations -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-shipping-fast icon-shipment"></i>
+                            Shipment
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#pre-shipment">
+                                <i class="fas fa-clipboard-check"></i>
+                                Pre-Shipment Workout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- Right side items -->
+                <ul class="navbar-nav">
+                    <!-- Notifications -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">5</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-info-circle text-info"></i>
+                                New purchase order received
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-exclamation-triangle text-warning"></i>
+                                Low stock alert
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-check-circle text-success"></i>
+                                Freezing process completed
+                            </a></li>
+                        </ul>
+                    </li>
+
+                    <!-- User Profile -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i>
+                            Admin
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-user-edit"></i>
+                                Profile Settings
+                            </a></li>
+                            <li><a class="dropdown-item" href="#">
+                                <i class="fas fa-cog"></i>
+                                System Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+        {%block content%}
+
+    {%endblock%}
+
+</body>
+</html>

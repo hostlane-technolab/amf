@@ -22,7 +22,7 @@
 
         body {
             padding: 25px;
-            font-family: 'Book Antiqua', 'Palatino Linotype', Palatino, serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 14px;
             line-height: 1.4;
             color: #000000;
@@ -316,7 +316,7 @@
 </head>
 <body>
     <div class="report-header">
-        <div class="company-name">BAHRAYA EXPORTS </div>
+        <div class="company-name">Premier Marine Food</div>
         <div class="report-title">Spot Purchase Report</div>
         
         <div class="report-info">
@@ -409,6 +409,9 @@
     </table>
 
     <div class="action-buttons">
+        <button type="button" onclick="window.print()" class="action-btn print-btn">
+            🖨️ Print Report
+        </button>
         <button type="button" onclick="generatePDF()" class="action-btn pdf-btn">
             <span class="loading-spinner" id="pdfSpinner"></span>
             📄 Download PDF

@@ -5,6 +5,8 @@
 
 {% block content %}
 
+{% load indian_numbers %}
+
 <link rel="stylesheet" href="{%static 'css/tenant_voucher_list.css'%}">
 
 
@@ -80,7 +82,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Receipts</div>
-                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2 }}</div>
+                                <div class="info-value">₹{{ summary.total_receipts|floatformat:2|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-plus-circle"></i>
                                     <span>Incoming</span>
@@ -94,7 +96,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Total Payments</div>
-                                <div class="info-value">₹{{ summary.total_payments|floatformat:2 }}</div>
+                                <div class="info-value">₹{{ summary.total_payments|floatformat:2|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-minus-circle"></i>
                                     <span>Outgoing</span>
@@ -108,7 +110,7 @@
                             </div>
                             <div class="info-content">
                                 <div class="info-label">Net Amount</div>
-                                <div class="info-value">₹{{ summary.net_amount|floatformat:2 }}</div>
+                                <div class="info-value">₹{{ summary.net_amount|floatformat:2|indian_comma }}</div>
                                 <div class="info-badge">
                                     <i class="fas fa-balance-scale"></i>
                                     <span>Balance</span>
@@ -234,6 +236,21 @@
                                             </a>
                                         </div>
                                     </div>
+
+                                    <!-- <div class="row mt-3">
+                                        <div class="col-12">
+                                            <button type="submit" class="btn btn-success me-2">
+                                                <i class="fas fa-filter"></i> Apply Filters
+                                            </button>
+                                            <a href="{% url 'adminapp:tenantvoucher_list' %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-times"></i> Clear Filters
+                                            </a>
+                                            <a href="{% url 'adminapp:tenant_voucher_summary_pdf' %}?{{ request.GET.urlencode }}" 
+                                               class="btn btn-outline-primary ms-2" target="_blank">
+                                                <i class="fas fa-file-pdf"></i> PDF Summary
+                                            </a>
+                                        </div>
+                                    </div> -->
                                 </form>
                             </div>
                             
@@ -326,7 +343,7 @@
                                                 <div class="receipt-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
                                                     {% if voucher.receipt > 0 %}
                                                     <span class="currency-symbol">+₹</span>
-                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2 }}</span>
+                                                    <span class="receipt-value">{{ voucher.receipt|floatformat:2|indian_comma }}</span>
                                                     {% else %}
                                                     <span class="text-muted">₹0.00</span>
                                                     {% endif %}
@@ -337,7 +354,7 @@
                                                 <div class="payment-display {% if voucher.receipt > 0 %}amount-positive{% endif %}">
                                                     {% if voucher.payment > 0 %}
                                                     <span class="currency-symbol">-₹</span>
-                                                    <span class="payment-value">{{ voucher.payment|floatformat:2 }}</span>
+                                                    <span class="payment-value">{{ voucher.payment|floatformat:2|indian_comma|indian_comma }}</span>
                                                     {% else %}
                                                     <span class="text-muted">₹0.00</span>
                                                     {% endif %}
@@ -355,9 +372,9 @@
       </span>
       <span class="{% if receipt > payment %}amount-value{% elif payment > receipt %}expense-value{% else %}balanced-value{% endif %}">
         {% if receipt > payment %}
-          {{ receipt|add:payment|floatformat:2 }}
+          {{ receipt|add:payment|floatformat:2|indian_comma }}
         {% else %}
-          {{ payment|add:receipt|floatformat:2 }}
+          {{ payment|add:receipt|floatformat:2|indian_comma }}
         {% endif %}
       </span>
     </div>
@@ -503,18 +520,18 @@
 
                                         <div class="metric-item receipt-metric">
                                             <div class="metric-label">Receipts</div>
-                                            <div class="metric-value">+₹{{ tenant.total_receipts|floatformat:2 }}</div>
+                                            <div class="metric-value">+₹{{ tenant.total_receipts|floatformat:2|indian_comma }}</div>
                                         </div>
 
                                         <div class="metric-item payment-metric">
                                             <div class="metric-label">Payments</div>
-                                            <div class="metric-value">-₹{{ tenant.total_payments|floatformat:2 }}</div>
+                                            <div class="metric-value">-₹{{ tenant.total_payments|floatformat:2|indian_comma }}</div>
                                         </div>
                                         
                                         <div class="metric-item net-metric">
                                             <div class="metric-label">Net Amount</div>
                                             <div class="metric-value net-amount {% if tenant.net_amount > 0 %}positive{% elif tenant.net_amount < 0 %}negative{% else %}neutral{% endif %}">
-                                                {% if tenant.net_amount >= 0 %}₹{{ tenant.net_amount|floatformat:2 }}{% else %}₹{{ tenant.net_amount|floatformat:2 }}{% endif %}
+                                                {% if tenant.net_amount >= 0 %}₹{{ tenant.net_amount|floatformat:2|indian_comma }}{% else %}₹{{ tenant.net_amount|floatformat:2|indian_comma }}{% endif %}
                                             </div>
                                         </div>
                                     </div>
@@ -599,11 +616,11 @@
                 <i class="fas fa-{% if summary.net_amount > 0 %}arrow-up{% elif summary.net_amount < 0 %}arrow-down{% else %}minus{% endif %} me-2"></i>
                 <span class="badge-value">
                     {% if summary.net_amount > 0 %}
-                        +₹{{ summary.net_amount|floatformat:0 }}
+                        +₹{{ summary.net_amount|floatformat:0|indian_comma }}
                     {% elif summary.net_amount < 0 %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
+                        ₹{{ summary.net_amount|floatformat:0|indian_comma }}
                     {% else %}
-                        ₹{{ summary.net_amount|floatformat:0 }}
+                        ₹{{ summary.net_amount|floatformat:0|indian_comma }}
                     {% endif %}
                 </span>
                 <span class="badge-label">BALANCE</span>

@@ -1,6 +1,7 @@
 {% extends 'admin_base.html' %}
 {% block title %} Tenant Voucher Detail {% endblock %}
 {% block content %}
+{% load indian_numbers %}
 
 <!-- Page header style -->
 <style>
@@ -663,7 +664,7 @@ small.unit {
   background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
   border: 2px solid #81c784;
   border-radius: 25px;
-  color: #2e7d32;
+  color: #2e7d32 !important;
   font-weight: 600;
   font-size: 14px;
   box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
@@ -1054,24 +1055,24 @@ small.unit {
                 <tr class="table-row">
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.total_amount|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.total_amount|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.receipt|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.receipt|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                   <td class="table-cell">
                     <div class="amount-display">
-                      <span class="amount-value">₹ {{ voucher.payment|floatformat:2 }}</span>
+                      <span class="amount-value">₹ {{ voucher.payment|floatformat:2|indian_comma }}</span>
                     </div>
                   </td>
                 <td class="table-cell">
                     {% if voucher.remain_amount >= 0 %}
-                    <span class="amount-badge remain-badge text-success">₹ {{ voucher.remain_amount|floatformat:2 }}</span>
+                    <span class="amount-badge remain-badge text-success">₹ {{ voucher.remain_amount|floatformat:2|indian_comma }}</span>
                     {% else %}
-                    <span class="amount-badge remain-badge text-danger">₹ {{ voucher.remain_amount|floatformat:2 }}</span>
+                    <span class="amount-badge remain-badge text-danger">₹ {{ voucher.remain_amount|floatformat:2|indian_comma }}</span>
                     {% endif %}
                 </td>
                 </tr>
@@ -1110,9 +1111,9 @@ small.unit {
                   <td class="table-cell">
                     <div class="summary-value">
                       <span class="calculated-value {% if voucher.remain_amount > 0 %}text-danger{% else %}text-success{% endif %}">
-                        ₹ {{ voucher.remain_amount|floatformat:2|default:"0.00" }}
+                        ₹ {{ voucher.remain_amount|floatformat:2|default:"0.00"|indian_comma }}
+                        <small class="unit">balance</small>
                       </span>
-                      <small class="unit">balance</small>
                     </div>
                   </td>
                   <td class="table-cell">
@@ -1136,8 +1137,8 @@ small.unit {
                         {% else %}
                           0 %
                         {% endif %}
+                        <small class="unit">settled</small>
                       </span>
-                      <small class="unit">settled</small>
                     </div>
                   </td>
                 </tr>
