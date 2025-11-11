@@ -314,10 +314,15 @@ class PackingUnit(BaseModel):
         return f"{self.unit_code}"
 
 class GlazePercentage(BaseModel):
-    percentage = models.CharField(max_length=5, unique=True)  # e.g., '10.00' for 10%
+    percentage = models.CharField(max_length=10, unique=True)
 
     def __str__(self):
-        return f"{self.percentage}%"
+        try:
+            float(self.percentage)
+            return f"{self.percentage}%"
+        except ValueError:
+            return self.percentage
+
 
 class ItemBrand(BaseModel):
     name = models.CharField(max_length=100, unique=True)
