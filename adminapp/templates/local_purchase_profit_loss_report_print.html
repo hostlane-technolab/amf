@@ -1,7 +1,8 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Local Purchase Profit/Loss Analysis</title>
+    <title>Local Purchase Profit/Loss Analysis - Print</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -334,7 +335,7 @@
                     <thead>
                         <tr>
                             <th>ITEM SUB</th>
-                            <th>PACKING</th>
+                            <th>GLAZE</th>
                             <th>UNIT</th>
                             <th>GRADE</th>
                             <th>TOTAL SLAB</th>
@@ -348,7 +349,7 @@
                         {% for detail in purchase.processing_details %}
                         <tr>
                             <td class="text-left">{{ detail.item_quality }}</td>
-                            <td>{{ detail.packing }}</td>
+                            <td>{{ detail.glaze }}</td>
                             <td>{{ detail.unit }}</td>
                             <td>{{ detail.grade }}</td>
                             <td>{{ detail.total_slab|floatformat:0 }}</td>

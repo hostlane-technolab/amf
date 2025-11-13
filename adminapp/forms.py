@@ -954,7 +954,6 @@ class SpotAgentVoucherForm(forms.ModelForm):
 
 
 # --- Supervisor Voucher Form ---
-# --- Supervisor Voucher Form ---
 from django import forms
 from .models import SupervisorVoucher, PurchasingSupervisor
 
@@ -1644,6 +1643,12 @@ class SalesEntryForm(forms.ModelForm):
         
         return cleaned_data
 
+    def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # ✅ Only show active freezing categories
+            self.fields['freezing_category'].queryset = FreezingCategory.objects.filter(is_active=True)
+
+
 class SalesEntryItemForm(forms.ModelForm):
     """Form for SalesEntryItem (Line items in invoice)"""
     
@@ -1651,15 +1656,12 @@ class SalesEntryItemForm(forms.ModelForm):
         model = SalesEntryItem
         fields = [
        
-            'species','peeling_type','grade','cartons','quantity','price_usd_per_kg',
+            'peeling_type','grade','cartons','quantity','price_usd_per_kg',
             'amount_usd','taxable_value','tax_rate','tax_amount','total_amount' 
 
         ]
 
         widgets = {
-            'species': forms.Select(attrs={
-                'class': 'form-control form-select'
-            }),
             'peeling_type': forms.Select(attrs={
                 'class': 'form-control form-select'
             }),
@@ -1711,11 +1713,9 @@ class SalesEntryItemForm(forms.ModelForm):
                 'placeholder': 'Taxable value',
    
             }),
-
-         
-
         }
-   
+
+
 SalesEntryItemFormSet = inlineformset_factory(
     SalesEntry,
     SalesEntryItem,

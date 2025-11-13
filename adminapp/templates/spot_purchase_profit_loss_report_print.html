@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -364,7 +365,7 @@
                     <thead>
                         <tr>
                             <th>ITEM SUB</th>
-                            <th>PACKING</th>
+                            <th>GLAZE</th>
                             <th>GRADE</th>
                             <th>TOTAL SLAB</th>
                             <th>TOTAL QUANTITY</th>
@@ -377,7 +378,7 @@
                         {% for detail in purchase.processing_details %}
                         <tr>
                             <td class="text-left">{{ detail.item_quality }}</td>
-                            <td>{{ detail.packing }}</td>
+                            <td>{{ detail.glaze }}</td>
                             <td>{{ detail.grade }}</td>
                             <td>{{ detail.total_slab|floatformat:0 }}</td>
                             <td class="bg-yellow">{{ detail.total_quantity|floatformat:2 }}</td>

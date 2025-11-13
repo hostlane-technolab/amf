@@ -762,6 +762,82 @@
   <!-- Load jQuery FIRST - Remove any other jQuery script tags -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+  <!-- Load grade with Item - CORRECTED VERSION -->
+    <script>
+    $(document).ready(function () {
+        console.log("✓ Item → Grade script loaded (corrected)");
+        
+        // When the MAIN item select changes (outside formset)
+        $("#id_item").on("change", function () {
+            const itemId = $(this).val();
+            console.log("Main item changed. Item ID:", itemId);
+            
+            // Update ALL grade selects in the formset
+            const allGradeSelects = $("#formset-body select[name$='-grade']");
+            
+            // Reset all grade dropdowns
+            allGradeSelects.empty().append('<option value="">---------</option>');
+            
+            if (itemId) {
+                console.log("Fetching grades for item:", itemId);
+                
+                $.ajax({
+                    url: "{% url 'adminapp:get_item_grades' %}",
+                    method: "GET",
+                    data: { item_id: itemId },
+                    dataType: "json",
+                    success: function (data) {
+                        console.log("✓ Grades received:", data);
+                        
+                        // Handle both array and object response types
+                        const grades = Array.isArray(data) ? data : data.grades || [];
+                        
+                        if (grades.length > 0) {
+                            // Populate ALL grade selects with the same options
+                            allGradeSelects.each(function() {
+                                const gradeSelect = $(this);
+                                grades.forEach(function (grade) {
+                                    gradeSelect.append(
+                                        `<option value="${grade.id}">${grade.grade}</option>`
+                                    );
+                                });
+                            });
+                            console.log(`✓ Loaded ${grades.length} grades to all rows`);
+                        } else {
+                            allGradeSelects.append('<option value="">No grades available</option>');
+                            console.log("⚠ No grades found for item:", itemId);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("✗ Error loading grades:", {
+                            item_id: itemId,
+                            status: status,
+                            error: error,
+                            response: xhr.responseText,
+                        });
+                        allGradeSelects.append('<option value="">Error loading grades</option>');
+                    }
+                });
+            } else {
+                console.log("No item selected, all grade dropdowns reset");
+            }
+        });
+        
+        // Also populate grades for newly added rows
+        $("#add-row").on("click", function() {
+            // Wait a moment for the row to be added
+            setTimeout(function() {
+                const itemId = $("#id_item").val();
+                if (itemId) {
+                    // Trigger change to populate grades in the new row
+                    $("#id_item").trigger("change");
+                }
+            }, 100);
+        });
+    });
+    </script>
+
+
   <!-- Script 1: Load Item Qualities when main Item changes -->
   <script>
   $(document).ready(function() {

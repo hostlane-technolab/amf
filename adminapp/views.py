@@ -2974,6 +2974,7 @@ def freezing_entry_spot_update(request, pk):
         {"form": form, "formset": formset, "entry": freezing_entry},
     )
 
+
 @check_permission('freezing_delete')
 def delete_freezing_entry_spot(request, pk):
     entry = get_object_or_404(FreezingEntrySpot, pk=pk)
@@ -9388,7 +9389,39 @@ def delete_stock(request, pk):
     stock_name = f"{stock.item.name} - {stock.store.name}"
     
     try:
-        stock.delete()
+        with transaction.atomic():
+            # Create a negative adjustment movement to record the deletion
+            voucher_number = f"DEL-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+            
+            # Record the deletion as a negative adjustment in stock movements
+            StockMovement.objects.create(
+                movement_type='adjustment_minus',
+                movement_date=timezone.now().date(),
+                voucher_number=voucher_number,
+                store=stock.store,
+                item=stock.item,
+                brand=stock.brand,
+                item_quality=stock.item_quality,
+                freezing_category=stock.freezing_category,
+                peeling_type=stock.peeling_type,
+                unit=stock.unit,
+                glaze=stock.glaze,
+                species=stock.species,
+                item_grade=stock.item_grade,
+                cs_quantity=-stock.cs_quantity,  # Negative to show removal
+                kg_quantity=-stock.kg_quantity,  # Negative to show removal
+                slab_quantity=-stock.slab_quantity if hasattr(stock, 'slab_quantity') else Decimal('0'),
+                usd_rate_per_kg=stock.usd_rate_per_kg,
+                usd_rate_item=stock.usd_rate_item,
+                usd_rate_item_to_inr=stock.usd_rate_item_to_inr,
+                reference_model='Stock',
+                reference_id=str(pk),
+                created_by=request.user if request.user.is_authenticated else None,
+                notes=f'Stock deleted: {stock_name}'
+            )
+            
+            # Now delete the stock
+            stock.delete()
         
         # Check if it's an AJAX request
         if request.headers.get('Content-Type') == 'application/json':
@@ -9401,7 +9434,7 @@ def delete_stock(request, pk):
                 request, 
                 f'Stock item "{stock_name}" has been successfully deleted.'
             )
-            return redirect('adminapp:list')  # Make sure this matches your URL name
+            return redirect('adminapp:list')
         
     except Exception as e:
         if request.headers.get('Content-Type') == 'application/json':
@@ -9414,7 +9447,7 @@ def delete_stock(request, pk):
                 request, 
                 f'Error deleting stock item: {str(e)}'
             )
-            return redirect('adminapp:detail', pk=pk)  # Make sure this matches your URL name
+            return redirect('adminapp:detail', pk=pk)
 
 
 # API Views for AJAX requests
@@ -14455,20 +14488,8 @@ def update_stock(request, pk):
     }
     return render(request, 'adminapp/stock/update_stock.html', context)
 
-def delete_stock(request, pk):
-    """Delete stock entry"""
-    stock = get_object_or_404(Stock, pk=pk)
-    
-    if request.method == 'POST':
-        item_name = stock.item.name
-        stock.delete()
-        messages.success(request, f'Stock for {item_name} deleted successfully!')
-        return redirect('adminapp:list')
-    
-    context = {
-        'stock': stock
-    }
-    return render(request, 'adminapp/stock/delete_stock.html', context)
+
+
 
 def stock_dashboard(request):
     """Dashboard with stock statistics"""
@@ -15221,10 +15242,21 @@ def spot_purchase_profit_loss_report_print(request):
                                 'amount': float(item_tariff_cost)
                             })
                     
+                    # Format glaze - if numeric add %, if alpha no %
+                    glaze_display = 'N/A'
+                    if item.glaze:
+                        try:
+                            # Try to convert to float - if successful, it's numeric
+                            glaze_val = float(item.glaze.percentage)
+                            glaze_display = f"{item.glaze.percentage}%"
+                        except (ValueError, TypeError):
+                            # If conversion fails, it's alphabetic
+                            glaze_display = str(item.glaze.percentage)
+                    
                     # Processing details
                     processing_details.append({
                         'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
-                        'packing': f"{item.unit.unit_code if item.unit else ''} - {item.glaze.percentage if item.glaze else ''}%",
+                        'glaze': glaze_display,
                         'unit': item.unit.unit_code if item.unit else 'N/A',
                         'grade': f"{item.peeling_type.name if item.peeling_type else ''}, {item.grade.grade if item.grade else ''}",
                         'total_slab': float(item.slab_quantity or 0),
@@ -15252,7 +15284,7 @@ def spot_purchase_profit_loss_report_print(request):
                         'slab_quantity': float(item.slab_quantity or 0),
                         'c_s_quantity': float(item.c_s_quantity or 0),
                         'unit': item.unit.unit_code if item.unit else 'N/A',
-                        'glaze': f"{item.glaze.percentage}%" if item.glaze else 'N/A',
+                        'glaze': glaze_display,
                         'brand': item.brand.name if item.brand else 'N/A',
                         'grade': f"{item.grade.species.name} - {item.grade.grade}" if item.grade and item.grade.species else 'N/A',
                         'tariff_cost': float(item_tariff_cost)
@@ -15766,37 +15798,32 @@ def create_sales_entry(request):
                         
                         # ✅ CREATE STOCK MOVEMENT for SHIPMENT (NEGATIVE quantity)
                         try:
-                            # Get the item name - check which field exists in SalesEntryItem
-                            item_name = None
-                            if hasattr(item, 'item'):
-                                item_name = item.item
-                            elif hasattr(item, 'product'):
-                                item_name = item.product
-                            elif hasattr(item, 'stock_item'):
-                                item_name = item.stock_item
+                            # Build stock filter - use sales_entry fields + item fields
+                            stock_filters = {
+                                'item': sales_entry.item,  # Get item from sales_entry
+                                'species': item.species,
+                                'item_grade': item.grade,
+                            }
                             
-                            # Build stock filter based on available fields
-                            stock_filters = {}
+                            # Add optional fields from sales_entry
+                            if hasattr(sales_entry, 'brand') and sales_entry.brand:
+                                stock_filters['brand'] = sales_entry.brand
+                            if hasattr(sales_entry, 'item_quality') and sales_entry.item_quality:
+                                stock_filters['item_quality'] = sales_entry.item_quality
+                            if hasattr(sales_entry, 'unit') and sales_entry.unit:
+                                stock_filters['unit'] = sales_entry.unit
+                            if hasattr(sales_entry, 'glaze') and sales_entry.glaze:
+                                stock_filters['glaze'] = sales_entry.glaze
+                            if hasattr(sales_entry, 'freezing_category') and sales_entry.freezing_category:
+                                stock_filters['freezing_category'] = sales_entry.freezing_category
                             
-                            # Add fields that exist in your SalesEntryItem model
-                            if hasattr(item, 'brand') and item.brand:
-                                stock_filters['brand'] = item.brand
-                            if hasattr(item, 'species') and item.species:
-                                stock_filters['species'] = item.species
-                            if hasattr(item, 'grade') and item.grade:
-                                stock_filters['item_grade'] = item.grade
-                            if hasattr(item, 'unit') and item.unit:
-                                stock_filters['unit'] = item.unit
-                            if hasattr(item, 'glaze') and item.glaze:
-                                stock_filters['glaze'] = item.glaze
-                            if hasattr(item, 'peeling_type') and item.peeling_type:
+                            # Add optional fields from item (if not in sales_entry)
+                            if hasattr(item, 'peeling_type') and item.peeling_type and 'peeling_type' not in stock_filters:
                                 stock_filters['peeling_type'] = item.peeling_type
-                            if hasattr(item, 'freezing_category') and item.freezing_category:
-                                stock_filters['freezing_category'] = item.freezing_category
-                            if hasattr(item, 'item_quality') and item.item_quality:
-                                stock_filters['item_quality'] = item.item_quality
                             
-                            # Try to find stock record
+                            print(f"  Searching stock with filters: {stock_filters}")
+                            
+                            # Find stock record
                             stock = Stock.objects.filter(**stock_filters).first()
                             
                             if stock:
@@ -15817,7 +15844,6 @@ def create_sales_entry(request):
                                     'reference_model': 'SalesEntry',
                                     'reference_id': str(sales_entry.id),
                                     'created_by': request.user if request.user.is_authenticated else None,
-                                    'notes': f"Sale - Invoice: {sales_entry.invoice_no}"
                                 }
                                 
                                 # Add optional fields from stock
@@ -15836,16 +15862,33 @@ def create_sales_entry(request):
                                 if stock.item_grade:
                                     movement_data['item_grade'] = stock.item_grade
                                 
-                                # Add customer info if available
+                                # Build notes with customer info
+                                notes = f"Sale - Invoice: {sales_entry.invoice_no}"
                                 if hasattr(sales_entry, 'customer') and sales_entry.customer:
-                                    movement_data['notes'] = f"Sale - Invoice: {sales_entry.invoice_no}, Customer: {sales_entry.customer.name}"
+                                    notes += f", Customer: {sales_entry.customer.name if hasattr(sales_entry.customer, 'name') else sales_entry.customer}"
+                                notes += f" | {item.species} {item.grade}: {item.cartons} CS, {item.quantity} KG"
+                                movement_data['notes'] = notes
                                 
                                 StockMovement.objects.create(**movement_data)
                                 print(f"  ✓ StockMovement created: Shipment -{item.quantity} kg")
+                                print(f"    Item: {stock.item}, Species: {stock.species}, Grade: {stock.item_grade}")
                             else:
-                                print(f"  ⚠ Warning: No stock record found for movement tracking")
+                                print(f"  ✗ ERROR: No stock record found for movement tracking")
                                 print(f"  Search filters: {stock_filters}")
-                                messages.warning(request, f"Stock not found for movement tracking")
+                                
+                                # Show available stock for debugging
+                                available = Stock.objects.filter(item=sales_entry.item).values_list(
+                                    'species__name', 'item_grade__name', 'cs_quantity', 'kg_quantity'
+                                )[:5]
+                                if available:
+                                    print(f"  Available stocks:")
+                                    for av in available:
+                                        print(f"    - {av[0]} {av[1]}: {av[2]} CS, {av[3]} KG")
+                                
+                                messages.warning(
+                                    request, 
+                                    f"Stock movement not tracked for {item.species} {item.grade} - stock record not found"
+                                )
                                 
                         except Exception as e:
                             print(f"  ✗ Error creating StockMovement: {e}")
@@ -15890,6 +15933,190 @@ def create_sales_entry(request):
         "form": form,
         "formset": formset,
         "action": "Create",
+    })
+
+def update_sales_entry(request, pk):
+    """
+    Update existing sales entry - restores old stock, deletes old movements, 
+    deducts new stock, and creates new movements.
+    """
+    sales_entry = get_object_or_404(SalesEntry, pk=pk)
+    
+    if request.method == "POST":
+        form = SalesEntryForm(request.POST, instance=sales_entry)
+        formset = SalesEntryItemFormSet(request.POST, instance=sales_entry)
+
+        if form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    print(f"\n=== UPDATING SALES ENTRY: {sales_entry.invoice_no} ===")
+                    
+                    # STEP 1: Restore stock from old items
+                    print(f"\n--- STEP 1: RESTORING OLD STOCK ---")
+                    old_items = sales_entry.items.all()
+                    for old_item in old_items:
+                        try:
+                            restore_stock_for_sales_item(old_item)
+                            print(f"  ✓ Restored: {old_item.species} - {old_item.quantity} kg")
+                        except Exception as e:
+                            print(f"  ✗ Error restoring stock: {e}")
+                    
+                    # STEP 2: Delete old StockMovement records
+                    print(f"\n--- STEP 2: DELETING OLD STOCK MOVEMENTS ---")
+                    old_movements = StockMovement.objects.filter(
+                        reference_model='SalesEntry',
+                        reference_id=str(sales_entry.id)
+                    )
+                    movement_count = old_movements.count()
+                    old_movements.delete()
+                    print(f"  ✓ Deleted {movement_count} old movement(s)")
+                    
+                    # STEP 3: Save the updated entry
+                    print(f"\n--- STEP 3: SAVING UPDATED ENTRY ---")
+                    sales_entry = form.save()
+                    print(f"  ✓ Sales entry updated: {sales_entry.invoice_no}")
+                    
+                    # STEP 4: Process new/updated items
+                    print(f"\n--- STEP 4: PROCESSING NEW ITEMS ---")
+                    items = formset.save(commit=False)
+                    
+                    if not items:
+                        messages.warning(request, "Please add at least one item to the sales entry.")
+                        raise ValueError("No items in formset")
+                    
+                    for item in items:
+                        item.sales_entry = sales_entry
+                        item.save()
+                        print(f"\n  ✓ Item saved: {item.species} - Cartons: {item.cartons}, Qty: {item.quantity}")
+                        
+                        # Deduct from stock
+                        deduct_stock_for_sales_item(item)
+                        
+                        # ✅ CREATE NEW STOCK MOVEMENT for SHIPMENT
+                        try:
+                            # Build stock filter - use sales_entry fields + item fields
+                            stock_filters = {
+                                'item': sales_entry.item,  # Get item from sales_entry
+                                'species': item.species,
+                                'item_grade': item.grade,
+                            }
+                            
+                            # Add optional fields from sales_entry
+                            if hasattr(sales_entry, 'brand') and sales_entry.brand:
+                                stock_filters['brand'] = sales_entry.brand
+                            if hasattr(sales_entry, 'item_quality') and sales_entry.item_quality:
+                                stock_filters['item_quality'] = sales_entry.item_quality
+                            if hasattr(sales_entry, 'unit') and sales_entry.unit:
+                                stock_filters['unit'] = sales_entry.unit
+                            if hasattr(sales_entry, 'glaze') and sales_entry.glaze:
+                                stock_filters['glaze'] = sales_entry.glaze
+                            if hasattr(sales_entry, 'freezing_category') and sales_entry.freezing_category:
+                                stock_filters['freezing_category'] = sales_entry.freezing_category
+                            
+                            # Add optional fields from item (if not in sales_entry)
+                            if hasattr(item, 'peeling_type') and item.peeling_type and 'peeling_type' not in stock_filters:
+                                stock_filters['peeling_type'] = item.peeling_type
+                            
+                            print(f"    Searching stock with filters: {stock_filters}")
+                            
+                            # Find stock record
+                            stock = Stock.objects.filter(**stock_filters).first()
+                            
+                            if stock:
+                                # Create NEGATIVE movement for shipment/sale
+                                movement_data = {
+                                    'movement_type': 'shipment',
+                                    'movement_date': sales_entry.invoice_date if hasattr(sales_entry, 'invoice_date') else timezone.now().date(),
+                                    'voucher_number': str(sales_entry.invoice_no),
+                                    'store': stock.store,
+                                    'item': stock.item,
+                                    'brand': stock.brand,
+                                    'cs_quantity': -Decimal(str(item.cartons)),  # NEGATIVE for sale
+                                    'kg_quantity': -Decimal(str(item.quantity)),  # NEGATIVE for sale
+                                    'slab_quantity': Decimal('0'),
+                                    'usd_rate_per_kg': stock.usd_rate_per_kg or Decimal('0'),
+                                    'usd_rate_item': stock.usd_rate_item or Decimal('0'),
+                                    'usd_rate_item_to_inr': stock.usd_rate_item_to_inr or Decimal('0'),
+                                    'reference_model': 'SalesEntry',
+                                    'reference_id': str(sales_entry.id),
+                                    'created_by': request.user if request.user.is_authenticated else None,
+                                }
+                                
+                                # Add optional fields from stock
+                                if stock.item_quality:
+                                    movement_data['item_quality'] = stock.item_quality
+                                if stock.freezing_category:
+                                    movement_data['freezing_category'] = stock.freezing_category
+                                if stock.peeling_type:
+                                    movement_data['peeling_type'] = stock.peeling_type
+                                if stock.unit:
+                                    movement_data['unit'] = stock.unit
+                                if stock.glaze:
+                                    movement_data['glaze'] = stock.glaze
+                                if stock.species:
+                                    movement_data['species'] = stock.species
+                                if stock.item_grade:
+                                    movement_data['item_grade'] = stock.item_grade
+                                
+                                # Build notes with customer info
+                                notes = f"Sale (Updated) - Invoice: {sales_entry.invoice_no}"
+                                if hasattr(sales_entry, 'customer') and sales_entry.customer:
+                                    notes += f", Customer: {sales_entry.customer.name if hasattr(sales_entry.customer, 'name') else sales_entry.customer}"
+                                notes += f" | {item.species} {item.grade}: {item.cartons} CS, {item.quantity} KG"
+                                movement_data['notes'] = notes
+                                
+                                StockMovement.objects.create(**movement_data)
+                                print(f"    ✓ NEW StockMovement created: Shipment -{item.quantity} kg")
+                                print(f"      Item: {stock.item}, Species: {stock.species}, Grade: {stock.item_grade}")
+                            else:
+                                print(f"    ✗ ERROR: No stock record found for movement tracking")
+                                print(f"    Search filters: {stock_filters}")
+                                messages.warning(
+                                    request, 
+                                    f"Stock movement not tracked for {item.species} {item.grade} - stock record not found"
+                                )
+                                
+                        except Exception as e:
+                            print(f"    ✗ Error creating StockMovement: {e}")
+                            import traceback
+                            traceback.print_exc()
+                            messages.warning(request, f"Stock movement tracking error: {str(e)}")
+                    
+                    # STEP 5: Handle deleted items (already restored above)
+                    for obj in formset.deleted_objects:
+                        obj.delete()
+                    
+                    print(f"\n=== UPDATE COMPLETE ===")
+                    messages.success(request, f"Sales entry {sales_entry.invoice_no} updated successfully! ✅")
+                    return redirect("adminapp:sales_entry_detail", pk=pk)
+                    
+            except ValueError as e:
+                messages.error(request, f"Stock error: {str(e)}")
+                logger.error(f"Stock error in update_sales_entry: {str(e)}")
+            except Exception as e:
+                messages.error(request, f"Error updating sales entry: {str(e)}")
+                logger.error(f"Error in update_sales_entry: {str(e)}", exc_info=True)
+        else:
+            messages.error(request, "Please correct the errors in the form.")
+            # Show specific error messages
+            if not form.is_valid():
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
+            
+            if not formset.is_valid():
+                for i, form_errors in enumerate(formset.errors):
+                    if form_errors:
+                        messages.error(request, f"Item {i+1}: {form_errors}")
+    else:
+        form = SalesEntryForm(instance=sales_entry)
+        formset = SalesEntryItemFormSet(instance=sales_entry)
+
+    return render(request, "adminapp/sales/sales_entry_form.html", {
+        "form": form,
+        "formset": formset,
+        "action": "Update",
+        "sales_entry": sales_entry,
     })
 
 def deduct_stock_for_sales_item(sales_item):
@@ -15975,178 +16202,6 @@ def deduct_stock_for_sales_item(sales_item):
             f"No stock found matching: {sales_entry.item} - "
             f"{sales_item.species if sales_item.species else 'N/A'}"
         )
-
-def update_sales_entry(request, pk):
-    """
-    Update existing sales entry - restores old stock, deletes old movements, 
-    deducts new stock, and creates new movements.
-    """
-    sales_entry = get_object_or_404(SalesEntry, pk=pk)
-    
-    if request.method == "POST":
-        form = SalesEntryForm(request.POST, instance=sales_entry)
-        formset = SalesEntryItemFormSet(request.POST, instance=sales_entry)
-
-        if form.is_valid() and formset.is_valid():
-            try:
-                with transaction.atomic():
-                    print(f"\n=== UPDATING SALES ENTRY: {sales_entry.invoice_no} ===")
-                    
-                    # STEP 1: Restore stock from old items
-                    print(f"\n--- STEP 1: RESTORING OLD STOCK ---")
-                    old_items = sales_entry.items.all()
-                    for old_item in old_items:
-                        try:
-                            restore_stock_for_sales_item(old_item)
-                            print(f"  ✓ Restored: {old_item.species} - {old_item.quantity} kg")
-                        except Exception as e:
-                            print(f"  ✗ Error restoring stock: {e}")
-                    
-                    # STEP 2: Delete old StockMovement records
-                    print(f"\n--- STEP 2: DELETING OLD STOCK MOVEMENTS ---")
-                    old_movements = StockMovement.objects.filter(
-                        reference_model='SalesEntry',
-                        reference_id=str(sales_entry.id)
-                    )
-                    movement_count = old_movements.count()
-                    old_movements.delete()
-                    print(f"  ✓ Deleted {movement_count} old movement(s)")
-                    
-                    # STEP 3: Save the updated entry
-                    print(f"\n--- STEP 3: SAVING UPDATED ENTRY ---")
-                    sales_entry = form.save()
-                    print(f"  ✓ Sales entry updated: {sales_entry.invoice_no}")
-                    
-                    # STEP 4: Process new/updated items
-                    print(f"\n--- STEP 4: PROCESSING NEW ITEMS ---")
-                    items = formset.save(commit=False)
-                    
-                    if not items:
-                        messages.warning(request, "Please add at least one item to the sales entry.")
-                        raise ValueError("No items in formset")
-                    
-                    for item in items:
-                        item.sales_entry = sales_entry
-                        item.save()
-                        print(f"\n  ✓ Item saved: {item.species} - Cartons: {item.cartons}, Qty: {item.quantity}")
-                        
-                        # Deduct from stock
-                        deduct_stock_for_sales_item(item)
-                        
-                        # ✅ CREATE NEW STOCK MOVEMENT for SHIPMENT
-                        try:
-                            # Build stock filter based on available fields
-                            stock_filters = {}
-                            
-                            if hasattr(item, 'brand') and item.brand:
-                                stock_filters['brand'] = item.brand
-                            if hasattr(item, 'species') and item.species:
-                                stock_filters['species'] = item.species
-                            if hasattr(item, 'grade') and item.grade:
-                                stock_filters['item_grade'] = item.grade
-                            if hasattr(item, 'unit') and item.unit:
-                                stock_filters['unit'] = item.unit
-                            if hasattr(item, 'glaze') and item.glaze:
-                                stock_filters['glaze'] = item.glaze
-                            if hasattr(item, 'peeling_type') and item.peeling_type:
-                                stock_filters['peeling_type'] = item.peeling_type
-                            if hasattr(item, 'freezing_category') and item.freezing_category:
-                                stock_filters['freezing_category'] = item.freezing_category
-                            if hasattr(item, 'item_quality') and item.item_quality:
-                                stock_filters['item_quality'] = item.item_quality
-                            
-                            # Find stock record
-                            stock = Stock.objects.filter(**stock_filters).first()
-                            
-                            if stock:
-                                # Create NEGATIVE movement for shipment/sale
-                                movement_data = {
-                                    'movement_type': 'shipment',
-                                    'movement_date': sales_entry.invoice_date if hasattr(sales_entry, 'invoice_date') else timezone.now().date(),
-                                    'voucher_number': str(sales_entry.invoice_no),
-                                    'store': stock.store,
-                                    'item': stock.item,
-                                    'brand': stock.brand,
-                                    'cs_quantity': -Decimal(str(item.cartons)),  # NEGATIVE for sale
-                                    'kg_quantity': -Decimal(str(item.quantity)),  # NEGATIVE for sale
-                                    'slab_quantity': Decimal('0'),
-                                    'usd_rate_per_kg': stock.usd_rate_per_kg or Decimal('0'),
-                                    'usd_rate_item': stock.usd_rate_item or Decimal('0'),
-                                    'usd_rate_item_to_inr': stock.usd_rate_item_to_inr or Decimal('0'),
-                                    'reference_model': 'SalesEntry',
-                                    'reference_id': str(sales_entry.id),
-                                    'created_by': request.user if request.user.is_authenticated else None,
-                                    'notes': f"Sale (Updated) - Invoice: {sales_entry.invoice_no}"
-                                }
-                                
-                                # Add optional fields from stock
-                                if stock.item_quality:
-                                    movement_data['item_quality'] = stock.item_quality
-                                if stock.freezing_category:
-                                    movement_data['freezing_category'] = stock.freezing_category
-                                if stock.peeling_type:
-                                    movement_data['peeling_type'] = stock.peeling_type
-                                if stock.unit:
-                                    movement_data['unit'] = stock.unit
-                                if stock.glaze:
-                                    movement_data['glaze'] = stock.glaze
-                                if stock.species:
-                                    movement_data['species'] = stock.species
-                                if stock.item_grade:
-                                    movement_data['item_grade'] = stock.item_grade
-                                
-                                # Add customer info if available
-                                if hasattr(sales_entry, 'customer') and sales_entry.customer:
-                                    movement_data['notes'] = f"Sale (Updated) - Invoice: {sales_entry.invoice_no}, Customer: {sales_entry.customer.name}"
-                                
-                                StockMovement.objects.create(**movement_data)
-                                print(f"    ✓ NEW StockMovement created: Shipment -{item.quantity} kg")
-                            else:
-                                print(f"    ⚠ Warning: No stock record found for movement tracking")
-                                print(f"    Search filters: {stock_filters}")
-                                
-                        except Exception as e:
-                            print(f"    ✗ Error creating StockMovement: {e}")
-                            import traceback
-                            traceback.print_exc()
-                            messages.warning(request, f"Stock movement tracking error: {str(e)}")
-                    
-                    # STEP 5: Handle deleted items (already restored above)
-                    for obj in formset.deleted_objects:
-                        obj.delete()
-                    
-                    print(f"\n=== UPDATE COMPLETE ===")
-                    messages.success(request, f"Sales entry {sales_entry.invoice_no} updated successfully! ✅")
-                    return redirect("adminapp:sales_entry_detail", pk=pk)
-                    
-            except ValueError as e:
-                messages.error(request, f"Stock error: {str(e)}")
-                logger.error(f"Stock error in update_sales_entry: {str(e)}")
-            except Exception as e:
-                messages.error(request, f"Error updating sales entry: {str(e)}")
-                logger.error(f"Error in update_sales_entry: {str(e)}", exc_info=True)
-        else:
-            messages.error(request, "Please correct the errors in the form.")
-            # Show specific error messages
-            if not form.is_valid():
-                for field, errors in form.errors.items():
-                    for error in errors:
-                        messages.error(request, f"{field}: {error}")
-            
-            if not formset.is_valid():
-                for i, form_errors in enumerate(formset.errors):
-                    if form_errors:
-                        messages.error(request, f"Item {i+1}: {form_errors}")
-    else:
-        form = SalesEntryForm(instance=sales_entry)
-        formset = SalesEntryItemFormSet(instance=sales_entry)
-
-    return render(request, "adminapp/sales/sales_entry_form.html", {
-        "form": form,
-        "formset": formset,
-        "action": "Update",
-        "sales_entry": sales_entry,
-    })
 
 def restore_stock_for_sales_item(sales_item):
     """
@@ -17885,6 +17940,17 @@ def local_purchase_profit_loss_report_print(request):
                     total_freezing_usd += item_usd
                     total_freezing_kg += item.kg or Decimal('0.00')
                     
+                    # Get glaze display value
+                    glaze_display = ''
+                    if item.glaze:
+                        glaze_value = str(item.glaze.glaze) if hasattr(item.glaze, 'glaze') else str(item.glaze)
+                        # Check if glaze is numeric
+                        try:
+                            float(glaze_value)
+                            glaze_display = f"{glaze_value}%"
+                        except ValueError:
+                            glaze_display = glaze_value
+                    
                     # Freezing tariff
                     item_tariff_cost = Decimal('0.00')
                     if (item.freezing_category and 
@@ -17908,10 +17974,10 @@ def local_purchase_profit_loss_report_print(request):
                                 'amount': float(item_tariff_cost)
                             })
                     
-                    # Processing details
+                    # Processing details - FIXED: Use glaze instead of packing
                     processing_details.append({
                         'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
-                        'packing': f"{item.unit.unit_code if item.unit else ''} - {item.glaze.percentage if item.glaze else ''}%",
+                        'glaze': glaze_display,
                         'unit': item.unit.unit_code if item.unit else 'N/A',
                         'grade': f"{item.peeling_type.name if item.peeling_type else ''}, {item.grade.grade if item.grade else ''}",
                         'total_slab': float(item.slab_quantity or 0),
@@ -17921,7 +17987,7 @@ def local_purchase_profit_loss_report_print(request):
                         'amount_inr': float(item.usd_rate_item_to_inr or 0)
                     })
                     
-                    # Freezing items
+                    # Freezing items - FIXED: Use glaze_display
                     freezing_items.append({
                         'item_name': item.item.name if item.item else 'N/A',
                         'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
@@ -17936,7 +18002,7 @@ def local_purchase_profit_loss_report_print(request):
                         'slab_quantity': float(item.slab_quantity or 0),
                         'c_s_quantity': float(item.c_s_quantity or 0),
                         'unit': item.unit.unit_code if item.unit else 'N/A',
-                        'glaze': f"{item.glaze.percentage}%" if item.glaze else 'N/A',
+                        'glaze': glaze_display,
                         'brand': item.brand.name if item.brand else 'N/A',
                         'grade': f"{item.grade.grade if item.grade else 'N/A'}",
                         'tariff_cost': float(item_tariff_cost)
@@ -18130,4 +18196,3 @@ def local_purchase_profit_loss_report_print(request):
             'date_range_text': get_date_range_text(quick_filter, start_date, end_date) if 'quick_filter' in locals() else 'N/A'
         }
         return render(request, 'local_purchase_profit_loss_report_print.html', context)
-
