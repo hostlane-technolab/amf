@@ -895,12 +895,6 @@
                                             <span>Brand</span>
                                         </div>
                                     </th>
-                                    <!-- <th class="table-header">
-                                        <div class="header-content">
-                                            <i class="fas fa-fish header-icon"></i>
-                                            <span>Species</span>
-                                        </div>
-                                    </th> -->
                                     <th class="table-header">
                                         <div class="header-content">
                                             <i class="fas fa-certificate header-icon"></i>
@@ -987,12 +981,6 @@
                                             <div class="validation-error">{{ form.brand.errors }}</div>
                                         {% endif %}
                                     </td>
-                                    <!-- <td class="table-cell">
-                                        {{ form.species }}
-                                        {% if form.species.errors %}
-                                            <div class="validation-error">{{ form.species.errors }}</div>
-                                        {% endif %}
-                                    </td> -->
                                     <td class="table-cell">
                                         {{ form.grade }}
                                         {% if form.grade.errors %}
@@ -1661,6 +1649,7 @@
     });
     </script>
 
+    <!-- load tenant stock -->
     <script>
     let tenantStockData = [];
 
@@ -1770,7 +1759,31 @@
             let totalForms = parseInt($("#id_items-TOTAL_FORMS").val());
             console.log("Current total forms:", totalForms);
             
-            let $templateForm = $(".formset-row:first");
+            // Get the last visible form to copy values from
+            let $templateForm = $(".formset-row:visible:last");
+            
+            // Fields to preserve (keep values from previous form) - matches template fields
+            const fieldsToPreserve = [
+                'processing_center', 
+                'store', 
+                'item', 
+                'item_quality', 
+                'unit',
+                'glaze', 
+                'freezing_category', 
+                'brand'
+            ];
+            
+            // Store values to preserve BEFORE cloning
+            let preservedValues = {};
+            fieldsToPreserve.forEach(fieldName => {
+                let $field = $templateForm.find(`select[name*="-${fieldName}"], input[name*="-${fieldName}"]`).not('[name*="DELETE"]').not('[name*="-id"]');
+                if ($field.length > 0) {
+                    preservedValues[fieldName] = $field.val();
+                    console.log(`Storing ${fieldName}:`, $field.attr('name'), '=', $field.val());
+                }
+            });
+            
             let $newForm = $templateForm.clone(true);
             
             console.log("Creating form with index:", totalForms);
@@ -1779,17 +1792,30 @@
                 let $field = $(this);
                 let name = $field.attr("name");
                 let id = $field.attr("id");
+                let oldName = name;
                 
                 if (name) {
                     name = name.replace(/items-\d+-/, "items-" + totalForms + "-");
                     $field.attr("name", name);
-                    console.log("Updated name:", name);
                 }
                 
                 if (id) {
                     id = id.replace(/items-\d+-/, "items-" + totalForms + "-");
                     $field.attr("id", id);
-                    console.log("Updated id:", id);
+                }
+                
+                // Check if this field should be preserved
+                let shouldPreserve = false;
+                let matchedField = null;
+                
+                if (name && !name.includes('DELETE') && !name.includes('-id')) {
+                    for (let fieldName of fieldsToPreserve) {
+                        if (name.endsWith(`-${fieldName}`)) {
+                            shouldPreserve = true;
+                            matchedField = fieldName;
+                            break;
+                        }
+                    }
                 }
                 
                 if ($field.attr("type") === "hidden") {
@@ -1799,16 +1825,17 @@
                     if (name && name.includes('-DELETE')) {
                         $field.prop("checked", false);
                     }
+                } else if (shouldPreserve && preservedValues[matchedField]) {
+                    // Set preserved value
+                    $field.val(preservedValues[matchedField]);
+                    console.log(`Applied preserved value to ${name}:`, preservedValues[matchedField]);
                 } else {
+                    // Clear value if not in preserve list
                     $field.val("");
                     if ($field.attr("type") === "checkbox") {
                         $field.prop("checked", false);
                     }
                 }
-            });
-
-            $newForm.find("select").each(function() {
-                this.selectedIndex = 0;
             });
             
             $newForm.find(".available-slab, .available-cs, .available-kg").text("");

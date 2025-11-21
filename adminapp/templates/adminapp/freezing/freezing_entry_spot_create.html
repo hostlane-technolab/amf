@@ -1746,14 +1746,6 @@
                                                 </a>
                                             </div>
                                         </th>
-                                        <!-- <th class="table-header col-species">
-                                            <div class="header-content">
-                                                <i class="fas fa-fish header-icon"></i>
-                                                <a class="link-hover"  href="{% url 'adminapp:species_create' %}" target="_blank">
-                                                    <span class="header-text">Species</span>
-                                                </a>
-                                            </div>
-                                        </th> -->
                                         <th class="table-header col-type">
                                             <div class="header-content">
                                                 <i class="fas fa-layer-group header-icon"></i>
@@ -2258,74 +2250,222 @@
         });
     </script>
 
-<!-- Total Calculation with Sum of Yields / Number of Sheds -->
-<script>
-    function calculateTotals() {
-        let totalYieldSum = 0, totalUSD = 0, totalINR = 0, totalSlab = 0, totalCS = 0, totalKG = 0;
-        let uniqueSheds = new Set(); // Track unique sheds
+    <!-- Total Calculation with Sum of Yields / Number of Sheds -->
+    <script>
+    $(document).ready(function () {
+        let dollarRate = 0;
 
-        $('.formset-form').each(function () {
-            // Skip deleted forms
-            if ($(this).find('[name$="DELETE"]').is(':checked')) {
+        // Fetch dollar rate on page load
+        $.getJSON("{% url 'adminapp:get_dollar_rate' %}", function (data) {
+            if (data.dollar_rate_to_inr) {
+                dollarRate = parseFloat(data.dollar_rate_to_inr);
+            }
+        }).fail(function() {
+            console.log('Could not fetch dollar rate, using default 0');
+        });
+
+        // Global function to calculate totals including KG and Sum of Yields / Number of Sheds
+        function calculateAllTotals() {
+            let totalUSD = 0, totalINR = 0, totalSlab = 0, totalCS = 0, totalKG = 0;
+            let totalYieldSum = 0;
+            let validRowCount = 0;
+            
+            // Track unique sheds
+            const uniqueSheds = new Set();
+
+            $('.formset-form').each(function () {
+                // Skip deleted forms
+                const deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                const isMarkedForDeletion = deleteCheckbox.length > 0 && deleteCheckbox.is(':checked');
+                const hasDeleteClass = $(this).hasClass('to-delete');
+                
+                if (isMarkedForDeletion || hasDeleteClass) {
+                    return; // Skip this iteration
+                }
+
+                const getVal = (selector) => {
+                    const element = $(this).find(selector);
+                    const val = parseFloat(element.val());
+                    return isNaN(val) ? 0 : val;
+                };
+
+                const usdRate = getVal('[name$="usd_rate_item"]');
+                const inrRate = getVal('[name$="usd_rate_item_to_inr"]');
+                const slabQty = getVal('[name$="slab_quantity"]');
+                const csQty = getVal('[name$="c_s_quantity"]');
+                const kgWeight = getVal('[name$="kg"]:not([name$="usd_rate_per_kg"])');
+                const yieldPercentage = getVal('[name$="yield_percentage"]');
+                
+                // Get shed name - try multiple possible selectors
+                const shed = $(this).find('[name$="shed"]').val() || 
+                            $(this).find('[name$="shed_name"]').val() || 
+                            $(this).find('select[name*="shed"]').val() || 
+                            $(this).find('input[name*="shed"]').val() ||
+                            $(this).find('td:eq(2)').text().trim(); // Fallback: get from 3rd column (SHED column)
+                
+                // Only count rows that have some data
+                if (slabQty > 0 || usdRate > 0 || kgWeight > 0) {
+                    totalUSD += usdRate;
+                    totalINR += inrRate;
+                    totalSlab += slabQty;
+                    totalCS += csQty;
+                    totalKG += kgWeight;
+                    totalYieldSum += yieldPercentage;
+                    validRowCount++;
+                    
+                    // Track unique sheds
+                    if (shed) {
+                        uniqueSheds.add(shed);
+                    }
+                }
+            });
+
+            // Calculate: Sum of all yields / Number of unique sheds
+            let averageYield = 0;
+            const numberOfSheds = uniqueSheds.size;
+            
+            if (numberOfSheds > 0) {
+                averageYield = totalYieldSum / numberOfSheds;
+            }
+            
+            // Update the total fields
+            $('#id_total_usd').val(totalUSD.toFixed(2));
+            $('#id_total_inr').val(totalINR.toFixed(2));
+            $('#id_total_slab').val(totalSlab.toFixed(2));
+            $('#id_total_c_s').val(totalCS.toFixed(2));
+            $('#id_total_kg').val(totalKG.toFixed(2));
+            $('#id_total_yield_percentage').val(averageYield.toFixed(2));
+
+            console.log('Total KG calculated:', totalKG.toFixed(2));
+            console.log('Sum of all yields:', totalYieldSum.toFixed(2));
+            console.log('Number of unique sheds:', numberOfSheds);
+            console.log('Average Yield % calculated:', averageYield.toFixed(2));
+        }
+
+        // Enhanced row calculation that updates totals immediately
+        function recalcRowWithTotals($row) {
+            let slabQty = parseFloat($row.find('[name$="slab_quantity"]').val()) || 0;
+            let usdPerKg = parseFloat($row.find('[name$="usd_rate_per_kg"]').val()) || 0;
+            let precision = parseFloat($row.data('precision')) || 0;
+            let factor = parseFloat($row.data('factor')) || 0;
+
+            console.log('Recalculating row - Slab Qty:', slabQty, 'Factor:', factor);
+
+            // Calculate CS Quantity
+            if (slabQty && precision) {
+                $row.find('[name$="c_s_quantity"]').val((slabQty / precision).toFixed(2));
+            } else if (!slabQty) {
+                $row.find('[name$="c_s_quantity"]').val('0.00');
+            }
+
+            // Calculate KG - This is crucial for total KG calculation
+            if (slabQty && factor) {
+                const calculatedKg = (slabQty * factor).toFixed(2);
+                $row.find('[name$="kg"]:not([name$="usd_rate_per_kg"])').val(calculatedKg);
+                console.log('KG calculated for this row:', calculatedKg);
+            } else if (!slabQty) {
+                $row.find('[name$="kg"]:not([name$="usd_rate_per_kg"])').val('0.00');
+            }
+
+            // Calculate USD Rate Item
+            let kg = parseFloat($row.find('[name$="kg"]:not([name$="usd_rate_per_kg"])').val()) || 0;
+            if (kg && usdPerKg) {
+                $row.find('[name$="usd_rate_item"]:not([name$="usd_rate_item_to_inr"])').val((usdPerKg * kg).toFixed(2));
+            } else {
+                $row.find('[name$="usd_rate_item"]:not([name$="usd_rate_item_to_inr"])').val('0.00');
+            }
+
+            // Calculate USD Rate Item to INR
+            let usdItem = parseFloat($row.find('[name$="usd_rate_item"]:not([name$="usd_rate_item_to_inr"])').val()) || 0;
+            if (usdItem && dollarRate) {
+                $row.find('[name$="usd_rate_item_to_inr"]').val((usdItem * dollarRate).toFixed(2));
+            } else {
+                $row.find('[name$="usd_rate_item_to_inr"]').val('0.00');
+            }
+
+            // IMMEDIATELY calculate totals after row calculation
+            setTimeout(calculateAllTotals, 10);
+        }
+
+        // Make functions globally accessible
+        window.calculateTotals = calculateAllTotals;
+        window.recalcRow = recalcRowWithTotals;
+
+        // Slab quantity change handler - KEY for auto KG total update
+        $(document).on('input change keyup paste', '[name$="slab_quantity"]', function() {
+            console.log('Slab quantity changed:', $(this).val());
+            let $row = $(this).closest('.formset-form');
+            recalcRowWithTotals($row);
+        });
+
+        // USD rate per kg change handler
+        $(document).on('input change keyup', '[name$="usd_rate_per_kg"]', function() {
+            let $row = $(this).closest('.formset-form');
+            recalcRowWithTotals($row);
+        });
+
+        // Yield percentage change handler - recalculate totals when yield changes
+        $(document).on('input change keyup', '[name$="yield_percentage"]', function() {
+            setTimeout(calculateAllTotals, 10);
+        });
+
+        // Unit change handler
+        $(document).on('change', '[name$="unit"]', function () {
+            let $row = $(this).closest('.formset-form');
+            let unitId = $(this).val();
+
+            if (!unitId) {
+                $row.removeData('precision').removeData('factor');
+                recalcRowWithTotals($row);
                 return;
             }
 
-            const getVal = (name) => {
-                const val = parseFloat($(this).find(`[name$="${name}"]`).val());
-                return isNaN(val) ? 0 : val;
-            };
-
-            const yieldPercentage = getVal('yield_percentage');
-            const usdRate = getVal('usd_rate_item');
-            const inrRate = getVal('usd_rate_item_to_inr');
-            const slabQty = getVal('slab_quantity');
-            const csQty = getVal('c_s_quantity');
-            const kgWeight = getVal('kg');
-
-            // Get shed name - try multiple possible selectors
-            const shed = $(this).find('[name$="shed"]').val() || 
-                        $(this).find('[name$="shed_name"]').val() || 
-                        $(this).find('select[name*="shed"]').val() || 
-                        $(this).find('input[name*="shed"]').val() ||
-                        $(this).find('td:eq(2)').text().trim(); // Fallback: get from 3rd column
-
-            // Sum all yields
-            totalYieldSum += yieldPercentage;
-            
-            // Track unique sheds (only if row has data)
-            if ((slabQty > 0 || kgWeight > 0) && shed) {
-                uniqueSheds.add(shed);
-            }
-            
-            totalUSD += usdRate;
-            totalINR += inrRate;
-            totalSlab += slabQty;
-            totalCS += csQty;
-            totalKG += kgWeight;
+            // Fetch unit details and recalculate
+            $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+                $row.data('precision', data.precision);
+                $row.data('factor', data.factor);
+                console.log('Unit details loaded - Precision:', data.precision, 'Factor:', data.factor);
+                recalcRowWithTotals($row);
+            }).fail(function() {
+                console.log('Could not fetch unit details for unit ID:', unitId);
+            });
         });
 
-        // Calculate average yield: Sum of all yields / Number of unique sheds
-        const numberOfSheds = uniqueSheds.size;
-        const averageYield = numberOfSheds > 0 ? totalYieldSum / numberOfSheds : 0;
+        // Handle DELETE checkbox changes
+        $(document).on('change', '[name$="-DELETE"]', function() {
+            setTimeout(calculateAllTotals, 100);
+        });
 
-        // Update the total fields
-        $('#id_total_yield_percentage').val(averageYield.toFixed(2));
-        $('#id_total_usd').val(totalUSD.toFixed(2));
-        $('#id_total_inr').val(totalINR.toFixed(2));
-        $('#id_total_slab').val(totalSlab.toFixed(2));
-        $('#id_total_c_s').val(totalCS.toFixed(2));
-        $('#id_total_kg').val(totalKG.toFixed(2));
+        // Initialize existing forms with calculation classes
+        $('.formset-form').each(function() {
+            $(this).find('[name*="slab_quantity"]').addClass('slab-quantity');
+            $(this).find('[name*="c_s_quantity"]').addClass('cs-quantity');
+            $(this).find('[name*="kg"]:not([name*="usd_rate_per_kg"])').addClass('kg');
+            $(this).find('[name*="usd_rate_per_kg"]').addClass('usd-rate-per-kg');
+            $(this).find('[name*="usd_rate_item"]:not([name*="usd_rate_item_to_inr"])').addClass('usd-rate-item');
+            $(this).find('[name*="usd_rate_item_to_inr"]').addClass('usd-rate-item-inr');
+            $(this).find('[name*="unit"]').addClass('unit-select');
 
-        console.log('Sum of all yields:', totalYieldSum.toFixed(2));
-        console.log('Number of unique sheds:', numberOfSheds);
-        console.log('Average yield:', averageYield.toFixed(2));
-    }
+            // Load existing unit data for calculation
+            const unitSelect = $(this).find('[name$="unit"]');
+            const unitId = unitSelect.val();
+            if (unitId) {
+                const $row = $(this);
+                $.getJSON("{% url 'adminapp:get_unit_details' %}", { unit_id: unitId }, function (data) {
+                    $row.data('precision', data.precision);
+                    $row.data('factor', data.factor);
+                }).fail(function() {
+                    console.log('Could not fetch unit details for existing unit ID:', unitId);
+                });
+            }
+        });
 
-    // Trigger calculation on any input change
-    $(document).on('input change', '.formset-form :input', calculateTotals);
-    $(document).on('change', '.formset-form [name$="DELETE"]', calculateTotals);
-    $(document).ready(calculateTotals);
-</script>
+        // Initial calculation on page load
+        setTimeout(function() {
+            calculateAllTotals();
+        }, 1500);
+    });
+    </script>
 
     <!-- WORKING yield-percentage calculation -->
     <script>
@@ -2653,39 +2793,75 @@
     $(document).ready(function () {
         console.log("Freezing Entry AJAX ready");
 
-        // 🔹 Listen for item change inside each formset row
-        $(document).on("change", ".item-select", function () {
-            let itemId = $(this).val();
-            let row = $(this).closest(".formset-form");
+        // Function to load species for a specific item
+        function loadSpeciesForItem(itemSelect, preserveSelectedValue) {
+            let itemId = itemSelect.val();
+            let row = itemSelect.closest(".formset-form");
+            let speciesSelect = row.find(".species-select, select[name$='-species']");
+            let currentSpeciesValue = preserveSelectedValue ? speciesSelect.val() : null;
 
             if (!itemId) return;
 
-            // 🔹 1. Fetch Species for this item
             $.ajax({
                 url: "{% url 'adminapp:get_species_for_item' %}",
                 data: { item_id: itemId },
                 success: function (response) {
-                    let speciesSelect = row.find(".species-select");
                     speciesSelect.empty().append('<option value="">---------</option>');
                     $.each(response.species, function (i, species) {
                         speciesSelect.append('<option value="' + species.id + '">' + species.name + '</option>');
                     });
+                    
+                    // Restore previously selected value if it exists
+                    if (currentSpeciesValue) {
+                        speciesSelect.val(currentSpeciesValue);
+                    }
                 }
             });
+        }
 
-            // 🔹 2. Fetch Peeling Types for this item
+        // Function to load peeling types for a specific item
+        function loadPeelingForItem(itemSelect, preserveSelectedValue) {
+            let itemId = itemSelect.val();
+            let row = itemSelect.closest(".formset-form");
+            let peelingSelect = row.find(".peeling-select, select[name$='-peeling_type']");
+            let currentPeelingValue = preserveSelectedValue ? peelingSelect.val() : null;
+
+            if (!itemId) return;
+
             $.ajax({
                 url: "{% url 'adminapp:get_peeling_for_item' %}",
                 data: { item_id: itemId },
                 success: function (response) {
-                    let peelingSelect = row.find(".peeling-select");
                     peelingSelect.empty().append('<option value="">---------</option>');
                     $.each(response.peeling_types, function (i, peeling) {
                         peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
                     });
+                    
+                    // Restore previously selected value if it exists
+                    if (currentPeelingValue) {
+                        peelingSelect.val(currentPeelingValue);
+                    }
                 }
             });
+        }
+
+        // Event handler for item selection change
+        $(document).on("change", ".item-select, select[name$='-item']", function () {
+            loadSpeciesForItem($(this), false);
+            loadPeelingForItem($(this), false);
         });
+
+        // Load species and peeling for all existing rows on page load
+        console.log('Loading species and peeling types for existing rows...');
+        $(".item-select, select[name$='-item']").each(function() {
+            let itemId = $(this).val();
+            if (itemId) {
+                loadSpeciesForItem($(this), true); // Preserve selected species
+                loadPeelingForItem($(this), true); // Preserve selected peeling type
+            }
+        });
+
+        console.log("Species and Peeling event handlers attached");
     });
     </script>
 

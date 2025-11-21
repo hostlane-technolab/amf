@@ -396,21 +396,26 @@ class StoreDeleteView(DeleteView):
     template_name = 'adminapp/confirm_delete.html'
     success_url = reverse_lazy('adminapp:store_list')
 
+
+
 def create_shed(request):
     if request.method == 'POST':
         form = ShedForm(request.POST)
         formset = ShedItemFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
-            shed = form.save()
-            items = formset.save(commit=False)
+            with transaction.atomic():
+                shed = form.save()
+                items = formset.save(commit=False)
 
-            for item in items:
-                item.shed = shed
-                item.save()
+                for item in items:
+                    item.shed = shed
+                    item.is_active = True  # ✅ Set new items as active
+                    item.save()
 
-            for deleted_item in formset.deleted_objects:
-                deleted_item.delete()
+                # Don't actually delete - formset deletion handled in update view
+                # for deleted_item in formset.deleted_objects:
+                #     deleted_item.delete()
 
             return redirect('adminapp:peeling_center_list')
     else:
@@ -422,16 +427,6 @@ def create_shed(request):
         'formset': formset,
     })
 
-def get_item_types(request):
-    item_id = request.GET.get('item_id')
-    item_types = ItemType.objects.filter(item_id=item_id).values('id', 'name')
-    return JsonResponse(list(item_types), safe=False)
-
-class ShedListView(ListView):
-    model = Shed
-    template_name = 'adminapp/list/shed_list.html'
-    context_object_name = 'peeling_centers'
-
 def update_shed(request, pk):
     shed = get_object_or_404(Shed, pk=pk)
 
@@ -440,21 +435,43 @@ def update_shed(request, pk):
         formset = ShedItemFormSet(request.POST, instance=shed)
 
         if form.is_valid() and formset.is_valid():
-            shed = form.save()
-            items = formset.save(commit=False)
+            with transaction.atomic():
+                shed = form.save()
+                
+                # Get existing active items for this shed
+                existing_items = {item.id: item for item in shed.shed_items.filter(is_active=True)}
+                
+                items = formset.save(commit=False)
 
-            for item in items:
-                item.shed = shed
-                item.save()
+                for item in items:
+                    if item.pk:  # ✅ Existing item being updated
+                        # Deactivate the old version
+                        old_item = existing_items.get(item.pk)
+                        if old_item:
+                            old_item.is_active = False
+                            old_item.save()
+                        
+                        # Create new version with updated data
+                        item.pk = None  # This forces creation of a new record
+                        item.id = None
+                        item.shed = shed
+                        item.is_active = True
+                        item.save()
+                    else:  # ✅ New item being added
+                        item.shed = shed
+                        item.is_active = True
+                        item.save()
 
-            # Delete any items marked for deletion
-            for deleted_item in formset.deleted_objects:
-                deleted_item.delete()
+                # ✅ Handle deletions - mark as inactive instead of deleting
+                for deleted_item in formset.deleted_objects:
+                    deleted_item.is_active = False
+                    deleted_item.save()
 
             return redirect('adminapp:peeling_center_list')
     else:
         form = ShedForm(instance=shed)
-        formset = ShedItemFormSet(instance=shed)
+        # ✅ Only show active items in the formset
+        formset = ShedItemFormSet(instance=shed, queryset=ShedItem.objects.filter(is_active=True))
 
     return render(request, 'adminapp/forms/update_shed.html', {
         'form': form,
@@ -462,10 +479,41 @@ def update_shed(request, pk):
         'shed': shed
     })
 
-class ShedDeleteView(DeleteView):
+class ShedDeleteView(View):
+    """
+    ✅ Custom view for soft delete - mark shed as inactive only
+    """
+    def get(self, request, pk):
+        shed = get_object_or_404(Shed, pk=pk)
+        return render(request, 'adminapp/confirm_delete.html', {'object': shed})
+    
+    def post(self, request, pk):
+        shed = get_object_or_404(Shed, pk=pk)
+        shed.is_active = False
+        shed.save()
+        return redirect('adminapp:peeling_center_list')
+
+class ShedListView(ListView):
     model = Shed
-    template_name = 'adminapp/confirm_delete.html'
-    success_url = reverse_lazy('adminapp:peeling_center_list')
+    template_name = 'adminapp/list/shed_list.html'
+    context_object_name = 'peeling_centers'
+    
+    def get_queryset(self):
+        """
+        ✅ Only show active sheds
+        """
+        return Shed.objects.filter(is_active=True).prefetch_related(
+            models.Prefetch(
+                'shed_items',
+                queryset=ShedItem.objects.filter(is_active=True)
+            )
+        )
+
+def get_item_types(request):
+    item_id = request.GET.get('item_id')
+    item_types = ItemType.objects.filter(item_id=item_id).values('id', 'name')
+    return JsonResponse(list(item_types), safe=False)
+
 
 class LocalPartyCreateView(CreateView):
     model = LocalParty
@@ -1355,6 +1403,7 @@ def settings_delete(request, pk):
     setting = get_object_or_404(Settings, pk=pk)
     if request.method == 'POST':
         setting.is_active = False   # mark inactive instead of deleting
+        
         setting.save()
         return redirect('adminapp:settings_list')
 
@@ -2408,6 +2457,13 @@ def create_freezing_entry_spot(request):
                     formset.instance = freezing_entry
                     formset.save()
 
+                    # Get the freezing entry date for stock movement
+                    freezing_date = getattr(freezing_entry, 'freezing_date', None) or \
+                                  getattr(freezing_entry, 'date_entry', None) or \
+                                  getattr(freezing_entry, 'entry_date', None) or \
+                                  getattr(freezing_entry, 'date', None) or \
+                                  timezone.now().date()
+
                     # Now process stock updates with the saved freezing entry
                     stock_errors = []
 
@@ -2497,21 +2553,14 @@ def create_freezing_entry_spot(request):
                                 print(f"  Final: CS={existing_stock.cs_quantity}, KG={existing_stock.kg_quantity}")
                                 print(f"  ✓ Stock updated successfully")
 
-                            # CREATE STOCK MOVEMENT RECORD
-                            # Get the movement date from freezing entry (adjust field name as needed)
-                            movement_date = getattr(freezing_entry, 'date_entry', None) or \
-                                          getattr(freezing_entry, 'entry_date', None) or \
-                                          getattr(freezing_entry, 'date', None) or \
-                                          timezone.now().date()
-                            
-                            # Get voucher number if available
+                            # CREATE STOCK MOVEMENT RECORD WITH SAME DATE AS FREEZING ENTRY
                             voucher_number = getattr(freezing_entry, 'voucher_number', None) or \
                                            getattr(freezing_entry, 'entry_number', None) or \
                                            f"FE-SPOT-{freezing_entry.id}"
                             
                             StockMovement.objects.create(
                                 movement_type='freezing_spot',
-                                movement_date=movement_date,
+                                movement_date=freezing_date,  # Use the freezing entry date
                                 voucher_number=voucher_number,
                                 store=stock_data['store'],
                                 item=stock_data['item'],
@@ -2532,10 +2581,10 @@ def create_freezing_entry_spot(request):
                                 reference_model='FreezingEntrySpot',
                                 reference_id=str(freezing_entry.id),
                                 created_by=request.user if request.user.is_authenticated else None,
-                                notes=f"Stock added from freezing spot entry"
+                                notes=f"Stock added from freezing spot entry on {freezing_date}"
                             )
                             
-                            print(f"  ✓ Stock movement record created")
+                            print(f"  ✓ Stock movement record created with date: {freezing_date}")
 
                         except Exception as stock_error:
                             error_msg = f"Error with stock for {stock_data.get('item', 'Unknown')}: {str(stock_error)}"
@@ -2614,6 +2663,17 @@ def freezing_entry_spot_update(request, pk):
             try:
                 with transaction.atomic():
                     entry = form.save(commit=False)
+
+                    # Get the freezing entry date and voucher ONCE at the beginning
+                    freezing_date = getattr(entry, 'freezing_date', None) or \
+                                  getattr(entry, 'date_entry', None) or \
+                                  getattr(entry, 'entry_date', None) or \
+                                  getattr(entry, 'date', None) or \
+                                  timezone.now().date()
+                    
+                    voucher_number = getattr(entry, 'voucher_number', None) or \
+                                   getattr(entry, 'entry_number', None) or \
+                                   f"FE-SPOT-{entry.id}"
 
                     # STEP 0: DELETE ALL EXISTING STOCK MOVEMENTS FOR THIS ENTRY
                     print(f"\n=== STEP 0: DELETING EXISTING STOCK MOVEMENTS ===")
@@ -2808,16 +2868,6 @@ def freezing_entry_spot_update(request, pk):
                     # STEP 3: ADD new stock quantities AND CREATE FRESH STOCK MOVEMENTS
                     print(f"\n=== STEP 3: ADDING NEW STOCK QUANTITIES ===")
                     
-                    # Get movement date and voucher number once
-                    movement_date = getattr(entry, 'date_entry', None) or \
-                                  getattr(entry, 'entry_date', None) or \
-                                  getattr(entry, 'date', None) or \
-                                  timezone.now().date()
-                    
-                    voucher_number = getattr(entry, 'voucher_number', None) or \
-                                   getattr(entry, 'entry_number', None) or \
-                                   f"FE-SPOT-{entry.id}"
-                    
                     for stock_data in stock_updates:
                         try:
                             # Build stock filters
@@ -2907,10 +2957,10 @@ def freezing_entry_spot_update(request, pk):
                                 print(f"  CS={existing_stock.cs_quantity}, KG={existing_stock.kg_quantity}")
                                 print(f"  Rates - USD/kg: {existing_stock.usd_rate_per_kg}, USD/item: {existing_stock.usd_rate_item}, INR: {existing_stock.usd_rate_item_to_inr}")
 
-                            # CREATE FRESH STOCK MOVEMENT (same voucher number as original)
+                            # CREATE FRESH STOCK MOVEMENT WITH SAME DATE AS FREEZING ENTRY
                             StockMovement.objects.create(
                                 movement_type='freezing_spot',
-                                movement_date=movement_date,
+                                movement_date=freezing_date,  # Use the freezing entry date
                                 voucher_number=voucher_number,  # Same voucher as original
                                 store=stock_data['store'],
                                 item=stock_data['item'],
@@ -2931,9 +2981,9 @@ def freezing_entry_spot_update(request, pk):
                                 reference_model='FreezingEntrySpot',
                                 reference_id=str(entry.id),
                                 created_by=request.user if request.user.is_authenticated else None,
-                                notes=f"Stock from freezing spot entry (updated)"
+                                notes=f"Stock from freezing spot entry (updated) on {freezing_date}"
                             )
-                            print(f"  ✓ Stock movement recorded")
+                            print(f"  ✓ Stock movement recorded with date: {freezing_date}")
 
                         except Exception as e:
                             print(f"\n✗ Error updating stock for {stock_data['item'].name}: {e}")
@@ -2973,7 +3023,6 @@ def freezing_entry_spot_update(request, pk):
         "adminapp/freezing/freezing_entry_spot_update.html",
         {"form": form, "formset": formset, "entry": freezing_entry},
     )
-
 
 @check_permission('freezing_delete')
 def delete_freezing_entry_spot(request, pk):
@@ -3329,7 +3378,6 @@ def create_freezing_entry_local(request):
                 with transaction.atomic():
                     # Get Dollar Rate from active Settings
                     try:
-                        from adminapp.models import Settings
                         active_settings = Settings.objects.filter(is_active=True).first()
                         if active_settings:
                             dollar_rate_to_inr = active_settings.dollar_rate_to_inr
@@ -3420,6 +3468,15 @@ def create_freezing_entry_local(request):
                         instance.freezing_entry = entry
                         instance.save()
 
+                    # Get the movement date from entry (supports multiple possible field names)
+                    movement_date = (
+                        getattr(entry, 'date', None) or 
+                        getattr(entry, 'entry_date', None) or 
+                        getattr(entry, 'freezing_date', None) or 
+                        entry.created_at.date()
+                    )
+                    print(f"✓ Using movement date: {movement_date}")
+
                     # ADD to stock WITH WEIGHTED AVERAGE
                     print(f"\n=== ADDING STOCK QUANTITIES ===")
                     for stock_data in stock_updates:
@@ -3495,11 +3552,13 @@ def create_freezing_entry_local(request):
                                 stock = Stock.objects.create(**new_stock_data)
                                 print(f"\n✓ Stock CREATED for {stock_data['item'].name}")
 
-                            # ✅ CREATE STOCK MOVEMENT RECORD
+                            # ✅ CREATE STOCK MOVEMENT RECORD with freezing entry date
+                            voucher_number = getattr(entry, 'voucher_number', None) or f"FEL-{entry.id}"
+                            
                             StockMovement.objects.create(
                                 movement_type='freezing_local',
-                                movement_date=entry.date if hasattr(entry, 'date') else entry.created_at.date(),
-                                voucher_number=entry.voucher_number if hasattr(entry, 'voucher_number') else f"FEL-{entry.id}",
+                                movement_date=movement_date,  # ✅ Uses the same date as freezing entry
+                                voucher_number=voucher_number,
                                 store=stock_data['store'],
                                 item=stock_data['item'],
                                 brand=stock_data['brand'],
@@ -3521,7 +3580,7 @@ def create_freezing_entry_local(request):
                                 created_by=request.user if request.user.is_authenticated else None,
                                 notes=f"Freezing Entry Local - {entry}"
                             )
-                            print(f"  ✓ StockMovement recorded")
+                            print(f"  ✓ StockMovement recorded with date: {movement_date}")
 
                         except Exception as e:
                             print(f"\n✗ Error updating stock: {e}")
@@ -3771,6 +3830,16 @@ def freezing_entry_local_update(request, pk):
 
                     # STEP 3: ADD new stock WITH WEIGHTED AVERAGE
                     print(f"\n=== STEP 3: ADDING NEW STOCK QUANTITIES ===")
+                    
+                    # Get the movement date from entry (supports multiple possible field names)
+                    movement_date = (
+                        getattr(entry, 'date', None) or 
+                        getattr(entry, 'entry_date', None) or 
+                        getattr(entry, 'freezing_date', None) or 
+                        entry.created_at.date()
+                    )
+                    print(f"✓ Using movement date: {movement_date}")
+                    
                     for stock_data in stock_updates:
                         try:
                             stock_filters = {
@@ -3844,11 +3913,13 @@ def freezing_entry_local_update(request, pk):
                                 stock = Stock.objects.create(**new_stock_data)
                                 print(f"\n✓ Stock CREATED for {stock_data['item'].name}")
 
-                            # ✅ CREATE NEW STOCK MOVEMENT RECORD
+                            # ✅ CREATE NEW STOCK MOVEMENT RECORD with freezing entry date
+                            voucher_number = getattr(entry, 'voucher_number', None) or f"FEL-{entry.id}"
+                            
                             StockMovement.objects.create(
                                 movement_type='freezing_local',
-                                movement_date=entry.date if hasattr(entry, 'date') else entry.created_at.date(),
-                                voucher_number=entry.voucher_number if hasattr(entry, 'voucher_number') else f"FEL-{entry.id}",
+                                movement_date=movement_date,  # ✅ Uses the same date as freezing entry
+                                voucher_number=voucher_number,
                                 store=stock_data['store'],
                                 item=stock_data['item'],
                                 brand=stock_data['brand'],
@@ -3870,7 +3941,7 @@ def freezing_entry_local_update(request, pk):
                                 created_by=request.user if request.user.is_authenticated else None,
                                 notes=f"Freezing Entry Local (Updated) - {entry}"
                             )
-                            print(f"  ✓ NEW StockMovement recorded")
+                            print(f"  ✓ StockMovement recorded with date: {movement_date}")
 
                         except Exception as e:
                             print(f"\n✗ Error updating stock: {e}")
@@ -7835,6 +7906,9 @@ def tenant_stock_balance(request):
     from django.db.models import Sum
     from collections import defaultdict
     
+    # Get all tenants for the filter dropdown
+    tenants = Tenant.objects.all().order_by('company_name')
+    
     # Get all freezing entries (INBOUND stock)
     freezing_data = FreezingEntryTenantItem.objects.select_related(
         'freezing_entry__tenant_company_name', 'item', 'species', 'grade', 'store'
@@ -7904,6 +7978,9 @@ def tenant_stock_balance(request):
     
     # Calculate final balances
     stock_balance = []
+    low_stock_count = 0
+    out_of_stock_count = 0
+    
     for key, data in balance_data.items():
         tenant_id, tenant_name, item_name, species, grade, store = key
         
@@ -7930,13 +8007,26 @@ def tenant_stock_balance(request):
                 'cs_balance': cs_balance,
                 'kg_balance': kg_balance,
             })
+            
+            # Count stock alerts
+            if kg_balance <= 0:
+                out_of_stock_count += 1
+            elif kg_balance < 10:
+                low_stock_count += 1
     
     # Sort by tenant name, then item name
     stock_balance.sort(key=lambda x: (x['tenant_name'], x['item_name']))
     
+    # Get unique tenant count
+    total_tenants = len(set(item['tenant_id'] for item in stock_balance))
+    
     context = {
         'stock_balance': stock_balance,
-        'total_items': len(stock_balance)
+        'tenants': tenants,  # THIS WAS MISSING!
+        'total_items': len(stock_balance),
+        'total_tenants': total_tenants,
+        'low_stock_count': low_stock_count,
+        'out_of_stock_count': out_of_stock_count,
     }
     return render(request, 'adminapp/TenantStock/balance.html', context)
 
@@ -8558,66 +8648,6 @@ def bill_list_draft(request):
 
 
 
-def process_stock_transfer(transfer, transfer_item):
-    """Process stock transfer between stores"""
-    try:
-        cs_qty = transfer_item.cs_quantity or 0
-        kg_qty = transfer_item.kg_quantity or 0
-        
-        if cs_qty <= 0 and kg_qty <= 0:
-            return
-            
-        # Find source stock
-        source_stock = Stock.objects.filter(
-            store=transfer.from_store,
-            item=transfer_item.item,
-            brand=transfer_item.brand,
-            item_quality=transfer_item.item_quality,
-            freezing_category=transfer_item.freezing_category,
-            unit=transfer_item.unit,
-            glaze=transfer_item.glaze,
-            species=transfer_item.species,
-            item_grade=transfer_item.item_grade,
-        ).first()
-        
-        if not source_stock:
-            print(f"WARNING: No source stock found for {transfer_item.item}")
-            return
-            
-        # Check sufficient stock
-        if (source_stock.cs_quantity or 0) < cs_qty:
-            raise ValueError(f"Insufficient CS quantity for {transfer_item.item}. Required: {cs_qty}, Available: {source_stock.cs_quantity}")
-        if (source_stock.kg_quantity or 0) < kg_qty:
-            raise ValueError(f"Insufficient KG quantity for {transfer_item.item}. Required: {kg_qty}, Available: {source_stock.kg_quantity}")
-        
-        # Deduct from source
-        source_stock.cs_quantity = (source_stock.cs_quantity or 0) - cs_qty
-        source_stock.kg_quantity = (source_stock.kg_quantity or 0) - kg_qty
-        source_stock.save()
-        print(f"Updated source stock: {source_stock}")
-        
-        # Add to destination
-        dest_stock, created = Stock.objects.get_or_create(
-            store=transfer.to_store,
-            item=transfer_item.item,
-            brand=transfer_item.brand,
-            item_quality=transfer_item.item_quality,
-            freezing_category=transfer_item.freezing_category,
-            unit=transfer_item.unit,
-            glaze=transfer_item.glaze,
-            species=transfer_item.species,
-            item_grade=transfer_item.item_grade,
-            defaults={'cs_quantity': 0, 'kg_quantity': 0}
-        )
-        
-        dest_stock.cs_quantity = (dest_stock.cs_quantity or 0) + cs_qty
-        dest_stock.kg_quantity = (dest_stock.kg_quantity or 0) + kg_qty
-        dest_stock.save()
-        print(f"Updated dest stock: {dest_stock} (created: {created})")
-        
-    except Exception as e:
-        print(f"Stock transfer error: {str(e)}")
-        raise
 
 @login_required
 def get_stock_by_store(request):
@@ -8709,7 +8739,6 @@ class StoreTransferListView(LoginRequiredMixin,CustomPermissionMixin,ListView):
         return context
 
 
-
 def create_store_transfer(request):
     if request.method == 'POST':
         form = StoreTransferForm(request.POST)
@@ -8767,6 +8796,7 @@ def create_store_transfer(request):
                                     brand=brand,
                                     item_quality=item_form.cleaned_data.get('item_quality'),
                                     freezing_category=item_form.cleaned_data.get('freezing_category'),
+                                    peeling_type=item_form.cleaned_data.get('peeling_type'),
                                     unit=item_form.cleaned_data.get('unit'),
                                     glaze=item_form.cleaned_data.get('glaze'),
                                     species=item_form.cleaned_data.get('species'),
@@ -8780,7 +8810,13 @@ def create_store_transfer(request):
                                 print(f"Saved transfer item {items_saved}: {transfer_item}")
                                 
                                 # Process stock transfer using tracking system
-                                process_stock_transfer(transfer, transfer_item, request.user)
+                                # Pass the transfer date to ensure stock movements use the correct date
+                                process_stock_transfer(
+                                    transfer, 
+                                    transfer_item, 
+                                    user=request.user,
+                                    transfer_date=transfer.date  # Pass the transfer date
+                                )
                             else:
                                 print(f"Skipping item form {i}: no item/brand or no quantity")
                     
@@ -8808,158 +8844,257 @@ def create_store_transfer(request):
         "formset": formset
     })
 
-def process_stock_transfer(transfer, transfer_item, user):
-    """
-    Process stock transfer between stores using tracking system
-    - Deduct from source store (transfer_out)
-    - Add to destination store (transfer_in)
-    """
-    print(f"\n=== PROCESSING STOCK TRANSFER ===")
-    print(f"From: {transfer.from_store.name} → To: {transfer.to_store.name}")
-    print(f"Item: {transfer_item.item.name}")
-    print(f"Quantities: CS={transfer_item.cs_quantity}, KG={transfer_item.kg_quantity}")
+def process_stock_transfer(transfer, transfer_item, user=None, transfer_date=None):
+    """Process stock transfer between stores and create stock movement records"""
+    from django.utils import timezone
     
-    # STEP 1: TRANSFER OUT from source store
-    print(f"\n--- Step 1: Transferring OUT from {transfer.from_store.name} ---")
     try:
-        # Get peeling_type if it exists on the model
-        peeling_type = getattr(transfer_item, 'peeling_type', None)
+        cs_qty = transfer_item.cs_quantity or 0
+        kg_qty = transfer_item.kg_quantity or 0
         
-        update_stock_with_tracking(
+        if cs_qty <= 0 and kg_qty <= 0:
+            return
+        
+        # Use provided transfer_date or fall back to transfer's date or today
+        movement_date = transfer_date or getattr(transfer, 'date', None) or getattr(transfer, 'transfer_date', None) or timezone.now().date()
+            
+        # Find source stock
+        source_stock = Stock.objects.filter(
             store=transfer.from_store,
             item=transfer_item.item,
             brand=transfer_item.brand,
-            cs_change=-transfer_item.cs_quantity,  # Negative = subtract
-            kg_change=-transfer_item.kg_quantity,  # Negative = subtract
+            item_quality=transfer_item.item_quality,
+            freezing_category=transfer_item.freezing_category,
+            peeling_type=getattr(transfer_item, 'peeling_type', None),
+            unit=transfer_item.unit,
+            glaze=transfer_item.glaze,
+            species=transfer_item.species,
+            item_grade=transfer_item.item_grade,
+        ).first()
+        
+        if not source_stock:
+            print(f"WARNING: No source stock found for {transfer_item.item}")
+            return
+            
+        # Check sufficient stock
+        if (source_stock.cs_quantity or 0) < cs_qty:
+            raise ValueError(f"Insufficient CS quantity for {transfer_item.item}. Required: {cs_qty}, Available: {source_stock.cs_quantity}")
+        if (source_stock.kg_quantity or 0) < kg_qty:
+            raise ValueError(f"Insufficient KG quantity for {transfer_item.item}. Required: {kg_qty}, Available: {source_stock.kg_quantity}")
+        
+        # Deduct from source
+        source_stock.cs_quantity = (source_stock.cs_quantity or 0) - cs_qty
+        source_stock.kg_quantity = (source_stock.kg_quantity or 0) - kg_qty
+        source_stock.save()
+        print(f"Updated source stock: {source_stock}")
+        
+        # Create Transfer OUT movement record
+        StockMovement.objects.create(
             movement_type='transfer_out',
-            item_quality=transfer_item.item_quality,
-            freezing_category=transfer_item.freezing_category,
-            peeling_type=peeling_type,
-            unit=transfer_item.unit,
-            glaze=transfer_item.glaze,
-            species=transfer_item.species,
-            item_grade=transfer_item.item_grade,
-            voucher_number=transfer.voucher_no,
-            movement_date=transfer.date,
-            user=user,
-            notes=f"Transfer OUT to {transfer.to_store.name} - {transfer.voucher_no}"
-        )
-        print(f"✓ Stock transferred OUT from {transfer.from_store.name}")
-        
-    except Exception as e:
-        print(f"✗ Error transferring OUT: {e}")
-        raise ValueError(f"Error removing stock from {transfer.from_store.name}: {str(e)}")
-    
-    # STEP 2: TRANSFER IN to destination store
-    print(f"\n--- Step 2: Transferring IN to {transfer.to_store.name} ---")
-    try:
-        # Get peeling_type if it exists on the model
-        peeling_type = getattr(transfer_item, 'peeling_type', None)
-        
-        update_stock_with_tracking(
-            store=transfer.to_store,
-            item=transfer_item.item,
-            brand=transfer_item.brand,
-            cs_change=transfer_item.cs_quantity,  # Positive = add
-            kg_change=transfer_item.kg_quantity,  # Positive = add
-            movement_type='transfer_in',
-            item_quality=transfer_item.item_quality,
-            freezing_category=transfer_item.freezing_category,
-            peeling_type=peeling_type,
-            unit=transfer_item.unit,
-            glaze=transfer_item.glaze,
-            species=transfer_item.species,
-            item_grade=transfer_item.item_grade,
-            voucher_number=transfer.voucher_no,
-            movement_date=transfer.date,
-            user=user,
-            notes=f"Transfer IN from {transfer.from_store.name} - {transfer.voucher_no}"
-        )
-        print(f"✓ Stock transferred IN to {transfer.to_store.name}")
-        
-    except Exception as e:
-        print(f"✗ Error transferring IN: {e}")
-        raise ValueError(f"Error adding stock to {transfer.to_store.name}: {str(e)}")
-    
-    print(f"\n✓ Stock transfer completed successfully\n")
-
-def reverse_stock_transfer(transfer, transfer_item, user):
-    """
-    Reverse stock transfer between stores using tracking system
-    - Add back to source store (original from_store)
-    - Deduct from destination store (original to_store)
-    """
-    print(f"\n=== REVERSING STOCK TRANSFER ===")
-    print(f"Reversing: {transfer.to_store.name} → {transfer.from_store.name}")
-    print(f"Item: {transfer_item.item.name}")
-    print(f"Quantities: CS={transfer_item.cs_quantity}, KG={transfer_item.kg_quantity}")
-    
-    # STEP 1: ADD BACK to source store (reverse the transfer_out)
-    print(f"\n--- Step 1: Adding back to {transfer.from_store.name} ---")
-    try:
-        # Get peeling_type if it exists on the model
-        peeling_type = getattr(transfer_item, 'peeling_type', None)
-        
-        update_stock_with_tracking(
+            movement_date=movement_date,
+            voucher_number=getattr(transfer, 'transfer_number', ''),
             store=transfer.from_store,
             item=transfer_item.item,
             brand=transfer_item.brand,
-            cs_change=transfer_item.cs_quantity,  # Positive = add back
-            kg_change=transfer_item.kg_quantity,  # Positive = add back
-            movement_type='transfer_in',  # Adding back = transfer_in
             item_quality=transfer_item.item_quality,
             freezing_category=transfer_item.freezing_category,
-            peeling_type=peeling_type,
+            peeling_type=getattr(transfer_item, 'peeling_type', None),
             unit=transfer_item.unit,
             glaze=transfer_item.glaze,
             species=transfer_item.species,
             item_grade=transfer_item.item_grade,
-            voucher_number=f"{transfer.voucher_no}-REVERSE",
-            movement_date=timezone.now().date(),
-            user=user,
-            notes=f"REVERSAL: Adding back to {transfer.from_store.name} - {transfer.voucher_no}"
+            cs_quantity=-cs_qty,  # Negative for OUT
+            kg_quantity=-kg_qty,  # Negative for OUT
+            slab_quantity=-(getattr(transfer_item, 'slab_quantity', None) or 0),
+            usd_rate_per_kg=getattr(source_stock, 'usd_rate_per_kg', 0) or 0,
+            usd_rate_item=getattr(source_stock, 'usd_rate_item', 0) or 0,
+            usd_rate_item_to_inr=getattr(source_stock, 'usd_rate_item_to_inr', 0) or 0,
+            reference_model='StoreTransfer',
+            reference_id=str(transfer.id),
+            created_by=user,
+            notes=f"Transfer OUT to {transfer.to_store.name}"
         )
-        print(f"✓ Stock added back to {transfer.from_store.name}")
         
-    except Exception as e:
-        print(f"✗ Error adding back to source: {e}")
-        raise ValueError(f"Error returning stock to {transfer.from_store.name}: {str(e)}")
-    
-    # STEP 2: DEDUCT from destination store (reverse the transfer_in)
-    print(f"\n--- Step 2: Removing from {transfer.to_store.name} ---")
-    try:
-        # Get peeling_type if it exists on the model
-        peeling_type = getattr(transfer_item, 'peeling_type', None)
-        
-        update_stock_with_tracking(
+        # Add to destination
+        dest_stock, created = Stock.objects.get_or_create(
             store=transfer.to_store,
             item=transfer_item.item,
             brand=transfer_item.brand,
-            cs_change=-transfer_item.cs_quantity,  # Negative = remove
-            kg_change=-transfer_item.kg_quantity,  # Negative = remove
-            movement_type='transfer_out',  # Removing = transfer_out
             item_quality=transfer_item.item_quality,
             freezing_category=transfer_item.freezing_category,
-            peeling_type=peeling_type,
             unit=transfer_item.unit,
             glaze=transfer_item.glaze,
             species=transfer_item.species,
             item_grade=transfer_item.item_grade,
-            voucher_number=f"{transfer.voucher_no}-REVERSE",
-            movement_date=timezone.now().date(),
-            user=user,
-            notes=f"REVERSAL: Removing from {transfer.to_store.name} - {transfer.voucher_no}"
+            defaults={
+                'cs_quantity': 0, 
+                'kg_quantity': 0,
+                'usd_rate_per_kg': getattr(source_stock, 'usd_rate_per_kg', 0) or 0,
+                'usd_rate_item': getattr(source_stock, 'usd_rate_item', 0) or 0,
+                'usd_rate_item_to_inr': getattr(source_stock, 'usd_rate_item_to_inr', 0) or 0,
+            }
         )
-        print(f"✓ Stock removed from {transfer.to_store.name}")
+        
+        dest_stock.cs_quantity = (dest_stock.cs_quantity or 0) + cs_qty
+        dest_stock.kg_quantity = (dest_stock.kg_quantity or 0) + kg_qty
+        dest_stock.save()
+        print(f"Updated dest stock: {dest_stock} (created: {created})")
+        
+        # Create Transfer IN movement record
+        StockMovement.objects.create(
+            movement_type='transfer_in',
+            movement_date=movement_date,
+            voucher_number=getattr(transfer, 'transfer_number', ''),
+            store=transfer.to_store,
+            item=transfer_item.item,
+            brand=transfer_item.brand,
+            item_quality=transfer_item.item_quality,
+            freezing_category=transfer_item.freezing_category,
+            peeling_type=getattr(transfer_item, 'peeling_type', None),
+            unit=transfer_item.unit,
+            glaze=transfer_item.glaze,
+            species=transfer_item.species,
+            item_grade=transfer_item.item_grade,
+            cs_quantity=cs_qty,  # Positive for IN
+            kg_quantity=kg_qty,  # Positive for IN
+            slab_quantity=getattr(transfer_item, 'slab_quantity', None) or 0,
+            usd_rate_per_kg=getattr(dest_stock, 'usd_rate_per_kg', 0) or 0,
+            usd_rate_item=getattr(dest_stock, 'usd_rate_item', 0) or 0,
+            usd_rate_item_to_inr=getattr(dest_stock, 'usd_rate_item_to_inr', 0) or 0,
+            reference_model='StoreTransfer',
+            reference_id=str(transfer.id),
+            created_by=user,
+            notes=f"Transfer IN from {transfer.from_store.name}"
+        )
+        
+        print(f"Stock movements created for transfer on date {movement_date}")
         
     except Exception as e:
-        print(f"✗ Error removing from destination: {e}")
-        raise ValueError(
-            f"Cannot reverse transfer: Error removing stock from {transfer.to_store.name}. "
-            f"Stock may have been used or transferred elsewhere. Error: {str(e)}"
+        print(f"Stock transfer error: {str(e)}")
+        raise
+
+
+@login_required
+@require_http_methods(["POST"])
+@check_permission('shipping_delete')
+def delete_transfer(request, pk):
+    """Delete a store transfer and reverse stock changes"""
+    transfer = get_object_or_404(StoreTransfer, pk=pk)
+    transfer_no = transfer.voucher_no
+
+    try:
+        with transaction.atomic():
+            print(f"\n=== DELETING STORE TRANSFER {pk} ===")
+            
+            # STEP 1: Delete all stock movements related to this transfer
+            print(f"\n--- Step 1: Deleting Stock Movements ---")
+            deleted_movements = StockMovement.objects.filter(
+                reference_model='StoreTransfer',
+                reference_id=str(transfer.id)
+            ).delete()[0]
+            print(f"✓ Deleted {deleted_movements} stock movement record(s)")
+            
+            # STEP 2: Reverse stock quantities for each transfer item
+            print(f"\n--- Step 2: Reversing Stock Quantities ---")
+            transfer_items = list(transfer.items.all())
+            for transfer_item in transfer_items:
+                reverse_stock_transfer(transfer, transfer_item)
+            print(f"✓ Stock quantities reversed for {len(transfer_items)} item(s)")
+            
+            # STEP 3: Delete the transfer (items will be deleted via CASCADE)
+            print(f"\n--- Step 3: Deleting Store Transfer ---")
+            transfer.delete()
+            print(f"✓ Store transfer deleted")
+            
+            print(f"\n=== DELETION COMPLETE ===\n")
+
+            if request.headers.get("Content-Type") == "application/json":
+                return JsonResponse({
+                    "success": True,
+                    "message": f'Transfer "{transfer_no}" deleted successfully! Stock movements and quantities have been reversed.'
+                })
+            else:
+                messages.success(request, f'Transfer "{transfer_no}" deleted successfully! Stock movements and quantities have been reversed.')
+                return redirect("adminapp:store_transfer_list")
+
+    except Exception as e:
+        print(f"\n✗ Error deleting transfer: {e}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        if request.headers.get("Content-Type") == "application/json":
+            return JsonResponse({
+                "success": False,
+                "message": f"Error deleting transfer: {str(e)}"
+            }, status=500)
+        else:
+            messages.error(request, f"Error deleting transfer: {str(e)}")
+            return redirect("adminapp:store_transfer_list")
+
+def reverse_stock_transfer(transfer, transfer_item):
+    """
+    Reverse stock transfer by adding back to source store and removing from destination store
+    """
+    try:
+        cs_qty = transfer_item.cs_quantity or 0
+        kg_qty = transfer_item.kg_quantity or 0
+        
+        if cs_qty <= 0 and kg_qty <= 0:
+            return
+        
+        print(f"  Reversing transfer for {transfer_item.item.name}: CS={cs_qty}, KG={kg_qty}")
+        
+        # Add back to source store (reverse the OUT)
+        source_stock, created = Stock.objects.get_or_create(
+            store=transfer.from_store,
+            item=transfer_item.item,
+            brand=transfer_item.brand,
+            item_quality=transfer_item.item_quality,
+            freezing_category=transfer_item.freezing_category,
+            unit=transfer_item.unit,
+            glaze=transfer_item.glaze,
+            peeling_type=transfer_item.peeling_type,
+            item_grade=transfer_item.item_grade,
+            defaults={'cs_quantity': 0, 'kg_quantity': 0}
         )
-    
-    print(f"\n✓ Stock transfer reversal completed successfully\n")
+        
+        source_stock.cs_quantity = (source_stock.cs_quantity or 0) + cs_qty
+        source_stock.kg_quantity = (source_stock.kg_quantity or 0) + kg_qty
+        source_stock.save()
+        print(f"  ✓ Added back to source store: {transfer.from_store.name}")
+        
+        # Remove from destination store (reverse the IN)
+        dest_stock = Stock.objects.filter(
+            store=transfer.to_store,
+            item=transfer_item.item,
+            brand=transfer_item.brand,
+            item_quality=transfer_item.item_quality,
+            freezing_category=transfer_item.freezing_category,
+            unit=transfer_item.unit,
+            glaze=transfer_item.glaze,
+            peeling_type=transfer_item.peeling_type,
+            item_grade=transfer_item.item_grade,
+        ).first()
+        
+        if dest_stock:
+            dest_stock.cs_quantity = (dest_stock.cs_quantity or 0) - cs_qty
+            dest_stock.kg_quantity = (dest_stock.kg_quantity or 0) - kg_qty
+            
+            # Delete stock entry if quantities reach zero
+            if dest_stock.cs_quantity <= 0 and dest_stock.kg_quantity <= 0:
+                dest_stock.delete()
+                print(f"  ✓ Removed stock entry from destination store (quantities reached zero)")
+            else:
+                dest_stock.save()
+                print(f"  ✓ Subtracted from destination store: {transfer.to_store.name}")
+        else:
+            print(f"  ⚠ Warning: Destination stock not found for {transfer_item.item}")
+            
+    except Exception as e:
+        print(f"  ✗ Error reversing stock transfer: {str(e)}")
+        raise
+
+
 
 
 @login_required
@@ -8978,48 +9113,6 @@ def transfer_detail(request, pk):
     }
     return render(request, 'adminapp/transfer_detail.html', context)
 
-@login_required
-@require_http_methods(["POST"])
-@check_permission('shipping_delete')
-def delete_transfer(request, pk):
-    """Delete a store transfer and reverse stock changes"""
-    transfer = get_object_or_404(StoreTransfer, pk=pk)
-    transfer_no = transfer.voucher_no
-
-    try:
-        with transaction.atomic():
-            # Get all transfer items BEFORE deleting
-            transfer_items = list(transfer.items.all())
-            
-            # Reverse stock transfer for each item BEFORE deleting
-            for transfer_item in transfer_items:
-                reverse_stock_transfer(transfer, transfer_item, request.user)
-            
-            # Now delete the transfer (and its items via CASCADE)
-            transfer.delete()
-
-        if request.headers.get("Content-Type") == "application/json":
-            return JsonResponse({
-                "success": True,
-                "message": f'Transfer "{transfer_no}" deleted successfully and stock reversed.'
-            })
-        else:
-            messages.success(request, f'Transfer "{transfer_no}" deleted successfully and stock reversed.')
-            return redirect("adminapp:store_transfer_list")
-
-    except Exception as e:
-        print(f"Error deleting transfer: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        
-        if request.headers.get("Content-Type") == "application/json":
-            return JsonResponse({
-                "success": False,
-                "message": f"Error deleting transfer: {str(e)}"
-            }, status=500)
-        else:
-            messages.error(request, f"Error deleting transfer: {str(e)}")
-            return redirect("adminapp:store_transfer_list")
 
 
 
@@ -14544,17 +14637,17 @@ def stock_search_ajax(request):
 
 
 
-
-
 def spot_purchase_profit_loss_report(request):
     """
-    Generate profit/loss report for spot purchases with comprehensive filters and ALL overhead calculations
+    Generate profit/loss report for spot purchases with comprehensive filters and historical rate calculations
     """
     from datetime import datetime, timedelta
     from django.db.models import Q, Sum, Count
     from decimal import Decimal
     from django.http import JsonResponse
     from django.shortcuts import render
+    from django.conf import settings as django_settings
+    from django.utils import timezone
     
     # Get all filter parameters
     start_date = request.GET.get('start_date')
@@ -14566,7 +14659,7 @@ def spot_purchase_profit_loss_report(request):
     selected_agents = request.GET.getlist('agents')
     selected_supervisors = request.GET.getlist('supervisors')
     
-    # New comprehensive filters
+    # Comprehensive filters
     selected_items = request.GET.getlist('items')
     selected_species = request.GET.getlist('species')
     selected_item_categories = request.GET.getlist('item_categories')
@@ -14580,10 +14673,10 @@ def spot_purchase_profit_loss_report(request):
     selected_packing_units = request.GET.getlist('packing_units')
     selected_glaze_percentages = request.GET.getlist('glaze_percentages')
     
-    profit_filter = request.GET.get('profit_filter', 'all')  # all, profit, loss
-    format_type = request.GET.get('format', 'html')  # html, json, print
+    profit_filter = request.GET.get('profit_filter', 'all')
+    format_type = request.GET.get('format', 'html')
     
-    # Calculate dates based on quick filter or use today as default
+    # Calculate dates
     today = datetime.now().date()
     
     if quick_filter:
@@ -14591,7 +14684,6 @@ def spot_purchase_profit_loss_report(request):
         start_date = start_date_obj.strftime('%Y-%m-%d')
         end_date = end_date_obj.strftime('%Y-%m-%d')
     else:
-        # Default to today if no dates specified
         if not start_date:
             start_date = today.strftime('%Y-%m-%d')
         if not end_date:
@@ -14615,6 +14707,19 @@ def spot_purchase_profit_loss_report(request):
                 return render(request, 'spot_purchase_profit_loss_report.html', context)
     
     try:
+        # Display all available Settings with USD rates at the start (including inactive)
+        all_settings = Settings.objects.all().order_by('created_at')
+        print(f"\n{'='*80}")
+        print(f"ALL USD RATES IN SETTINGS (INCLUDING INACTIVE):")
+        print(f"{'='*80}")
+        if all_settings.exists():
+            for setting in all_settings:
+                status = "✓ ACTIVE" if setting.is_active else "✗ INACTIVE"
+                print(f"  ID: {setting.id} | Rate: ₹{setting.dollar_rate_to_inr} | {status} | Created: {setting.created_at}")
+        else:
+            print("  ⚠️  NO SETTINGS RECORDS FOUND!")
+        print(f"{'='*80}\n")
+        
         # Base query for spot purchases within date range
         spot_purchases = SpotPurchase.objects.filter(
             date__range=[start_date_obj, end_date_obj]
@@ -14634,7 +14739,6 @@ def spot_purchase_profit_loss_report(request):
                 selected_freezing_categories, selected_processing_centers, selected_stores,
                 selected_packing_units, selected_glaze_percentages]):
             
-            # Get freezing entry IDs that match the filters
             freezing_query = FreezingEntrySpotItem.objects.all()
             
             if selected_items:
@@ -14659,17 +14763,13 @@ def spot_purchase_profit_loss_report(request):
                 freezing_query = freezing_query.filter(unit__id__in=selected_packing_units)
             if selected_glaze_percentages:
                 freezing_query = freezing_query.filter(glaze__id__in=selected_glaze_percentages)
-            
-            # Filter by item categories through item relationship
             if selected_item_categories:
                 freezing_query = freezing_query.filter(item__category__id__in=selected_item_categories)
             
-            # Get unique spot purchase IDs from matching freezing entries
             matching_spot_purchase_ids = freezing_query.values_list(
                 'freezing_entry__spot__id', flat=True
             ).distinct()
             
-            # Filter spot purchases to only those with matching freezing entries
             spot_purchases = spot_purchases.filter(id__in=matching_spot_purchase_ids)
         
         if not spot_purchases.exists():
@@ -14702,23 +14802,6 @@ def spot_purchase_profit_loss_report(request):
                 )
                 return render(request, 'spot_purchase_profit_loss_report.html', context)
         
-        # Get ALL overhead totals (active records only)
-        purchase_overhead_total = PurchaseOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('other_expenses'))['total'] or Decimal('0.00')
-        
-        peeling_overhead_total = PeelingOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('other_expenses'))['total'] or Decimal('0.00')
-        
-        processing_overhead_total = ProcessingOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        
-        shipment_overhead_total = ShipmentOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        
         # Calculate profit/loss for each purchase
         report_data = []
         summary = {
@@ -14739,62 +14822,151 @@ def spot_purchase_profit_loss_report(request):
         }
         
         for purchase in spot_purchases:
+            # Get purchase date for historical rate lookup
+            purchase_date = purchase.date
+            purchase_datetime = datetime.combine(purchase_date, datetime.max.time())
+            
+            # Make timezone-aware if USE_TZ is True
+            if django_settings.USE_TZ:
+                purchase_datetime = timezone.make_aware(purchase_datetime)
+            
+            # Get HISTORICAL dollar rate (active at purchase date)
+            # First try to get an ACTIVE rate created on or before the purchase date
+            historical_settings = Settings.objects.filter(
+                is_active=True,
+                created_at__date__lte=purchase_date
+            ).order_by('-created_at').first()
+            
+            # If no active rate exists before/on purchase date, try INACTIVE rates
+            if not historical_settings:
+                historical_settings = Settings.objects.filter(
+                    is_active=False,
+                    created_at__date__lte=purchase_date
+                ).order_by('-created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using INACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+            
+            # If still no rate, get the earliest active rate (future rate)
+            if not historical_settings:
+                historical_settings = Settings.objects.filter(
+                    is_active=True
+                ).order_by('created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using future ACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+                    print(f"   Rate from {historical_settings.created_at.date()} applied retroactively")
+                else:
+                    # Last resort: try earliest inactive rate
+                    historical_settings = Settings.objects.order_by('created_at').first()
+                    if historical_settings:
+                        print(f"⚠️  WARNING: Using future INACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+                    else:
+                        print(f"⚠️  ERROR: No USD rate found in Settings table at all")
+                        continue  # Skip this purchase if no rate exists at all
+            
+            usd_rate = historical_settings.dollar_rate_to_inr
+            is_active_status = "ACTIVE" if historical_settings.is_active else "INACTIVE"
+            
+            print(f"\n{'='*60}")
+            print(f"PURCHASE ID: {purchase.id}, DATE: {purchase_date}")
+            print(f"Historical USD Rate: ₹{usd_rate} ({is_active_status}) (Settings ID: {historical_settings.id})")
+            print(f"Rate Created At: {historical_settings.created_at}")
+            rate_date = historical_settings.created_at.date() if historical_settings.created_at else None
+            if rate_date == purchase_date:
+                print(f"⚠️  NOTE: Rate created on SAME DAY as purchase")
+            elif rate_date and rate_date > purchase_date:
+                print(f"⚠️  WARNING: Rate created AFTER purchase date (retroactive)")
+            print(f"{'='*60}\n")
+            
             # Get purchase cost
             purchase_cost = purchase.total_purchase_amount or Decimal('0.00')
             
-            # Calculate peeling expenses
+            # Get HISTORICAL overhead rates (active at purchase date)
+            purchase_overhead_obj = PurchaseOverhead.objects.filter(
+                is_active=True,
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            purchase_overhead_rate = purchase_overhead_obj.other_expenses if purchase_overhead_obj else Decimal('0.00')
+            
+            peeling_overhead_obj = PeelingOverhead.objects.filter(
+                is_active=True,
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            peeling_overhead_rate = peeling_overhead_obj.other_expenses if peeling_overhead_obj else Decimal('0.00')
+            
+            processing_overhead_obj = ProcessingOverhead.objects.filter(
+                is_active=True,
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            processing_overhead_rate = processing_overhead_obj.amount if processing_overhead_obj else Decimal('0.00')
+            
+            shipment_overhead_obj = ShipmentOverhead.objects.filter(
+                is_active=True,
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            shipment_overhead_rate = shipment_overhead_obj.amount if shipment_overhead_obj else Decimal('0.00')
+            
+            # Calculate peeling expenses using HISTORICAL rates
             peeling_cost = Decimal('0.00')
             freezing_entries = FreezingEntrySpot.objects.filter(
                 spot=purchase
             ).prefetch_related('items__shed', 'items__item', 'items__peeling_type')
             
+            print(f"Freezing Entries: {freezing_entries.count()}")
+            
+            peeling_kg = Decimal('0.00')
             for entry in freezing_entries:
                 for item in entry.items.all():
                     if item.shed and item.peeling_type:
                         try:
-                            shed_item = ShedItem.objects.get(
+                            # Get the HISTORICAL shed item rate (active at purchase date)
+                            shed_item = ShedItem.objects.filter(
                                 shed=item.shed,
                                 item=item.item,
-                                item_type=item.peeling_type
-                            )
-                            peeling_cost += item.kg * shed_item.amount
-                        except ShedItem.DoesNotExist:
+                                item_type=item.peeling_type,
+                                created_at__lte=purchase_datetime
+                            ).order_by('-created_at').first()
+                            
+                            if shed_item:
+                                item_peeling_cost = (item.kg or Decimal('0.00')) * shed_item.amount
+                                peeling_cost += item_peeling_cost
+                                peeling_kg += item.kg or Decimal('0.00')
+                        except Exception as e:
+                            print(f"  ✗ ERROR: {str(e)}")
                             continue
             
-            # Calculate freezing revenue and collect total kg
+            print(f"\nFINAL PEELING COST: ₹{peeling_cost}")
+            print(f"PEELING KG: {peeling_kg}")
+            print(f"{'='*60}\n")
+            
+            # Calculate freezing revenue and collect total kg using HISTORICAL USD rate
             freezing_revenue = Decimal('0.00')
             total_kg = Decimal('0.00')
             total_freezing_tariff = Decimal('0.00')
-            peeling_kg = Decimal('0.00')
             
             for entry in freezing_entries:
                 for item in entry.items.all():
-                    item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
+                    # Use HISTORICAL USD rate for revenue calculation
+                    item_usd_amount = item.usd_rate_item or Decimal('0.00')
+                    item_revenue = item_usd_amount * usd_rate
                     freezing_revenue += item_revenue
                     total_kg += item.kg or Decimal('0.00')
                     
-                    # Track peeling kg separately
-                    if item.shed and item.peeling_type:
-                        peeling_kg += item.kg or Decimal('0.00')
-                    
                     # Calculate freezing category tariff (only for active categories)
-                    if item.freezing_category and item.freezing_category.is_active and item.freezing_category.tariff:
+                    if (item.freezing_category and 
+                        item.freezing_category.is_active and 
+                        hasattr(item.freezing_category, 'tariff') and 
+                        item.freezing_category.tariff):
                         tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
                         total_freezing_tariff += tariff_cost
             
-            # Calculate ALL overheads for this purchase
-            # 1. Purchase Overhead (applied to purchase quantity)
+            # Calculate overheads using historical rates
             purchase_quantity = purchase.total_quantity or Decimal('0.00')
-            purchase_overhead_amount = purchase_overhead_total if purchase_quantity > 0 else Decimal('0.00')
-            
-            # 2. Peeling Overhead (applied to peeled kg only)
-            peeling_overhead_amount = peeling_overhead_total if peeling_kg > 0 else Decimal('0.00')
-            
-            # 3. Processing Overhead (applied to total processed kg)
-            processing_overhead_amount = total_kg * processing_overhead_total
-            
-            # 4. Shipment Overhead (applied to total kg)
-            shipment_overhead_amount = shipment_overhead_total if total_kg > 0 else Decimal('0.00')
+            purchase_overhead_amount = purchase_overhead_rate if purchase_quantity > 0 else Decimal('0.00')
+            peeling_overhead_amount = peeling_overhead_rate if peeling_kg > 0 else Decimal('0.00')
+            processing_overhead_amount = total_kg * processing_overhead_rate
+            shipment_overhead_amount = shipment_overhead_rate if total_kg > 0 else Decimal('0.00')
             
             # Calculate total cost including ALL overheads
             total_cost = (
@@ -14814,7 +14986,7 @@ def spot_purchase_profit_loss_report(request):
             if total_cost > 0:
                 profit_percentage = (profit_loss / total_cost * 100)
             else:
-                profit_percentage = 0
+                profit_percentage = Decimal('0.00')
             
             # Determine profit status
             if profit_loss > 0:
@@ -14855,7 +15027,13 @@ def spot_purchase_profit_loss_report(request):
                 'freezing_entries_count': freezing_entries.count(),
                 'total_items': sum(entry.items.count() for entry in freezing_entries),
                 'total_kg': float(total_kg),
-                'peeling_kg': float(peeling_kg)
+                'peeling_kg': float(peeling_kg),
+                'settings_id': historical_settings.id,
+                'settings_is_active': historical_settings.is_active,
+                'usd_rate': float(usd_rate),
+                'usd_rate_date': historical_settings.created_at.strftime('%Y-%m-%d'),
+                'usd_rate_same_day_warning': (historical_settings.created_at.date() == purchase_date),
+                'usd_rate_future_warning': (historical_settings.created_at.date() > purchase_date)
             }
             
             report_data.append(purchase_data)
@@ -14877,7 +15055,7 @@ def spot_purchase_profit_loss_report(request):
         if summary['total_cost'] > 0:
             summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
         else:
-            summary['overall_profit_margin'] = 0
+            summary['overall_profit_margin'] = 0.0
         
         # Convert Decimal to float for JSON serialization
         for key in ['total_purchase_amount', 'total_purchase_overhead', 'total_peeling_expenses', 
@@ -14885,14 +15063,34 @@ def spot_purchase_profit_loss_report(request):
                    'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
             summary[key] = float(summary[key])
         
-        # Add overhead rates to summary
-        summary['purchase_overhead_rate'] = float(purchase_overhead_total)
-        summary['peeling_overhead_rate'] = float(peeling_overhead_total)
-        summary['processing_overhead_rate'] = float(processing_overhead_total)
-        summary['shipment_overhead_rate'] = float(shipment_overhead_total)
-        
         # Sort by date (newest first)
         report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Print summary of USD rates used
+        print(f"\n{'='*80}")
+        print(f"USD RATE USAGE SUMMARY:")
+        print(f"{'='*80}")
+        rate_usage = {}
+        for data in report_data:
+            status = "ACTIVE" if data.get('settings_is_active', True) else "INACTIVE"
+            rate_key = f"₹{data['usd_rate']} ({status}) (Settings ID: {data.get('settings_id', 'N/A')})"
+            if rate_key not in rate_usage:
+                rate_usage[rate_key] = {
+                    'count': 0,
+                    'purchases': [],
+                    'rate_date': data.get('usd_rate_date', 'N/A')
+                }
+            rate_usage[rate_key]['count'] += 1
+            rate_usage[rate_key]['purchases'].append(f"Purchase {data['id']} ({data['date']})")
+        
+        for rate_info, details in rate_usage.items():
+            print(f"\n  {rate_info} - Created: {details['rate_date']}")
+            print(f"    Used for {details['count']} purchase(s):")
+            for purchase in details['purchases'][:5]:  # Show first 5
+                print(f"      - {purchase}")
+            if len(details['purchases']) > 5:
+                print(f"      ... and {len(details['purchases']) - 5} more")
+        print(f"{'='*80}\n")
         
         # Return based on format
         if format_type == 'json':
@@ -14969,8 +15167,13 @@ def spot_purchase_profit_loss_report(request):
 
 def spot_purchase_profit_loss_report_print(request):
     """
-    Generate comprehensive print report with correct calculations
+    Generate comprehensive print report with historical rate calculations including USD rate
     """
+    from datetime import datetime
+    from decimal import Decimal
+    from django.shortcuts import render
+    from django.conf import settings as django_settings
+    from django.utils import timezone
     
     # Get filter parameters
     quick_filter = request.GET.get('quick_filter', '')
@@ -15015,13 +15218,40 @@ def spot_purchase_profit_loss_report_print(request):
             context = {'error': 'Invalid date format'}
             return render(request, 'spot_purchase_profit_loss_report_print.html', context)
     
+    # Initialize summary
+    summary = {
+        'total_purchases': 0,
+        'total_purchase_quantity': Decimal('0.00'),
+        'total_purchase_amount': Decimal('0.00'),
+        'total_purchase_expense': Decimal('0.00'),
+        'total_purchase_overhead': Decimal('0.00'),
+        'total_peeling_expenses': Decimal('0.00'),
+        'total_peeling_overhead': Decimal('0.00'),
+        'total_processing_overhead': Decimal('0.00'),
+        'total_shipment_overhead': Decimal('0.00'),
+        'total_all_overheads': Decimal('0.00'),
+        'total_freezing_tariff': Decimal('0.00'),
+        'total_cost': Decimal('0.00'),
+        'total_revenue': Decimal('0.00'),
+        'total_profit_loss': Decimal('0.00'),
+        'profit_count': 0,
+        'loss_count': 0,
+        'break_even_count': 0
+    }
+    
     try:
-        # Get USD rate from Settings
-        try:
-            active_settings = Settings.objects.filter(is_active=True).first()
-            usd_rate = active_settings.dollar_rate_to_inr if active_settings else Decimal('84.00')
-        except:
-            usd_rate = Decimal('84.00')
+        # Display all available Settings with USD rates at the start
+        all_settings = Settings.objects.all().order_by('created_at')
+        print(f"\n{'='*80}")
+        print(f"ALL USD RATES IN SETTINGS:")
+        print(f"{'='*80}")
+        if all_settings.exists():
+            for setting in all_settings:
+                status = "✓ ACTIVE" if setting.is_active else "✗ INACTIVE"
+                print(f"  ID: {setting.id} | Rate: ₹{setting.dollar_rate_to_inr} | {status} | Created: {setting.created_at}")
+        else:
+            print("  ⚠️  NO SETTINGS RECORDS FOUND!")
+        print(f"{'='*80}\n")
         
         # Base query
         spot_purchases = SpotPurchase.objects.filter(
@@ -15085,78 +15315,98 @@ def spot_purchase_profit_loss_report_print(request):
             context = {
                 'message': 'No spot purchases found',
                 'report_data': [],
-                'usd_rate': float(usd_rate),
+                'summary': summary,
                 'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
             }
             return render(request, 'spot_purchase_profit_loss_report_print.html', context)
         
-        # Get overhead totals
-        purchase_overhead_total = PurchaseOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('other_expenses'))['total'] or Decimal('0.00')
-        
-        peeling_overhead_total = PeelingOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('other_expenses'))['total'] or Decimal('0.00')
-        
-        processing_overhead_total = ProcessingOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        
-        shipment_overhead_total = ShipmentOverhead.objects.filter(
-            is_active=True
-        ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
-        
         # Process each purchase
         report_data = []
-        summary = {
-            'total_purchases': 0,
-            'total_purchase_quantity': Decimal('0.00'),
-            'total_purchase_amount': Decimal('0.00'),
-            'total_purchase_expense': Decimal('0.00'),
-            'total_purchase_overhead': Decimal('0.00'),
-            'total_peeling_expenses': Decimal('0.00'),
-            'total_peeling_overhead': Decimal('0.00'),
-            'total_processing_overhead': Decimal('0.00'),
-            'total_shipment_overhead': Decimal('0.00'),
-            'total_all_overheads': Decimal('0.00'),
-            'total_freezing_tariff': Decimal('0.00'),
-            'total_cost': Decimal('0.00'),
-            'total_revenue': Decimal('0.00'),
-            'total_profit_loss': Decimal('0.00'),
-            'profit_count': 0,
-            'loss_count': 0,
-            'break_even_count': 0
-        }
         
         for purchase in spot_purchases:
-            # CORRECT CALCULATIONS AS PER YOUR SPECIFICATIONS
+            # Get purchase date for historical rate lookup
+            purchase_date = purchase.date
+            purchase_datetime = datetime.combine(purchase_date, datetime.max.time())
             
-            # 1. PURCHASE QUANTITY = total_quantity
+            # Make timezone-aware if USE_TZ is True
+            if django_settings.USE_TZ:
+                purchase_datetime = timezone.make_aware(purchase_datetime)
+            
+            # Get HISTORICAL dollar rate (created on or before purchase date)
+            # Get the most recent rate created on or before the purchase date
+            # Important: Compare only dates, not datetime
+            historical_settings = Settings.objects.filter(
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            
+            # If no rate exists on or before purchase date, get the earliest rate (future rate)
+            if not historical_settings:
+                historical_settings = Settings.objects.order_by('created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using future rate for purchase ID {purchase.id} on {purchase_date}")
+                    print(f"   Rate from {historical_settings.created_at.date()} applied retroactively")
+                else:
+                    print(f"⚠️  ERROR: No USD rate found in Settings table at all")
+                    continue  # Skip this purchase if no rate exists at all
+            
+            usd_rate = historical_settings.dollar_rate_to_inr
+            rate_status = "ACTIVE" if historical_settings.is_active else "INACTIVE"
+            
+            print(f"\n{'='*60}")
+            print(f"PRINT REPORT - PURCHASE ID: {purchase.id}, DATE: {purchase_date}")
+            print(f"Historical USD Rate: ₹{usd_rate} ({rate_status}) (Settings ID: {historical_settings.id})")
+            print(f"Rate Created At: {historical_settings.created_at}")
+            rate_date = historical_settings.created_at.date() if historical_settings.created_at else None
+            if rate_date == purchase_date:
+                print(f"✓ Rate created on SAME DAY as purchase")
+            elif rate_date and rate_date > purchase_date:
+                print(f"⚠️  WARNING: Rate created AFTER purchase date (retroactive)")
+            elif rate_date and rate_date < purchase_date:
+                print(f"✓ Rate created BEFORE purchase date (historical)")
+            print(f"{'='*60}\n")
+            
+            # PURCHASE CALCULATIONS
             purchase_quantity = purchase.total_quantity or Decimal('0.00')
-            
-            # 2. PURCHASE AMOUNT = total_amount
             purchase_amount = purchase.total_amount or Decimal('0.00')
             
-            # 3. TOTAL PURCHASE EXPENSE = total_expense from expense table
+            # Purchase expense
             purchase_expense = Decimal('0.00')
             if hasattr(purchase, 'expense') and purchase.expense:
                 purchase_expense = purchase.expense.total_expense or Decimal('0.00')
             
-            # 4. TOTAL COST = total_amount + total_expense
             total_purchase_cost = purchase_amount + purchase_expense
             
-            # 5. COST/KG = (total_amount + total_expense) / total_quantity
             cost_per_kg = Decimal('0.00')
             if purchase_quantity > 0:
                 cost_per_kg = total_purchase_cost / purchase_quantity
             
-            # 6. PURCHASE RATE/KG = total_amount / total_quantity
             purchase_rate_per_kg = Decimal('0.00')
             if purchase_quantity > 0:
                 purchase_rate_per_kg = purchase_amount / purchase_quantity
             
-            # Peeling expenses
+            # Get HISTORICAL overhead rates (created on or before purchase date)
+            purchase_overhead_obj = PurchaseOverhead.objects.filter(
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            purchase_overhead_rate = purchase_overhead_obj.other_expenses if purchase_overhead_obj else Decimal('0.00')
+            
+            peeling_overhead_obj = PeelingOverhead.objects.filter(
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            peeling_overhead_rate = peeling_overhead_obj.other_expenses if peeling_overhead_obj else Decimal('0.00')
+            
+            processing_overhead_obj = ProcessingOverhead.objects.filter(
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            processing_overhead_rate = processing_overhead_obj.amount if processing_overhead_obj else Decimal('0.00')
+            
+            shipment_overhead_obj = ShipmentOverhead.objects.filter(
+                created_at__lte=purchase_datetime
+            ).order_by('-created_at').first()
+            shipment_overhead_rate = shipment_overhead_obj.amount if shipment_overhead_obj else Decimal('0.00')
+            
+            # PEELING EXPENSES with historical rates
             peeling_cost = Decimal('0.00')
             peeling_breakdown = []
             
@@ -15177,35 +15427,45 @@ def spot_purchase_profit_loss_report_print(request):
                 'items__brand'
             )
             
-            # Calculate peeling costs
             peeling_kg = Decimal('0.00')
             for entry in freezing_entries:
                 for item in entry.items.all():
                     if item.shed and item.peeling_type:
                         try:
-                            shed_item = ShedItem.objects.get(
+                            # Get HISTORICAL shed item rate (created on or before purchase date)
+                            shed_item = ShedItem.objects.filter(
                                 shed=item.shed,
                                 item=item.item,
-                                item_type=item.peeling_type
-                            )
-                            item_peeling_cost = (item.kg or Decimal('0.00')) * shed_item.amount
-                            peeling_cost += item_peeling_cost
-                            peeling_kg += item.kg or Decimal('0.00')
+                                item_type=item.peeling_type,
+                                created_at__lte=purchase_datetime
+                            ).order_by('-created_at').first()
                             
-                            peeling_breakdown.append({
-                                'shed_name': item.shed.name,
-                                'item_type': item.peeling_type.name,
-                                'quantity': float(item.kg or 0),
-                                'rate': float(shed_item.amount),
-                                'amount': float(item_peeling_cost)
-                            })
-                        except ShedItem.DoesNotExist:
+                            if shed_item:
+                                item_peeling_cost = (item.kg or Decimal('0.00')) * shed_item.amount
+                                peeling_cost += item_peeling_cost
+                                peeling_kg += item.kg or Decimal('0.00')
+                                
+                                shed_rate_date = shed_item.created_at.date() if shed_item.created_at else None
+                                is_same_day = shed_rate_date == purchase_date if shed_rate_date else False
+                                
+                                peeling_breakdown.append({
+                                    'shed_name': item.shed.name,
+                                    'item_type': item.peeling_type.name,
+                                    'quantity': float(item.kg or 0),
+                                    'rate': float(shed_item.amount),
+                                    'amount': float(item_peeling_cost),
+                                    'rate_date': shed_item.created_at.strftime('%Y-%m-%d') if shed_item.created_at else 'N/A',
+                                    'is_active': shed_item.is_active,
+                                    'same_day_warning': is_same_day
+                                })
+                        except Exception as e:
+                            print(f"Error calculating peeling cost: {str(e)}")
                             continue
             
-            # Calculate freezing revenue and items FROM FREEZING DB
+            # Calculate freezing revenue and items using HISTORICAL USD rate
             freezing_revenue = Decimal('0.00')
             freezing_items = []
-            total_freezing_kg = Decimal('0.00')  # This is TOTAL PRODUCTION QUANTITY
+            total_freezing_kg = Decimal('0.00')
             total_freezing_usd = Decimal('0.00')
             total_freezing_tariff = Decimal('0.00')
             freezing_tariff_breakdown = []
@@ -15213,16 +15473,16 @@ def spot_purchase_profit_loss_report_print(request):
             
             for entry in freezing_entries:
                 for item in entry.items.all():
-                    item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
-                    item_usd = item.usd_rate_item or Decimal('0.00')
+                    # Use HISTORICAL USD rate for revenue calculation
+                    item_usd_amount = item.usd_rate_item or Decimal('0.00')
+                    item_revenue = item_usd_amount * usd_rate
                     freezing_revenue += item_revenue
-                    total_freezing_usd += item_usd
+                    total_freezing_usd += item_usd_amount
                     total_freezing_kg += item.kg or Decimal('0.00')
                     
                     # Freezing tariff
                     item_tariff_cost = Decimal('0.00')
                     if (item.freezing_category and 
-                        item.freezing_category.is_active and 
                         hasattr(item.freezing_category, 'tariff') and 
                         item.freezing_category.tariff):
                         item_tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
@@ -15242,18 +15502,19 @@ def spot_purchase_profit_loss_report_print(request):
                                 'amount': float(item_tariff_cost)
                             })
                     
-                    # Format glaze - if numeric add %, if alpha no %
+                    # Format glaze
                     glaze_display = 'N/A'
                     if item.glaze:
                         try:
-                            # Try to convert to float - if successful, it's numeric
                             glaze_val = float(item.glaze.percentage)
                             glaze_display = f"{item.glaze.percentage}%"
                         except (ValueError, TypeError):
-                            # If conversion fails, it's alphabetic
                             glaze_display = str(item.glaze.percentage)
                     
-                    # Processing details
+                    # Processing details - calculate INR using historical rate
+                    item_inr_amount = item_usd_amount * usd_rate
+                    item_usd_per_kg = item.usd_rate_per_kg or Decimal('0.00')
+                    
                     processing_details.append({
                         'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
                         'glaze': glaze_display,
@@ -15261,12 +15522,12 @@ def spot_purchase_profit_loss_report_print(request):
                         'grade': f"{item.peeling_type.name if item.peeling_type else ''}, {item.grade.grade if item.grade else ''}",
                         'total_slab': float(item.slab_quantity or 0),
                         'total_quantity': float(item.kg or 0),
-                        'price_usd': float(item.usd_rate_per_kg or 0),
-                        'amount_usd': float(item.usd_rate_item or 0),
-                        'amount_inr': float(item.usd_rate_item_to_inr or 0)
+                        'price_usd': float(item_usd_per_kg),
+                        'amount_usd': float(item_usd_amount),
+                        'amount_inr': float(item_inr_amount)
                     })
                     
-                    # Freezing items
+                    # Freezing items - calculate INR using historical rate
                     freezing_items.append({
                         'item_name': item.item.name if item.item else 'N/A',
                         'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
@@ -15277,9 +15538,9 @@ def spot_purchase_profit_loss_report_print(request):
                         'store': item.store.name if item.store else 'N/A',
                         'freezing_category': item.freezing_category.name if item.freezing_category else 'N/A',
                         'kg': float(item.kg or 0),
-                        'usd_rate_per_kg': float(item.usd_rate_per_kg or 0),
-                        'usd_rate_item': float(item.usd_rate_item or 0),
-                        'usd_rate_item_to_inr': float(item.usd_rate_item_to_inr or 0),
+                        'usd_rate_per_kg': float(item_usd_per_kg),
+                        'usd_rate_item': float(item_usd_amount),
+                        'usd_rate_item_to_inr': float(item_inr_amount),
                         'yield_percentage': float(item.yield_percentage or 0),
                         'slab_quantity': float(item.slab_quantity or 0),
                         'c_s_quantity': float(item.c_s_quantity or 0),
@@ -15290,13 +15551,12 @@ def spot_purchase_profit_loss_report_print(request):
                         'tariff_cost': float(item_tariff_cost)
                     })
             
-            # Calculate overheads - ALL rates multiply by TOTAL PRODUCTION QUANTITY (total_freezing_kg)
-            purchase_overhead_amount = total_freezing_kg * purchase_overhead_total
-            peeling_overhead_amount = total_freezing_kg * peeling_overhead_total
-            processing_overhead_amount = total_freezing_kg * processing_overhead_total
-            shipment_overhead_amount = total_freezing_kg * shipment_overhead_total
+            # Calculate overheads using historical rates and total production quantity
+            purchase_overhead_amount = total_freezing_kg * purchase_overhead_rate
+            peeling_overhead_amount = total_freezing_kg * peeling_overhead_rate
+            processing_overhead_amount = total_freezing_kg * processing_overhead_rate
+            shipment_overhead_amount = total_freezing_kg * shipment_overhead_rate
             
-            # TOTAL PROCESSING EXP = sum of all overheads
             total_all_overheads = (
                 purchase_overhead_amount +
                 peeling_overhead_amount +
@@ -15304,18 +15564,14 @@ def spot_purchase_profit_loss_report_print(request):
                 shipment_overhead_amount
             )
             
-            # INCOME = TOTAL AMOUNT/INR - TOTAL PROCESSING EXP
             income = freezing_revenue - total_all_overheads
             
-            # PROCESSING OVERHEADS PER KG = sum of overheads / TOTAL PRODUCTION QUANTITY
             processing_overhead_per_kg = Decimal('0.00')
             if total_freezing_kg > 0:
                 processing_overhead_per_kg = total_all_overheads / total_freezing_kg
             
-            # Calculate total slabs for SUBTOTAL row
             total_slabs = sum(detail['total_slab'] for detail in processing_details)
             
-            # Calculate average price USD for SUBTOTAL
             avg_price_usd = Decimal('0.00')
             if total_freezing_kg > 0:
                 avg_price_usd = total_freezing_usd / total_freezing_kg
@@ -15331,10 +15587,8 @@ def spot_purchase_profit_loss_report_print(request):
                 total_freezing_tariff
             )
             
-            # Total Profit/Loss
             total_profit_loss = freezing_revenue - grand_total_cost
             
-            # Profit/Loss Per KG = total_profit_loss / total_freezing_kg
             profit_loss_per_kg = Decimal('0.00')
             if total_freezing_kg > 0:
                 profit_loss_per_kg = total_profit_loss / total_freezing_kg
@@ -15360,7 +15614,7 @@ def spot_purchase_profit_loss_report_print(request):
             elif profit_filter == 'loss' and total_profit_loss >= 0:
                 continue
             
-            # Get purchase items with names
+            # Get purchase items
             purchase_items = []
             purchase_item_names = []
             for item in purchase.items.all():
@@ -15376,7 +15630,6 @@ def spot_purchase_profit_loss_report_print(request):
                 if item.item and item.item.name and item.item.name not in purchase_item_names:
                     purchase_item_names.append(item.item.name)
             
-            # Create comma-separated string of item names
             purchase_item_names_str = ', '.join(purchase_item_names) if purchase_item_names else 'N/A'
             
             # Expense details
@@ -15392,13 +15645,36 @@ def spot_purchase_profit_loss_report_print(request):
                     'total_expense': float(expense.total_expense or 0)
                 }
             
-            # Overhead breakdown
+            # Overhead breakdown with historical rates
             overhead_breakdown = [
-                {'type': 'Purchase Overhead', 'rate': float(purchase_overhead_total), 'amount': float(purchase_overhead_amount)},
-                {'type': 'Peeling Overhead', 'rate': float(peeling_overhead_total), 'amount': float(peeling_overhead_amount)},
-                {'type': 'Processing Overhead', 'rate': float(processing_overhead_total), 'amount': float(processing_overhead_amount)},
-                {'type': 'Shipment Overhead', 'rate': float(shipment_overhead_total), 'amount': float(shipment_overhead_amount)},
+                {
+                    'type': 'Purchase Overhead', 
+                    'rate': float(purchase_overhead_rate), 
+                    'amount': float(purchase_overhead_amount),
+                    'rate_date': purchase_overhead_obj.created_at.strftime('%Y-%m-%d') if purchase_overhead_obj and purchase_overhead_obj.created_at else 'N/A'
+                },
+                {
+                    'type': 'Peeling Overhead', 
+                    'rate': float(peeling_overhead_rate), 
+                    'amount': float(peeling_overhead_amount),
+                    'rate_date': peeling_overhead_obj.created_at.strftime('%Y-%m-%d') if peeling_overhead_obj and peeling_overhead_obj.created_at else 'N/A'
+                },
+                {
+                    'type': 'Processing Overhead', 
+                    'rate': float(processing_overhead_rate), 
+                    'amount': float(processing_overhead_amount),
+                    'rate_date': processing_overhead_obj.created_at.strftime('%Y-%m-%d') if processing_overhead_obj and processing_overhead_obj.created_at else 'N/A'
+                },
+                {
+                    'type': 'Shipment Overhead', 
+                    'rate': float(shipment_overhead_rate), 
+                    'amount': float(shipment_overhead_amount),
+                    'rate_date': shipment_overhead_obj.created_at.strftime('%Y-%m-%d') if shipment_overhead_obj and shipment_overhead_obj.created_at else 'N/A'
+                },
             ]
+            
+            # Format USD rate display for this specific purchase
+            usd_rate_display = f"₹{float(usd_rate)} ({rate_status}) - Rate Date: {historical_settings.created_at.strftime('%Y-%m-%d')}"
             
             purchase_data = {
                 'id': purchase.id,
@@ -15408,7 +15684,7 @@ def spot_purchase_profit_loss_report_print(request):
                 'spot_agent': purchase.agent.name if purchase.agent else 'N/A',
                 'spot_supervisor': purchase.supervisor.name if purchase.supervisor else 'N/A',
                 
-                # Correct calculations
+                # Purchase calculations
                 'purchase_quantity': float(purchase_quantity),
                 'purchase_amount': float(purchase_amount),
                 'purchase_expense': float(purchase_expense),
@@ -15416,6 +15692,7 @@ def spot_purchase_profit_loss_report_print(request):
                 'cost_per_kg': float(cost_per_kg),
                 'purchase_rate_per_kg': float(purchase_rate_per_kg),
                 
+                # Overhead amounts
                 'purchase_overhead': float(purchase_overhead_amount),
                 'peeling_expenses': float(peeling_cost),
                 'peeling_overhead': float(peeling_overhead_amount),
@@ -15423,7 +15700,7 @@ def spot_purchase_profit_loss_report_print(request):
                 'shipment_overhead': float(shipment_overhead_amount),
                 'freezing_tariff': float(total_freezing_tariff),
                 
-                # NEW CALCULATED FIELDS
+                # Calculated fields
                 'total_all_overheads': float(total_all_overheads),
                 'income': float(income),
                 'processing_overhead_per_kg': float(processing_overhead_per_kg),
@@ -15443,6 +15720,16 @@ def spot_purchase_profit_loss_report_print(request):
                 
                 'peeling_kg': float(peeling_kg),
                 
+                # Historical USD rate info - Each purchase shows its own rate
+                'settings_id': historical_settings.id,
+                'settings_is_active': historical_settings.is_active,
+                'usd_rate': float(usd_rate),
+                'usd_rate_date': historical_settings.created_at.strftime('%Y-%m-%d'),
+                'usd_rate_display': usd_rate_display,
+                'usd_rate_status': rate_status,
+                'usd_rate_same_day_warning': (rate_date == purchase_date if rate_date else False),
+                'usd_rate_future_warning': (rate_date > purchase_date if rate_date else False),
+                
                 # Detailed breakdowns
                 'purchase_items': purchase_items,
                 'purchase_item_names': purchase_item_names_str,
@@ -15452,7 +15739,7 @@ def spot_purchase_profit_loss_report_print(request):
                 'freezing_tariff_breakdown': freezing_tariff_breakdown,
                 'overhead_breakdown': overhead_breakdown,
                 'processing_details': processing_details,
-                'processing_overhead_rate': float(processing_overhead_total)
+                'processing_overhead_rate': float(processing_overhead_rate)
             }
             
             report_data.append(purchase_data)
@@ -15486,19 +15773,42 @@ def spot_purchase_profit_loss_report_print(request):
                    'total_all_overheads', 'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
             summary[key] = float(summary[key])
         
-        # Add overhead rates
-        summary['purchase_overhead_rate'] = float(purchase_overhead_total)
-        summary['peeling_overhead_rate'] = float(peeling_overhead_total)
-        summary['processing_overhead_rate'] = float(processing_overhead_total)
-        summary['shipment_overhead_rate'] = float(shipment_overhead_total)
-        
-        # Sort by date
+        # Sort by date (newest first)
         report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Print summary of USD rates used
+        print(f"\n{'='*80}")
+        print(f"USD RATE USAGE SUMMARY (PRINT REPORT):")
+        print(f"{'='*80}")
+        rate_usage = {}
+        for data in report_data:
+            status = "ACTIVE" if data.get('settings_is_active', True) else "INACTIVE"
+            rate_key = f"₹{data['usd_rate']} ({status}) (Settings ID: {data.get('settings_id', 'N/A')})"
+            if rate_key not in rate_usage:
+                rate_usage[rate_key] = {
+                    'count': 0,
+                    'purchases': [],
+                    'rate_date': data.get('usd_rate_date', 'N/A')
+                }
+            rate_usage[rate_key]['count'] += 1
+            rate_usage[rate_key]['purchases'].append(f"Purchase {data['id']} ({data['date']})")
+        
+        for rate_info, details in rate_usage.items():
+            print(f"\n  {rate_info} - Created: {details['rate_date']}")
+            print(f"    Used for {details['count']} purchase(s):")
+            for purchase in details['purchases'][:5]:  # Show first 5
+                print(f"      - {purchase}")
+            if len(details['purchases']) > 5:
+                print(f"      ... and {len(details['purchases']) - 5} more")
+        print(f"{'='*80}\n")
+        
+        # Get the last used USD rate for display
+        display_usd_rate = float(report_data[0]['usd_rate']) if report_data else None
         
         context = {
             'report_data': report_data,
             'summary': summary,
-            'usd_rate': float(usd_rate),
+            'usd_rate': display_usd_rate,
             'start_date': start_date,
             'end_date': end_date,
             'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
@@ -15512,10 +15822,12 @@ def spot_purchase_profit_loss_report_print(request):
         context = {
             'error': f'An error occurred: {str(e)}',
             'report_data': [],
-            'usd_rate': float(usd_rate) if 'usd_rate' in locals() else 84.00,
+            'summary': summary,
             'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
         }
         return render(request, 'spot_purchase_profit_loss_report_print.html', context)
+
+        
 
 def build_filter_context(**kwargs):
     """
@@ -15778,6 +16090,22 @@ def create_sales_entry(request):
                     sales_entry = form.save()
                     print(f"✓ Sales Entry saved: {sales_entry.invoice_no}")
                     
+                    # ✅ GET THE DATE FROM SALES ENTRY (user-selected date)
+                    # Try multiple possible date field names
+                    movement_date = None
+                    for date_field in ['invoice_date', 'date', 'entry_date', 'sales_date', 'created_date']:
+                        if hasattr(sales_entry, date_field):
+                            field_value = getattr(sales_entry, date_field)
+                            if field_value:
+                                movement_date = field_value
+                                print(f"✓ Using date from '{date_field}': {movement_date}")
+                                break
+                    
+                    # Fallback to today's date if no date field found
+                    if not movement_date:
+                        movement_date = timezone.now().date()
+                        print(f"⚠ No date field found, using today: {movement_date}")
+                    
                     # Process each item in the formset
                     items = formset.save(commit=False)
                     
@@ -15830,7 +16158,7 @@ def create_sales_entry(request):
                                 # Create NEGATIVE movement for shipment/sale
                                 movement_data = {
                                     'movement_type': 'shipment',
-                                    'movement_date': sales_entry.invoice_date if hasattr(sales_entry, 'invoice_date') else timezone.now().date(),
+                                    'movement_date': movement_date,  # ✅ USE THE DATE FROM SALES ENTRY
                                     'voucher_number': str(sales_entry.invoice_no),
                                     'store': stock.store,
                                     'item': stock.item,
@@ -15870,7 +16198,7 @@ def create_sales_entry(request):
                                 movement_data['notes'] = notes
                                 
                                 StockMovement.objects.create(**movement_data)
-                                print(f"  ✓ StockMovement created: Shipment -{item.quantity} kg")
+                                print(f"  ✓ StockMovement created: Shipment -{item.quantity} kg on {movement_date}")
                                 print(f"    Item: {stock.item}, Species: {stock.species}, Grade: {stock.item_grade}")
                             else:
                                 print(f"  ✗ ERROR: No stock record found for movement tracking")
@@ -15976,27 +16304,57 @@ def update_sales_entry(request, pk):
                     sales_entry = form.save()
                     print(f"  ✓ Sales entry updated: {sales_entry.invoice_no}")
                     
+                    # Get the date from updated sales entry (user-selected date)
+                    movement_date = None
+                    for date_field in ['invoice_date', 'date', 'entry_date', 'sales_date', 'created_date']:
+                        if hasattr(sales_entry, date_field):
+                            field_value = getattr(sales_entry, date_field)
+                            if field_value:
+                                movement_date = field_value
+                                print(f"  ✓ Using date from '{date_field}': {movement_date}")
+                                break
+                    
+                    if not movement_date:
+                        movement_date = timezone.now().date()
+                        print(f"  ⚠ No date field found, using today: {movement_date}")
+                    
                     # STEP 4: Process new/updated items
                     print(f"\n--- STEP 4: PROCESSING NEW ITEMS ---")
+                    
+                    # FIX: Save formset first to get all items including updated ones
+                    formset.save()  # This commits items to database
+                    
+                    # FIX: Get items from formset.save() with commit=False for processing
                     items = formset.save(commit=False)
                     
-                    if not items:
-                        messages.warning(request, "Please add at least one item to the sales entry.")
-                        raise ValueError("No items in formset")
+                    # FIX: Also get all current items from database (in case formset.save(commit=False) is empty)
+                    all_current_items = sales_entry.items.all()
                     
-                    for item in items:
-                        item.sales_entry = sales_entry
-                        item.save()
-                        print(f"\n  ✓ Item saved: {item.species} - Cartons: {item.cartons}, Qty: {item.quantity}")
+                    print(f"  Items from formset.save(commit=False): {len(items)}")
+                    print(f"  All current items from database: {all_current_items.count()}")
+                    
+                    # FIX: Process items from database instead of formset
+                    if all_current_items.count() == 0:
+                        messages.warning(request, "Please add at least one item to the sales entry.")
+                        raise ValueError("No items in sales entry")
+                    
+                    # Process each item
+                    for item in all_current_items:
+                        print(f"\n  ✓ Processing item: {item.species} - Cartons: {item.cartons}, Qty: {item.quantity}")
                         
                         # Deduct from stock
-                        deduct_stock_for_sales_item(item)
+                        try:
+                            deduct_stock_for_sales_item(item)
+                            print(f"    ✓ Stock deducted")
+                        except Exception as e:
+                            print(f"    ✗ Error deducting stock: {e}")
+                            raise
                         
-                        # ✅ CREATE NEW STOCK MOVEMENT for SHIPMENT
+                        # CREATE NEW STOCK MOVEMENT for SHIPMENT
                         try:
                             # Build stock filter - use sales_entry fields + item fields
                             stock_filters = {
-                                'item': sales_entry.item,  # Get item from sales_entry
+                                'item': sales_entry.item,
                                 'species': item.species,
                                 'item_grade': item.grade,
                             }
@@ -16026,7 +16384,7 @@ def update_sales_entry(request, pk):
                                 # Create NEGATIVE movement for shipment/sale
                                 movement_data = {
                                     'movement_type': 'shipment',
-                                    'movement_date': sales_entry.invoice_date if hasattr(sales_entry, 'invoice_date') else timezone.now().date(),
+                                    'movement_date': movement_date,
                                     'voucher_number': str(sales_entry.invoice_no),
                                     'store': stock.store,
                                     'item': stock.item,
@@ -16066,7 +16424,7 @@ def update_sales_entry(request, pk):
                                 movement_data['notes'] = notes
                                 
                                 StockMovement.objects.create(**movement_data)
-                                print(f"    ✓ NEW StockMovement created: Shipment -{item.quantity} kg")
+                                print(f"    ✓ NEW StockMovement created: Shipment -{item.quantity} kg on {movement_date}")
                                 print(f"      Item: {stock.item}, Species: {stock.species}, Grade: {stock.item_grade}")
                             else:
                                 print(f"    ✗ ERROR: No stock record found for movement tracking")
@@ -16082,8 +16440,9 @@ def update_sales_entry(request, pk):
                             traceback.print_exc()
                             messages.warning(request, f"Stock movement tracking error: {str(e)}")
                     
-                    # STEP 5: Handle deleted items (already restored above)
+                    # STEP 5: Handle deleted items (already restored in step 1)
                     for obj in formset.deleted_objects:
+                        print(f"  Deleting item: {obj}")
                         obj.delete()
                     
                     print(f"\n=== UPDATE COMPLETE ===")
@@ -16108,6 +16467,10 @@ def update_sales_entry(request, pk):
                 for i, form_errors in enumerate(formset.errors):
                     if form_errors:
                         messages.error(request, f"Item {i+1}: {form_errors}")
+                # Also show non-form errors
+                if formset.non_form_errors():
+                    for error in formset.non_form_errors():
+                        messages.error(request, f"Formset error: {error}")
     else:
         form = SalesEntryForm(instance=sales_entry)
         formset = SalesEntryItemFormSet(instance=sales_entry)
@@ -17191,17 +17554,19 @@ def test_notification(request):
     return redirect('adminapp:notification_list')
 
 
+
+
 def local_purchase_profit_loss_report(request):
     """
-    Generate profit/loss report for local purchases with filters and date range
-    Only shows active records from all related models
-    Fixed to match spot purchase overhead calculations exactly
+    Generate profit/loss report for local purchases with historical rate calculations
     """
     from datetime import datetime, timedelta
     from django.db.models import Q, Sum, Count
     from decimal import Decimal
     from django.http import JsonResponse
     from django.shortcuts import render
+    from django.conf import settings as django_settings
+    from django.utils import timezone
     
     # Get filter parameters
     start_date = request.GET.get('start_date')
@@ -17223,7 +17588,7 @@ def local_purchase_profit_loss_report(request):
     profit_filter = request.GET.get('profit_filter', 'all')
     format_type = request.GET.get('format', 'html')
     
-    # Calculate dates based on quick filter or use today as default
+    # Calculate dates
     today = datetime.now().date()
     
     if quick_filter:
@@ -17231,7 +17596,6 @@ def local_purchase_profit_loss_report(request):
         start_date = start_date_obj.strftime('%Y-%m-%d')
         end_date = end_date_obj.strftime('%Y-%m-%d')
     else:
-        # Default to today if no dates specified
         if not start_date:
             start_date = today.strftime('%Y-%m-%d')
         if not end_date:
@@ -17249,36 +17613,43 @@ def local_purchase_profit_loss_report(request):
                 return render(request, 'local_purchase_profit_loss_report.html', context)
     
     try:
+        # Display all available Settings with USD rates at the start (including inactive)
+        all_settings = Settings.objects.all().order_by('created_at')
+        print(f"\n{'='*80}")
+        print(f"ALL USD RATES IN SETTINGS (INCLUDING INACTIVE):")
+        print(f"{'='*80}")
+        if all_settings.exists():
+            for setting in all_settings:
+                status = "✓ ACTIVE" if setting.is_active else "✗ INACTIVE"
+                print(f"  ID: {setting.id} | Rate: ₹{setting.dollar_rate_to_inr} | {status} | Created: {setting.created_at}")
+        else:
+            print("  ⚠️  NO SETTINGS RECORDS FOUND!")
+        print(f"{'='*80}\n")
+        
         # Base query for local purchases within date range
         local_purchases = LocalPurchase.objects.filter(
             date__range=[start_date_obj, end_date_obj]
         ).prefetch_related('items', 'party_name')
         
-        # Apply party filter (LocalParty doesn't have is_active field)
+        # Apply filters
         if selected_parties:
             local_purchases = local_purchases.filter(party_name__id__in=selected_parties)
         
-        # Apply item filter (Item doesn't have is_active field)
         if selected_items:
             local_purchases = local_purchases.filter(items__item__id__in=selected_items).distinct()
         
-        # Apply species filter (Species doesn't have is_active field)
         if selected_species:
             local_purchases = local_purchases.filter(items__species__id__in=selected_species).distinct()
         
-        # Apply item category filter
         if selected_item_categories:
             local_purchases = local_purchases.filter(items__item__category__id__in=selected_item_categories).distinct()
         
-        # Apply item quality filter
         if selected_item_qualities:
             local_purchases = local_purchases.filter(items__item_quality__id__in=selected_item_qualities).distinct()
         
-        # Apply item type filter
         if selected_item_types:
             local_purchases = local_purchases.filter(items__item_type__id__in=selected_item_types).distinct()
         
-        # Apply item grade filter
         if selected_item_grades:
             local_purchases = local_purchases.filter(items__grade__id__in=selected_item_grades).distinct()
         
@@ -17287,7 +17658,6 @@ def local_purchase_profit_loss_report(request):
             if format_type == 'json':
                 return JsonResponse({'message': message, 'total_purchases': 0})
             else:
-                # Get filter options for template - only active records
                 context = get_filter_context(
                     quick_filter, start_date, end_date, 
                     selected_parties, selected_items, selected_species, 
@@ -17304,29 +17674,6 @@ def local_purchase_profit_loss_report(request):
                     selected_glaze_percentages=selected_glaze_percentages
                 )
                 return render(request, 'local_purchase_profit_loss_report.html', context)
-        
-        # Get overhead totals (LOCAL PURCHASES DON'T HAVE PEELING)
-        # FIXED: Get ALL active overhead records and sum them - EXACTLY like print version
-        purchase_overheads = PurchaseOverhead.objects.filter(is_active=True)
-        purchase_overhead_total = Decimal('0.00')
-        if purchase_overheads.exists():
-            for overhead in purchase_overheads:
-                if hasattr(overhead, 'other_expenses') and overhead.other_expenses:
-                    purchase_overhead_total += Decimal(str(overhead.other_expenses))
-        
-        processing_overheads = ProcessingOverhead.objects.filter(is_active=True)
-        processing_overhead_total = Decimal('0.00')
-        if processing_overheads.exists():
-            for overhead in processing_overheads:
-                if hasattr(overhead, 'amount') and overhead.amount:
-                    processing_overhead_total += Decimal(str(overhead.amount))
-        
-        shipment_overheads = ShipmentOverhead.objects.filter(is_active=True)
-        shipment_overhead_total = Decimal('0.00')
-        if shipment_overheads.exists():
-            for overhead in shipment_overheads:
-                if hasattr(overhead, 'amount') and overhead.amount:
-                    shipment_overhead_total += Decimal(str(overhead.amount))
         
         # Calculate profit/loss for each purchase
         report_data = []
@@ -17347,10 +17694,86 @@ def local_purchase_profit_loss_report(request):
         }
         
         for purchase in local_purchases:
+            # Get purchase date for historical rate lookup
+            purchase_date = purchase.date
+            purchase_datetime = datetime.combine(purchase_date, datetime.max.time())
+            
+            # Make timezone-aware if USE_TZ is True
+            if django_settings.USE_TZ:
+                purchase_datetime = timezone.make_aware(purchase_datetime)
+            
+            # Get HISTORICAL dollar rate (active at purchase date)
+            # First try to get an ACTIVE rate created on or before the purchase date
+            historical_settings = Settings.objects.filter(
+                is_active=True,
+                created_at__date__lte=purchase_date
+            ).order_by('-created_at').first()
+            
+            # If no active rate exists before/on purchase date, try INACTIVE rates
+            if not historical_settings:
+                historical_settings = Settings.objects.filter(
+                    is_active=False,
+                    created_at__date__lte=purchase_date
+                ).order_by('-created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using INACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+            
+            # If still no rate, get the earliest active rate (future rate)
+            if not historical_settings:
+                historical_settings = Settings.objects.filter(
+                    is_active=True
+                ).order_by('created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using future ACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+                    print(f"   Rate from {historical_settings.created_at.date()} applied retroactively")
+                else:
+                    # Last resort: try earliest inactive rate
+                    historical_settings = Settings.objects.order_by('created_at').first()
+                    if historical_settings:
+                        print(f"⚠️  WARNING: Using future INACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+                    else:
+                        print(f"⚠️  ERROR: No USD rate found in Settings table at all")
+                        continue  # Skip this purchase if no rate exists at all
+            
+            usd_rate = historical_settings.dollar_rate_to_inr
+            is_active_status = "ACTIVE" if historical_settings.is_active else "INACTIVE"
+            
+            print(f"\n{'='*60}")
+            print(f"LOCAL PURCHASE ID: {purchase.id}, DATE: {purchase_date}")
+            print(f"Historical USD Rate: ₹{usd_rate} ({is_active_status}) (Settings ID: {historical_settings.id})")
+            print(f"Rate Created At: {historical_settings.created_at}")
+            rate_date = historical_settings.created_at.date() if historical_settings.created_at else None
+            if rate_date == purchase_date:
+                print(f"⚠️  NOTE: Rate created on SAME DAY as purchase")
+            elif rate_date and rate_date > purchase_date:
+                print(f"⚠️  WARNING: Rate created AFTER purchase date (retroactive)")
+            print(f"{'='*60}\n")
+            
             # Get purchase cost
             purchase_cost = purchase.total_amount or Decimal('0.00')
             
-            # Calculate freezing revenue and collect total kg for overhead calculations
+            # Get HISTORICAL overhead rates (active at purchase date)
+            purchase_overhead_obj = PurchaseOverhead.objects.filter(
+                is_active=True,
+                created_at__date__lte=purchase_date
+            ).order_by('-created_at').first()
+            purchase_overhead_rate = purchase_overhead_obj.other_expenses if purchase_overhead_obj else Decimal('0.00')
+            
+            processing_overhead_obj = ProcessingOverhead.objects.filter(
+                is_active=True,
+                created_at__date__lte=purchase_date
+            ).order_by('-created_at').first()
+            processing_overhead_rate = processing_overhead_obj.amount if processing_overhead_obj else Decimal('0.00')
+            
+            shipment_overhead_obj = ShipmentOverhead.objects.filter(
+                is_active=True,
+                created_at__date__lte=purchase_date
+            ).order_by('-created_at').first()
+            shipment_overhead_rate = shipment_overhead_obj.amount if shipment_overhead_obj else Decimal('0.00')
+            
+            # Calculate freezing revenue using HISTORICAL USD rate
             freezing_revenue = Decimal('0.00')
             total_kg = Decimal('0.00')
             total_freezing_tariff = Decimal('0.00')
@@ -17389,7 +17812,9 @@ def local_purchase_profit_loss_report(request):
             
             for entry in freezing_entries:
                 for item in entry.items.all():
-                    item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
+                    # Use HISTORICAL USD rate for revenue calculation
+                    item_usd_amount = item.usd_rate_item or Decimal('0.00')
+                    item_revenue = item_usd_amount * usd_rate
                     freezing_revenue += item_revenue
                     total_kg += item.kg or Decimal('0.00')
                     
@@ -17400,11 +17825,10 @@ def local_purchase_profit_loss_report(request):
                         tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
                         total_freezing_tariff += tariff_cost
             
-            # FIXED: Calculate ALL overheads EXACTLY like print version
-            # ALL rates multiply by TOTAL PRODUCTION QUANTITY (total_kg)
-            purchase_overhead_amount = total_kg * purchase_overhead_total
-            processing_overhead_amount = total_kg * processing_overhead_total
-            shipment_overhead_amount = total_kg * shipment_overhead_total
+            # Calculate overheads using historical rates
+            purchase_overhead_amount = total_kg * purchase_overhead_rate
+            processing_overhead_amount = total_kg * processing_overhead_rate
+            shipment_overhead_amount = total_kg * shipment_overhead_rate
             
             # Calculate total of all overheads (NO peeling for local purchases)
             total_all_overheads = (
@@ -17427,7 +17851,7 @@ def local_purchase_profit_loss_report(request):
             if total_cost > 0:
                 profit_percentage = (profit_loss / total_cost * 100)
             else:
-                profit_percentage = 0
+                profit_percentage = Decimal('0.00')
             
             # Determine profit status
             if profit_loss > 0:
@@ -17439,6 +17863,12 @@ def local_purchase_profit_loss_report(request):
             else:
                 profit_status = 'Break Even'
                 summary['break_even_count'] += 1
+            
+            # Apply profit filter
+            if profit_filter == 'profit' and profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and profit_loss >= 0:
+                continue
             
             purchase_data = {
                 'id': purchase.id,
@@ -17458,14 +17888,14 @@ def local_purchase_profit_loss_report(request):
                 'profit_status': profit_status,
                 'freezing_entries_count': freezing_entries.count(),
                 'total_items': sum(entry.items.count() for entry in freezing_entries),
-                'total_kg': float(total_kg)
+                'total_kg': float(total_kg),
+                'settings_id': historical_settings.id,
+                'settings_is_active': historical_settings.is_active,
+                'usd_rate': float(usd_rate),
+                'usd_rate_date': historical_settings.created_at.strftime('%Y-%m-%d'),
+                'usd_rate_same_day_warning': (historical_settings.created_at.date() == purchase_date),
+                'usd_rate_future_warning': (historical_settings.created_at.date() > purchase_date)
             }
-            
-            # Apply profit filter
-            if profit_filter == 'profit' and profit_loss <= 0:
-                continue
-            elif profit_filter == 'loss' and profit_loss >= 0:
-                continue
             
             report_data.append(purchase_data)
             
@@ -17483,17 +17913,10 @@ def local_purchase_profit_loss_report(request):
         # Calculate final summary
         summary['total_purchases'] = len(report_data)
         
-        # Recalculate total_all_overheads from the three overhead components
-        summary['total_all_overheads'] = (
-            summary['total_purchase_overhead'] + 
-            summary['total_processing_overhead'] + 
-            summary['total_shipment_overhead']
-        )
-        
         if summary['total_cost'] > 0:
             summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
         else:
-            summary['overall_profit_margin'] = 0
+            summary['overall_profit_margin'] = 0.0
         
         # Convert Decimal to float for JSON serialization
         for key in ['total_purchase_amount', 'total_purchase_overhead', 'total_processing_overhead',
@@ -17501,13 +17924,34 @@ def local_purchase_profit_loss_report(request):
                    'total_cost', 'total_revenue', 'total_profit_loss']:
             summary[key] = float(summary[key])
         
-        # Add overhead rates to summary
-        summary['purchase_overhead_rate'] = float(purchase_overhead_total)
-        summary['processing_overhead_rate'] = float(processing_overhead_total)
-        summary['shipment_overhead_rate'] = float(shipment_overhead_total)
-        
         # Sort by date (newest first)
         report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Print summary of USD rates used
+        print(f"\n{'='*80}")
+        print(f"USD RATE USAGE SUMMARY (LOCAL PURCHASES):")
+        print(f"{'='*80}")
+        rate_usage = {}
+        for data in report_data:
+            status = "ACTIVE" if data.get('settings_is_active', True) else "INACTIVE"
+            rate_key = f"₹{data['usd_rate']} ({status}) (Settings ID: {data.get('settings_id', 'N/A')})"
+            if rate_key not in rate_usage:
+                rate_usage[rate_key] = {
+                    'count': 0,
+                    'purchases': [],
+                    'rate_date': data.get('usd_rate_date', 'N/A')
+                }
+            rate_usage[rate_key]['count'] += 1
+            rate_usage[rate_key]['purchases'].append(f"Purchase {data['id']} ({data['date']})")
+        
+        for rate_info, details in rate_usage.items():
+            print(f"\n  {rate_info} - Created: {details['rate_date']}")
+            print(f"    Used for {details['count']} purchase(s):")
+            for purchase in details['purchases'][:5]:  # Show first 5
+                print(f"      - {purchase}")
+            if len(details['purchases']) > 5:
+                print(f"      ... and {len(details['purchases']) - 5} more")
+        print(f"{'='*80}\n")
         
         # Return based on format
         if format_type == 'json':
@@ -17535,7 +17979,7 @@ def local_purchase_profit_loss_report(request):
                 }
             })
         
-        # Get filter options for template - only active records
+        # Get filter options for template
         context = get_filter_context(
             quick_filter, start_date, end_date,
             selected_parties, selected_items, selected_species,
@@ -17579,6 +18023,634 @@ def local_purchase_profit_loss_report(request):
                 selected_glaze_percentages=selected_glaze_percentages
             )
             return render(request, 'local_purchase_profit_loss_report.html', context)
+
+def local_purchase_profit_loss_report_print(request):
+    """
+    Generate comprehensive print report with historical rate calculations including USD rate
+    """
+    from datetime import datetime
+    from django.db.models import Sum
+    from decimal import Decimal
+    from django.shortcuts import render
+    from django.conf import settings as django_settings
+    from django.utils import timezone
+    
+    # Get filter parameters
+    quick_filter = request.GET.get('quick_filter', '')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # Filters
+    selected_parties = request.GET.getlist('parties')
+    selected_items = request.GET.getlist('items')
+    selected_item_categories = request.GET.getlist('item_categories')
+    selected_item_qualities = request.GET.getlist('item_qualities')
+    selected_item_types = request.GET.getlist('item_types')
+    selected_item_grades = request.GET.getlist('item_grades')
+    selected_item_brands = request.GET.getlist('item_brands')
+    selected_freezing_categories = request.GET.getlist('freezing_categories')
+    selected_processing_centers = request.GET.getlist('processing_centers')
+    selected_stores = request.GET.getlist('stores')
+    selected_packing_units = request.GET.getlist('packing_units')
+    selected_glaze_percentages = request.GET.getlist('glaze_percentages')
+    profit_filter = request.GET.get('profit_filter', 'all')
+    
+    # Calculate dates
+    today = datetime.now().date()
+    
+    if quick_filter:
+        start_date_obj, end_date_obj = calculate_quick_filter_dates(quick_filter, today)
+        start_date = start_date_obj.strftime('%Y-%m-%d')
+        end_date = end_date_obj.strftime('%Y-%m-%d')
+    else:
+        if not start_date:
+            start_date = today.strftime('%Y-%m-%d')
+        if not end_date:
+            end_date = today.strftime('%Y-%m-%d')
+        
+        try:
+            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        except ValueError:
+            context = {'error': 'Invalid date format'}
+            return render(request, 'local_purchase_profit_loss_report_print.html', context)
+    
+    try:
+        # Display all available Settings with USD rates at the start (including inactive)
+        all_settings = Settings.objects.all().order_by('created_at')
+        print(f"\n{'='*80}")
+        print(f"ALL USD RATES IN SETTINGS (INCLUDING INACTIVE):")
+        print(f"{'='*80}")
+        if all_settings.exists():
+            for setting in all_settings:
+                status = "✓ ACTIVE" if setting.is_active else "✗ INACTIVE"
+                print(f"  ID: {setting.id} | Rate: ₹{setting.dollar_rate_to_inr} | {status} | Created: {setting.created_at}")
+        else:
+            print("  ⚠️  NO SETTINGS RECORDS FOUND!")
+        print(f"{'='*80}\n")
+        
+        # Base query
+        local_purchases = LocalPurchase.objects.filter(
+            date__range=[start_date_obj, end_date_obj]
+        ).prefetch_related(
+            'items__item',
+            'items__item__category',
+            'items__item_quality',
+            'items__item_type',
+            'items__grade',
+            'party_name'
+        ).select_related('party_name')
+        
+        # Apply filters
+        if selected_parties:
+            local_purchases = local_purchases.filter(party_name__id__in=selected_parties)
+        
+        if selected_items:
+            local_purchases = local_purchases.filter(items__item__id__in=selected_items).distinct()
+        
+        if selected_item_categories:
+            local_purchases = local_purchases.filter(items__item__category__id__in=selected_item_categories).distinct()
+        
+        if selected_item_qualities:
+            local_purchases = local_purchases.filter(items__item_quality__id__in=selected_item_qualities).distinct()
+        
+        if selected_item_types:
+            local_purchases = local_purchases.filter(items__item_type__id__in=selected_item_types).distinct()
+        
+        if selected_item_grades:
+            local_purchases = local_purchases.filter(items__grade__id__in=selected_item_grades).distinct()
+        
+        # Apply freezing-level filters
+        if any([selected_item_brands, selected_freezing_categories, selected_processing_centers, 
+                selected_stores, selected_packing_units, selected_glaze_percentages]):
+            
+            freezing_query = FreezingEntryLocalItem.objects.all()
+            
+            if selected_item_brands:
+                freezing_query = freezing_query.filter(brand__id__in=selected_item_brands)
+            if selected_freezing_categories:
+                freezing_query = freezing_query.filter(freezing_category__id__in=selected_freezing_categories)
+            if selected_processing_centers:
+                freezing_query = freezing_query.filter(processing_center__id__in=selected_processing_centers)
+            if selected_stores:
+                freezing_query = freezing_query.filter(store__id__in=selected_stores)
+            if selected_packing_units:
+                freezing_query = freezing_query.filter(unit__id__in=selected_packing_units)
+            if selected_glaze_percentages:
+                freezing_query = freezing_query.filter(glaze__id__in=selected_glaze_percentages)
+            
+            matching_purchase_ids = freezing_query.values_list(
+                'freezing_entry__party__id', flat=True
+            ).distinct()
+            
+            local_purchases = local_purchases.filter(id__in=matching_purchase_ids)
+        
+        if not local_purchases.exists():
+            context = {
+                'message': 'No local purchases found',
+                'report_data': [],
+                'summary': {},
+                'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
+            }
+            return render(request, 'local_purchase_profit_loss_report_print.html', context)
+        
+        # Get overhead totals (LOCAL PURCHASES DON'T HAVE PEELING)
+        purchase_overheads = PurchaseOverhead.objects.filter(is_active=True)
+        purchase_overhead_total = Decimal('0.00')
+        if purchase_overheads.exists():
+            for overhead in purchase_overheads:
+                if hasattr(overhead, 'other_expenses') and overhead.other_expenses:
+                    purchase_overhead_total += Decimal(str(overhead.other_expenses))
+        
+        processing_overheads = ProcessingOverhead.objects.filter(is_active=True)
+        processing_overhead_total = Decimal('0.00')
+        if processing_overheads.exists():
+            for overhead in processing_overheads:
+                if hasattr(overhead, 'amount') and overhead.amount:
+                    processing_overhead_total += Decimal(str(overhead.amount))
+        
+        shipment_overheads = ShipmentOverhead.objects.filter(is_active=True)
+        shipment_overhead_total = Decimal('0.00')
+        if shipment_overheads.exists():
+            for overhead in shipment_overheads:
+                if hasattr(overhead, 'amount') and overhead.amount:
+                    shipment_overhead_total += Decimal(str(overhead.amount))
+        
+        # Process each purchase
+        report_data = []
+        summary = {
+            'total_purchases': 0,
+            'total_purchase_quantity': Decimal('0.00'),
+            'total_purchase_amount': Decimal('0.00'),
+            'total_purchase_overhead': Decimal('0.00'),
+            'total_processing_overhead': Decimal('0.00'),
+            'total_shipment_overhead': Decimal('0.00'),
+            'total_all_overheads': Decimal('0.00'),
+            'total_freezing_tariff': Decimal('0.00'),
+            'total_cost': Decimal('0.00'),
+            'total_revenue': Decimal('0.00'),
+            'total_profit_loss': Decimal('0.00'),
+            'profit_count': 0,
+            'loss_count': 0,
+            'break_even_count': 0
+        }
+        
+        for purchase in local_purchases:
+            # Get purchase date for historical rate lookup
+            purchase_date = purchase.date
+            purchase_datetime = datetime.combine(purchase_date, datetime.max.time())
+            
+            # Make timezone-aware if USE_TZ is True
+            if django_settings.USE_TZ:
+                purchase_datetime = timezone.make_aware(purchase_datetime)
+            
+            # Get HISTORICAL dollar rate (active at purchase date) - SAME AS SPOT
+            # First try to get an ACTIVE rate created on or before the purchase date
+            historical_settings = Settings.objects.filter(
+                is_active=True,
+                created_at__date__lte=purchase_date
+            ).order_by('-created_at').first()
+            
+            # If no active rate exists before/on purchase date, try INACTIVE rates
+            if not historical_settings:
+                historical_settings = Settings.objects.filter(
+                    is_active=False,
+                    created_at__date__lte=purchase_date
+                ).order_by('-created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using INACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+            
+            # If still no rate, get the earliest active rate (future rate)
+            if not historical_settings:
+                historical_settings = Settings.objects.filter(
+                    is_active=True
+                ).order_by('created_at').first()
+                
+                if historical_settings:
+                    print(f"⚠️  WARNING: Using future ACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+                    print(f"   Rate from {historical_settings.created_at.date()} applied retroactively")
+                else:
+                    # Last resort: try earliest inactive rate
+                    historical_settings = Settings.objects.order_by('created_at').first()
+                    if historical_settings:
+                        print(f"⚠️  WARNING: Using future INACTIVE rate for purchase ID {purchase.id} on {purchase_date}")
+                    else:
+                        print(f"⚠️  ERROR: No USD rate found in Settings table at all")
+                        continue  # Skip this purchase if no rate exists at all
+            
+            usd_rate = historical_settings.dollar_rate_to_inr
+            is_active_status = "ACTIVE" if historical_settings.is_active else "INACTIVE"
+            
+            print(f"\n{'='*60}")
+            print(f"LOCAL PURCHASE PRINT - PURCHASE ID: {purchase.id}, DATE: {purchase_date}")
+            print(f"Historical USD Rate: ₹{usd_rate} ({is_active_status}) (Settings ID: {historical_settings.id})")
+            print(f"Rate Created At: {historical_settings.created_at}")
+            rate_date = historical_settings.created_at.date() if historical_settings.created_at else None
+            if rate_date == purchase_date:
+                print(f"⚠️  NOTE: Rate created on SAME DAY as purchase")
+            elif rate_date and rate_date > purchase_date:
+                print(f"⚠️  WARNING: Rate created AFTER purchase date (retroactive)")
+            print(f"{'='*60}\n")
+            
+            # 1. PURCHASE QUANTITY = total_quantity
+            purchase_quantity = purchase.total_quantity or Decimal('0.00')
+            
+            # 2. PURCHASE AMOUNT = total_amount
+            purchase_amount = purchase.total_amount or Decimal('0.00')
+            
+            # 3. COST/KG = purchase_amount / purchase_quantity
+            cost_per_kg = Decimal('0.00')
+            if purchase_quantity > 0:
+                cost_per_kg = purchase_amount / purchase_quantity
+            
+            # Get freezing entries
+            freezing_entries = FreezingEntryLocal.objects.filter(
+                party=purchase
+            ).prefetch_related(
+                'items__item',
+                'items__item_quality',
+                'items__peeling_type',
+                'items__grade',
+                'items__processing_center',
+                'items__store',
+                'items__unit',
+                'items__glaze',
+                'items__freezing_category',
+                'items__brand'
+            )
+            
+            # Calculate freezing revenue and items using HISTORICAL USD rate
+            freezing_revenue = Decimal('0.00')
+            freezing_items = []
+            total_freezing_kg = Decimal('0.00')
+            total_freezing_usd = Decimal('0.00')
+            total_freezing_tariff = Decimal('0.00')
+            freezing_tariff_breakdown = []
+            processing_details = []
+            
+            for entry in freezing_entries:
+                for item in entry.items.all():
+                    # Use HISTORICAL USD rate for revenue calculation
+                    item_usd_amount = item.usd_rate_item or Decimal('0.00')
+                    item_revenue = item_usd_amount * usd_rate
+                    freezing_revenue += item_revenue
+                    total_freezing_usd += item_usd_amount
+                    total_freezing_kg += item.kg or Decimal('0.00')
+                    
+                    # Get glaze display value
+                    glaze_display = ''
+                    if item.glaze:
+                        glaze_value = str(item.glaze.glaze) if hasattr(item.glaze, 'glaze') else str(item.glaze)
+                        # Check if glaze is numeric
+                        try:
+                            float(glaze_value)
+                            glaze_display = f"{glaze_value}%"
+                        except ValueError:
+                            glaze_display = glaze_value
+                    
+                    # Freezing tariff
+                    item_tariff_cost = Decimal('0.00')
+                    if (item.freezing_category and 
+                        item.freezing_category.is_active and 
+                        hasattr(item.freezing_category, 'tariff') and 
+                        item.freezing_category.tariff):
+                        item_tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
+                        total_freezing_tariff += item_tariff_cost
+                        
+                        # Tariff breakdown
+                        existing = next((t for t in freezing_tariff_breakdown 
+                                       if t['category_name'] == item.freezing_category.name), None)
+                        if existing:
+                            existing['quantity'] += float(item.kg or 0)
+                            existing['amount'] += float(item_tariff_cost)
+                        else:
+                            freezing_tariff_breakdown.append({
+                                'category_name': item.freezing_category.name,
+                                'tariff_rate': float(item.freezing_category.tariff),
+                                'quantity': float(item.kg or 0),
+                                'amount': float(item_tariff_cost)
+                            })
+                    
+                    # Processing details - calculate INR using historical rate
+                    item_usd_per_kg = item.usd_rate_per_kg or Decimal('0.00')
+                    
+                    processing_details.append({
+                        'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
+                        'glaze': glaze_display,
+                        'unit': item.unit.unit_code if item.unit else 'N/A',
+                        'grade': f"{item.peeling_type.name if item.peeling_type else ''}, {item.grade.grade if item.grade else ''}",
+                        'total_slab': float(item.slab_quantity or 0),
+                        'total_quantity': float(item.kg or 0),
+                        'price_usd': float(item_usd_per_kg),
+                        'amount_usd': float(item_usd_amount),
+                        'amount_inr': float(item_revenue)
+                    })
+                    
+                    # Freezing items - FIXED: Use safe item name access
+                    item_name = 'N/A'
+                    try:
+                        if item.item:
+                            if hasattr(item.item, 'name') and item.item.name:
+                                item_name = item.item.name
+                            elif hasattr(item.item, 'item') and item.item.item:
+                                item_name = item.item.item
+                            else:
+                                item_name = str(item.item)
+                    except Exception:
+                        item_name = 'N/A'
+                    
+                    freezing_items.append({
+                        'item_name': item_name,
+                        'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
+                        'peeling_type': item.peeling_type.name if item.peeling_type else 'N/A',
+                        'processing_center': item.processing_center.name if item.processing_center else 'N/A',
+                        'store': item.store.name if item.store else 'N/A',
+                        'freezing_category': item.freezing_category.name if item.freezing_category else 'N/A',
+                        'kg': float(item.kg or 0),
+                        'usd_rate_per_kg': float(item_usd_per_kg),
+                        'usd_rate_item': float(item_usd_amount),
+                        'usd_rate_item_to_inr': float(item_revenue),
+                        'slab_quantity': float(item.slab_quantity or 0),
+                        'c_s_quantity': float(item.c_s_quantity or 0),
+                        'unit': item.unit.unit_code if item.unit else 'N/A',
+                        'glaze': glaze_display,
+                        'brand': item.brand.name if item.brand else 'N/A',
+                        'grade': f"{item.grade.grade if item.grade else 'N/A'}",
+                        'tariff_cost': float(item_tariff_cost)
+                    })
+            
+            # Calculate overheads - ALL rates multiply by TOTAL PRODUCTION QUANTITY
+            purchase_overhead_amount = total_freezing_kg * purchase_overhead_total
+            processing_overhead_amount = total_freezing_kg * processing_overhead_total
+            shipment_overhead_amount = total_freezing_kg * shipment_overhead_total
+            
+            # TOTAL PROCESSING EXP = sum of all overheads
+            total_all_overheads = (
+                purchase_overhead_amount +
+                processing_overhead_amount +
+                shipment_overhead_amount
+            )
+            
+            # INCOME = TOTAL AMOUNT/INR - TOTAL PROCESSING EXP
+            income = freezing_revenue - total_all_overheads
+            
+            # PROCESSING OVERHEADS PER KG
+            processing_overhead_per_kg = Decimal('0.00')
+            if total_freezing_kg > 0:
+                processing_overhead_per_kg = total_all_overheads / total_freezing_kg
+            
+            # Calculate totals
+            total_slabs = sum(detail['total_slab'] for detail in processing_details)
+            avg_price_usd = Decimal('0.00')
+            if total_freezing_kg > 0:
+                avg_price_usd = total_freezing_usd / total_freezing_kg
+            
+            # Grand Total Cost
+            grand_total_cost = (
+                purchase_amount +
+                purchase_overhead_amount +
+                processing_overhead_amount +
+                shipment_overhead_amount +
+                total_freezing_tariff
+            )
+            
+            # Total Profit/Loss
+            total_profit_loss = freezing_revenue - grand_total_cost
+            
+            # Profit/Loss Per KG
+            profit_loss_per_kg = Decimal('0.00')
+            if total_freezing_kg > 0:
+                profit_loss_per_kg = total_profit_loss / total_freezing_kg
+            
+            if grand_total_cost > 0:
+                profit_percentage = (total_profit_loss / grand_total_cost * 100)
+            else:
+                profit_percentage = Decimal('0.00')
+            
+            if total_profit_loss > 0:
+                profit_status = 'Profit'
+                summary['profit_count'] += 1
+            elif total_profit_loss < 0:
+                profit_status = 'Loss'
+                summary['loss_count'] += 1
+            else:
+                profit_status = 'Break Even'
+                summary['break_even_count'] += 1
+            
+            # Apply profit filter
+            if profit_filter == 'profit' and total_profit_loss <= 0:
+                continue
+            elif profit_filter == 'loss' and total_profit_loss >= 0:
+                continue
+            
+            # Get purchase items - FIXED: Safe attribute access
+            purchase_items = []
+            purchase_item_names = []
+            try:
+                for item in purchase.items.all():
+                    # Safely get item name
+                    item_name = 'N/A'
+                    try:
+                        if item.item:
+                            if hasattr(item.item, 'name') and item.item.name:
+                                item_name = item.item.name
+                            elif hasattr(item.item, 'item') and item.item.item:
+                                item_name = item.item.item
+                            else:
+                                item_name = str(item.item)
+                    except Exception:
+                        item_name = 'N/A'
+                    
+                    # Safely get item quality
+                    item_quality = 'N/A'
+                    try:
+                        if item.item_quality:
+                            item_quality = item.item_quality.quality if hasattr(item.item_quality, 'quality') else str(item.item_quality)
+                    except Exception:
+                        item_quality = 'N/A'
+                    
+                    # Safely get item type
+                    item_type = 'N/A'
+                    try:
+                        if item.item_type:
+                            item_type = item.item_type.name if hasattr(item.item_type, 'name') else str(item.item_type)
+                    except Exception:
+                        item_type = 'N/A'
+                    
+                    # Safely get grade
+                    grade = 'N/A'
+                    try:
+                        if item.grade:
+                            grade = item.grade.grade if hasattr(item.grade, 'grade') else str(item.grade)
+                    except Exception:
+                        grade = 'N/A'
+                    
+                    purchase_items.append({
+                        'item_name': item_name,
+                        'item_quality': item_quality,
+                        'item_type': item_type,
+                        'grade': grade,
+                        'quantity': float(item.quantity or 0),
+                        'rate': float(item.rate or 0),
+                        'amount': float(item.amount or 0)
+                    })
+                    
+                    if item_name != 'N/A' and item_name not in purchase_item_names:
+                        purchase_item_names.append(item_name)
+            except Exception as e:
+                print(f"⚠️  Error processing purchase items for purchase {purchase.id}: {e}")
+                purchase_items = []
+                purchase_item_names = []
+            
+            purchase_item_names_str = ', '.join(purchase_item_names) if purchase_item_names else 'N/A'
+            
+            # Overhead breakdown - showing individual overheads correctly
+            overhead_breakdown = [
+                {'type': 'Purchase Overhead', 'rate': float(purchase_overhead_total), 'amount': float(purchase_overhead_amount)},
+                {'type': 'Processing Overhead', 'rate': float(processing_overhead_total), 'amount': float(processing_overhead_amount)},
+                {'type': 'Shipment Overhead', 'rate': float(shipment_overhead_total), 'amount': float(shipment_overhead_amount)},
+            ]
+            
+            purchase_data = {
+                'id': purchase.id,
+                'date': purchase.date,
+                'voucher_number': purchase.voucher_number or '',
+                'party_name': purchase.party_name.party if purchase.party_name else 'N/A',
+                
+                # Calculations
+                'purchase_quantity': float(purchase_quantity),
+                'purchase_amount': float(purchase_amount),
+                'cost_per_kg': float(cost_per_kg),
+                
+                'purchase_overhead': float(purchase_overhead_amount),
+                'processing_overhead': float(processing_overhead_amount),
+                'shipment_overhead': float(shipment_overhead_amount),
+                'freezing_tariff': float(total_freezing_tariff),
+                
+                'total_all_overheads': float(total_all_overheads),
+                'income': float(income),
+                'processing_overhead_per_kg': float(processing_overhead_per_kg),
+                'total_slabs': total_slabs,
+                'avg_price_usd': float(avg_price_usd),
+                'total_kg_processed': float(total_freezing_kg),
+                
+                'grand_total_cost': float(grand_total_cost),
+                'freezing_revenue': float(freezing_revenue),
+                'total_freezing_usd': float(total_freezing_usd),
+                'total_freezing_kg': float(total_freezing_kg),
+                
+                'total_profit_loss': float(total_profit_loss),
+                'profit_loss_per_kg': float(profit_loss_per_kg),
+                'profit_percentage': float(profit_percentage),
+                'profit_status': profit_status,
+                
+                # Historical USD rate info - SAME AS SPOT
+                'settings_id': historical_settings.id,
+                'settings_is_active': historical_settings.is_active,
+                'usd_rate': float(usd_rate),
+                'usd_rate_date': historical_settings.created_at.strftime('%Y-%m-%d'),
+                'usd_rate_same_day_warning': (historical_settings.created_at.date() == purchase_date),
+                'usd_rate_future_warning': (historical_settings.created_at.date() > purchase_date),
+                
+                # Detailed breakdowns
+                'purchase_items': purchase_items,
+                'purchase_item_names': purchase_item_names_str,
+                'freezing_items': freezing_items,
+                'freezing_tariff_breakdown': freezing_tariff_breakdown,
+                'overhead_breakdown': overhead_breakdown,
+                'processing_details': processing_details,
+            }
+            
+            report_data.append(purchase_data)
+            
+            # Update summary
+            summary['total_purchase_quantity'] += purchase_quantity
+            summary['total_purchase_amount'] += purchase_amount
+            summary['total_purchase_overhead'] += purchase_overhead_amount
+            summary['total_processing_overhead'] += processing_overhead_amount
+            summary['total_shipment_overhead'] += shipment_overhead_amount
+            summary['total_all_overheads'] += total_all_overheads
+            summary['total_freezing_tariff'] += total_freezing_tariff
+            summary['total_cost'] += grand_total_cost
+            summary['total_revenue'] += freezing_revenue
+            summary['total_profit_loss'] += total_profit_loss
+        
+        # Calculate summary
+        summary['total_purchases'] = len(report_data)
+        if summary['total_cost'] > 0:
+            summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
+        else:
+            summary['overall_profit_margin'] = 0.0
+        
+        # Convert Decimal to float
+        for key in ['total_purchase_quantity', 'total_purchase_amount',
+                   'total_purchase_overhead', 'total_processing_overhead', 'total_shipment_overhead',
+                   'total_all_overheads', 'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
+            summary[key] = float(summary[key])
+        
+        # Add overhead rates
+        summary['purchase_overhead_rate'] = float(purchase_overhead_total)
+        summary['processing_overhead_rate'] = float(processing_overhead_total)
+        summary['shipment_overhead_rate'] = float(shipment_overhead_total)
+        
+        # Sort by date
+        report_data.sort(key=lambda x: x['date'], reverse=True)
+        
+        # Print summary of USD rates used - SAME AS SPOT
+        print(f"\n{'='*80}")
+        print(f"USD RATE USAGE SUMMARY (LOCAL PURCHASE PRINT REPORT):")
+        print(f"{'='*80}")
+        rate_usage = {}
+        for data in report_data:
+            status = "ACTIVE" if data.get('settings_is_active', True) else "INACTIVE"
+            rate_key = f"₹{data['usd_rate']} ({status}) (Settings ID: {data.get('settings_id', 'N/A')})"
+            if rate_key not in rate_usage:
+                rate_usage[rate_key] = {
+                    'count': 0,
+                    'purchases': [],
+                    'rate_date': data.get('usd_rate_date', 'N/A')
+                }
+            rate_usage[rate_key]['count'] += 1
+            rate_usage[rate_key]['purchases'].append(f"Purchase {data['id']} ({data['date']})")
+        
+        for rate_info, details in rate_usage.items():
+            print(f"\n  {rate_info} - Created: {details['rate_date']}")
+            print(f"    Used for {details['count']} purchase(s):")
+            for purchase in details['purchases'][:5]:  # Show first 5
+                print(f"      - {purchase}")
+            if len(details['purchases']) > 5:
+                print(f"      ... and {len(details['purchases']) - 5} more")
+        print(f"{'='*80}\n")
+        
+        # Get the last used USD rate for display - SAME AS SPOT
+        display_usd_rate = float(usd_rate) if report_data and 'usd_rate' in locals() else None
+        
+        context = {
+            'report_data': report_data,
+            'summary': summary,
+            'usd_rate': display_usd_rate,
+            'start_date': start_date,
+            'end_date': end_date,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
+        }
+        
+        return render(request, 'local_purchase_profit_loss_report_print.html', context)
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        context = {
+            'error': f'An error occurred: {str(e)}',
+            'report_data': [],
+            'summary': {},
+            'usd_rate': None,
+            'date_range_text': get_date_range_text(quick_filter, start_date, end_date) if 'quick_filter' in locals() else 'N/A'
+        }
+        return render(request, 'local_purchase_profit_loss_report_print.html', context)
+
+
+
 
 def get_filter_context(quick_filter, start_date, end_date, selected_parties, 
                        selected_items, selected_species, profit_filter, 
@@ -17726,473 +18798,6 @@ def calculate_quick_filter_dates(filter_type, today):
     
     return today, today
 
-def local_purchase_profit_loss_report_print(request):
-    """
-    Generate comprehensive print report with correct calculations matching spot purchase format
-    """
-    from datetime import datetime
-    from django.db.models import Sum
-    from decimal import Decimal
-    from django.shortcuts import render
-    
-    # Get filter parameters
-    quick_filter = request.GET.get('quick_filter', '')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    
-    # Filters
-    selected_parties = request.GET.getlist('parties')
-    selected_items = request.GET.getlist('items')
-    selected_item_categories = request.GET.getlist('item_categories')
-    selected_item_qualities = request.GET.getlist('item_qualities')
-    selected_item_types = request.GET.getlist('item_types')
-    selected_item_grades = request.GET.getlist('item_grades')
-    selected_item_brands = request.GET.getlist('item_brands')
-    selected_freezing_categories = request.GET.getlist('freezing_categories')
-    selected_processing_centers = request.GET.getlist('processing_centers')
-    selected_stores = request.GET.getlist('stores')
-    selected_packing_units = request.GET.getlist('packing_units')
-    selected_glaze_percentages = request.GET.getlist('glaze_percentages')
-    profit_filter = request.GET.get('profit_filter', 'all')
-    
-    # Calculate dates
-    today = datetime.now().date()
-    
-    if quick_filter:
-        start_date_obj, end_date_obj = calculate_quick_filter_dates(quick_filter, today)
-        start_date = start_date_obj.strftime('%Y-%m-%d')
-        end_date = end_date_obj.strftime('%Y-%m-%d')
-    else:
-        if not start_date:
-            start_date = today.strftime('%Y-%m-%d')
-        if not end_date:
-            end_date = today.strftime('%Y-%m-%d')
-        
-        try:
-            start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-            end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
-        except ValueError:
-            context = {'error': 'Invalid date format'}
-            return render(request, 'local_purchase_profit_loss_report_print.html', context)
-    
-    try:
-        # Get USD rate from Settings
-        try:
-            active_settings = Settings.objects.filter(is_active=True).first()
-            usd_rate = active_settings.dollar_rate_to_inr if active_settings else Decimal('84.00')
-        except:
-            usd_rate = Decimal('84.00')
-        
-        # Base query
-        local_purchases = LocalPurchase.objects.filter(
-            date__range=[start_date_obj, end_date_obj]
-        ).prefetch_related(
-            'items__item',
-            'items__item__category',
-            'items__item_quality',
-            'items__item_type',
-            'items__grade',
-            'party_name'
-        ).select_related('party_name')
-        
-        # Apply filters
-        if selected_parties:
-            local_purchases = local_purchases.filter(party_name__id__in=selected_parties)
-        
-        if selected_items:
-            local_purchases = local_purchases.filter(items__item__id__in=selected_items).distinct()
-        
-        if selected_item_categories:
-            local_purchases = local_purchases.filter(items__item__category__id__in=selected_item_categories).distinct()
-        
-        if selected_item_qualities:
-            local_purchases = local_purchases.filter(items__item_quality__id__in=selected_item_qualities).distinct()
-        
-        if selected_item_types:
-            local_purchases = local_purchases.filter(items__item_type__id__in=selected_item_types).distinct()
-        
-        if selected_item_grades:
-            local_purchases = local_purchases.filter(items__grade__id__in=selected_item_grades).distinct()
-        
-        # Apply freezing-level filters
-        if any([selected_item_brands, selected_freezing_categories, selected_processing_centers, 
-                selected_stores, selected_packing_units, selected_glaze_percentages]):
-            
-            freezing_query = FreezingEntryLocalItem.objects.all()
-            
-            if selected_item_brands:
-                freezing_query = freezing_query.filter(brand__id__in=selected_item_brands)
-            if selected_freezing_categories:
-                freezing_query = freezing_query.filter(freezing_category__id__in=selected_freezing_categories)
-            if selected_processing_centers:
-                freezing_query = freezing_query.filter(processing_center__id__in=selected_processing_centers)
-            if selected_stores:
-                freezing_query = freezing_query.filter(store__id__in=selected_stores)
-            if selected_packing_units:
-                freezing_query = freezing_query.filter(unit__id__in=selected_packing_units)
-            if selected_glaze_percentages:
-                freezing_query = freezing_query.filter(glaze__id__in=selected_glaze_percentages)
-            
-            matching_purchase_ids = freezing_query.values_list(
-                'freezing_entry__party__id', flat=True
-            ).distinct()
-            
-            local_purchases = local_purchases.filter(id__in=matching_purchase_ids)
-        
-        if not local_purchases.exists():
-            context = {
-                'message': 'No local purchases found',
-                'report_data': [],
-                'usd_rate': float(usd_rate),
-                'date_range_text': get_date_range_text(quick_filter, start_date, end_date)
-            }
-            return render(request, 'local_purchase_profit_loss_report_print.html', context)
-        
-        # Get overhead totals (LOCAL PURCHASES DON'T HAVE PEELING)
-        # FIXED: Get ALL active overhead records and sum them
-        purchase_overheads = PurchaseOverhead.objects.filter(is_active=True)
-        purchase_overhead_total = Decimal('0.00')
-        if purchase_overheads.exists():
-            for overhead in purchase_overheads:
-                if hasattr(overhead, 'other_expenses') and overhead.other_expenses:
-                    purchase_overhead_total += Decimal(str(overhead.other_expenses))
-        
-        processing_overheads = ProcessingOverhead.objects.filter(is_active=True)
-        processing_overhead_total = Decimal('0.00')
-        if processing_overheads.exists():
-            for overhead in processing_overheads:
-                if hasattr(overhead, 'amount') and overhead.amount:
-                    processing_overhead_total += Decimal(str(overhead.amount))
-        
-        shipment_overheads = ShipmentOverhead.objects.filter(is_active=True)
-        shipment_overhead_total = Decimal('0.00')
-        if shipment_overheads.exists():
-            for overhead in shipment_overheads:
-                if hasattr(overhead, 'amount') and overhead.amount:
-                    shipment_overhead_total += Decimal(str(overhead.amount))
-        
-        # DEBUG OUTPUT (remove in production)
-        print(f"Purchase Overhead Total: {purchase_overhead_total}")
-        print(f"Processing Overhead Total: {processing_overhead_total}")
-        print(f"Shipment Overhead Total: {shipment_overhead_total}")
-        
-        # Process each purchase
-        report_data = []
-        summary = {
-            'total_purchases': 0,
-            'total_purchase_quantity': Decimal('0.00'),
-            'total_purchase_amount': Decimal('0.00'),
-            'total_purchase_overhead': Decimal('0.00'),
-            'total_processing_overhead': Decimal('0.00'),
-            'total_shipment_overhead': Decimal('0.00'),
-            'total_all_overheads': Decimal('0.00'),
-            'total_freezing_tariff': Decimal('0.00'),
-            'total_cost': Decimal('0.00'),
-            'total_revenue': Decimal('0.00'),
-            'total_profit_loss': Decimal('0.00'),
-            'profit_count': 0,
-            'loss_count': 0,
-            'break_even_count': 0
-        }
-        
-        for purchase in local_purchases:
-            # 1. PURCHASE QUANTITY = total_quantity
-            purchase_quantity = purchase.total_quantity or Decimal('0.00')
-            
-            # 2. PURCHASE AMOUNT = total_amount
-            purchase_amount = purchase.total_amount or Decimal('0.00')
-            
-            # 3. COST/KG = purchase_amount / purchase_quantity
-            cost_per_kg = Decimal('0.00')
-            if purchase_quantity > 0:
-                cost_per_kg = purchase_amount / purchase_quantity
-            
-            # Get freezing entries
-            freezing_entries = FreezingEntryLocal.objects.filter(
-                party=purchase
-            ).prefetch_related(
-                'items__item',
-                'items__item_quality',
-                'items__peeling_type',
-                'items__grade',
-                'items__processing_center',
-                'items__store',
-                'items__unit',
-                'items__glaze',
-                'items__freezing_category',
-                'items__brand'
-            )
-            
-            # Calculate freezing revenue and items
-            freezing_revenue = Decimal('0.00')
-            freezing_items = []
-            total_freezing_kg = Decimal('0.00')
-            total_freezing_usd = Decimal('0.00')
-            total_freezing_tariff = Decimal('0.00')
-            freezing_tariff_breakdown = []
-            processing_details = []
-            
-            for entry in freezing_entries:
-                for item in entry.items.all():
-                    item_revenue = item.usd_rate_item_to_inr or Decimal('0.00')
-                    item_usd = item.usd_rate_item or Decimal('0.00')
-                    freezing_revenue += item_revenue
-                    total_freezing_usd += item_usd
-                    total_freezing_kg += item.kg or Decimal('0.00')
-                    
-                    # Get glaze display value
-                    glaze_display = ''
-                    if item.glaze:
-                        glaze_value = str(item.glaze.glaze) if hasattr(item.glaze, 'glaze') else str(item.glaze)
-                        # Check if glaze is numeric
-                        try:
-                            float(glaze_value)
-                            glaze_display = f"{glaze_value}%"
-                        except ValueError:
-                            glaze_display = glaze_value
-                    
-                    # Freezing tariff
-                    item_tariff_cost = Decimal('0.00')
-                    if (item.freezing_category and 
-                        item.freezing_category.is_active and 
-                        hasattr(item.freezing_category, 'tariff') and 
-                        item.freezing_category.tariff):
-                        item_tariff_cost = (item.kg or Decimal('0.00')) * Decimal(str(item.freezing_category.tariff))
-                        total_freezing_tariff += item_tariff_cost
-                        
-                        # Tariff breakdown
-                        existing = next((t for t in freezing_tariff_breakdown 
-                                       if t['category_name'] == item.freezing_category.name), None)
-                        if existing:
-                            existing['quantity'] += float(item.kg or 0)
-                            existing['amount'] += float(item_tariff_cost)
-                        else:
-                            freezing_tariff_breakdown.append({
-                                'category_name': item.freezing_category.name,
-                                'tariff_rate': float(item.freezing_category.tariff),
-                                'quantity': float(item.kg or 0),
-                                'amount': float(item_tariff_cost)
-                            })
-                    
-                    # Processing details - FIXED: Use glaze instead of packing
-                    processing_details.append({
-                        'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
-                        'glaze': glaze_display,
-                        'unit': item.unit.unit_code if item.unit else 'N/A',
-                        'grade': f"{item.peeling_type.name if item.peeling_type else ''}, {item.grade.grade if item.grade else ''}",
-                        'total_slab': float(item.slab_quantity or 0),
-                        'total_quantity': float(item.kg or 0),
-                        'price_usd': float(item.usd_rate_per_kg or 0),
-                        'amount_usd': float(item.usd_rate_item or 0),
-                        'amount_inr': float(item.usd_rate_item_to_inr or 0)
-                    })
-                    
-                    # Freezing items - FIXED: Use glaze_display
-                    freezing_items.append({
-                        'item_name': item.item.name if item.item else 'N/A',
-                        'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
-                        'peeling_type': item.peeling_type.name if item.peeling_type else 'N/A',
-                        'processing_center': item.processing_center.name if item.processing_center else 'N/A',
-                        'store': item.store.name if item.store else 'N/A',
-                        'freezing_category': item.freezing_category.name if item.freezing_category else 'N/A',
-                        'kg': float(item.kg or 0),
-                        'usd_rate_per_kg': float(item.usd_rate_per_kg or 0),
-                        'usd_rate_item': float(item.usd_rate_item or 0),
-                        'usd_rate_item_to_inr': float(item.usd_rate_item_to_inr or 0),
-                        'slab_quantity': float(item.slab_quantity or 0),
-                        'c_s_quantity': float(item.c_s_quantity or 0),
-                        'unit': item.unit.unit_code if item.unit else 'N/A',
-                        'glaze': glaze_display,
-                        'brand': item.brand.name if item.brand else 'N/A',
-                        'grade': f"{item.grade.grade if item.grade else 'N/A'}",
-                        'tariff_cost': float(item_tariff_cost)
-                    })
-            
-            # Calculate overheads - ALL rates multiply by TOTAL PRODUCTION QUANTITY
-            purchase_overhead_amount = total_freezing_kg * purchase_overhead_total
-            processing_overhead_amount = total_freezing_kg * processing_overhead_total
-            shipment_overhead_amount = total_freezing_kg * shipment_overhead_total
-            
-            # TOTAL PROCESSING EXP = sum of all overheads
-            total_all_overheads = (
-                purchase_overhead_amount +
-                processing_overhead_amount +
-                shipment_overhead_amount
-            )
-            
-            # INCOME = TOTAL AMOUNT/INR - TOTAL PROCESSING EXP
-            income = freezing_revenue - total_all_overheads
-            
-            # PROCESSING OVERHEADS PER KG
-            processing_overhead_per_kg = Decimal('0.00')
-            if total_freezing_kg > 0:
-                processing_overhead_per_kg = total_all_overheads / total_freezing_kg
-            
-            # Calculate totals
-            total_slabs = sum(detail['total_slab'] for detail in processing_details)
-            avg_price_usd = Decimal('0.00')
-            if total_freezing_kg > 0:
-                avg_price_usd = total_freezing_usd / total_freezing_kg
-            
-            # Grand Total Cost
-            grand_total_cost = (
-                purchase_amount +
-                purchase_overhead_amount +
-                processing_overhead_amount +
-                shipment_overhead_amount +
-                total_freezing_tariff
-            )
-            
-            # Total Profit/Loss
-            total_profit_loss = freezing_revenue - grand_total_cost
-            
-            # Profit/Loss Per KG
-            profit_loss_per_kg = Decimal('0.00')
-            if total_freezing_kg > 0:
-                profit_loss_per_kg = total_profit_loss / total_freezing_kg
-            
-            if grand_total_cost > 0:
-                profit_percentage = (total_profit_loss / grand_total_cost * 100)
-            else:
-                profit_percentage = Decimal('0.00')
-            
-            if total_profit_loss > 0:
-                profit_status = 'Profit'
-                summary['profit_count'] += 1
-            elif total_profit_loss < 0:
-                profit_status = 'Loss'
-                summary['loss_count'] += 1
-            else:
-                profit_status = 'Break Even'
-                summary['break_even_count'] += 1
-            
-            # Apply profit filter
-            if profit_filter == 'profit' and total_profit_loss <= 0:
-                continue
-            elif profit_filter == 'loss' and total_profit_loss >= 0:
-                continue
-            
-            # Get purchase items
-            purchase_items = []
-            purchase_item_names = []
-            for item in purchase.items.all():
-                item_name = item.item.name if item.item else 'N/A'
-                purchase_items.append({
-                    'item_name': item_name,
-                    'item_quality': item.item_quality.quality if item.item_quality else 'N/A',
-                    'item_type': item.item_type.name if item.item_type else 'N/A',
-                    'grade': f"{item.grade.grade if item.grade else 'N/A'}",
-                    'quantity': float(item.quantity or 0),
-                    'rate': float(item.rate or 0),
-                    'amount': float(item.amount or 0)
-                })
-                if item.item and item.item.name and item.item.name not in purchase_item_names:
-                    purchase_item_names.append(item.item.name)
-            
-            purchase_item_names_str = ', '.join(purchase_item_names) if purchase_item_names else 'N/A'
-            
-            # Overhead breakdown - FIXED: Now showing individual overheads correctly
-            overhead_breakdown = [
-                {'type': 'Purchase Overhead', 'rate': float(purchase_overhead_total), 'amount': float(purchase_overhead_amount)},
-                {'type': 'Processing Overhead', 'rate': float(processing_overhead_total), 'amount': float(processing_overhead_amount)},
-                {'type': 'Shipment Overhead', 'rate': float(shipment_overhead_total), 'amount': float(shipment_overhead_amount)},
-            ]
-            
-            purchase_data = {
-                'id': purchase.id,
-                'date': purchase.date,
-                'voucher_number': purchase.voucher_number or '',
-                'party_name': purchase.party_name.party if purchase.party_name else 'N/A',
-                
-                # Calculations
-                'purchase_quantity': float(purchase_quantity),
-                'purchase_amount': float(purchase_amount),
-                'cost_per_kg': float(cost_per_kg),
-                
-                'purchase_overhead': float(purchase_overhead_amount),
-                'processing_overhead': float(processing_overhead_amount),
-                'shipment_overhead': float(shipment_overhead_amount),
-                'freezing_tariff': float(total_freezing_tariff),
-                
-                'total_all_overheads': float(total_all_overheads),
-                'income': float(income),
-                'processing_overhead_per_kg': float(processing_overhead_per_kg),
-                'total_slabs': total_slabs,
-                'avg_price_usd': float(avg_price_usd),
-                'total_kg_processed': float(total_freezing_kg),
-                
-                'grand_total_cost': float(grand_total_cost),
-                'freezing_revenue': float(freezing_revenue),
-                'total_freezing_usd': float(total_freezing_usd),
-                'total_freezing_kg': float(total_freezing_kg),
-                
-                'total_profit_loss': float(total_profit_loss),
-                'profit_loss_per_kg': float(profit_loss_per_kg),
-                'profit_percentage': float(profit_percentage),
-                'profit_status': profit_status,
-                
-                # Detailed breakdowns
-                'purchase_items': purchase_items,
-                'purchase_item_names': purchase_item_names_str,
-                'freezing_items': freezing_items,
-                'freezing_tariff_breakdown': freezing_tariff_breakdown,
-                'overhead_breakdown': overhead_breakdown,
-                'processing_details': processing_details,
-            }
-            
-            report_data.append(purchase_data)
-            
-            # Update summary
-            summary['total_purchase_quantity'] += purchase_quantity
-            summary['total_purchase_amount'] += purchase_amount
-            summary['total_purchase_overhead'] += purchase_overhead_amount
-            summary['total_processing_overhead'] += processing_overhead_amount
-            summary['total_shipment_overhead'] += shipment_overhead_amount
-            summary['total_all_overheads'] += total_all_overheads
-            summary['total_freezing_tariff'] += total_freezing_tariff
-            summary['total_cost'] += grand_total_cost
-            summary['total_revenue'] += freezing_revenue
-            summary['total_profit_loss'] += total_profit_loss
-        
-        # Calculate summary
-        summary['total_purchases'] = len(report_data)
-        if summary['total_cost'] > 0:
-            summary['overall_profit_margin'] = float(summary['total_profit_loss'] / summary['total_cost'] * 100)
-        else:
-            summary['overall_profit_margin'] = 0.0
-        
-        # Convert Decimal to float
-        for key in ['total_purchase_quantity', 'total_purchase_amount',
-                   'total_purchase_overhead', 'total_processing_overhead', 'total_shipment_overhead',
-                   'total_all_overheads', 'total_freezing_tariff', 'total_cost', 'total_revenue', 'total_profit_loss']:
-            summary[key] = float(summary[key])
-        
-        # Add overhead rates
-        summary['purchase_overhead_rate'] = float(purchase_overhead_total)
-        summary['processing_overhead_rate'] = float(processing_overhead_total)
-        summary['shipment_overhead_rate'] = float(shipment_overhead_total)
-        
-        # Sort by date
-        report_data.sort(key=lambda x: x['date'], reverse=True)
-        
-        context = {
-            'report_data': report_data,
-            'summary': summary,
-            'usd_rate': float(usd_rate),
-            'start_date': start_date,
-            'end_date': end_date,
-            'date_range_text': get_date_range_text(quick_filter, start_date, end_date),
-        }
-        
-        return render(request, 'local_purchase_profit_loss_report_print.html', context)
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        context = {
-            'error': f'An error occurred: {str(e)}',
-            'report_data': [],
-            'usd_rate': float(usd_rate) if 'usd_rate' in locals() else 84.00,
-            'date_range_text': get_date_range_text(quick_filter, start_date, end_date) if 'quick_filter' in locals() else 'N/A'
-        }
-        return render(request, 'local_purchase_profit_loss_report_print.html', context)
+
+
+

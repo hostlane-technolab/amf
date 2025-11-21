@@ -60,29 +60,33 @@
   }
 
   .icon-wrapper {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    border-radius: 16px;
+    width: 64px;
+    height: 64px;
+    background: #28a745;
+    border-radius: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 24px;
-    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.2);
+    font-size: 28px;
+    box-shadow: none;
     margin-right: 20px;
+    flex-shrink: 0;
   }
 
   .header-text h3 {
-    font-size: 24px;
-    color: #2c3e50;
-    margin: 0 0 5px 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
   }
 
   .header-text p {
-    color: #6c757d;
+    color: #6b7280;
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
+    font-weight: 400;
   }
 
   /* Controls Section */
@@ -272,47 +276,55 @@
     padding: 30px;
   }
 
-  /* Individual Tenant Card */
+  /* Individual Tenant Card - Updated Style */
   .tenant-card {
-    background: white;
-    border-radius: 15px;
+    background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
+    border: 2px solid #e9ecef;
+    border-left: 6px solid #28a745;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     transition: all 0.3s ease;
-    border: 2px solid transparent;
+    position: relative;
   }
 
   .tenant-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
-    border-color: rgba(52, 152, 219, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border-left-color: #17a2b8;
   }
 
   .tenant-card.has-stock {
-    border-left: 4px solid #28a745;
+    border-left-color: #28a745;
   }
 
   .tenant-card.no-stock {
-    border-left: 4px solid #6c757d;
+    border-left-color: #6c757d;
   }
 
   /* Tenant Card Header */
   .tenant-card-header {
-    padding: 20px;
+    padding: 24px;
     background: linear-gradient(135deg, #f8f9fd 0%, #ffffff 100%);
     border-bottom: 2px solid #f1f3f7;
   }
 
   .tenant-info {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+  }
+
+  .tenant-info-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
   }
 
   .tenant-avatar {
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -320,419 +332,179 @@
     color: white;
     font-size: 20px;
     margin-right: 15px;
+    flex-shrink: 0;
   }
 
   .tenant-details .tenant-name {
     font-weight: 700;
     color: #2c3e50;
-    font-size: 16px;
-    margin-bottom: 3px;
+    font-size: 20px;
+    margin-bottom: 2px;
   }
 
   .tenant-details .tenant-contact {
     color: #6c757d;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
   }
 
-  /* Status Indicator Base Styles */
-.status-indicator {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-  border: 2px solid;
-  position: relative;
-  overflow: hidden;
-}
-
-.status-indicator::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s ease;
-}
-
-.status-indicator:hover::before {
-  left: 100%;
-}
-
-/* Active Status */
-.status-active {
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-  color: white;
-  border-color: #27ae60;
-  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
-}
-
-.status-active:hover {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-  box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
-  transform: translateY(-1px);
-}
-
-.status-active::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  width: 6px;
-  height: 6px;
-  background: #ffffff;
-  border-radius: 50%;
-  transform: translateY(-50%);
-  animation: pulse-active 2s infinite;
-}
-
-@keyframes pulse-active {
-  0% { opacity: 1; transform: translateY(-50%) scale(1); }
-  50% { opacity: 0.7; transform: translateY(-50%) scale(1.2); }
-  100% { opacity: 1; transform: translateY(-50%) scale(1); }
-}
-
-/* Inactive Status */
-.status-inactive {
-  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-  color: white;
-  border-color: #7f8c8d;
-  box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
-}
-
-.status-inactive:hover {
-  background: linear-gradient(135deg, #7f8c8d 0%, #6c7b7d 100%);
-  box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
-  transform: translateY(-1px);
-}
-
-.status-inactive::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: 8px;
-  width: 6px;
-  height: 6px;
-  background: #ffffff;
-  border-radius: 50%;
-  transform: translateY(-50%);
-  opacity: 0.6;
-}
-
-/* Alternative Light Theme Status */
-.status-active-light {
-  background: rgba(46, 204, 113, 0.1);
-  color: #27ae60;
-  border-color: rgba(46, 204, 113, 0.3);
-  box-shadow: 0 2px 8px rgba(46, 204, 113, 0.1);
-}
-
-.status-active-light:hover {
-  background: rgba(46, 204, 113, 0.15);
-  border-color: rgba(46, 204, 113, 0.4);
-  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
-  transform: translateY(-1px);
-}
-
-.status-inactive-light {
-  background: rgba(149, 165, 166, 0.1);
-  color: #7f8c8d;
-  border-color: rgba(149, 165, 166, 0.3);
-  box-shadow: 0 2px 8px rgba(149, 165, 166, 0.1);
-}
-
-.status-inactive-light:hover {
-  background: rgba(149, 165, 166, 0.15);
-  border-color: rgba(149, 165, 166, 0.4);
-  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.2);
-  transform: translateY(-1px);
-}
-
-/* Card Border Styling Based on Status */
-.tenant-card.active {
-  border-left: 4px solid #2ecc71;
-}
-
-.tenant-card.inactive {
-  border-left: 4px solid #95a5a6;
-}
-
-.tenant-card.active:hover {
-  border-left-color: #27ae60;
-  box-shadow: 0 15px 35px rgba(46, 204, 113, 0.15);
-}
-
-.tenant-card.inactive:hover {
-  border-left-color: #7f8c8d;
-  box-shadow: 0 15px 35px rgba(149, 165, 166, 0.15);
-}
-
-/* Avatar Styling Based on Status */
-.tenant-avatar.active {
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-  animation: pulse-avatar-active 3s infinite;
-}
-
-.tenant-avatar.inactive {
-  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
-}
-
-@keyframes pulse-avatar-active {
-  0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
-}
-
-/* Status Icons */
-.status-icon-active::before {
-  content: "\f058"; /* fa-check-circle */
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  margin-right: 4px;
-}
-
-.status-icon-inactive::before {
-  content: "\f057"; /* fa-times-circle */
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  margin-right: 4px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .status-indicator {
+  /* Status Badge - New Style */
+  .status-badge {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
     padding: 6px 12px;
-    font-size: 11px;
-    letter-spacing: 0.5px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
   }
-  
-  .status-indicator::after {
-    width: 4px;
-    height: 4px;
-    right: 6px;
-  }
-}
 
+  .status-badge.empty {
+    background: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+    border-color: rgba(108, 117, 125, 0.2);
+  }
 
   /* Tenant Card Body */
   .tenant-card-body {
-    padding: 20px;
+    padding: 24px;
   }
 
-  /* Quick Stats */
-  .quick-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+  /* Financial Summary Section - New Style */
+  .financial-summary-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
     margin-bottom: 20px;
   }
 
-  .quick-stat {
-    text-align: center;
-    padding: 15px 10px;
-    background: #f8f9fa;
-    border-radius: 10px;
-    border: 2px solid #e9ecef;
+  .financial-metrics {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
   }
 
-  .quick-stat-label {
+  .metric-item {
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    flex: 1;
+    min-width: 90px;
+  }
+
+  .metric-item-items {
+    background: rgba(52, 152, 219, 0.1);
+    border: 2px solid rgba(52, 152, 219, 0.2);
+  }
+
+  .metric-item-kg {
+    background: rgba(255, 193, 7, 0.1);
+    border: 2px solid rgba(255, 193, 7, 0.2);
+  }
+
+  .metric-item-status {
+    background: rgba(40, 167, 69, 0.1);
+    border: 2px solid rgba(40, 167, 69, 0.2);
+  }
+
+  .metric-item-status.inactive {
+    background: rgba(108, 117, 125, 0.1);
+    border-color: rgba(108, 117, 125, 0.2);
+  }
+
+  .metric-label {
     font-size: 11px;
-    color: #6c757d;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 5px;
+    color: #6c757d;
+    margin-bottom: 4px;
   }
 
-  .quick-stat-value {
+  .metric-value {
     font-size: 18px;
     font-weight: 700;
     color: #2c3e50;
   }
 
-  /* Toggle Switch Status Card */
-.quick-stat.status-toggle {
-  background: white;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  padding: 15px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-/* Top border indicator */
-.quick-stat.status-toggle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: #28a745;
-  border-radius: 12px 12px 0 0;
-}
-
-/* Status Label */
-.quick-stat.status-toggle .quick-stat-label {
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-/* Toggle Switch Container */
-.status-toggle-switch {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 8px;
-}
-
-/* Toggle Switch Track */
-.toggle-track {
-  width: 50px;
-  height: 24px;
-  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-  border-radius: 20px;
-  position: relative;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Inactive Toggle Track */
-.toggle-track.inactive {
-  background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
-}
-
-/* Toggle Switch Circle/Dot */
-.toggle-circle {
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-/* Active state circle position */
-.toggle-track.inactive .toggle-circle {
-  right: 29px;
-}
-
-/* Pulsing animation for active state */
-.toggle-track:not(.inactive) .toggle-circle {
-  animation: toggle-pulse 2s infinite;
-}
-
-@keyframes toggle-pulse {
-  0% { box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 0 0 rgba(46, 204, 113, 0.4); }
-  50% { box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 0 4px rgba(46, 204, 113, 0); }
-  100% { box-shadow: 0 2px 6px rgba(0,0,0,0.2), 0 0 0 0 rgba(46, 204, 113, 0); }
-}
-
-/* Status Text */
-.status-text {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 8px;
-  text-align: center;
-}
-
-.status-text.active {
-  color: #27ae60;
-}
-
-.status-text.inactive {
-  color: #7f8c8d;
-}
-
-/* Card hover effect */
-.quick-stat.status-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-  border-color: rgba(52, 152, 219, 0.3);
-}
-
-/* Active card styling */
-.quick-stat.status-toggle.active {
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.02) 0%, white 100%);
-  border-color: rgba(46, 204, 113, 0.2);
-}
-
-/* Inactive card styling */
-.quick-stat.status-toggle.inactive {
-  background: linear-gradient(135deg, rgba(149, 165, 166, 0.02) 0%, white 100%);
-  border-color: rgba(149, 165, 166, 0.2);
-}
-
-.quick-stat.status-toggle.inactive::before {
-  background: #95a5a6;
-}
-
-/* Alternative compact version */
-.quick-stat.status-toggle.compact {
-  padding: 12px;
-}
-
-.quick-stat.status-toggle.compact .toggle-track {
-  width: 40px;
-  height: 20px;
-}
-
-.quick-stat.status-toggle.compact .toggle-circle {
-  width: 14px;
-  height: 14px;
-  top: 3px;
-}
-
-.quick-stat.status-toggle.compact .toggle-track.inactive .toggle-circle {
-  right: 23px;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .quick-stat.status-toggle {
-    padding: 12px 10px;
+  .metric-item-items .metric-value {
+    color: #3498db;
   }
-  
+
+  .metric-item-kg .metric-value {
+    color: #ffc107;
+  }
+
+  .metric-item-status .metric-value {
+    color: #28a745;
+  }
+
+  .metric-item-status.inactive .metric-value {
+    color: #6c757d;
+  }
+
+  /* Toggle Switch Status */
+  .status-toggle-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   .toggle-track {
-    width: 45px;
-    height: 22px;
+    width: 50px;
+    height: 24px;
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
   }
-  
-  .toggle-circle {
-    width: 16px;
-    height: 16px;
-  }
-  
-  .toggle-track.inactive .toggle-circle {
-    right: 26px;
-  }
-  
-  .status-text {
-    font-size: 10px;
-  }
-}
 
-  /* Stock Metrics */
+  .toggle-track.inactive {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+  }
+
+  .toggle-circle {
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  .toggle-track.inactive .toggle-circle {
+    right: 29px;
+  }
+
+  .status-text {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .status-text.active {
+    color: #27ae60;
+  }
+
+  .status-text.inactive {
+    color: #7f8c8d;
+  }
+
+  /* Stock Section */
   .stock-section {
     margin-bottom: 20px;
   }
@@ -763,13 +535,13 @@
     margin-bottom: 0;
   }
 
-  .metric-label {
+  .metric-row-label {
     font-size: 13px;
     color: #6c757d;
     font-weight: 500;
   }
 
-  .metric-value {
+  .metric-row-value {
     font-size: 14px;
     font-weight: 700;
     color: #2c3e50;
@@ -777,20 +549,15 @@
 
   /* Balance Section */
   .balance-section {
-    background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(52, 152, 219, 0.02) 100%);
-    border: 2px solid rgba(52, 152, 219, 0.1);
+    background: rgba(40, 167, 69, 0.1);
+    border: 2px solid rgba(40, 167, 69, 0.2);
     border-radius: 12px;
     padding: 15px;
     margin-bottom: 20px;
   }
 
-  .balance-section.positive {
-    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.02) 100%);
-    border-color: rgba(40, 167, 69, 0.2);
-  }
-
   .balance-section.zero {
-    background: linear-gradient(135deg, rgba(108, 117, 125, 0.05) 0%, rgba(108, 117, 125, 0.02) 100%);
+    background: rgba(108, 117, 125, 0.1);
     border-color: rgba(108, 117, 125, 0.2);
   }
 
@@ -815,12 +582,45 @@
   .balance-value {
     font-size: 16px;
     font-weight: 700;
-    color: #2c3e50;
+    color: #28a745;
+  }
+
+  .balance-section.zero .balance-value {
+    color: #6c757d;
+  }
+
+  /* Financial Progress Bar */
+  .financial-progress {
+    margin-top: 16px;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-container {
+    display: flex;
+    height: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    transition: width 0.5s ease;
+  }
+
+  .receipt-bar {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  }
+
+  .return-bar {
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
   }
 
   /* Card Footer */
   .tenant-card-footer {
-    padding: 15px 20px;
+    padding: 15px 24px;
     background: #f8f9fa;
     border-top: 2px solid #f1f3f7;
     display: flex;
@@ -832,27 +632,33 @@
     font-size: 12px;
     color: #6c757d;
     font-weight: 500;
-  }
-
-  .view-detail-btn {
-    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-    color: white;
-    padding: 8px 16px;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 12px;
-    transition: all 0.3s ease;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 6px;
   }
 
+  .view-detail-btn {
+    background: #17a2b8;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid #17a2b8;
+    width: 100%;
+  }
+
   .view-detail-btn:hover {
-    background: linear-gradient(135deg, #2980b9 0%, #1f618d 100%);
+    background: #138496;
     color: white;
     text-decoration: none;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.3);
   }
 
   /* Empty State */
@@ -886,6 +692,7 @@
     text-align: center;
     background: #f8f9fa;
     display: none;
+    grid-column: 1 / -1;
   }
 
   .no-results-icon {
@@ -940,8 +747,13 @@
       padding: 20px;
     }
     
-    .quick-stats {
-      grid-template-columns: repeat(2, 1fr);
+    .financial-metrics {
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .metric-item {
+      width: 100%;
     }
     
     .balance-grid {
@@ -1280,7 +1092,7 @@
               <!-- Tenant Card Header -->
               <div class="tenant-card-header">
                 <div class="tenant-info">
-                  <div style="display: flex; align-items: center;">
+                  <div class="tenant-info-left">
                     <div class="tenant-avatar">
                       <i class="fas fa-industry"></i>
                     </div>
@@ -1293,7 +1105,7 @@
                       {% endif %}
                     </div>
                   </div>
-                  <div class="status-indicator {% if summary.has_stock %}status-active{% else %}status-empty{% endif %}">
+                  <div class="status-badge {% if not summary.has_stock %}empty{% endif %}">
                     {% if summary.has_stock %}In Stock{% else %}Empty{% endif %}
                   </div>
                 </div>
@@ -1301,27 +1113,29 @@
 
               <!-- Tenant Card Body -->
               <div class="tenant-card-body">
-                <!-- Quick Stats -->
-                <div class="quick-stats">
-                  <div class="quick-stat">
-                    <div class="quick-stat-label">Items</div>
-                    <div class="quick-stat-value">{{ summary.item_count }}</div>
+                <!-- Financial Summary Section -->
+                <div class="financial-summary-section">
+                  <div class="financial-metrics">
+                    <div class="metric-item metric-item-items">
+                      <div class="metric-label">Items</div>
+                      <div class="metric-value">{{ summary.item_count }}</div>
+                    </div>
+                    <div class="metric-item metric-item-kg">
+                      <div class="metric-label">Total KG</div>
+                      <div class="metric-value">{{ summary.kg_balance|floatformat:1 }}</div>
+                    </div>
+                    <div class="metric-item metric-item-status {% if not summary.has_stock %}inactive{% endif %}">
+                      <div class="metric-label">Status</div>
+                      <div class="status-toggle-wrapper">
+                        <div class="toggle-track {% if not summary.has_stock %}inactive{% endif %}">
+                          <div class="toggle-circle"></div>
+                        </div>
+                        <div class="status-text {% if summary.has_stock %}active{% else %}inactive{% endif %}">
+                          {% if summary.has_stock %}Active{% else %}Inactive{% endif %}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="quick-stat">
-                    <div class="quick-stat-label">Total KG</div>
-                    <div class="quick-stat-value">{{ summary.kg_balance|floatformat:1 }}</div>
-                  </div>
-<div class="quick-stat status-toggle {% if summary.has_stock %}active{% else %}inactive{% endif %}">
-    <div class="quick-stat-label">Status</div>
-    <div class="status-toggle-switch">
-      <div class="toggle-track {% if not summary.has_stock %}inactive{% endif %}">
-        <div class="toggle-circle"></div>
-      </div>
-    </div>
-    <div class="status-text {% if summary.has_stock %}active{% else %}inactive{% endif %}">
-      {% if summary.has_stock %}Active{% else %}Inactive{% endif %}
-    </div>
-  </div>
                 </div>
 
                 <!-- Stock Received -->
@@ -1330,16 +1144,16 @@
                     <i class="fas fa-arrow-down"></i>Stock Received
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">Slab</span>
-                    <span class="metric-value">{{ summary.freezing_totals.total_slab|default:0|floatformat:0 }}</span>
+                    <span class="metric-row-label">Slab</span>
+                    <span class="metric-row-value">{{ summary.freezing_totals.total_slab|default:0|floatformat:0 }}</span>
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">C/S</span>
-                    <span class="metric-value">{{ summary.freezing_totals.total_cs|default:0|floatformat:0 }}</span>
+                    <span class="metric-row-label">C/S</span>
+                    <span class="metric-row-value">{{ summary.freezing_totals.total_cs|default:0|floatformat:0 }}</span>
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">Weight (KG)</span>
-                    <span class="metric-value">{{ summary.freezing_totals.total_kg|default:0|floatformat:1 }}</span>
+                    <span class="metric-row-label">Weight (KG)</span>
+                    <span class="metric-row-value">{{ summary.freezing_totals.total_kg|default:0|floatformat:1 }}</span>
                   </div>
                 </div>
 
@@ -1349,21 +1163,21 @@
                     <i class="fas fa-arrow-up"></i>Stock Returned
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">Slab</span>
-                    <span class="metric-value" style="color: #e74c3c;">{{ summary.return_totals.total_slab|default:0|floatformat:0 }}</span>
+                    <span class="metric-row-label">Slab</span>
+                    <span class="metric-row-value" style="color: #e74c3c;">{{ summary.return_totals.total_slab|default:0|floatformat:0 }}</span>
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">C/S</span>
-                    <span class="metric-value" style="color: #e74c3c;">{{ summary.return_totals.total_cs|default:0|floatformat:0 }}</span>
+                    <span class="metric-row-label">C/S</span>
+                    <span class="metric-row-value" style="color: #e74c3c;">{{ summary.return_totals.total_cs|default:0|floatformat:0 }}</span>
                   </div>
                   <div class="metric-row">
-                    <span class="metric-label">Weight (KG)</span>
-                    <span class="metric-value" style="color: #e74c3c;">{{ summary.return_totals.total_kg|default:0|floatformat:1 }}</span>
+                    <span class="metric-row-label">Weight (KG)</span>
+                    <span class="metric-row-value" style="color: #e74c3c;">{{ summary.return_totals.total_kg|default:0|floatformat:1 }}</span>
                   </div>
                 </div>
 
                 <!-- Current Balance -->
-                <div class="balance-section {% if summary.has_stock %}positive{% else %}zero{% endif %}">
+                <div class="balance-section {% if not summary.has_stock %}zero{% endif %}">
                   <div class="section-title" style="color: {% if summary.has_stock %}#28a745{% else %}#6c757d{% endif %};">
                     <i class="fas fa-balance-scale"></i>Current Balance
                   </div>
@@ -1382,28 +1196,34 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Progress Bar -->
+                <div class="financial-progress">
+                  {% if summary.freezing_totals.total_kg or summary.return_totals.total_kg %}
+                    {% with total=summary.freezing_totals.total_kg|add:summary.return_totals.total_kg %}
+                    <div class="progress-bar-container">
+                      <div class="progress-bar receipt-bar" 
+                           style="width: {% widthratio summary.freezing_totals.total_kg total 100 %}%"></div>
+                      <div class="progress-bar return-bar" 
+                           style="width: {% widthratio summary.return_totals.total_kg total 100 %}%"></div>
+                    </div>
+                    {% endwith %}
+                  {% endif %}
+                </div>
               </div>
 
               <!-- Tenant Card Footer -->
               <div class="tenant-card-footer">
-                <div class="last-activity">
-                  <i class="fas fa-clock"></i>
-                  Last activity: 
-                  {% if summary.tenant.updated_at %}
-                    {{ summary.tenant.updated_at|date:"M d, Y" }}
-                  {% else %}
-                    N/A
-                  {% endif %}
-                </div>
-                <a href="{% url 'adminapp:tenant_stock_detail' summary.tenant.id %}" class="view-detail-btn">
-                  <i class="fas fa-eye"></i>View Details
+                <a href="{% url 'adminapp:tenant_stock_detail' summary.tenant.id %}" class="view-detail-btn justify-content-center">
+                  <i class="fas fa-file-invoice"></i>
+                  <span>Statement</span>
                 </a>
               </div>
             </div>
             {% endfor %}
 
             <!-- No Results Message -->
-            <div id="noResults" class="no-results" style="grid-column: 1 / -1;">
+            <div id="noResults" class="no-results">
               <div class="no-results-content">
                 <i class="fas fa-search-minus no-results-icon"></i>
                 <h4>No tenants found</h4>
@@ -1456,7 +1276,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Count items
-            const itemsValue = card.querySelector('.quick-stat-value');
+            const itemsValue = card.querySelector('.metric-item-items .metric-value');
             if (itemsValue) {
                 const items = parseInt(itemsValue.textContent) || 0;
                 totalItems += items;
@@ -1583,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Add visual feedback for zero values
-    const metricValues = document.querySelectorAll('.metric-value, .quick-stat-value, .balance-value');
+    const metricValues = document.querySelectorAll('.metric-value, .metric-row-value, .balance-value');
     metricValues.forEach(value => {
         if (value.textContent.trim() === '0' || value.textContent.trim() === '0.0') {
             value.style.opacity = '0.6';
@@ -1618,7 +1438,7 @@ style.textContent = `
   }
   
   .tenant-card.has-stock .tenant-avatar {
-    animation: pulse 2s infinite;
+
   }
 `;
 document.head.appendChild(style);

@@ -118,7 +118,7 @@
         }
 
         .data-table thead {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            background: linear-gradient(135deg, #bad0ff 0%, #c3d3ff 100%);
             color: white;
         }
 
@@ -130,7 +130,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-right: 1px solid rgba(255,255,255,0.2);
-            color: white;
+            color: rgb(0, 0, 0);
         }
 
         .data-table th:last-child {
@@ -152,6 +152,18 @@
 
         .data-table tbody tr:hover {
             background-color: #eff6ff;
+        }
+
+        .data-table tfoot {
+            background: linear-gradient(135deg, #d5e2ff 0%, #dfe8ff 100%);
+            font-weight: bold;
+        }
+
+        .data-table tfoot td {
+            color: rgb(0, 0, 0);
+            font-size: 22px;
+            border-bottom: none;
+            padding: 15px 12px;
         }
 
         .amount-cell {
@@ -334,6 +346,10 @@
                 display: table-header-group;
             }
             
+            .data-table tfoot {
+                display: table-footer-group;
+            }
+            
             .data-table tbody tr {
                 page-break-inside: avoid;
             }
@@ -346,7 +362,7 @@
                 color: #000000;
             }
 
-            .data-table th {
+            .data-table th, .data-table tfoot td {
                 color: white;
             }
         }
@@ -394,30 +410,6 @@
             .report-title {
                 font-size: 22px;
             }
-        }
-
-        /* PDF rendering styles */
-        .pdf-rendering {
-            color: #000000;
-            opacity: 1;
-        }
-
-        .pdf-rendering *:not(.data-table th) {
-            color: #000000;
-            opacity: 1;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .pdf-rendering .data-table th {
-            color: #ffffff;
-            opacity: 1;
-        }
-
-        .pdf-rendering .data-table td {
-            color: #000000;
-            opacity: 1;
-            font-weight: 700;
         }
 </style>
     
@@ -511,6 +503,14 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6" style="text-align: right; text-transform: uppercase; letter-spacing: 0.5px; font-size: 22px;">GRAND TOTAL:</td>
+                <td class="quantity-cell" id="grandTotalQuantity" style="background: linear-gradient(135deg, #bed2ff 0%, #d2deff 100%); color: rgb(0, 0, 0); font-size: 24px; text-align: center;">0</td>
+                <td class="amount-cell" id="grandTotalAmount" style="background: linear-gradient(135deg, #bed2ff 0%, #d2deff 100%); color: rgb(0, 0, 0); font-size: 24px; text-align: right;">₹0.00</td>
+                <td style="background: linear-gradient(135deg, #cedeff 0%, #cbd9ff 100%);"></td>
+            </tr>
+        </tfoot>
     </table>
 
     <!-- Export Action Buttons -->
@@ -529,7 +529,7 @@
         </div>
         <div class="footer-right">
             <div class="page-number">Page 1 of 1</div>
-            <div><strong>Total Records:</strong> {{ summary|length }}</div>
+            <div><strong>Total Records:</strong> 5</div>
         </div>
     </div>
 
@@ -562,6 +562,8 @@
 
             const avgRate = validRows > 0 && totalQuantity > 0 ? totalAmount / totalQuantity : 0;
 
+            // Update summary stats
+            document.getElementById('totalRecords').textContent = validRows;
             document.getElementById('totalQuantity').textContent = totalQuantity.toLocaleString('en-IN', {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0
@@ -571,6 +573,16 @@
                 maximumFractionDigits: 2
             });
             document.getElementById('avgRate').textContent = '₹' + avgRate.toLocaleString('en-IN', {
+                minimumFractionDigits: 2, 
+                maximumFractionDigits: 2
+            });
+
+            // Update grand total row
+            document.getElementById('grandTotalQuantity').textContent = totalQuantity.toLocaleString('en-IN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            document.getElementById('grandTotalAmount').textContent = '₹' + totalAmount.toLocaleString('en-IN', {
                 minimumFractionDigits: 2, 
                 maximumFractionDigits: 2
             });
@@ -584,8 +596,6 @@
                 spinner.style.display = 'inline-block';
                 pdfButton.style.pointerEvents = 'none';
                 pdfButton.style.opacity = '0.7';
-
-                document.body.classList.add('pdf-rendering');
 
                 const actionButtons = document.querySelector('.action-buttons');
                 const originalDisplay = actionButtons.style.display;
@@ -610,41 +620,7 @@
                     allowTaint: false,
                     foreignObjectRendering: false,
                     imageTimeout: 15000,
-                    letterRendering: true,
-                    onclone: function(clonedDoc) {
-                        clonedDoc.body.style.color = '#000000';
-                        clonedDoc.body.style.opacity = '1';
-                        
-                        const allTextElements = clonedDoc.querySelectorAll('*');
-                        allTextElements.forEach(el => {
-                            if (!el.closest('thead')) {
-                                el.style.color = '#000000';
-                                el.style.opacity = '1';
-                                el.style.webkitPrintColorAdjust = 'exact';
-                                el.style.printColorAdjust = 'exact';
-                                
-                                if (el.tagName === 'TD') {
-                                    el.style.fontWeight = '700';
-                                    el.style.color = '#000000';
-                                    el.style.opacity = '1';
-                                }
-                            }
-                        });
-                        
-                        const tableCells = clonedDoc.querySelectorAll('.data-table td');
-                        tableCells.forEach(td => {
-                            td.style.color = '#000000';
-                            td.style.opacity = '1';
-                            td.style.fontWeight = '700';
-                        });
-                        
-                        const headerCells = clonedDoc.querySelectorAll('.data-table th');
-                        headerCells.forEach(th => {
-                            th.style.color = '#ffffff';
-                            th.style.opacity = '1';
-                            th.style.fontWeight = '700';
-                        });
-                    }
+                    letterRendering: true
                 });
 
                 const imgData = canvas.toDataURL('image/png');
@@ -679,8 +655,6 @@
                 spinner.style.display = 'none';
                 pdfButton.style.pointerEvents = 'auto';
                 pdfButton.style.opacity = '1';
-                
-                document.body.classList.remove('pdf-rendering');
                 
                 actionButtons.style.display = originalDisplay || 'flex';
             }

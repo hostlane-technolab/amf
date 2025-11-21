@@ -4,7 +4,7 @@
 
 <!-- Page header style -->
 <style>
-  /* ===== PAGE HEADER STYLES (Prefixed with ph-) ===== */
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
   :root {
     --ph-primary-color: #2563eb;
     --ph-primary-hover: #1d4ed8;
@@ -37,6 +37,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* Changed from flex-start to center */
     flex-wrap: wrap;
     gap: var(--ph-spacing-lg);
   }
@@ -88,6 +89,7 @@
   .ph-stat-badge {
     display: flex;
     align-items: center;
+
     padding: var(--ph-spacing-sm) var(--ph-spacing-md);
     background: var(--ph-bg-tertiary);
     border: 2px solid var(--ph-border-color);
@@ -109,6 +111,7 @@
     padding: 0;
     list-style: none;
     flex-wrap: wrap;
+
   }
 
   .ph-breadcrumb-item {
@@ -153,12 +156,16 @@
   }
 
   @media (max-width: 768px) {
+
+    /* adjust breakpoint as needed */
     .ph-header-stats {
       display: none !important;
     }
+
     .ph-breadcrumb-nav {
       margin-top: 5px;
     }
+
     .ph-header-title {
       font-size: 1.7rem;
     }
@@ -166,6 +173,174 @@
 </style>
 
 <style>
+                          /* Quantity Display - Updated Design */
+                        .quantity-display {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 10px 18px;
+                          background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+                          border: 2px solid #ffcc80;
+                          border-radius: 25px;
+                          color: #e65100;
+                          font-weight: 600;
+                          font-size: 15px;
+                          box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+                          white-space: nowrap;
+                        }
+
+                        .quantity-value {
+                          color: #e65100;
+                        }
+
+                        .quantity-unit {
+                          color: #e65100;
+                          font-size: 16px;
+                          font-weight: 500;
+                          margin-left: 4px;
+                          flex-shrink: 0;
+                        }
+
+                        /* Shed Info */
+                        .shed-info {
+                          display: flex;
+                          align-items: center;
+                        }
+
+                        .shed-avatar {
+                          width: 45px;
+                          height: 45px;
+                          background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+                          border-radius: 12px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          color: white;
+                          font-size: 18px;
+                          margin-right: 15px;
+                        }
+
+                        .shed-name {
+                          font-weight: 700;
+                          color: #2c3e50;
+                          font-size: 16px;
+                          margin-bottom: 2px;
+                        }
+
+                        .shed-meta {
+                          color: #6c757d;
+                          font-size: 13px;
+                          font-weight: 500;
+                        }
+
+                        /* Voucher Display */
+                        .voucher-display {
+                          text-align: center;
+                        }
+
+                        .voucher-badge {
+                          display: inline-block;
+                          padding: 8px 16px;
+                          background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+                          color: white;
+                          border-radius: 20px;
+                          font-weight: 600;
+                          font-size: 13px;
+                          letter-spacing: 0.5px;
+                          text-transform: uppercase;
+                        }
+
+                        /* Date Display */
+                        .date-display {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 10px 18px;
+                          background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                          border: 2px solid #90caf9;
+                          border-radius: 25px;
+                          color: #1976d2;
+                          font-weight: 600;
+                          font-size: 14px;
+                          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+                          white-space: nowrap;
+                        }
+
+                        .date-display i {
+                          color: #1976d2;
+                          font-size: 14px;
+                          margin-right: 8px;
+                          flex-shrink: 0;
+                        }
+
+                        /* Expense Display (Total Amount) */
+                        .expense-display {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 10px 18px;
+                          background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+                          border: 2px solid #ef9a9a;
+                          border-radius: 25px;
+                          color: #c62828;
+                          font-weight: 600;
+                          font-size: 14px;
+                          box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+                          white-space: nowrap;
+                        }
+
+                        .expense-display .currency-symbol {
+                          font-size: 14px;
+                          margin-right: 4px;
+                          font-weight: 600;
+                        }
+
+                        .expense-display .expense-value {
+                          font-weight: 600;
+                          letter-spacing: 0.3px;
+                        }
+
+                        .yield-icon {
+                          margin-right: 8px;
+                          font-size: 14px;
+                        }
+
+                        /* Status Badge */
+                        .status-wrapper {
+                          display: flex;
+                          justify-content: flex-start;
+                        }
+
+                        .status-badge {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 8px 16px;
+                          border-radius: 20px;
+                          font-size: 13px;
+                          font-weight: 600;
+                          text-transform: uppercase;
+                          letter-spacing: 0.5px;
+                        }
+
+                        .status-dot {
+                          font-size: 8px;
+                          margin-right: 8px;
+                        }
+
+                        .status-active {
+                          background: rgba(40, 167, 69, 0.1);
+                          color: #28a745;
+                          border: 2px solid rgba(40, 167, 69, 0.2);
+                        }
+
+                        .status-pending {
+                          background: rgba(255, 193, 7, 0.1);
+                          color: #ffc107;
+                          border: 2px solid rgba(255, 193, 7, 0.2);
+                        }
+
+                        .status-inactive {
+                          background: rgba(220, 53, 69, 0.1);
+                          color: #dc3545;
+                          border: 2px solid rgba(220, 53, 69, 0.2);
+                        }
   /* Base Styles */
   .stock-detail-container {
     margin-top: 2rem;
@@ -175,7 +350,7 @@
   .form-card {
     border-radius: 20px;
     background: #ffffff;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     border: none;
     overflow: hidden;
     margin-bottom: 2rem;
@@ -376,6 +551,7 @@
     opacity: 0.9;
     text-transform: uppercase;
     letter-spacing: 1px;
+    color: white;
   }
 
   /* Tab Navigation */
@@ -390,6 +566,13 @@
 
   .nav-pills .nav-link.active {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .nav-pills .nav-link.active:hover {
+    background: #1572E8;
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
@@ -437,7 +620,7 @@
   .table-row:hover {
     background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(40, 167, 69, 0.05) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
   }
 
   .table-cell {
@@ -452,14 +635,19 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    align-items: center;
+    /* Optional: centers the badges */
   }
 
   .quantity-badge {
-    padding: 6px 12px;
+    padding: 10px 12px;
     border-radius: 15px;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     font-weight: 600;
     display: inline-block;
+    width: 140px;
+    /* Fixed width for all badges */
+    text-align: center;
   }
 
   .badge.bg-info {
@@ -479,10 +667,10 @@
   }
 
   .status-badge {
-    padding: 8px 16px;
+    padding: 10px 16px;
     border-radius: 20px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
   .status-pending {
@@ -576,6 +764,7 @@
 
   /* Responsive Design */
   @media (max-width: 768px) {
+
     .company-info-grid,
     .balance-summary-grid {
       grid-template-columns: 1fr;
@@ -641,7 +830,7 @@
           </div>
         </div>
 
-        <!-- Breadcrumbs -->
+        <!-- Breadcrumbs - Now inline with header -->
         <nav class="ph-breadcrumb-nav">
           <ol class="ph-breadcrumb-list">
             <li class="ph-breadcrumb-item">
@@ -667,6 +856,9 @@
             </li>
           </ol>
         </nav>
+        <div class="ph-header-stats">
+
+        </div>
       </div>
     </div>
 
@@ -684,7 +876,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="card-body p-0">
           <div class="company-info-grid">
             <div class="info-card">
@@ -700,7 +892,7 @@
                 </div>
               </div>
             </div>
-            
+
             <div class="info-card">
               <div class="info-background">
                 <i class="fas fa-phone bg-icon"></i>
@@ -714,7 +906,7 @@
                 </div>
               </div>
             </div>
-            
+
             {% if tenant.email %}
             <div class="info-card">
               <div class="info-background">
@@ -747,40 +939,33 @@
             </div>
           </div>
         </div>
-        
+
         <div class="card-body p-0">
           <div class="balance-summary-grid">
             <div class="balance-card">
               <div class="metric-icon">
                 <i class="fas fa-boxes"></i>
               </div>
-              <div class="metric-value">{{ balance_totals.slab_balance|default:0 }}</div>
+              <div class="metric-value">{{ freezing_totals.total_slab|default:0 }}</div>
               <div class="metric-label">Total Slabs</div>
             </div>
-            
+
             <div class="balance-card info">
               <div class="metric-icon">
                 <i class="fas fa-layer-group"></i>
               </div>
-              <div class="metric-value">{{ balance_totals.cs_balance|default:0 }}</div>
+              <div class="metric-value">{{ freezing_totals.total_cs|default:0 }}</div>
               <div class="metric-label">Total C/S</div>
             </div>
-            
+
             <div class="balance-card warning">
               <div class="metric-icon">
                 <i class="fas fa-weight-hanging"></i>
               </div>
-              <div class="metric-value">{{ balance_totals.kg_balance|default:0 }}</div>
+              <div class="metric-value">{{ freezing_totals.total_kg|default:0 }}</div>
               <div class="metric-label">Total KG</div>
             </div>
-            
-            <div class="balance-card dark">
-              <div class="metric-icon">
-                <i class="fas fa-dollar-sign"></i>
-              </div>
-              <div class="metric-value">${{ total_value|default:0|floatformat:0 }}</div>
-              <div class="metric-label">Estimated Value</div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -798,22 +983,22 @@
             </div>
           </div>
         </div>
-        
+
         <div class="card-body">
           <!-- Tab Navigation -->
           <div class="mb-4">
             <ul class="nav nav-pills justify-content-center" role="tablist">
               <li class="nav-item">
-                <button class="nav-link active" id="stock-in-tab" data-bs-toggle="pill" 
-                        data-bs-target="#stock-in" type="button" role="tab">
+                <button class="nav-link active" id="stock-in-tab" data-bs-toggle="pill" data-bs-target="#stock-in"
+                  type="button" role="tab">
                   <i class="fas fa-arrow-down text-success me-2"></i>
                   Stock In Entries
                   <span class="badge bg-primary ms-2">{{ freezing_entries.count|default:0 }}</span>
                 </button>
               </li>
               <li class="nav-item">
-                <button class="nav-link" id="stock-out-tab" data-bs-toggle="pill" 
-                        data-bs-target="#stock-out" type="button" role="tab">
+                <button class="nav-link" id="stock-out-tab" data-bs-toggle="pill" data-bs-target="#stock-out"
+                  type="button" role="tab">
                   <i class="fas fa-arrow-up text-danger me-2"></i>
                   Stock Out Entries
                   <span class="badge bg-warning ms-2">{{ return_entries.count|default:0 }}</span>
@@ -833,26 +1018,39 @@
                     <tr>
                       <th class="table-header">
                         <div class="header-content">
-                          <i class="fas fa-calendar header-icon"></i>
-                          <span class="header-text">Date</span>
-                        </div>
-                      </th>
-                      <th class="table-header">
-                        <div class="header-content">
                           <i class="fas fa-receipt header-icon"></i>
                           <span class="header-text">Voucher</span>
                         </div>
                       </th>
                       <th class="table-header">
                         <div class="header-content">
+                          <i class="fas fa-calendar header-icon"></i>
+                          <span class="header-text">Date</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
                           <i class="fas fa-box header-icon"></i>
-                          <span class="header-text">Item Details</span>
+                          <span class="header-text">Item</span>
+                        </div>
+                      </th>
+
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-star header-icon"></i>
+                          <span class="header-text">Grade</span>
                         </div>
                       </th>
                       <th class="table-header">
                         <div class="header-content">
                           <i class="fas fa-store header-icon"></i>
                           <span class="header-text">Store</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fa-solid fa-snowflake header-icon"></i>
+                          <span class="header-text"> FR Status</span>
                         </div>
                       </th>
                       <th class="table-header text-center">
@@ -866,33 +1064,74 @@
                   <tbody>
                     {% for entry in freezing_entries %}
                     <tr class="table-row">
+
                       <td class="table-cell">
-                        <strong>{{ entry.freezing_tenant.freezing_date|date:"M d, Y" }}</strong>
-                        <br><small class="text-muted">{{ entry.freezing_tenant.freezing_date|time:"h:i A" }}</small>
+                        <div class="voucher-display">
+                          <span class="voucher-badge">{{ entry.freezing_entry.voucher_number }}</span>
+                        </div>
                       </td>
+
                       <td class="table-cell">
-                        <span class="badge bg-primary">{{ entry.freezing_tenant.voucher_number }}</span>
+                        <div class="date-display">
+                          <i class="fas fa-calendar-day me-2 text-secondary"></i>
+                          <span class="date-text">{{ entry.freezing_entry.freezing_date|date:"M d, Y" }}</span>
+                        </div>
                       </td>
+
                       <td class="table-cell">
-                        <div class="fw-semibold">{{ entry.item.item_name }}</div>
-                        <small class="text-muted d-block">
-                          <i class="fas fa-fish"></i> {{ entry.species.species_name }}
-                        </small>
-                        <small class="text-muted">
-                          <span class="badge bg-secondary">{{ entry.grade.grade_name }}</span>
-                        </small>
+                        <div class="expense-display">
+                          <i class="fa-solid fa-fish-fins yield-icon"></i>
+                          <span class="expense-value">{{ entry.item }}</span>
+                        </div>
                       </td>
+
+
+                      <td class="table-cell">
+                        <div class="quantity-display">
+                          <i class="fa-solid fa-star yield-icon"></i>
+
+                          <span class="quantity-value"> {{ entry.grade|default:"N/A" }}</span>
+
+                        </div>
+                      </td>
+
                       <td class="table-cell">
                         {% if entry.store %}
-                          <i class="fas fa-warehouse text-info"></i> {{ entry.store.store_name }}
+                        <div class="shed-info">
+                          <div class="shed-avatar">
+                            <i class="fas fa-warehouse "></i>
+                          </div>
+                          <div class="shed-details">
+                            <div class="shed-name">{{ entry.store }}</div>
+                            <div class="shed-meta">Store</div>
+                          </div>
+                        </div>
                         {% else %}
-                          <span class="text-muted">No Store</span>
+                        <div class="shed-info">
+                          <div class="shed-avatar text-muted">
+                            <i class="fas fa-warehouse"></i>
+                          </div>
+                          <div class="shed-details">
+                            <div class="shed-name text-muted">No Store</div>
+                            <div class="shed-meta">N/A</div>
+                          </div>
+                        </div>
                         {% endif %}
                       </td>
+                      <td class="table-cell">
+                        <div class="status-wrapper">
+                          <span
+                            class="status-badge {% if entry.freezing_entry.freezing_status == 'complete' %}status-active{% elif entry.freezing_entry.freezing_status == 'incomplete' %}status-pending{% else %}status-inactive{% endif %}">
+                            <i class="fas fa-circle status-dot"></i>
+                            {{ entry.freezing_entry.freezing_status }}
+                          </span>
+                        </div>
+                      </td>
+
                       <td class="table-cell text-center">
                         <div class="quantity-badges">
                           <span class="badge bg-info quantity-badge">
-                            <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} Slab
+                            <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} SLAB
                           </span>
                           <span class="badge bg-primary quantity-badge">
                             <i class="fas fa-boxes"></i> {{ entry.c_s_quantity|default:0 }} C/S
@@ -907,11 +1146,11 @@
                   </tbody>
                   <tfoot class="table-primary">
                     <tr>
-                      <th colspan="4" class="text-end table-header">Totals:</th>
+                      <th colspan="6" class="text-end table-header">Totals:</th>
                       <th class="text-center table-header">
                         <div class="quantity-badges">
                           <span class="badge bg-info quantity-badge">
-                            {{ freezing_totals.total_slab|default:0 }} Slab
+                            {{ freezing_totals.total_slab|default:0 }} SLAB
                           </span>
                           <span class="badge bg-primary quantity-badge">
                             {{ freezing_totals.total_cs|default:0 }} C/S
@@ -948,20 +1187,32 @@
                     <tr>
                       <th class="table-header">
                         <div class="header-content">
-                          <i class="fas fa-calendar header-icon"></i>
-                          <span class="header-text">Date</span>
-                        </div>
-                      </th>
-                      <th class="table-header">
-                        <div class="header-content">
                           <i class="fas fa-receipt header-icon"></i>
                           <span class="header-text">Voucher</span>
                         </div>
                       </th>
                       <th class="table-header">
                         <div class="header-content">
+                          <i class="fas fa-calendar header-icon"></i>
+                          <span class="header-text">Date</span>
+                        </div>
+                      </th>
+                      <th class="table-header">
+                        <div class="header-content">
                           <i class="fas fa-box header-icon"></i>
-                          <span class="header-text">Item Details</span>
+                          <span class="header-text">Item</span>
+                        </div>
+                      </th>
+                      <!-- <th class="table-header">
+                  <div class="header-content">
+                    <i class="fas fa-fish header-icon"></i>
+                    <span class="header-text">Species</span>
+                  </div>
+                </th> -->
+                      <th class="table-header">
+                        <div class="header-content">
+                          <i class="fas fa-star header-icon"></i>
+                          <span class="header-text">Grade</span>
                         </div>
                       </th>
                       <th class="table-header">
@@ -972,8 +1223,8 @@
                       </th>
                       <th class="table-header">
                         <div class="header-content">
-                          <i class="fas fa-info-circle header-icon"></i>
-                          <span class="header-text">Status</span>
+                          <i class="fa-solid fa-snowflake header-icon"></i>
+                          <span class="header-text">FR Status</span>
                         </div>
                       </th>
                       <th class="table-header text-center">
@@ -988,47 +1239,69 @@
                     {% for entry in return_entries %}
                     <tr class="table-row">
                       <td class="table-cell">
-                        <strong>{{ entry.return_tenant.return_date|date:"M d, Y" }}</strong>
-                        <br><small class="text-muted">{{ entry.return_tenant.return_date|time:"h:i A" }}</small>
+                        <div class="voucher-display">
+                          <span class="voucher-badge">{{ entry.return_entry.voucher_number }}</span>
+                        </div>
                       </td>
                       <td class="table-cell">
-                        <span class="badge bg-warning">{{ entry.return_tenant.voucher_number }}</span>
+                        <div class="date-display">
+                          <i class="fas fa-calendar-day me-2 text-secondary"></i>
+                          <span class="date-text">{{ entry.return_entry.return_date|date:"M d, Y" }}</span>
+                        </div>
+                      </td>
+
+
+                      <td class="table-cell">
+                        <div class="expense-display">
+                          <i class="fa-solid fa-fish-fins yield-icon"></i>
+                          <span class="expense-value">{{ entry.item }}</span>
+                        </div>
                       </td>
                       <td class="table-cell">
-                        <div class="fw-semibold">{{ entry.item.item_name }}</div>
-                        <small class="text-muted d-block">
-                          <i class="fas fa-fish"></i> {{ entry.species.species_name }}
-                        </small>
-                        <small class="text-muted">
-                          <span class="badge bg-secondary">{{ entry.grade.grade_name }}</span>
-                        </small>
+                        <div class="quantity-display">
+                          <i class="fa-solid fa-star yield-icon"></i>
+
+                          <span class="quantity-value"> {{ entry.grade|default:"N/A" }}</span>
+
+                        </div>
                       </td>
                       <td class="table-cell">
                         {% if entry.store %}
-                          <i class="fas fa-warehouse text-info"></i> {{ entry.store.store_name }}
+                        <div class="shed-info">
+                          <div class="shed-avatar">
+                            <i class="fas fa-warehouse "></i>
+                          </div>
+                          <div class="shed-details">
+                            <div class="shed-name">{{ entry.store }}</div>
+                            <div class="shed-meta">Store</div>
+                          </div>
+                        </div>
                         {% else %}
-                          <span class="text-muted">No Store</span>
+                        <div class="shed-info">
+                          <div class="shed-avatar text-muted">
+                            <i class="fas fa-warehouse"></i>
+                          </div>
+                          <div class="shed-details">
+                            <div class="shed-name text-muted">No Store</div>
+                            <div class="shed-meta">N/A</div>
+                          </div>
+                        </div>
                         {% endif %}
                       </td>
                       <td class="table-cell">
-                        {% if entry.return_tenant.return_status == 'pending' %}
-                          <span class="status-badge status-pending">
-                            <i class="fas fa-clock"></i> Pending
+                        <div class="status-wrapper">
+                          <span
+                            class="status-badge {% if entry.return_entry.return_status == 'complete' %}status-active{% elif entry.return_entry.return_status == 'incomplete' %}status-pending{% else %}status-inactive{% endif %}">
+                            <i class="fas fa-circle status-dot"></i>
+                            {{ entry.return_entry.return_status }}
                           </span>
-                        {% elif entry.return_tenant.return_status == 'completed' %}
-                          <span class="status-badge status-completed">
-                            <i class="fas fa-check-circle"></i> Completed
-                          </span>
-                        {% else %}
-                          <span class="status-badge status-processing">
-                            <i class="fas fa-spinner"></i> {{ entry.return_tenant.return_status|title }}
-                          </span>
-                        {% endif %}
+                        </div>
                       </td>
+
                       <td class="table-cell text-center">
                         <div class="quantity-badges">
                           <span class="badge bg-warning quantity-badge">
-                            <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} Slab
+                            <i class="fas fa-layer-group"></i> {{ entry.slab_quantity|default:0 }} SLAB
                           </span>
                           <span class="badge bg-warning quantity-badge">
                             <i class="fas fa-boxes"></i> {{ entry.c_s_quantity|default:0 }} C/S
@@ -1043,7 +1316,7 @@
                   </tbody>
                   <tfoot class="table-warning">
                     <tr>
-                      <th colspan="5" class="text-end table-header">Totals:</th>
+                      <th colspan="6" class="text-end table-header">Totals:</th>
                       <th class="text-center table-header">
                         <div class="quantity-badges">
                           <span class="badge bg-warning quantity-badge">
@@ -1080,19 +1353,16 @@
 
       <!-- Action Buttons -->
       <div class="form-actions">
-        <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" 
-           class="action-btn">
+        <a href="{% url 'adminapp:create_freezing_entry_tenant' %}" class="action-btn">
           <i class="fas fa-plus me-2"></i>Add Stock Entry
         </a>
-        <a href="{% url 'adminapp:create_return_tenant' %}" 
-           class="action-btn btn-primary">
+        <a href="{% url 'adminapp:create_return_tenant' %}" class="action-btn btn-primary">
           <i class="fas fa-minus me-2"></i>Process Return
         </a>
         <button class="action-btn btn-info" onclick="window.print()">
           <i class="fas fa-print me-2"></i>Print Report
         </button>
-        <a href="{% url 'adminapp:tenant_stock_balance' %}" 
-           class="action-btn btn-secondary">
+        <a href="{% url 'adminapp:tenant_stock_balance' %}" class="action-btn btn-secondary">
           <i class="fas fa-arrow-left me-2"></i>Back to Balance
         </a>
       </div>
@@ -1104,111 +1374,112 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize tooltips
-  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-  const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
-  });
+  document.addEventListener('DOMContentLoaded', function () {
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 
-  // Tab change animation
-  const tabButtons = document.querySelectorAll('button[data-bs-toggle="pill"]');
-  tabButtons.forEach(button => {
-    button.addEventListener('shown.bs.tab', function (e) {
-      const targetPane = document.querySelector(e.target.getAttribute('data-bs-target'));
-      if (targetPane) {
-        targetPane.style.opacity = '0';
-        setTimeout(() => {
-          targetPane.style.transition = 'opacity 0.5s ease';
-          targetPane.style.opacity = '1';
-        }, 50);
-      }
+    // Tab change animation
+    const tabButtons = document.querySelectorAll('button[data-bs-toggle="pill"]');
+    tabButtons.forEach(button => {
+      button.addEventListener('shown.bs.tab', function (e) {
+        const targetPane = document.querySelector(e.target.getAttribute('data-bs-target'));
+        if (targetPane) {
+          targetPane.style.opacity = '0';
+          setTimeout(() => {
+            targetPane.style.transition = 'opacity 0.5s ease';
+            targetPane.style.opacity = '1';
+          }, 50);
+        }
+      });
+    });
+
+    // Make cards focusable for accessibility
+    const infoCards = document.querySelectorAll('.info-card');
+    infoCards.forEach(card => {
+      card.setAttribute('tabindex', '0');
+    });
+
+    // Add keyboard support for action buttons
+    const actionBtns = document.querySelectorAll('.action-btn');
+    actionBtns.forEach(btn => {
+      btn.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.click();
+        }
+      });
     });
   });
 
-  // Make cards focusable for accessibility
-  const infoCards = document.querySelectorAll('.info-card');
-  infoCards.forEach(card => {
-    card.setAttribute('tabindex', '0');
-  });
+  // Smooth scroll to top
+  function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
-  // Add keyboard support for action buttons
-  const actionBtns = document.querySelectorAll('.action-btn');
-  actionBtns.forEach(btn => {
-    btn.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        this.click();
-      }
-    });
-  });
-});
+  // Print functionality with enhanced styling
+  window.onbeforeprint = function () {
+    document.body.classList.add('printing');
+  };
 
-// Smooth scroll to top
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// Print functionality with enhanced styling
-window.onbeforeprint = function() {
-  document.body.classList.add('printing');
-};
-
-window.onafterprint = function() {
-  document.body.classList.remove('printing');
-};
+  window.onafterprint = function () {
+    document.body.classList.remove('printing');
+  };
 </script>
 
 <style>
-/* Print Styles */
-@media print {
-  .form-actions,
-  .ph-breadcrumb-nav,
-  .ph-icon-wrapper,
-  .nav-pills {
-    display: none !important;
+  /* Print Styles */
+  @media print {
+
+    .form-actions,
+    .ph-breadcrumb-nav,
+    .ph-icon-wrapper,
+    .nav-pills {
+      display: none !important;
+    }
+
+    .page-header-section {
+      margin-bottom: 1rem !important;
+    }
+
+    .form-card {
+      box-shadow: none !important;
+      border: 1px solid #ddd !important;
+      margin-bottom: 20px !important;
+      page-break-inside: avoid;
+    }
+
+    .card-header {
+      background: #f8f9fa !important;
+      border-bottom: 1px solid #ddd !important;
+    }
+
+    .stock-detail-container {
+      margin-top: 0 !important;
+    }
+
+    .tab-content .tab-pane {
+      display: block !important;
+      opacity: 1 !important;
+    }
+
+    .tab-pane:not(.active) {
+      display: none !important;
+    }
+
+    .balance-card {
+      background: #f8f9fa !important;
+      color: #2c3e50 !important;
+      border: 1px solid #ddd !important;
+    }
+
+    .info-background,
+    .bg-icon {
+      display: none !important;
+    }
   }
-  
-  .page-header-section {
-    margin-bottom: 1rem !important;
-  }
-  
-  .form-card {
-    box-shadow: none !important;
-    border: 1px solid #ddd !important;
-    margin-bottom: 20px !important;
-    page-break-inside: avoid;
-  }
-  
-  .card-header {
-    background: #f8f9fa !important;
-    border-bottom: 1px solid #ddd !important;
-  }
-  
-  .stock-detail-container {
-    margin-top: 0 !important;
-  }
-  
-  .tab-content .tab-pane {
-    display: block !important;
-    opacity: 1 !important;
-  }
-  
-  .tab-pane:not(.active) {
-    display: none !important;
-  }
-  
-  .balance-card {
-    background: #f8f9fa !important;
-    color: #2c3e50 !important;
-    border: 1px solid #ddd !important;
-  }
-  
-  .info-background,
-  .bg-icon {
-    display: none !important;
-  }
-}
 </style>
 
 {% endblock %}

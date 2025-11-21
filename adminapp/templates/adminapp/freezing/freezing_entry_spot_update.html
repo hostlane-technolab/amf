@@ -1779,22 +1779,20 @@
     $(document).ready(function() {
         console.log('Item Quality Script Loaded');
 
-        // Event handler for item selection change
-        $(document).on('change', 'select[name$="-item"]', function() {
-            const itemSelect = $(this);
+        // Function to load qualities for a specific item select
+        function loadItemQualities(itemSelect, preserveSelectedValue) {
             const itemId = itemSelect.val();
             const row = itemSelect.closest('tr');
             const qualitySelect = row.find('select[name$="-item_quality"]');
+            const currentQualityValue = preserveSelectedValue ? qualitySelect.val() : null;
 
-            console.log('Item changed. Item ID:', itemId);
+            console.log('Loading qualities for item:', itemId);
 
             // Reset quality dropdown
             qualitySelect.empty().append('<option value="">---------</option>');
 
             // If item is selected, fetch its qualities
             if (itemId) {
-                console.log('Fetching qualities for item:', itemId);
-                
                 $.get("{% url 'adminapp:get_item_qualities' %}", { item_id: itemId })
                     .done(function(data) {
                         console.log('Qualities received:', data);
@@ -1806,11 +1804,15 @@
                                     `<option value="${quality.id}">${quality.quality}</option>`
                                 );
                             });
+                            
+                            // Restore previously selected value if it exists in new options
+                            if (currentQualityValue) {
+                                qualitySelect.val(currentQualityValue);
+                            }
+                            
                             console.log(`Loaded ${data.length} qualities`);
                         } else {
                             console.log('No qualities found for this item');
-                            // Optionally add a message to the dropdown
-                            // qualitySelect.append('<option value="">No qualities available</option>');
                         }
                     })
                     .fail(function(xhr, status, error) {
@@ -1819,12 +1821,24 @@
                             error: error,
                             response: xhr.responseText
                         });
-                        
-                        // Optionally show error message to user
                         qualitySelect.append('<option value="">Error loading qualities</option>');
                     });
             } else {
                 console.log('No item selected, quality dropdown reset');
+            }
+        }
+
+        // Event handler for item selection change
+        $(document).on('change', 'select[name$="-item"]', function() {
+            loadItemQualities($(this), false);
+        });
+
+        // Load qualities for all existing rows on page load
+        console.log('Loading qualities for existing rows...');
+        $('select[name$="-item"]').each(function() {
+            const itemId = $(this).val();
+            if (itemId) {
+                loadItemQualities($(this), true); // Preserve selected quality value
             }
         });
 
@@ -2596,21 +2610,19 @@
     $(document).ready(function () {
         console.log("Item → Grade script loaded");
 
-        // When an item select changes
-        $(document).on("change", 'select[name$="-item"], select[name="item"]', function () {
-            const itemSelect = $(this);
+        // Function to load grades for a specific item select
+        function loadItemGrades(itemSelect, preserveSelectedValue) {
             const itemId = itemSelect.val();
             const row = itemSelect.closest("tr");
             const gradeSelect = row.find("select[name$='-grade'], select[name='grade']");
+            const currentGradeValue = preserveSelectedValue ? gradeSelect.val() : null;
 
-            console.log("Item changed. Item ID:", itemId);
+            console.log("Loading grades for item:", itemId);
 
             // Reset grade dropdown
             gradeSelect.empty().append('<option value="">---------</option>');
 
             if (itemId) {
-                console.log("Fetching grades for item:", itemId);
-
                 $.get("{% url 'adminapp:get_item_grades' %}", { item_id: itemId })
                     .done(function (data) {
                         console.log("Grades received:", data);
@@ -2624,6 +2636,12 @@
                                     `<option value="${grade.id}">${grade.grade}</option>`
                                 );
                             });
+                            
+                            // Restore previously selected value if it exists in new options
+                            if (currentGradeValue) {
+                                gradeSelect.val(currentGradeValue);
+                            }
+                            
                             console.log(`Loaded ${grades.length} grades`);
                         } else {
                             console.log("No grades found for this item");
@@ -2640,7 +2658,23 @@
             } else {
                 console.log("No item selected, grade dropdown reset");
             }
+        }
+
+        // When an item select changes
+        $(document).on("change", 'select[name$="-item"], select[name="item"]', function () {
+            loadItemGrades($(this), false);
         });
+
+        // Load grades for all existing rows on page load
+        console.log('Loading grades for existing rows...');
+        $('select[name$="-item"], select[name="item"]').each(function() {
+            const itemId = $(this).val();
+            if (itemId) {
+                loadItemGrades($(this), true); // Preserve selected grade value
+            }
+        });
+
+        console.log("Item → Grade event handler attached");
     });
     </script>
 
@@ -2649,9 +2683,12 @@
     $(document).ready(function () {
         console.log("Freezing Entry AJAX ready");
 
-        $(document).on("change", ".item-select", function () {
-            let itemId = $(this).val();
-            let row = $(this).closest(".formset-form");
+        // Function to load species for a specific item
+        function loadSpeciesForItem(itemSelect, preserveSelectedValue) {
+            let itemId = itemSelect.val();
+            let row = itemSelect.closest(".formset-form");
+            let speciesSelect = row.find(".species-select, select[name$='-species']");
+            let currentSpeciesValue = preserveSelectedValue ? speciesSelect.val() : null;
 
             if (!itemId) return;
 
@@ -2659,26 +2696,62 @@
                 url: "{% url 'adminapp:get_species_for_item' %}",
                 data: { item_id: itemId },
                 success: function (response) {
-                    let speciesSelect = row.find(".species-select");
                     speciesSelect.empty().append('<option value="">---------</option>');
                     $.each(response.species, function (i, species) {
                         speciesSelect.append('<option value="' + species.id + '">' + species.name + '</option>');
                     });
+                    
+                    // Restore previously selected value if it exists
+                    if (currentSpeciesValue) {
+                        speciesSelect.val(currentSpeciesValue);
+                    }
                 }
             });
+        }
+
+        // Function to load peeling types for a specific item
+        function loadPeelingForItem(itemSelect, preserveSelectedValue) {
+            let itemId = itemSelect.val();
+            let row = itemSelect.closest(".formset-form");
+            let peelingSelect = row.find(".peeling-select, select[name$='-peeling_type']");
+            let currentPeelingValue = preserveSelectedValue ? peelingSelect.val() : null;
+
+            if (!itemId) return;
 
             $.ajax({
                 url: "{% url 'adminapp:get_peeling_for_item' %}",
                 data: { item_id: itemId },
                 success: function (response) {
-                    let peelingSelect = row.find(".peeling-select");
                     peelingSelect.empty().append('<option value="">---------</option>');
                     $.each(response.peeling_types, function (i, peeling) {
                         peelingSelect.append('<option value="' + peeling.id + '">' + peeling.name + '</option>');
                     });
+                    
+                    // Restore previously selected value if it exists
+                    if (currentPeelingValue) {
+                        peelingSelect.val(currentPeelingValue);
+                    }
                 }
             });
+        }
+
+        // Event handler for item selection change
+        $(document).on("change", ".item-select, select[name$='-item']", function () {
+            loadSpeciesForItem($(this), false);
+            loadPeelingForItem($(this), false);
         });
+
+        // Load species and peeling for all existing rows on page load
+        console.log('Loading species and peeling types for existing rows...');
+        $(".item-select, select[name$='-item']").each(function() {
+            let itemId = $(this).val();
+            if (itemId) {
+                loadSpeciesForItem($(this), true); // Preserve selected species
+                loadPeelingForItem($(this), true); // Preserve selected peeling type
+            }
+        });
+
+        console.log("Species and Peeling event handlers attached");
     });
     </script>
 
@@ -2749,7 +2822,7 @@
     });
     </script>
 
-<!-- Arrow key navigation for form fields -->
+    <!-- Arrow key navigation for form fields -->
     <script>
         $(document).ready(function() {
             // Get all focusable form elements
@@ -2830,32 +2903,29 @@
         });
     </script>
 
-
-
-
-<!-- Add this script at the bottom of your template before </body> -->
-<script>
-    // Fetch dollar rate on page load
-    async function fetchDollarRate() {
-        try {
-            const response = await fetch("{% url 'adminapp:get_dollar_rate_local' %}");
-            const data = await response.json();
-            
-            if (data.dollar_rate_to_inr) {
-                document.getElementById('dollarRateDisplay').textContent = 
-                    `$1 = ₹${parseFloat(data.dollar_rate_to_inr).toFixed(2)}`;
-            } else if (data.error) {
+    <!-- Add this script at the bottom of your template before </body> -->
+    <script>
+        // Fetch dollar rate on page load
+        async function fetchDollarRate() {
+            try {
+                const response = await fetch("{% url 'adminapp:get_dollar_rate_local' %}");
+                const data = await response.json();
+                
+                if (data.dollar_rate_to_inr) {
+                    document.getElementById('dollarRateDisplay').textContent = 
+                        `$1 = ₹${parseFloat(data.dollar_rate_to_inr).toFixed(2)}`;
+                } else if (data.error) {
+                    document.getElementById('dollarRateDisplay').textContent = '$ (Rate not set)';
+                }
+            } catch (error) {
+                console.error('Error fetching dollar rate:', error);
                 document.getElementById('dollarRateDisplay').textContent = '$ (Rate not set)';
             }
-        } catch (error) {
-            console.error('Error fetching dollar rate:', error);
-            document.getElementById('dollarRateDisplay').textContent = '$ (Rate not set)';
         }
-    }
-    
-    // Call on page load
-    document.addEventListener('DOMContentLoaded', fetchDollarRate);
-</script>
+        
+        // Call on page load
+        document.addEventListener('DOMContentLoaded', fetchDollarRate);
+    </script>
 
 
 {%endblock%}

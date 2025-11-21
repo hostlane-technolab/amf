@@ -899,7 +899,7 @@ class StoreTransferItemForm(forms.ModelForm):
         model = StoreTransferItem
         fields = [
             "item", "brand", "item_quality", "freezing_category",
-            "unit", "glaze", "species", "item_grade", "cs_quantity", "kg_quantity"
+            "unit", "glaze",  "item_grade", "cs_quantity", "kg_quantity", "peeling_type"
         ]
         widgets = {
             "item": forms.Select(attrs={"class": "form-control item-select"}),
@@ -908,7 +908,7 @@ class StoreTransferItemForm(forms.ModelForm):
             "freezing_category": forms.Select(attrs={"class": "form-control freezing-select"}),
             "unit": forms.Select(attrs={"class": "form-control unit-select"}),
             "glaze": forms.Select(attrs={"class": "form-control glaze-select"}),
-            "species": forms.Select(attrs={"class": "form-control species-select"}),
+            "peeling_type" : forms.Select(attrs={"class": "form-control peeling-select"}),
             "item_grade": forms.Select(attrs={"class": "form-control grade-select"}),
             "cs_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
             "kg_quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.001"}),

@@ -410,6 +410,7 @@ class Shed(models.Model):
     address = models.TextField()
     contact_number = models.CharField(max_length=20)
     capacity_per_day_kg = models.DecimalField(max_digits=100, decimal_places=3)
+    is_active = models.BooleanField(default=True) 
 
     def __str__(self):
         return self.name
@@ -420,6 +421,9 @@ class ShedItem(models.Model):
     item_type = models.ForeignKey(ItemType, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=100, decimal_places=2)
     unit = models.CharField(max_length=50, default='kg')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)  # ✅ uses current datetime
+
 
     def __str__(self):
         return f'{self.shed.name} - {self.item_type}'
@@ -483,8 +487,12 @@ class SpotPurchase(BaseModel):
         print(f"Debug - total_quantity: {self.total_quantity}")
         print(f"Debug - total_purchase_amount_per_kg: {self.total_purchase_amount_per_kg}")
         
-        def __str__(self):
-            return f"Voucher {self.voucher_number} on {self.date} at {self.spot.location_name}"
+    def __str__(self):
+        try:
+            location = self.spot.location_name if self.spot else "Unknown"
+        except:
+            location = "Unknown"
+        return f"{location} - {self.voucher_number}"
 
 class SpotPurchaseItem(BaseModel):
     purchase = models.ForeignKey(SpotPurchase, on_delete=models.CASCADE, related_name='items')
@@ -1131,6 +1139,7 @@ class StoreTransferItem(models.Model):
     unit = models.ForeignKey(PackingUnit, on_delete=models.SET_NULL, null=True, blank=True)
     glaze = models.ForeignKey(GlazePercentage, on_delete=models.SET_NULL, null=True, blank=True)
     species = models.ForeignKey(Species, on_delete=models.SET_NULL, null=True, blank=True)
+    peeling_type = models.ForeignKey(ItemType, on_delete=models.SET_NULL, null=True, blank=True)
     item_grade = models.ForeignKey(ItemGrade, on_delete=models.SET_NULL, null=True, blank=True)
 
     cs_quantity = models.DecimalField(max_digits=10, decimal_places=2, default=0)

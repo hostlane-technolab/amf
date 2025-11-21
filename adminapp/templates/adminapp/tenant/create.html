@@ -691,24 +691,6 @@
                 </th>
                 <th>
                   <div class="header-content">
-                    <i class="fas fa-layer-group header-icon"></i>
-                    <span>Total Slab</span>
-                  </div>
-                </th>
-                <th>
-                  <div class="header-content">
-                    <i class="fas fa-cubes header-icon"></i>
-                    <span>Total C/S</span>
-                  </div>
-                </th>
-                <th>
-                  <div class="header-content">
-                    <i class="fas fa-weight header-icon"></i>
-                    <span>Total KG</span>
-                  </div>
-                </th>
-                <th>
-                  <div class="header-content">
                     <i class="fas fa-toggle-on header-icon"></i>
                     <span>FR Status</span>
                   </div>
@@ -720,9 +702,6 @@
                 <td>{{ form.freezing_date }} {{ form.freezing_date.errors }}</td>
                 <td>{{ form.voucher_number }} {{ form.voucher_number.errors }}</td>
                 <td>{{ form.tenant_company_name }} {{ form.tenant_company_name.errors }}</td>
-                <td>{{ form.total_slab }} {{ form.total_slab.errors }}</td>
-                <td>{{ form.total_c_s }} {{ form.total_c_s.errors }}</td>
-                <td>{{ form.total_kg }} {{ form.total_kg.errors }}</td>
                 <td>{{ form.freezing_status }} {{ form.freezing_status.errors }}</td>
               </tr>
             </tbody>
@@ -816,13 +795,6 @@
                       <span class="header-text">Brand</span>
                     </div>
                   </th>
-                  <!-- <th class="table-header">
-                    <div class="header-content">
-                      <i class="fas fa-fish header-icon"></i>
-                       <a href="{% url 'adminapp:species_create' %}" target="_blank">
-                      <span class="header-text">Species</span>
-                    </div>
-                  </th> -->
                   <th class="table-header">
                     <div class="header-content">
                       <i class="fas fa-certificate header-icon"></i>
@@ -908,12 +880,6 @@
                         <div class="validation-error">{{ f.brand.errors }}</div>
                       {% endif %}
                     </td>
-                    <!-- <td class="table-cell">
-                      {{ f.species }}
-                      {% if f.species.errors %}
-                        <div class="validation-error">{{ f.species.errors }}</div>
-                      {% endif %}
-                    </td> -->
                     <td class="table-cell">
                       {{ f.grade }}
                       {% if f.grade.errors %}
@@ -938,17 +904,75 @@
                         <div class="validation-error">{{ f.kg.errors }}</div>
                       {% endif %}
                     </td>
-                                        <td class="table-cell col-action text-center">
-                                            <button type="button" class="action-btn delete-btn remove-btn">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
+                    <td class="table-cell col-action text-center">
+                        <button type="button" class="action-btn delete-btn remove-btn">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
           </div>
         </div>
+      </div>
+      
+      <!-- Total Summary Card -->
+      <div class="form-card">
+          <div class="card-header">
+              <div class="d-flex align-items-center">
+                  <div class="icon-wrapper me-4">
+                      <i class="fas fa-calculator"></i>
+                  </div>
+                  <div>
+                      <h4 class="card-title">Total Summary</h4>
+                      <p class="text-muted mb-0">Overall freezing quantities</p>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="card-body p-0">
+              <table class="basic-entry-table">
+                  <thead>
+                      <tr>
+                          <th>
+                              <div class="header-content">
+                                  <i class="fas fa-layer-group header-icon"></i>
+                                  <span>Total Slab</span>
+                              </div>
+                          </th>
+                          <th>
+                              <div class="header-content">
+                                  <i class="fas fa-cubes header-icon"></i>
+                                  <span>Total C/S</span>
+                              </div>
+                          </th>
+                          <th>
+                              <div class="header-content">
+                                  <i class="fas fa-weight header-icon"></i>
+                                  <span>Total KG</span>
+                              </div>
+                          </th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr>
+                          <td data-label="Total Slab">
+                              {{ form.total_slab }}
+                              {{ form.total_slab.errors }}
+                          </td>
+                          <td data-label="Total C/S">
+                              {{ form.total_c_s }}
+                              {{ form.total_c_s.errors }}
+                          </td>
+                          <td data-label="Total KG">
+                              {{ form.total_kg }}
+                              {{ form.total_kg.errors }}
+                          </td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
       </div>
 
       <!-- Submit Section -->
@@ -1528,71 +1552,120 @@
         
         $("#add-item").click(function () {
             // Get the current total forms count
-            let totalForms = parseInt($("#id_items-TOTAL_FORMS").val());
-            console.log("Current total forms:", totalForms);
+            let formIndex = parseInt($("#id_items-TOTAL_FORMS").val());
+            console.log("Current total forms:", formIndex);
             
-            // Clone the first form row (template row)
-            let $templateForm = $("#item-formset tbody tr.formset-form:first");
-            let $newForm = $templateForm.clone(true);
+            // Clone the LAST form row
+            let lastForm = $("#item-formset tbody tr.formset-form:last");
+            let newForm = lastForm.clone(true); // Changed to true to clone event handlers
             
-            console.log("Creating form with index:", totalForms);
+            console.log("Creating form with index:", formIndex);
             
-            // Update all form fields with the new index
-            $newForm.find("input, select, textarea").each(function () {
+            // Fields to preserve (keep values from previous form)
+            const fieldsToPreserve = [
+                'processing_center', 'store', 'item', 'item_quality', 'unit',
+                'glaze', 'freezing_category', 'brand'
+            ];
+            
+            // Fields to reset (clear values)
+            const fieldsToReset = [
+                'grade', 'slab_quantity', 'c_s_quantity', 'kg'
+            ];
+            
+            // Preserve values from the last form - IMPROVED LOGIC
+            let preservedValues = {};
+            fieldsToPreserve.forEach(function(fieldName) {
+                // Try multiple selectors to find the field
+                let element = lastForm.find(`[name$="-${fieldName}"]`).first();
+                if (element.length === 0) {
+                    element = lastForm.find(`[name*="${fieldName}"]`).first();
+                }
+                
+                if (element.length > 0) {
+                    let value = element.val();
+                    preservedValues[fieldName] = value;
+                    console.log(`Preserved ${fieldName}:`, value);
+                }
+            });
+            
+            // Update names, ids, and handle values
+            newForm.find(':input').each(function() {
                 let $field = $(this);
-                let name = $field.attr("name");
-                let id = $field.attr("id");
+                let name = $field.attr('name');
                 
                 if (name) {
+                    // Extract the field name (last part after the dash)
+                    let oldFieldName = name.split('-').pop();
+                    
                     // Replace the form index in the name attribute
-                    name = name.replace(/items-\d+-/, "items-" + totalForms + "-");
-                    $field.attr("name", name);
-                    console.log("Updated name:", name);
-                }
-                
-                if (id) {
-                    // Replace the form index in the id attribute  
-                    id = id.replace(/items-\d+-/, "items-" + totalForms + "-");
-                    $field.attr("id", id);
-                    console.log("Updated id:", id);
-                }
-                
-                // Clear field values for new forms
-                if ($field.attr("type") === "hidden") {
-                    // For hidden fields like 'id', clear the value for new forms
-                    if (name && name.includes('-id')) {
-                        $field.val("");
-                    }
-                    // Keep DELETE field unchecked
-                    if (name && name.includes('-DELETE')) {
-                        $field.prop("checked", false);
-                    }
-                } else {
-                    // Clear all visible fields
-                    $field.val("");
-                    if ($field.attr("type") === "checkbox") {
-                        $field.prop("checked", false);
+                    let newName = name.replace(/items-\d+-/, "items-" + formIndex + "-");
+                    let newId = 'id_' + newName;
+                    
+                    $field.attr({
+                        'name': newName,
+                        'id': newId
+                    });
+                    
+                    console.log("Updated field:", oldFieldName, "New name:", newName);
+                    
+                    // Handle field values based on type
+                    if (fieldsToPreserve.includes(oldFieldName)) {
+                        // Preserve the value from previous form
+                        if (preservedValues[oldFieldName] !== undefined) {
+                            $field.val(preservedValues[oldFieldName]);
+                            console.log(`Set ${oldFieldName} to:`, preservedValues[oldFieldName]);
+                        }
+                    } else if (fieldsToReset.includes(oldFieldName)) {
+                        // Reset the field
+                        if ($field.is('select')) {
+                            $field.prop('selectedIndex', 0);
+                        } else {
+                            $field.val('');
+                        }
+                    } else if ($field.attr('type') === 'hidden') {
+                        // Handle hidden fields
+                        if (newName.includes('-id')) {
+                            $field.val('');
+                        }
+                        if (newName.includes('-DELETE')) {
+                            $field.prop('checked', false);
+                        }
                     }
                 }
             });
-    
-            // Reset select fields to first option
-            $newForm.find("select").each(function() {
-                this.selectedIndex = 0;
+            
+            // Update all label 'for' attributes
+            newForm.find("label").each(function() {
+                let $label = $(this);
+                let forAttr = $label.attr("for");
+                if (forAttr) {
+                    forAttr = forAttr.replace(/id_items-\d+-/, "id_items-" + formIndex + "-");
+                    $label.attr("for", forAttr);
+                }
             });
+            
+            // Clear any error messages from the cloned form
+            newForm.find('.validation-error').remove();
             
             // Append the new form to the table
-            $("#item-formset tbody").append($newForm);
+            $("#item-formset tbody").append(newForm);
             
             // Update the total forms count
-            totalForms++;
-            $("#id_items-TOTAL_FORMS").val(totalForms);
+            $("#id_items-TOTAL_FORMS").val(formIndex + 1);
             
-            console.log("Added new form, total forms now:", totalForms);
-            console.log("TOTAL_FORMS input value:", $("#id_items-TOTAL_FORMS").val());
+            console.log("Added new form, total forms now:", formIndex + 1);
             
-            // Trigger calculation update
-            calculateTotals();
+            // Verify item value was set correctly
+            let itemField = newForm.find('[name$="-item"]');
+            console.log("Item field value after creation:", itemField.val());
+            
+            // Trigger calculation update if function exists
+            if (typeof calculateTotals === 'function') {
+                calculateTotals();
+            }
+            
+            // Focus on the first input field that needs to be filled
+            newForm.find('[name*="grade"]').focus().select();
         });
     });
     </script>

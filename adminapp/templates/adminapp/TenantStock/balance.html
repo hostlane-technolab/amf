@@ -3,6 +3,134 @@
 {% block content %}
 
 <style>
+                            /* Quantity Display - Updated Design */
+                        .quantity-display {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 10px 18px;
+                          background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+                          border: 2px solid #ffcc80;
+                          border-radius: 25px;
+                          color: #e65100;
+                          font-weight: 600;
+                          font-size: 15px;
+                          box-shadow: 0 2px 8px rgba(230, 81, 0, 0.15);
+                          white-space: nowrap;
+                        }
+
+                        .quantity-value {
+                          color: #e65100;
+                        }
+
+                        .quantity-unit {
+                          color: #e65100;
+                          font-size: 16px;
+                          font-weight: 500;
+                          margin-left: 4px;
+                          flex-shrink: 0;
+                        }
+
+                        /* Shed Info */
+                        .shed-info {
+                          display: flex;
+                          align-items: center;
+                        }
+
+                        .shed-avatar {
+                          width: 45px;
+                          height: 45px;
+                          background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+                          border-radius: 12px;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                          color: white;
+                          font-size: 18px;
+                          margin-right: 15px;
+                        }
+
+                        .shed-name {
+                          font-weight: 700;
+                          color: #2c3e50;
+                          font-size: 16px;
+                          margin-bottom: 2px;
+                        }
+
+                        .shed-meta {
+                          color: #6c757d;
+                          font-size: 13px;
+                          font-weight: 500;
+                        }
+
+                        /* Voucher Display */
+                        .voucher-display {
+                          text-align: center;
+                        }
+
+                        .voucher-badge {
+                          display: inline-block;
+                          padding: 8px 16px;
+                          background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+                          color: white;
+                          border-radius: 20px;
+                          font-weight: 600;
+                          font-size: 13px;
+                          letter-spacing: 0.5px;
+                          text-transform: uppercase;
+                        }
+
+                        /* Date Display */
+                        .date-display {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 10px 18px;
+                          background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+                          border: 2px solid #90caf9;
+                          border-radius: 25px;
+                          color: #1976d2;
+                          font-weight: 600;
+                          font-size: 14px;
+                          box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+                          white-space: nowrap;
+                        }
+
+                        .date-display i {
+                          color: #1976d2;
+                          font-size: 14px;
+                          margin-right: 8px;
+                          flex-shrink: 0;
+                        }
+
+                        /* Expense Display (Total Amount) */
+                        .expense-display {
+                          display: inline-flex;
+                          align-items: center;
+                          padding: 10px 18px;
+                          background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+                          border: 2px solid #ef9a9a;
+                          border-radius: 25px;
+                          color: #c62828;
+                          font-weight: 600;
+                          font-size: 14px;
+                          box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+                          white-space: nowrap;
+                        }
+
+                        .expense-display .currency-symbol {
+                          font-size: 14px;
+                          margin-right: 4px;
+                          font-weight: 600;
+                        }
+
+                        .expense-display .expense-value {
+                          font-weight: 600;
+                          letter-spacing: 0.3px;
+                        }
+
+                        .yield-icon {
+                          margin-right: 8px;
+                          font-size: 14px;
+                        }
   /* Main Container */
   .container {
     max-width: 1400px;
@@ -75,9 +203,11 @@
   }
 
   .header-text h3 {
-    font-size: 24px;
+    font-size: 26px;
     color: #2c3e50;
     margin: 0 0 5px 0;
+    letter-spacing: -0.5px;
+    font-weight:500;
   }
 
   .header-text p {
@@ -98,11 +228,11 @@
   .btn-primary-custom {
     background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
     color: white;
-    padding: 10px 18px;
+    padding: 14px 18px;
     text-decoration: none;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
@@ -122,11 +252,11 @@
   .btn-success-custom {
     background: linear-gradient(135deg, #28a745 0%, #218838 100%);
     color: white;
-    padding: 10px 18px;
+    padding: 14px 18px;
     text-decoration: none;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
@@ -146,11 +276,11 @@
   .btn-info-custom {
     background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
     color: white;
-    padding: 10px 18px;
+    padding: 13px 18px;
     text-decoration: none;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
@@ -169,12 +299,12 @@
 
   .btn-warning-custom {
     background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
-    color: #212529;
-    padding: 10px 18px;
+    color: #ffffff;
+    padding: 13px 18px;
     text-decoration: none;
     border-radius: 12px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
@@ -185,7 +315,7 @@
 
   .btn-warning-custom:hover {
     background: linear-gradient(135deg, #e0a800 0%, #d39e00 100%);
-    color: #212529;
+    color: #ffffff;
     text-decoration: none;
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(255, 193, 7, 0.4);
@@ -384,7 +514,7 @@
   }
 
   .stock-table thead th {
-    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    background: #2c3e50;
     color: white;
     padding: 18px 15px;
     font-weight: 700;
@@ -489,17 +619,15 @@
   }
 
   .stock-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
+    padding: 10px 12px;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-block;
+    width: 140px;
+    /* Fixed width for all badges */
+    text-align: center; 
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    min-width: 80px;
-    justify-content: center;
   }
 
   .badge-info { 
@@ -562,13 +690,14 @@
   /* Action Buttons */
   .action-buttons {
     display: flex;
-    gap: 5px;
-    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
   }
 
   .action-btn {
-    width: 32px;
-    height: 32px;
+    width: 52px;
+    height: 38px;
     border-radius: 8px;
     border: 2px solid #e9ecef;
     background: white;
@@ -577,7 +706,7 @@
     justify-content: center;
     transition: all 0.3s ease;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .action-btn:hover {
@@ -586,33 +715,38 @@
   }
 
   .action-btn.view {
-    color: #3498db;
+
+
+        background: #3498db;
+    color: white;
     border-color: rgba(52, 152, 219, 0.3);
   }
 
   .action-btn.view:hover {
-    background: #3498db;
-    color: white;
+      background: transparent;
+      color: #3498db;
   }
 
   .action-btn.edit {
-    color: #17a2b8;
+    background: #17a2b8;
+    color: #ffffff;
     border-color: rgba(23, 162, 184, 0.3);
   }
 
   .action-btn.edit:hover {
-    background: #17a2b8;
-    color: white;
+    background: transparent;
+    color: #17a2b8;
   }
 
   .action-btn.add {
-    color: #28a745;
+    color: #ffffff;
+    background: #28a745;
     border-color: rgba(40, 167, 69, 0.3);
   }
 
   .action-btn.add:hover {
-    background: #28a745;
-    color: white;
+    background:transparent;
+    color: #28a745;
   }
 
   /* Empty State */
@@ -711,13 +845,212 @@
   }
 </style>
 
+<!-- Page header style -->
+<style>
+  /* ===== PAGE HEADER STYLES ONLY (Prefixed with ph-) ===== */
+  :root {
+    --ph-primary-color: #2563eb;
+    --ph-primary-hover: #1d4ed8;
+    --ph-secondary-color: #64748b;
+    --ph-bg-secondary: #f8fafc;
+    --ph-bg-tertiary: #f1f5f9;
+    --ph-bg-accent: #e2e8f0;
+    --ph-text-primary: #0f172a;
+    --ph-text-secondary: #4a4a4a;
+    --ph-text-light: #94a3b8;
+    --ph-border-color: #e2e8f0;
+    --ph-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --ph-radius-sm: 8px;
+    --ph-radius-md: 12px;
+    --ph-radius-lg: 16px;
+    --ph-spacing-xs: 8px;
+    --ph-spacing-sm: 12px;
+    --ph-spacing-md: 16px;
+    --ph-spacing-lg: 24px;
+    --ph-spacing-xl: 32px;
+    --ph-spacing-2xl: 48px;
+  }
+
+  /* Page Header Section */
+  .page-header-section {
+    margin-bottom: var(--ph-spacing-2xl);
+  }
+
+  .ph-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ph-spacing-lg);
+  }
+
+  .ph-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--ph-spacing-md);
+    flex-shrink: 0;
+  }
+
+  .ph-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background: var(--ph-primary-color);
+    border-radius: var(--ph-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    box-shadow: var(--ph-shadow-lg);
+    flex-shrink: 0;
+  }
+
+  .ph-header-text {
+    flex: 1;
+  }
+
+  .ph-header-title {
+    font-weight: 500;
+    font-size: 28px;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .ph-header-subtitle {
+    font-size: 16px;
+    color: var(--ph-text-secondary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ph-header-stats {
+    margin-left: auto;
+  }
+
+  .ph-stat-badge {
+    display: flex;
+    align-items: center;
+    padding: var(--ph-spacing-sm) var(--ph-spacing-md);
+    background: var(--ph-bg-tertiary);
+    border: 2px solid var(--ph-border-color);
+    border-radius: var(--ph-radius-md);
+    font-weight: 600;
+    color: var(--ph-text-secondary);
+    font-size: 14px;
+  }
+
+  /* Breadcrumbs */
+  .ph-breadcrumb-nav {
+    margin-top: 3rem;
+  }
+
+  .ph-breadcrumb-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    flex-wrap: wrap;
+  }
+
+  .ph-breadcrumb-item {
+    display: flex;
+    align-items: center;
+  }
+
+  .ph-breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--ph-bg-secondary);
+    border-radius: var(--ph-radius-sm);
+    text-decoration: none;
+    color: var(--ph-text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .ph-breadcrumb-link:hover {
+    background: var(--ph-bg-accent);
+    color: var(--ph-text-primary);
+    border-color: var(--ph-border-color);
+  }
+
+  .ph-breadcrumb-item.active span {
+    color: var(--ph-primary-color);
+    font-weight: 600;
+    padding: 6px 12px;
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: var(--ph-radius-sm);
+    font-size: 14px;
+  }
+
+  .ph-breadcrumb-separator {
+    color: var(--ph-text-light);
+    margin: 0 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 768px) {
+    .ph-header-stats {
+      display: none !important;
+    }
+    .ph-breadcrumb-nav {
+      margin-top: 5px;
+    }
+    .ph-header-title {
+      font-size: 1.7rem;
+    }
+  }
+</style>
+
+
 <div class="container">
   <div class="page-inner">
-    <div class="page-header">
-      <h3 class="fw-bold">
-        <i class="fas fa-balance-scale"></i>
-        Stock Balance Management
-      </h3>
+    <div class="page-header-section">
+      <div class="ph-header-content">
+        <div class="ph-header-left">
+          <div class="ph-icon-wrapper">
+            <i class="fas fa-boxes"></i>
+          </div>
+          <div class="ph-header-text">
+            <h3 class="ph-header-title">Stock Balance Management</h3>
+            <p class="ph-header-subtitle">View tenant stock balance</p>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="ph-breadcrumb-nav">
+          <ol class="ph-breadcrumb-list">
+            <li class="ph-breadcrumb-item">
+              <a href="#" class="ph-breadcrumb-link">
+                <i class="icon-home"></i>
+                <span>Home</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item">
+              <a href="{% url 'adminapp:tenant_stock_summary' %}" class="ph-breadcrumb-link">
+                <i class="fas fa-chart-line"></i>
+                <span>Get Summary</span>
+              </a>
+            </li>
+            <li class="ph-breadcrumb-separator">
+              <i class="icon-arrow-right"></i>
+            </li>
+            <li class="ph-breadcrumb-item active">
+              <span>Get Balance</span>
+            </li>
+          </ol>
+        </nav>
+        <div class="ph-header-stats"></div>
+      </div>
     </div>
 
     <div class="row">
@@ -792,20 +1125,12 @@
                 <select class="filter-select" id="tenantFilter">
                   <option value="">All Tenants</option>
                   {% for tenant in tenants %}
-                  <option value="{{ tenant.name }}">{{ tenant.name }}</option>
+                  <option value="{{ tenant.company_name }}">{{ tenant.company_name }}</option>
                   {% endfor %}
                 </select>
               </div>
               
-              <div class="filter-group">
-                <label class="filter-label">Filter by Species</label>
-                <select class="filter-select" id="speciesFilter">
-                  <option value="">All Species</option>
-                  {% for species in species_list %}
-                  <option value="{{ species }}">{{ species }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+
               
               <div class="filter-group">
                 <label class="filter-label">Stock Status</label>
@@ -850,10 +1175,16 @@
               <thead>
                 <tr>
                   <th>
-                    <i class="fas fa-user"></i> Tenant
+                    <i class="fas fa-industry"></i> Tenant
                   </th>
                   <th>
-                    <i class="fas fa-box"></i> Item Details
+                    <i class="fas fa-store"></i> Store
+                  </th>
+                  <th>
+                    <i class="fas fa-box"></i> Item 
+                  </th>
+                  <th>
+                    <i class="fas fa-star"></i> Grade
                   </th>
                   <th class="stock-column">
                     <i class="fas fa-arrow-down"></i> Stock In
@@ -881,23 +1212,36 @@
                       </div>
                       <div class="tenant-details">
                         <div class="tenant-name">{{ item.tenant_name }}</div>
-                        <div class="store-info">
-                          <i class="fas fa-store"></i> {{ item.store|default:"No Store" }}
-                        </div>
                       </div>
                     </div>
                   </td>
+
                   
-                  <!-- Item Details Column -->
-                  <td>
-                    <div class="item-details">
-                      <div class="item-name">{{ item.item_name }}</div>
-                      <div class="species-info">
-                        <i class="fas fa-fish"></i> {{ item.species }}
-                      </div>
-                      <span class="grade-badge">Grade: {{ item.grade|default:"N/A" }}</span>
-                    </div>
-                  </td>
+                  
+
+
+                      <td class="table-cell">
+                        <div class="quantity-display">
+                          <i class="fa-solid fa-store yield-icon"></i>
+                          <span class="quantity-value">{{ item.store|default:"No Store" }}</span>
+                        </div>
+                      </td>
+
+                      <td class="table-cell">
+                        <div class="expense-display">
+                          <i class="fa-solid fa-fish-fins yield-icon"></i>
+                          <span class="expense-value">{{ item.item_name }}</span>
+                        </div>
+                      </td>
+
+                      <td class="table-cell">
+                        <div class="quantity-display">
+                          <i class="fa-solid fa-star yield-icon"></i>
+
+                          <span class="quantity-value"> {{ item.grade|default:"N/A" }}</span>
+
+                        </div>
+                      </td>
                   
                   <!-- Stock In Column -->
                   <td class="stock-column">
